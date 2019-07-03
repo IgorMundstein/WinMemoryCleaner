@@ -1,0 +1,33 @@
+﻿<Window x:Class="WinMemoryCleaner.Window.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" 
+        DataContext="{StaticResource MainViewModel}"
+        Title="{Binding Title}" Height="95" Width="345" WindowStartupLocation="CenterScreen" Icon="/WinMemoryCleaner;component/Resources/WinMemoryCleaner.ico" ResizeMode="CanMinimize">
+
+    <Grid Margin="5" IsEnabled="{Binding Isloading, Converter={StaticResource BooleanInverterConverter}}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top"  FontSize="18">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0} free of {1} ({2}% Occupied)">
+                    <Binding Path="Computer.MemoryAvailable" />
+                    <Binding Path="Computer.MemorySize" />
+                    <Binding Path="Computer.MemoryUsage" />
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
+
+        <Button Grid.Column="0" Grid.Row="1" Content="{Binding CleanUpMemory}" ContentStringFormat="{} {0} " Foreground="Green" FontWeight="Bold" Cursor="Hand" Height="25" Margin="0, 5, 0, 0" IsEnabled="{Binding CanExecuteMemoryCleanCommand}" Command="{Binding MemoryCleanCommand}" />
+    </Grid>
+
+</Window>
