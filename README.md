@@ -8,3 +8,6 @@ It frees up the memory in 4 different ways:
 - **Empty System Working Set** - Removes memory from the system cache working set.
 - **Empty Modified Page List** - Flushes memory from the Modified page list, writing unsaved data to disk and moving the pages to the Standby list.
 - **Empty Standby List** - Discards pages from all Standby lists, and moves them to the Free list.
+
+# Download
+https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.0/WinMemoryCleaner.exe
