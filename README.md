@@ -1,7 +1,7 @@
 # Windows Memory Cleaner
-This is a simple RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to get the used memory back. This is where you use Windows Memory Cleaner to clean your memory, so you can carry on working without wasting time restarting your Windows.
-
 [Download](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.0/WinMemoryCleaner.exe)
+
+This is a simple RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to get the used memory back. This is where you use Windows Memory Cleaner to clean your memory, so you can carry on working without wasting time restarting your Windows.
 
 # How it works
 It frees up the memory in 4 different ways:
