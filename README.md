@@ -10,4 +10,4 @@ It frees up the memory in 4 different ways:
 - **Empty Standby List** - Discards pages from all Standby lists, and moves them to the Free list.
 
 # Download
-https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.0/WinMemoryCleaner.exe
+[WinMemoryCleaner 1.0](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.0/WinMemoryCleaner.exe)
