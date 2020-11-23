@@ -7,7 +7,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <local:MainViewModel x:Key="MainViewModel" />
-            <local:BooleanInverterConverter x:Key="BooleanInverterConverter" />
+            <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         </ResourceDictionary>
     </Application.Resources>
 

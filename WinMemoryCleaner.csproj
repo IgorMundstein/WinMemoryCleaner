@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.1\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props" Condition="Exists('packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.1\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props')" />
+  <Import Project="packages\Microsoft.NetFramework.Analyzers.3.3.1\build\Microsoft.NetFramework.Analyzers.props" Condition="Exists('packages\Microsoft.NetFramework.Analyzers.3.3.1\build\Microsoft.NetFramework.Analyzers.props')" />
+  <Import Project="packages\Microsoft.NetCore.Analyzers.3.3.1\build\Microsoft.NetCore.Analyzers.props" Condition="Exists('packages\Microsoft.NetCore.Analyzers.3.3.1\build\Microsoft.NetCore.Analyzers.props')" />
+  <Import Project="packages\Microsoft.CodeQuality.Analyzers.3.3.1\build\Microsoft.CodeQuality.Analyzers.props" Condition="Exists('packages\Microsoft.CodeQuality.Analyzers.3.3.1\build\Microsoft.CodeQuality.Analyzers.props')" />
+  <Import Project="packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props" Condition="Exists('packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -12,6 +17,10 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -23,11 +32,9 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -39,8 +46,14 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\WinMemoryCleaner.xml</DocumentationFile>
-    <LangVersion>3</LangVersion>
+    <LangVersion>4</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -50,12 +63,23 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>3</LangVersion>
+    <LangVersion>4</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\WinMemoryCleaner.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
     <ApplicationIcon>Resources\WinMemoryCleaner.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <StartupObject>WinMemoryCleaner.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>WinMemoryCleaner.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -73,11 +97,22 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Converters\BooleanInverterConverter.cs" />
-    <Compile Include="Entity\Computer.cs" />
+    <Compile Include="Converters\InverseBooleanConverter.cs" />
+    <Compile Include="Core\Attributes.cs" />
+    <Compile Include="Core\Constants.cs" />
+    <Compile Include="Core\Enums.cs" />
+    <Compile Include="Model\ObservableObject.cs" />
+    <Compile Include="Core\Structs.cs" />
+    <Compile Include="Helper\LogHelper.cs" />
+    <Compile Include="Helper\MemoryHelper.cs" />
+    <Compile Include="Interfaces\ILoadingService.cs" />
+    <Compile Include="Model\Model.cs" />
+    <Compile Include="Service\LoadingService.cs" />
+    <Compile Include="ViewModel\RelayCommand.cs" />
+    <Compile Include="Model\Computer.cs" />
     <Compile Include="Helper\ComputerHelper.cs" />
-    <Compile Include="Helper\ExtensionMethods.cs" />
-    <Compile Include="Helper\NativeMethods.cs" />
+    <Compile Include="Core\ExtensionMethods.cs" />
+    <Compile Include="Core\NativeMethods.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -101,10 +136,12 @@
     </Compile>
     <None Include="app.config" />
     <None Include="app.manifest" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
@@ -120,7 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -132,5 +169,40 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\analyzers\dotnet\cs\Microsoft.CodeAnalysis.VersionCheckAnalyzer.resources.dll" />
+    <Analyzer Include="packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\analyzers\dotnet\Microsoft.CodeAnalysis.VersionCheckAnalyzer.dll" />
+    <Analyzer Include="packages\Microsoft.CodeQuality.Analyzers.3.3.1\analyzers\dotnet\cs\Humanizer.dll" />
+    <Analyzer Include="packages\Microsoft.CodeQuality.Analyzers.3.3.1\analyzers\dotnet\cs\Microsoft.CodeQuality.Analyzers.dll" />
+    <Analyzer Include="packages\Microsoft.CodeQuality.Analyzers.3.3.1\analyzers\dotnet\cs\Microsoft.CodeQuality.CSharp.Analyzers.dll" />
+    <Analyzer Include="packages\Microsoft.NetCore.Analyzers.3.3.1\analyzers\dotnet\cs\Microsoft.NetCore.Analyzers.dll" />
+    <Analyzer Include="packages\Microsoft.NetCore.Analyzers.3.3.1\analyzers\dotnet\cs\Microsoft.NetCore.CSharp.Analyzers.dll" />
+    <Analyzer Include="packages\Microsoft.NetFramework.Analyzers.3.3.1\analyzers\dotnet\cs\Microsoft.NetFramework.Analyzers.dll" />
+    <Analyzer Include="packages\Microsoft.NetFramework.Analyzers.3.3.1\analyzers\dotnet\cs\Microsoft.NetFramework.CSharp.Analyzers.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="CleanBinAndObjFolders" AfterTargets="Clean">
+    <RemoveDir Directories="$(TargetDir)" />
+    <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" />
+  </Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeQuality.Analyzers.3.3.1\build\Microsoft.CodeQuality.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeQuality.Analyzers.3.3.1\build\Microsoft.CodeQuality.Analyzers.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeQuality.Analyzers.3.3.1\build\Microsoft.CodeQuality.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeQuality.Analyzers.3.3.1\build\Microsoft.CodeQuality.Analyzers.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.NetCore.Analyzers.3.3.1\build\Microsoft.NetCore.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.NetCore.Analyzers.3.3.1\build\Microsoft.NetCore.Analyzers.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.NetCore.Analyzers.3.3.1\build\Microsoft.NetCore.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.NetCore.Analyzers.3.3.1\build\Microsoft.NetCore.Analyzers.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.NetFramework.Analyzers.3.3.1\build\Microsoft.NetFramework.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.NetFramework.Analyzers.3.3.1\build\Microsoft.NetFramework.Analyzers.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.NetFramework.Analyzers.3.3.1\build\Microsoft.NetFramework.Analyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.NetFramework.Analyzers.3.3.1\build\Microsoft.NetFramework.Analyzers.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.1\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.1\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.1\build\Microsoft.CodeAnalysis.FxCopAnalyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.1\build\Microsoft.CodeAnalysis.FxCopAnalyzers.targets'))" />
+  </Target>
+  <Import Project="packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.targets" Condition="Exists('packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.1\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.targets')" />
+  <Import Project="packages\Microsoft.CodeQuality.Analyzers.3.3.1\build\Microsoft.CodeQuality.Analyzers.targets" Condition="Exists('packages\Microsoft.CodeQuality.Analyzers.3.3.1\build\Microsoft.CodeQuality.Analyzers.targets')" />
+  <Import Project="packages\Microsoft.NetCore.Analyzers.3.3.1\build\Microsoft.NetCore.Analyzers.targets" Condition="Exists('packages\Microsoft.NetCore.Analyzers.3.3.1\build\Microsoft.NetCore.Analyzers.targets')" />
+  <Import Project="packages\Microsoft.NetFramework.Analyzers.3.3.1\build\Microsoft.NetFramework.Analyzers.targets" Condition="Exists('packages\Microsoft.NetFramework.Analyzers.3.3.1\build\Microsoft.NetFramework.Analyzers.targets')" />
+  <Import Project="packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.1\build\Microsoft.CodeAnalysis.FxCopAnalyzers.targets" Condition="Exists('packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.1\build\Microsoft.CodeAnalysis.FxCopAnalyzers.targets')" />
 </Project>

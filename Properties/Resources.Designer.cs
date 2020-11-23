@@ -22,7 +22,7 @@ namespace WinMemoryCleaner.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace WinMemoryCleaner.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WinMemoryCleaner.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace WinMemoryCleaner.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,27 +61,117 @@ namespace WinMemoryCleaner.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clean up memory.
+        ///   Looks up a localized string similar to Windows Memory Cleaner.
         /// </summary>
-        internal static string MainViewCleanUpMemory {
+        public static string AppTitle {
             get {
-                return ResourceManager.GetString("MainViewCleanUpMemory", resourceCulture);
+                return ResourceManager.GetString("AppTitle", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Memory Cleaner.
+        ///   Looks up a localized string similar to Completed.
         /// </summary>
-        internal static string MainViewTitle {
+        public static string Completed {
             get {
-                return ResourceManager.GetString("MainViewTitle", resourceCulture);
+                return ResourceManager.GetString("Completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can not save LOG: {0} (Exception: {1}).
+        /// </summary>
+        public static string LogHelperCanNotSaveLogException {
+            get {
+                return ResourceManager.GetString("LogHelperCanNotSaveLogException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clean up memory.
+        /// </summary>
+        public static string MainViewCleanUpMemoryText {
+            get {
+                return ResourceManager.GetString("MainViewCleanUpMemoryText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Combine Memory List.
+        /// </summary>
+        public static string MemoryHelperCombineMemoryList {
+            get {
+                return ResourceManager.GetString("MemoryHelperCombineMemoryList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty Modified Page List.
+        /// </summary>
+        public static string MemoryHelperEmptyModifiedPageList {
+            get {
+                return ResourceManager.GetString("MemoryHelperEmptyModifiedPageList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty Standby List.
+        /// </summary>
+        public static string MemoryHelperEmptyStandbyList {
+            get {
+                return ResourceManager.GetString("MemoryHelperEmptyStandbyList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty System Working Set.
+        /// </summary>
+        public static string MemoryHelperEmptySystemWorkingSet {
+            get {
+                return ResourceManager.GetString("MemoryHelperEmptySystemWorkingSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Empty Working Sets.
+        /// </summary>
+        public static string MemoryHelperEmptyWorkingSets {
+            get {
+                return ResourceManager.GetString("MemoryHelperEmptyWorkingSets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not supported on this operating system version.
+        /// </summary>
+        public static string MemoryHelperFeatureIsNotSupported {
+            get {
+                return ResourceManager.GetString("MemoryHelperFeatureIsNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Garbage Collection.
+        /// </summary>
+        public static string MemoryHelperGarbageCollection {
+            get {
+                return ResourceManager.GetString("MemoryHelperGarbageCollection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Started.
+        /// </summary>
+        public static string Started {
+            get {
+                return ResourceManager.GetString("Started", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon WinMemoryCleaner {
+        public static System.Drawing.Icon WinMemoryCleaner {
             get {
                 object obj = ResourceManager.GetObject("WinMemoryCleaner", resourceCulture);
                 return ((System.Drawing.Icon)(obj));

@@ -3,11 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" 
+        xmlns:local="clr-namespace:WinMemoryCleaner"
+        xmlns:properties="clr-namespace:WinMemoryCleaner.Properties"
+        mc:Ignorable="d"
         DataContext="{StaticResource MainViewModel}"
-        Title="{Binding Title}" Height="95" Width="345" WindowStartupLocation="CenterScreen" Icon="/WinMemoryCleaner;component/Resources/WinMemoryCleaner.ico" ResizeMode="CanMinimize">
+        Title="{x:Static local:App.Title}" Height="95" Width="345" WindowStartupLocation="CenterScreen" Icon="/WinMemoryCleaner;component/Resources/WinMemoryCleaner.ico" ResizeMode="CanMinimize">
 
-    <Grid Margin="5" IsEnabled="{Binding Isloading, Converter={StaticResource BooleanInverterConverter}}">
+    <Grid Margin="5" IsEnabled="{Binding Isloading, Converter={StaticResource InverseBooleanConverter}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
@@ -27,7 +29,7 @@
             </TextBlock.Text>
         </TextBlock>
 
-        <Button Grid.Column="0" Grid.Row="1" Content="{Binding CleanUpMemory}" ContentStringFormat="{} {0} " Foreground="Green" FontWeight="Bold" Cursor="Hand" Height="25" Margin="0, 5, 0, 0" IsEnabled="{Binding CanExecuteMemoryCleanCommand}" Command="{Binding MemoryCleanCommand}" />
+        <Button Grid.Column="0" Grid.Row="1" Content="{x:Static properties:Resources.MainViewCleanUpMemoryText}" ContentStringFormat="{} {0} " Foreground="Green" FontWeight="Bold" Cursor="Hand" Height="25" Margin="0, 5, 0, 0" IsEnabled="{Binding Isloading, Converter={StaticResource InverseBooleanConverter}}" Command="{Binding MemoryCleanCommand}" />
     </Grid>
 
 </Window>

@@ -1,42 +1,28 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Reflection;
 using System.Windows.Input;
-using WinMemoryCleaner.Properties;
 
 namespace WinMemoryCleaner
 {
     /// <summary>
     /// Main View Model
     /// </summary>
-    internal class MainViewModel : ViewModel
+    public class MainViewModel : ViewModel
     {
         #region Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        internal MainViewModel()
+        public MainViewModel()
+            : base(App.LoadingService)
         {
-            try
-            {
-                CleanUpMemory = Resources.MainViewCleanUpMemory;
-                Computer = new Computer
-                {
-                    MemoryAvailable = ComputerHelper.GetMemoryAvailable().ByteSizeToString(),
-                    MemorySize = ComputerHelper.GetMemorySize().ByteSizeToString(),
-                    MemoryUsage = ComputerHelper.GetMemoryUsage()
-                };
-                MemoryCleanCommand = new RelayCommand(MemoryClean);
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                Title = string.Format("{0} {1}.{2}", Resources.MainViewTitle, version.Major, version.Minor);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
+            // Initialize
+            Computer = new Computer();
+            MemoryCleanCommand = new RelayCommand(MemoryClean);
+
+            // Refresh
+            Refresh();
         }
 
         #endregion
@@ -44,31 +30,10 @@ namespace WinMemoryCleaner
         #region Fields
 
         private Computer _computer;
-        private string _cleanUpMemory;
-        private string _title;
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets the clean memory.
-        /// </summary>
-        /// <value>
-        /// The clean memory.
-        /// </value>
-        public string CleanUpMemory
-        {
-            get
-            {
-                return _cleanUpMemory;
-            }
-            set
-            {
-                _cleanUpMemory = value;
-                RaisePropertyChanged("CleanMemory");
-            }
-        }
 
         /// <summary>
         /// Gets or sets the computer.
@@ -82,26 +47,7 @@ namespace WinMemoryCleaner
             set
             {
                 _computer = value;
-                RaisePropertyChanged("Computer");
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public string Title
-        {
-            get
-            {
-                return _title;
-            }
-            set
-            {
-                _title = value;
-                RaisePropertyChanged("Title");
+                RaisePropertyChanged();
             }
         }
 
@@ -124,11 +70,21 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Memory clean
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Logged")]
         internal void MemoryClean()
         {
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += MemoryClean;
-            worker.RunWorkerAsync();
+            try
+            {
+                using (BackgroundWorker worker = new BackgroundWorker())
+                {
+                    worker.DoWork += MemoryClean;
+                    worker.RunWorkerAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                LogHelper.Error(e);
+            }
         }
 
         /// <summary>
@@ -140,28 +96,31 @@ namespace WinMemoryCleaner
         {
             try
             {
-                // Loading
+                // Loading ON
                 Loading(true);
 
                 // Memory clean
-                ComputerHelper.MemoryClean();
+                MemoryHelper.Clean();
 
-                // Refresh memory information
-                Computer.MemoryAvailable = ComputerHelper.GetMemoryAvailable().ByteSizeToString();
-                Computer.MemorySize = ComputerHelper.GetMemorySize().ByteSizeToString();
-                Computer.MemoryUsage = ComputerHelper.GetMemoryUsage();
-
-                RaisePropertyChanged("Computer");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
+                // Refresh
+                Refresh();
             }
             finally
             {
-                // Loading
+                // Loading OFF
                 Loading(false);
             }
+        }
+
+        /// <summary>
+        /// Refresh
+        /// </summary>
+        private void Refresh()
+        {
+            // Refresh memory information
+            Computer.MemoryAvailable = ComputerHelper.GetMemoryAvailable().ByteSizeToString();
+            Computer.MemorySize = ComputerHelper.GetMemorySize().ByteSizeToString();
+            Computer.MemoryUsage = ComputerHelper.GetMemoryUsage();
         }
 
         #endregion

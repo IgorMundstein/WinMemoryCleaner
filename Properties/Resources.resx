@@ -112,18 +112,48 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="MainViewCleanUpMemory" xml:space="preserve">
-    <value>Clean up memory</value>
-  </data>
-  <data name="MainViewTitle" xml:space="preserve">
+  <data name="AppTitle" xml:space="preserve">
     <value>Windows Memory Cleaner</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="LogHelperCanNotSaveLogException" xml:space="preserve">
+    <value>Can not save LOG: {0} (Exception: {1})</value>
+  </data>
+  <data name="MainViewCleanUpMemoryText" xml:space="preserve">
+    <value>Clean up memory</value>
+  </data>
+  <data name="MemoryHelperCombineMemoryList" xml:space="preserve">
+    <value>Combine Memory List</value>
+  </data>
+  <data name="MemoryHelperEmptyModifiedPageList" xml:space="preserve">
+    <value>Empty Modified Page List</value>
+  </data>
+  <data name="MemoryHelperEmptyStandbyList" xml:space="preserve">
+    <value>Empty Standby List</value>
+  </data>
+  <data name="MemoryHelperEmptySystemWorkingSet" xml:space="preserve">
+    <value>Empty System Working Set</value>
+  </data>
+  <data name="MemoryHelperEmptyWorkingSets" xml:space="preserve">
+    <value>Empty Working Sets</value>
+  </data>
+  <data name="MemoryHelperFeatureIsNotSupported" xml:space="preserve">
+    <value>{0} is not supported on this operating system version</value>
+  </data>
+  <data name="MemoryHelperGarbageCollection" xml:space="preserve">
+    <value>Garbage Collection</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Started</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="WinMemoryCleaner" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\WinMemoryCleaner.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
