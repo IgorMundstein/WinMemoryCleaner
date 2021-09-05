@@ -112,19 +112,54 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="MainViewCleanUpMemory" xml:space="preserve">
+  <data name="LogCleaned" xml:space="preserve">
+    <value>Cleaned</value>
+  </data>
+  <data name="LogHelperCanNotSaveLogException" xml:space="preserve">
+    <value>Can not save LOG: {0} (Exception: {1})</value>
+  </data>
+  <data name="LogStarted" xml:space="preserve">
+    <value>Started</value>
+  </data>
+  <data name="MainViewCleanUpMemoryText" xml:space="preserve">
     <value>Clean up memory</value>
   </data>
-  <data name="MainViewTitle" xml:space="preserve">
-    <value>Windows Memory Cleaner</value>
+  <data name="MemoryHelperAdminPrivilegeRequired" xml:space="preserve">
+    <value>This operation requires administrator privileges ({0})</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="WinMemoryCleaner" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\WinMemoryCleaner.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="MemoryHelperCombinedPageList" xml:space="preserve">
+    <value>Combined Page List</value>
+  </data>
+  <data name="MemoryHelperFeatureIsNotSupported" xml:space="preserve">
+    <value>{0} clean is not supported on this operating system version</value>
+  </data>
+  <data name="MemoryHelperLowPriorityStandbyList" xml:space="preserve">
+    <value>Standby List (Low Priority)</value>
+  </data>
+  <data name="MemoryHelperModifiedPageList" xml:space="preserve">
+    <value>Modified Page List</value>
+  </data>
+  <data name="MemoryHelperProcessesWorkingSet" xml:space="preserve">
+    <value>Processes Working Set</value>
+  </data>
+  <data name="MemoryHelperStandbyList" xml:space="preserve">
+    <value>Standby List</value>
+  </data>
+  <data name="MemoryHelperSystemWorkingSet" xml:space="preserve">
+    <value>System Working Set</value>
+  </data>
+  <data name="SettingAbout" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="SettingLog" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="SettingMemoryAreas" xml:space="preserve">
+    <value>Memory Areas</value>
   </data>
 </root>

@@ -6,8 +6,10 @@
 
     <Application.Resources>
         <ResourceDictionary>
+            <local:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
+            <local:EnumBooleanConverter x:Key="EnumBooleanConverter" />
+            <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <local:MainViewModel x:Key="MainViewModel" />
-            <local:BooleanInverterConverter x:Key="BooleanInverterConverter" />
         </ResourceDictionary>
     </Application.Resources>
 

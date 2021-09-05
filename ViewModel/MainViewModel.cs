@@ -1,42 +1,29 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Reflection;
+using System.Threading;
 using System.Windows.Input;
-using WinMemoryCleaner.Properties;
 
 namespace WinMemoryCleaner
 {
     /// <summary>
     /// Main View Model
     /// </summary>
-    internal class MainViewModel : ViewModel
+    public class MainViewModel : ViewModel
     {
         #region Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        internal MainViewModel()
+        public MainViewModel()
+            : base(App.LoadingService)
         {
-            try
-            {
-                CleanUpMemory = Resources.MainViewCleanUpMemory;
-                Computer = new Computer
-                {
-                    MemoryAvailable = ComputerHelper.GetMemoryAvailable().ByteSizeToString(),
-                    MemorySize = ComputerHelper.GetMemorySize().ByteSizeToString(),
-                    MemoryUsage = ComputerHelper.GetMemoryUsage()
-                };
-                MemoryCleanCommand = new RelayCommand(MemoryClean);
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                Title = string.Format("{0} {1}.{2}", Resources.MainViewTitle, version.Major, version.Minor);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
+            // Initialize
+            Computer = new Computer();
+            MemoryCleanCommand = new RelayCommand(MemoryClean, CanExecuteMemoryClean);
+
+            Monitor();
         }
 
         #endregion
@@ -44,31 +31,11 @@ namespace WinMemoryCleaner
         #region Fields
 
         private Computer _computer;
-        private string _cleanUpMemory;
-        private string _title;
+        private BackgroundWorker _monitorWorker;
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets the clean memory.
-        /// </summary>
-        /// <value>
-        /// The clean memory.
-        /// </value>
-        public string CleanUpMemory
-        {
-            get
-            {
-                return _cleanUpMemory;
-            }
-            set
-            {
-                _cleanUpMemory = value;
-                RaisePropertyChanged("CleanMemory");
-            }
-        }
 
         /// <summary>
         /// Gets or sets the computer.
@@ -79,29 +46,100 @@ namespace WinMemoryCleaner
         public Computer Computer
         {
             get { return _computer; }
-            set
+            private set
             {
                 _computer = value;
-                RaisePropertyChanged("Computer");
+                RaisePropertyChanged();
             }
         }
 
         /// <summary>
-        /// Gets or sets the title.
+        /// Gets the git hub URI.
         /// </summary>
         /// <value>
-        /// The title.
+        /// The git hub URI.
         /// </value>
-        public string Title
+        public static string GitHub
         {
             get
             {
-                return _title;
+                return Constants.App.GitHub;
+            }
+        }
+
+        /// <summary>
+        /// Gets the git hub URI.
+        /// </summary>
+        /// <value>
+        /// The git hub URI.
+        /// </value>
+        public static Uri GitHubUri
+        {
+            get
+            {
+                return new Uri(Constants.App.GitHubUri);
+            }
+        }
+
+        /// <summary>
+        /// Gets the license.
+        /// </summary>
+        /// <value>
+        /// The license.
+        /// </value>
+        public static string License
+        {
+            get
+            {
+                return Constants.App.License;
+            }
+        }
+
+        /// <summary>
+        /// Gets the logs.
+        /// </summary>
+        /// <value>
+        /// The logs.
+        /// </value>
+        public ObservableCollection<Log> Logs
+        {
+            get { return new ObservableCollection<Log>(LogHelper.Logs); }
+        }
+
+        /// <summary>
+        /// Gets or sets the memory areas.
+        /// </summary>
+        /// <value>
+        /// The memory areas.
+        /// </value>
+        public Enums.Memory.Area MemoryAreas
+        {
+            get
+            {
+                return Settings.MemoryAreas;
             }
             set
             {
-                _title = value;
-                RaisePropertyChanged("Title");
+                if (Settings.MemoryAreas.HasFlag(value))
+                    Settings.MemoryAreas &= ~value;
+                else
+                    Settings.MemoryAreas |= value;
+
+                switch (value)
+                {
+                    case Enums.Memory.Area.StandbyList:
+                        if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyListLowPriority))
+                            Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                        break;
+
+                    case Enums.Memory.Area.StandbyListLowPriority:
+                        if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyList))
+                            Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
+                        break;
+                }
+
+                Settings.Save();
+                RaisePropertyChanged();
             }
         }
 
@@ -122,17 +160,77 @@ namespace WinMemoryCleaner
         #region Methods
 
         /// <summary>
-        /// Memory clean
+        /// Determines whether this instance [can execute memory clean].
         /// </summary>
-        internal void MemoryClean()
+        /// <returns>
+        ///   <c>true</c> if this instance [can execute memory clean]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool CanExecuteMemoryClean()
         {
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += MemoryClean;
-            worker.RunWorkerAsync();
+            return MemoryAreas != Enums.Memory.Area.None;
         }
 
         /// <summary>
-        /// Verify Command Signaling
+        /// Monitor Computer Resources
+        /// </summary>
+        private void Monitor()
+        {
+            try
+            {
+                using (_monitorWorker = new BackgroundWorker())
+                {
+                    _monitorWorker.DoWork += Monitor;
+                    _monitorWorker.RunWorkerAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                LogHelper.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Monitor
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
+        private void Monitor(object sender, DoWorkEventArgs e)
+        {
+            while (!_monitorWorker.CancellationPending)
+            {
+                // Refresh memory information
+                Computer.MemoryAvailable = ComputerHelper.GetMemoryAvailable().ByteSizeToString();
+                Computer.MemorySize = ComputerHelper.GetMemorySize().ByteSizeToString();
+                Computer.MemoryUsage = ComputerHelper.GetMemoryUsage();
+
+                if (IsInDesignMode)
+                    break;
+
+                Thread.Sleep(3000);
+            }
+        }
+
+        /// <summary>
+        /// Memory clean
+        /// </summary>
+        private void MemoryClean()
+        {
+            try
+            {
+                using (BackgroundWorker worker = new BackgroundWorker())
+                {
+                    worker.DoWork += MemoryClean;
+                    worker.RunWorkerAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                LogHelper.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Memory clean
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
@@ -140,26 +238,22 @@ namespace WinMemoryCleaner
         {
             try
             {
-                // Loading
+                // Loading ON
                 Loading(true);
 
+                // Logs
+                LogHelper.Logs.Clear();
+                RaisePropertyChanged(() => Logs);
+
                 // Memory clean
-                ComputerHelper.MemoryClean();
+                MemoryHelper.Clean();
 
-                // Refresh memory information
-                Computer.MemoryAvailable = ComputerHelper.GetMemoryAvailable().ByteSizeToString();
-                Computer.MemorySize = ComputerHelper.GetMemorySize().ByteSizeToString();
-                Computer.MemoryUsage = ComputerHelper.GetMemoryUsage();
-
-                RaisePropertyChanged("Computer");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
+                // Logs
+                RaisePropertyChanged(() => Logs);
             }
             finally
             {
-                // Loading
+                // Loading OFF
                 Loading(false);
             }
         }
