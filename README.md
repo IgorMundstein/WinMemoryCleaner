@@ -4,7 +4,7 @@ This is a RAM cleaner. There are times when programs do not release the memory t
 [Download](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.exe)
 
 # How it works
-![alt text](https://github.com/IgorMundstein/WinMemoryCleaner/blob/develop/screenshot.png?raw=true)
+![alt text](https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/screenshot.png?raw=true)
 
 It gives you the ability to clean up the memory in 6 different ways:
 
