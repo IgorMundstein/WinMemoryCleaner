@@ -1,9 +1,11 @@
 # Windows Memory Cleaner
-[Download](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.exe)
-
 This is a RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to get the used memory back. This is where you use Windows Memory Cleaner to clean your memory, so you can carry on working without wasting time restarting your Windows.
 
+[Download](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.exe)
+
 # How it works
+![alt text](https://github.com/IgorMundstein/WinMemoryCleaner/blob/develop/screenshot.png?raw=true)
+
 It gives you the ability to clean up the memory in 6 different ways:
 
 - **Clean Combined Page List** - Flushes blocks from the combined page list to the combine Free list.
