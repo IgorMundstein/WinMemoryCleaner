@@ -7,19 +7,88 @@
         xmlns:properties="clr-namespace:WinMemoryCleaner.Properties"
         mc:Ignorable="d"
         DataContext="{StaticResource MainViewModel}"
-        Title="{x:Static local:App.Title}" Height="95" Width="345" WindowStartupLocation="CenterScreen" Icon="/WinMemoryCleaner;component/Resources/WinMemoryCleaner.ico" ResizeMode="CanMinimize">
+        Title="{x:Static local:App.Title}" 
+        Icon="/WinMemoryCleaner;component/Resources/WinMemoryCleaner.ico" 
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" 
+        Height="256" 
+        Width="600" 
+        FontFamily="Calibri" 
+        FontSize="16" 
+        FontWeight="Light">
 
-    <Grid Margin="5" IsEnabled="{Binding Isloading, Converter={StaticResource InverseBooleanConverter}}">
+    <Grid Margin="5, 0, 5, 5" IsEnabled="{Binding Isloading, Converter={StaticResource InverseBooleanConverter}}">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="210" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top"  FontSize="18">
+        <GroupBox Grid.Column="0" Grid.Row="0" Margin="0, 0, 2.5, 0">
+            <GroupBox.Header>
+                <TextBlock Text="{x:Static properties:Resources.SettingMemoryAreas}" FontWeight="Normal" />
+            </GroupBox.Header>
+            <StackPanel Margin="3, 5">
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.CombinedPageList}}">
+                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperCombinedPageList}" VerticalAlignment="Center" />
+                </CheckBox>
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ModifiedPageList}}">
+                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperModifiedPageList}" VerticalAlignment="Center" />
+                </CheckBox>
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ProcessesWorkingSet}}">
+                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperProcessesWorkingSet}" VerticalAlignment="Center" />
+                </CheckBox>
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyList}}">
+                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperStandbyList}" VerticalAlignment="Center" />
+                </CheckBox>
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyListLowPriority}}">
+                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperLowPriorityStandbyList}" VerticalAlignment="Center" />
+                </CheckBox>
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.SystemWorkingSet}}">
+                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperSystemWorkingSet}" VerticalAlignment="Center" />
+                </CheckBox>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="0, 0, 2.5, 0">
+            <GroupBox.Header>
+                <TextBlock Text="{x:Static properties:Resources.SettingAbout}" FontWeight="Normal" />
+            </GroupBox.Header>
+            <StackPanel>
+                <TextBlock Margin="3, 0, 0, 0">           
+                    <Hyperlink NavigateUri="{Binding GitHubUri}" KeyboardNavigation.IsTabStop="False" RequestNavigate="Hyperlink_RequestNavigate">
+                        <TextBlock Text="{Binding GitHub}" />
+                    </Hyperlink>
+                </TextBlock>
+                <TextBlock Text="{Binding License}" TextWrapping="Wrap" Margin="3, 3, 0, 0" FontSize="14" />
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Grid.Column="1" Grid.Row="0" Margin="2.5, 0, 0, 0">
+            <GroupBox.Header>
+                <TextBlock Text="{x:Static properties:Resources.SettingLog}" FontWeight="Normal" />
+            </GroupBox.Header>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="3, 0, 0, 0">
+                <ItemsControl ItemsSource="{Binding Logs}" IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Foreground="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}" TextWrapping="Wrap">
+                            <Run Text="[" />
+                            <Run Text="{Binding Path=DateTime, StringFormat=hh:mm:ss}" />
+                            <Run Text="]" />
+                            <Run Text="{Binding Message}" />
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </GroupBox>
+
+        <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Stretch" Margin="2.5, 5, 0, 5" TextAlignment="Center" FontWeight="Normal">
             <TextBlock.Text>
                 <MultiBinding StringFormat="{}{0} free of {1} ({2}% Occupied)">
                     <Binding Path="Computer.MemoryAvailable" />
@@ -29,7 +98,13 @@
             </TextBlock.Text>
         </TextBlock>
 
-        <Button Grid.Column="0" Grid.Row="1" Content="{x:Static properties:Resources.MainViewCleanUpMemoryText}" ContentStringFormat="{} {0} " Foreground="Green" FontWeight="Bold" Cursor="Hand" Height="25" Margin="0, 5, 0, 0" IsEnabled="{Binding Isloading, Converter={StaticResource InverseBooleanConverter}}" Command="{Binding MemoryCleanCommand}" />
+        <Button Grid.Column="1" Grid.Row="2" Content="{x:Static properties:Resources.MainViewCleanUpMemoryText}" ContentStringFormat="{} {0} " Foreground="Green" Cursor="Hand" IsEnabled="{Binding Isloading, Converter={StaticResource InverseBooleanConverter}}" Command="{Binding MemoryCleanCommand}" FontWeight="Normal" Margin="2.5, 0, 0, 1">
+            <Button.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="3"/>
+                </Style>
+            </Button.Resources>
+        </Button>
     </Grid>
 
 </Window>

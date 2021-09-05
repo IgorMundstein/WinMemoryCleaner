@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 
 namespace WinMemoryCleaner
 {
@@ -45,13 +46,13 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Convert bytes size to string.
+        /// Gets the default value.
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="t">The t.</param>
         /// <returns></returns>
-        internal static string ByteSizeToString(this ulong value)
+        internal static object DefaultValue(this Type t)
         {
-            return ByteSizeToString((long)value);
+            return t.IsValueType && Nullable.GetUnderlyingType(t) == null ? Activator.CreateInstance(t) : null;
         }
     }
 }

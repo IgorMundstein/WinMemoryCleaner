@@ -13,9 +13,9 @@ namespace WinMemoryCleaner
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
             internal struct MemoryCombineInformationEx
             {
-                internal IntPtr Handle;
-                internal IntPtr PagesCombined;
-                internal IntPtr Flags;
+                private readonly IntPtr Handle;
+                private readonly IntPtr PagesCombined;
+                private readonly IntPtr Flags;
             }
 
             /// <summary>
@@ -24,15 +24,15 @@ namespace WinMemoryCleaner
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
             internal struct SystemCacheInformation32
             {
-                internal uint CurrentSize;
-                internal uint PeakSize;
-                internal uint PageFaultCount;
+                private readonly uint CurrentSize;
+                private readonly uint PeakSize;
+                private readonly uint PageFaultCount;
                 internal uint MinimumWorkingSet;
                 internal uint MaximumWorkingSet;
-                internal uint Unused1;
-                internal uint Unused2;
-                internal uint Unused3;
-                internal uint Unused4;
+                private readonly uint Unused1;
+                private readonly uint Unused2;
+                private readonly uint Unused3;
+                private readonly uint Unused4;
             }
 
             /// <summary>
@@ -41,15 +41,15 @@ namespace WinMemoryCleaner
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
             internal struct SystemCacheInformation64
             {
-                internal long CurrentSize;
-                internal long PeakSize;
-                internal long PageFaultCount;
+                private readonly long CurrentSize;
+                private readonly long PeakSize;
+                private readonly long PageFaultCount;
                 internal long MinimumWorkingSet;
                 internal long MaximumWorkingSet;
-                internal long Unused1;
-                internal long Unused2;
-                internal long Unused3;
-                internal long Unused4;
+                private readonly long Unused1;
+                private readonly long Unused2;
+                private readonly long Unused3;
+                private readonly long Unused4;
             }
 
             /// <summary>

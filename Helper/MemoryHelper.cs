@@ -16,34 +16,16 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Memory clean
         /// </summary>
-        /// <param name="emptyWorkingSets">if set to <c>true</c> [empty working sets].</param>
-        /// <param name="emptySystemWorkingSet">if set to <c>true</c> [empty system working set].</param>
-        /// <param name="emptyModifiedPageList">if set to <c>true</c> [empty modified page list].</param>
-        /// <param name="emptyStandbyList">if set to <c>true</c> [empty standby list].</param>
-        /// <param name="emptyLowPriorityStandbyList">if set to <c>true</c> [empty low priority standby list].</param>
-        /// <param name="combineMemoryList">if set to <c>true</c> [combine memory list].</param>
-        /// <param name="garbageCollection">if set to <c>true</c> [garbage collection].</param>
-        /// <remarks>
-        /// - Empty Working Sets
-        /// - Empty System Working Set
-        /// - Empty Modified Page List
-        /// - Empty Standby List
-        /// - Combine Memory List
-        /// - Garbage Collection
-        /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Logged")]
-        internal static void Clean(bool emptyWorkingSets = true, bool emptySystemWorkingSet = true, bool emptyModifiedPageList = true, bool emptyStandbyList = true, bool emptyLowPriorityStandbyList = true, bool combineMemoryList = true, bool garbageCollection = true)
+        internal static void Clean()
         {
-            // Empty Working Sets
-            if (emptyWorkingSets)
+            // Clean Processes Working Set
+            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.ProcessesWorkingSet))
             {
                 try
                 {
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperEmptyWorkingSets, Resources.Started.ToUpper(CultureInfo.CurrentCulture)));
+                    CleanProcessesWorkingSet();
 
-                    EmptyWorkingSets();
-
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperEmptyWorkingSets, Resources.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperProcessesWorkingSet, Resources.LogCleaned.ToUpper(CultureInfo.CurrentCulture)));
                 }
                 catch (Exception e)
                 {
@@ -51,16 +33,14 @@ namespace WinMemoryCleaner
                 }
             }
 
-            // Empty System Working Set
-            if (emptySystemWorkingSet)
+            // Clean System Working Set
+            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.SystemWorkingSet))
             {
                 try
                 {
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperEmptySystemWorkingSet, Resources.Started.ToUpper(CultureInfo.CurrentCulture)));
+                    CleanSystemWorkingSet();
 
-                    EmptySystemWorkingSet();
-
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperEmptySystemWorkingSet, Resources.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperSystemWorkingSet, Resources.LogCleaned.ToUpper(CultureInfo.CurrentCulture)));
                 }
                 catch (Exception e)
                 {
@@ -68,16 +48,14 @@ namespace WinMemoryCleaner
                 }
             }
 
-            // Empty Modified Page List
-            if (emptyModifiedPageList)
+            // Clean Modified Page List
+            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.ModifiedPageList))
             {
                 try
                 {
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperEmptyModifiedPageList, Resources.Started.ToUpper(CultureInfo.CurrentCulture)));
+                    CleanModifiedPageList();
 
-                    EmptyModifiedPageList();
-
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperEmptyModifiedPageList, Resources.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperModifiedPageList, Resources.LogCleaned.ToUpper(CultureInfo.CurrentCulture)));
                 }
                 catch (Exception e)
                 {
@@ -85,16 +63,14 @@ namespace WinMemoryCleaner
                 }
             }
 
-            // Empty Standby List
-            if (emptyStandbyList)
+            // Clean Standby List
+            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyList) || Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyListLowPriority))
             {
                 try
                 {
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperEmptyStandbyList, Resources.Started.ToUpper(CultureInfo.CurrentCulture)));
+                    CleanStandbyList(Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyListLowPriority));
 
-                    EmptyStandbyList(emptyLowPriorityStandbyList);
-
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperEmptyStandbyList, Resources.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyListLowPriority) ? Resources.MemoryHelperLowPriorityStandbyList : Resources.MemoryHelperStandbyList, Resources.LogCleaned.ToUpper(CultureInfo.CurrentCulture)));
                 }
                 catch (Exception e)
                 {
@@ -102,33 +78,14 @@ namespace WinMemoryCleaner
                 }
             }
 
-            // Combine Memory List
-            if (combineMemoryList)
+            // Clean Combined Page List
+            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.CombinedPageList))
             {
                 try
                 {
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperCombineMemoryList, Resources.Started.ToUpper(CultureInfo.CurrentCulture)));
+                    CleanCombinedPageList();
 
-                    CombineMemoryList();
-
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperCombineMemoryList, Resources.Completed.ToUpper(CultureInfo.CurrentCulture)));
-                }
-                catch (Exception e)
-                {
-                    LogHelper.Error(e);
-                }
-            }
-
-            // Garbage Collection
-            if (garbageCollection)
-            {
-                try
-                {
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperGarbageCollection, Resources.Started.ToUpper(CultureInfo.CurrentCulture)));
-
-                    GarbageCollection();
-
-                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperGarbageCollection, Resources.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Resources.MemoryHelperCombinedPageList, Resources.LogCleaned.ToUpper(CultureInfo.CurrentCulture)));
                 }
                 catch (Exception e)
                 {
@@ -136,220 +93,243 @@ namespace WinMemoryCleaner
                 }
             }
         }
-
+        
         /// <summary>
-        /// Combines the memory list.
+        /// Cleans the combined page list.
         /// </summary>
-        /// <exception cref="Win32Exception">
-        /// </exception>
-        private static void CombineMemoryList()
+        /// <exception cref="System.ComponentModel.Win32Exception"></exception>
+        private static void CleanCombinedPageList()
         {
             // Windows minimum version
-            if (!ComputerHelper.IsWindows10OrAbove)
+            if (!ComputerHelper.IsWindows8OrAbove)
             {
-                LogHelper.Warning(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperCombineMemoryList));
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperCombinedPageList));
                 return;
             }
 
-            if (ComputerHelper.SetIncreasePrivilege(Constants.Windows.ProfileSingleProcessName))
+            // Check privilege
+            if (!ComputerHelper.SetIncreasePrivilege(Constants.Windows.ProfileSingleProcessName))
             {
-                GCHandle handle = GCHandle.Alloc(0);
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperAdminPrivilegeRequired, Constants.Windows.ProfileSingleProcessName));
+                return;
+            }
 
+            GCHandle handle = GCHandle.Alloc(0);
+
+            try
+            {
+                Structs.Windows.MemoryCombineInformationEx memoryCombineInformationEx = new Structs.Windows.MemoryCombineInformationEx();
+
+                handle = GCHandle.Alloc(memoryCombineInformationEx, GCHandleType.Pinned);
+
+                int length = Marshal.SizeOf(memoryCombineInformationEx);
+
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), length) != (int)Enums.Windows.SystemErrorCode.ERROR_SUCCESS)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            catch (Win32Exception e)
+            {
+                LogHelper.Error(e);
+            }
+            finally
+            {
                 try
                 {
-                    Structs.Windows.MemoryCombineInformationEx memoryCombineInformationEx = new Structs.Windows.MemoryCombineInformationEx();
-
-                    handle = GCHandle.Alloc(memoryCombineInformationEx, GCHandleType.Pinned);
-
-                    int length = Marshal.SizeOf(memoryCombineInformationEx);
-
-                    if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), length) != (int)Enums.Windows.SystemErrorCode.ERROR_SUCCESS)
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
+                    if (handle.IsAllocated)
+                        handle.Free();
                 }
-                catch (Win32Exception e)
+                catch (InvalidOperationException)
                 {
-                    LogHelper.Error(e);
-                }
-                finally
-                {
-                    try
-                    {
-                        if (handle.IsAllocated)
-                            handle.Free();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // ignored
-                    }
+                    // ignored
                 }
             }
         }
 
         /// <summary>
-        /// Empty the standby list.
+        /// Clean the modified page list.
+        /// </summary>
+        /// <exception cref="Win32Exception">
+        /// </exception>
+        private static void CleanModifiedPageList()
+        {
+            // Windows minimum version
+            if (!ComputerHelper.IsWindowsVistaOrAbove)
+            {
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperModifiedPageList));
+                return;
+            }
+
+            // Check privilege
+            if (!ComputerHelper.SetIncreasePrivilege(Constants.Windows.ProfileSingleProcessName))
+            {
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperAdminPrivilegeRequired, Constants.Windows.ProfileSingleProcessName));
+                return;
+            }
+
+            GCHandle handle = GCHandle.Alloc(Constants.Windows.MemoryFlushModifiedList, GCHandleType.Pinned);
+
+            try
+            {
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemMemoryListInformation, handle.AddrOfPinnedObject(), Marshal.SizeOf(Constants.Windows.MemoryFlushModifiedList)) != (int)Enums.Windows.SystemErrorCode.ERROR_SUCCESS)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            catch (Win32Exception e)
+            {
+                LogHelper.Error(e);
+            }
+            finally
+            {
+                try
+                {
+                    if (handle.IsAllocated)
+                        handle.Free();
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignored
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cleans the standby list.
         /// </summary>
         /// <param name="lowPriority">if set to <c>true</c> [low priority].</param>
-        /// <exception cref="Win32Exception">
-        /// </exception>
-        private static void EmptyStandbyList(bool lowPriority = true)
-        {
-            // Windows minimum version
-            if (!ComputerHelper.IsWindowsVistaOrAbove)
-            {
-                LogHelper.Warning(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperEmptyStandbyList));
-                return;
-            }
-
-            if (ComputerHelper.SetIncreasePrivilege(Constants.Windows.ProfileSingleProcessName))
-            {
-                object memoryPurgeStandbyList = lowPriority ? Constants.Windows.MemoryPurgeLowPriorityStandbyList : Constants.Windows.MemoryPurgeStandbyList;
-                GCHandle handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
-
-                try
-                {
-                    if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemMemoryListInformation, handle.AddrOfPinnedObject(), Marshal.SizeOf(memoryPurgeStandbyList)) != (int)Enums.Windows.SystemErrorCode.ERROR_SUCCESS)
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
-                catch (Win32Exception e)
-                {
-                    LogHelper.Error(e);
-                }
-                finally
-                {
-                    try
-                    {
-                        if (handle.IsAllocated)
-                            handle.Free();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // ignored
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Empty the modified page list.
-        /// </summary>
-        /// <exception cref="Win32Exception">
-        /// </exception>
-        private static void EmptyModifiedPageList()
-        {
-            // Windows minimum version
-            if (!ComputerHelper.IsWindowsVistaOrAbove)
-            {
-                LogHelper.Warning(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperEmptyModifiedPageList));
-                return;
-            }
-
-            if (ComputerHelper.SetIncreasePrivilege(Constants.Windows.ProfileSingleProcessName))
-            {
-                GCHandle handle = GCHandle.Alloc(Constants.Windows.MemoryFlushModifiedList, GCHandleType.Pinned);
-
-                try
-                {
-                    if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemMemoryListInformation, handle.AddrOfPinnedObject(), Marshal.SizeOf(Constants.Windows.MemoryFlushModifiedList)) != (int)Enums.Windows.SystemErrorCode.ERROR_SUCCESS)
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
-                catch (Win32Exception e)
-                {
-                    LogHelper.Error(e);
-                }
-                finally
-                {
-                    try
-                    {
-                        if (handle.IsAllocated)
-                            handle.Free();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // ignored
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Empty the system working set.
-        /// </summary>
-        /// <exception cref="Win32Exception">
-        /// </exception>
-        private static void EmptySystemWorkingSet()
-        {
-            // Windows minimum version
-            if (!ComputerHelper.IsWindowsVistaOrAbove)
-            {
-                LogHelper.Warning(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperEmptySystemWorkingSet));
-                return;
-            }
-
-            if (ComputerHelper.SetIncreasePrivilege(Constants.Windows.IncreaseQuotaName))
-            {
-                GCHandle handle = GCHandle.Alloc(0);
-
-                try
-                {
-                    object systemCacheInformation;
-
-                    if (ComputerHelper.Is64Bit)
-                        systemCacheInformation = new Structs.Windows.SystemCacheInformation64 { MinimumWorkingSet = -1L, MaximumWorkingSet = -1L };
-                    else
-                        systemCacheInformation = new Structs.Windows.SystemCacheInformation32 { MinimumWorkingSet = uint.MaxValue, MaximumWorkingSet = uint.MaxValue };
-
-                    handle = GCHandle.Alloc(systemCacheInformation, GCHandleType.Pinned);
-
-                    int length = Marshal.SizeOf(systemCacheInformation);
-
-                    if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemFileCacheInformation, handle.AddrOfPinnedObject(), length) != (int)Enums.Windows.SystemErrorCode.ERROR_SUCCESS)
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
-                catch (Win32Exception e)
-                {
-                    LogHelper.Error(e);
-                }
-                finally
-                {
-                    try
-                    {
-                        if (handle.IsAllocated)
-                            handle.Free();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // ignored
-                    }
-                }
-
-                try
-                {
-                    IntPtr fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
-
-                    if (!NativeMethods.SetSystemFileCacheSize(fileCacheSize, fileCacheSize, 0))
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
-                catch (Win32Exception e)
-                {
-                    LogHelper.Error(e);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Empty the working sets.
-        /// </summary>
+        /// <exception cref="System.ComponentModel.Win32Exception"></exception>
         /// <exception cref="Win32Exception"></exception>
-        private static void EmptyWorkingSets()
+        private static void CleanStandbyList(bool lowPriority = false)
         {
             // Windows minimum version
             if (!ComputerHelper.IsWindowsVistaOrAbove)
             {
-                LogHelper.Warning(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperEmptyWorkingSets));
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperStandbyList));
                 return;
             }
 
-            foreach (Process process in Process.GetProcesses().Where(w => w != null))
+            // Check privilege
+            if (!ComputerHelper.SetIncreasePrivilege(Constants.Windows.ProfileSingleProcessName))
+            {
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperAdminPrivilegeRequired, Constants.Windows.ProfileSingleProcessName));
+                return;
+            }
+
+            object memoryPurgeStandbyList = lowPriority ? Constants.Windows.MemoryPurgeLowPriorityStandbyList : Constants.Windows.MemoryPurgeStandbyList;
+            GCHandle handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
+
+            try
+            {
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemMemoryListInformation, handle.AddrOfPinnedObject(), Marshal.SizeOf(memoryPurgeStandbyList)) != (int)Enums.Windows.SystemErrorCode.ERROR_SUCCESS)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            catch (Win32Exception e)
+            {
+                LogHelper.Error(e);
+            }
+            finally
+            {
+                try
+                {
+                    if (handle.IsAllocated)
+                        handle.Free();
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignored
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cleans the system working set.
+        /// </summary>
+        /// <exception cref="System.ComponentModel.Win32Exception">
+        /// </exception>
+        /// <exception cref="Win32Exception"></exception>
+        private static void CleanSystemWorkingSet()
+        {
+            // Windows minimum version
+            if (!ComputerHelper.IsWindowsVistaOrAbove)
+            {
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperSystemWorkingSet));
+                return;
+            }
+
+            // Check privilege
+            if (!ComputerHelper.SetIncreasePrivilege(Constants.Windows.IncreaseQuotaName))
+            {
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperAdminPrivilegeRequired, Constants.Windows.IncreaseQuotaName));
+                return;
+            }
+
+            GCHandle handle = GCHandle.Alloc(0);
+
+            try
+            {
+                object systemCacheInformation;
+
+                if (ComputerHelper.Is64Bit)
+                    systemCacheInformation = new Structs.Windows.SystemCacheInformation64 { MinimumWorkingSet = -1L, MaximumWorkingSet = -1L };
+                else
+                    systemCacheInformation = new Structs.Windows.SystemCacheInformation32 { MinimumWorkingSet = uint.MaxValue, MaximumWorkingSet = uint.MaxValue };
+
+                handle = GCHandle.Alloc(systemCacheInformation, GCHandleType.Pinned);
+
+                int length = Marshal.SizeOf(systemCacheInformation);
+
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemFileCacheInformation, handle.AddrOfPinnedObject(), length) != (int)Enums.Windows.SystemErrorCode.ERROR_SUCCESS)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            catch (Win32Exception e)
+            {
+                LogHelper.Error(e);
+            }
+            finally
+            {
+                try
+                {
+                    if (handle.IsAllocated)
+                        handle.Free();
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignored
+                }
+            }
+
+            try
+            {
+                IntPtr fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
+
+                if (!NativeMethods.SetSystemFileCacheSize(fileCacheSize, fileCacheSize, 0))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            catch (Win32Exception e)
+            {
+                LogHelper.Error(e);
+            }
+        }
+        
+        /// <summary>
+        /// Cleans the processes working set.
+        /// </summary>
+        /// <exception cref="System.ComponentModel.Win32Exception"></exception>
+        private static void CleanProcessesWorkingSet()
+        {
+            // Windows minimum version
+            if (!ComputerHelper.IsWindowsVistaOrAbove)
+            {
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperFeatureIsNotSupported, Resources.MemoryHelperProcessesWorkingSet));
+                return;
+            }
+
+            // Check privilege
+            if (!ComputerHelper.SetIncreasePrivilege(Constants.Windows.DebugPrivilege))
+            {
+                LogHelper.Error(string.Format(CultureInfo.CurrentCulture, Resources.MemoryHelperAdminPrivilegeRequired, Constants.Windows.DebugPrivilege));
+                return;
+            }
+
+            foreach (Process process in Process.GetProcesses().Where(process => process != null))
             {
                 try
                 {
@@ -365,15 +345,6 @@ namespace WinMemoryCleaner
                         LogHelper.Error(e);
                 }
             }
-        }
-
-        /// <summary>
-        /// Garbage Collection
-        /// </summary>
-        private static void GarbageCollection()
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
     }
 }

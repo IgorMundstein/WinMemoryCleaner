@@ -37,11 +37,11 @@ namespace WinMemoryCleaner
         /// <value>
         ///   <c>true</c> if this instance is windows 10 or above; otherwise, <c>false</c>.
         /// </value>
-        internal static bool IsWindows10OrAbove
+        internal static bool IsWindows8OrAbove
         {
             get
             {
-                return Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 10;
+                return Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 6.2;
             }
         }
 

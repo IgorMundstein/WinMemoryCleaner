@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Reflection;
 using System.Threading;
+using System.Windows;
 using System.Windows.Threading;
 
 [assembly: CLSCompliant(true)]
@@ -57,7 +58,7 @@ namespace WinMemoryCleaner
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
 
-                return string.Format(CultureInfo.CurrentCulture, "{0} {1}.{2}", WinMemoryCleaner.Properties.Resources.AppTitle, version.Major, version.Minor);
+                return string.Format(CultureInfo.CurrentCulture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
             }
         }
 
@@ -75,6 +76,32 @@ namespace WinMemoryCleaner
             e.Handled = true;
 
             LogHelper.Error(e.Exception);
+            ShowDialog(e.Exception);
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Windows.Application.Startup" /> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Windows.StartupEventArgs" /> that contains the event data.</param>
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            try
+            {
+                // Check if app is already running
+                bool createdNew;
+                var unused = new Mutex(true, Constants.App.Title, out createdNew);
+
+                if (!createdNew)
+                    Environment.Exit(0);
+            }
+            catch
+            {
+                // ignored
+            }
+            finally
+            {
+                base.OnStartup(e);
+            }
         }
 
         /// <summary>
@@ -85,6 +112,26 @@ namespace WinMemoryCleaner
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             LogHelper.Error((Exception)e.ExceptionObject);
+            ShowDialog((Exception)e.ExceptionObject);
+        }
+
+        /// <summary>
+        /// Shows the dialog
+        /// </summary>
+        /// <param name="exception">Exception</param>
+        private void ShowDialog(Exception exception)
+        {
+            try
+            {
+                if (exception.InnerException != null)
+                    ShowDialog(exception.InnerException);
+
+                MessageBox.Show(exception.Message, App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         #endregion

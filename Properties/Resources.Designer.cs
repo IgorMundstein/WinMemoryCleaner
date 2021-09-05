@@ -61,20 +61,11 @@ namespace WinMemoryCleaner.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Memory Cleaner.
+        ///   Looks up a localized string similar to Cleaned.
         /// </summary>
-        public static string AppTitle {
+        public static string LogCleaned {
             get {
-                return ResourceManager.GetString("AppTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Completed.
-        /// </summary>
-        public static string Completed {
-            get {
-                return ResourceManager.GetString("Completed", resourceCulture);
+                return ResourceManager.GetString("LogCleaned", resourceCulture);
             }
         }
         
@@ -88,6 +79,15 @@ namespace WinMemoryCleaner.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Started.
+        /// </summary>
+        public static string LogStarted {
+            get {
+                return ResourceManager.GetString("LogStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Clean up memory.
         /// </summary>
         public static string MainViewCleanUpMemoryText {
@@ -97,52 +97,25 @@ namespace WinMemoryCleaner.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Combine Memory List.
+        ///   Looks up a localized string similar to This operation requires administrator privileges ({0}).
         /// </summary>
-        public static string MemoryHelperCombineMemoryList {
+        public static string MemoryHelperAdminPrivilegeRequired {
             get {
-                return ResourceManager.GetString("MemoryHelperCombineMemoryList", resourceCulture);
+                return ResourceManager.GetString("MemoryHelperAdminPrivilegeRequired", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Empty Modified Page List.
+        ///   Looks up a localized string similar to Combined Page List.
         /// </summary>
-        public static string MemoryHelperEmptyModifiedPageList {
+        public static string MemoryHelperCombinedPageList {
             get {
-                return ResourceManager.GetString("MemoryHelperEmptyModifiedPageList", resourceCulture);
+                return ResourceManager.GetString("MemoryHelperCombinedPageList", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Empty Standby List.
-        /// </summary>
-        public static string MemoryHelperEmptyStandbyList {
-            get {
-                return ResourceManager.GetString("MemoryHelperEmptyStandbyList", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Empty System Working Set.
-        /// </summary>
-        public static string MemoryHelperEmptySystemWorkingSet {
-            get {
-                return ResourceManager.GetString("MemoryHelperEmptySystemWorkingSet", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Empty Working Sets.
-        /// </summary>
-        public static string MemoryHelperEmptyWorkingSets {
-            get {
-                return ResourceManager.GetString("MemoryHelperEmptyWorkingSets", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is not supported on this operating system version.
+        ///   Looks up a localized string similar to {0} clean is not supported on this operating system version.
         /// </summary>
         public static string MemoryHelperFeatureIsNotSupported {
             get {
@@ -151,30 +124,74 @@ namespace WinMemoryCleaner.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Garbage Collection.
+        ///   Looks up a localized string similar to Standby List (Low Priority).
         /// </summary>
-        public static string MemoryHelperGarbageCollection {
+        public static string MemoryHelperLowPriorityStandbyList {
             get {
-                return ResourceManager.GetString("MemoryHelperGarbageCollection", resourceCulture);
+                return ResourceManager.GetString("MemoryHelperLowPriorityStandbyList", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Started.
+        ///   Looks up a localized string similar to Modified Page List.
         /// </summary>
-        public static string Started {
+        public static string MemoryHelperModifiedPageList {
             get {
-                return ResourceManager.GetString("Started", resourceCulture);
+                return ResourceManager.GetString("MemoryHelperModifiedPageList", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        ///   Looks up a localized string similar to Processes Working Set.
         /// </summary>
-        public static System.Drawing.Icon WinMemoryCleaner {
+        public static string MemoryHelperProcessesWorkingSet {
             get {
-                object obj = ResourceManager.GetObject("WinMemoryCleaner", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
+                return ResourceManager.GetString("MemoryHelperProcessesWorkingSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Standby List.
+        /// </summary>
+        public static string MemoryHelperStandbyList {
+            get {
+                return ResourceManager.GetString("MemoryHelperStandbyList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System Working Set.
+        /// </summary>
+        public static string MemoryHelperSystemWorkingSet {
+            get {
+                return ResourceManager.GetString("MemoryHelperSystemWorkingSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to About.
+        /// </summary>
+        public static string SettingAbout {
+            get {
+                return ResourceManager.GetString("SettingAbout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Log.
+        /// </summary>
+        public static string SettingLog {
+            get {
+                return ResourceManager.GetString("SettingLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Memory Areas.
+        /// </summary>
+        public static string SettingMemoryAreas {
+            get {
+                return ResourceManager.GetString("SettingMemoryAreas", resourceCulture);
             }
         }
     }

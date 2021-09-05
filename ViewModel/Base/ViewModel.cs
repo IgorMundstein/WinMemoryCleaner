@@ -1,4 +1,7 @@
-﻿namespace WinMemoryCleaner
+﻿using System.ComponentModel;
+using System.Windows;
+
+namespace WinMemoryCleaner
 {
     /// <summary>
     /// View Model Base
@@ -28,10 +31,24 @@
         #region Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ViewModel"/> is isloading.
+        /// Gets a value indicating whether this instance is in design mode.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if isloading; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is in design mode; otherwise, <c>false</c>.
+        /// </value>
+        protected bool IsInDesignMode
+        {
+            get
+            {
+                return DesignerProperties.GetIsInDesignMode(new DependencyObject());
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="ViewModel"/> is loading.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if is loading; otherwise, <c>false</c>.
         /// </value>
         public bool Isloading
         {
