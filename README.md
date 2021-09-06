@@ -8,6 +8,8 @@ This is a RAM cleaner. There are times when programs do not release the memory t
 # How it works
 ![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/mainwindow.png)
 
+It's portable and hence, you do not have to bother with installation or configuration. Simply download and open the executable to get started. The app comes with a minimalistic interface and, before you clean up memory, first you should go through the list and check the areas you want the app to analyze.
+
 It gives you the ability to clean up the memory in 6 different ways:
 
 - **Clean Combined Page List** - Flushes blocks from the combined page list to the combine Free list.
