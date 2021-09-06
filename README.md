@@ -4,7 +4,7 @@ This is a RAM cleaner. There are times when programs do not release the memory t
 [Download](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.exe)
 
 # How it works
-![alt text](https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/screenshot.png?raw=true)
+![alt text](https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/mainwindow.png?raw=true)
 
 It gives you the ability to clean up the memory in 6 different ways:
 
@@ -14,3 +14,19 @@ It gives you the ability to clean up the memory in 6 different ways:
 - **Clean Standby List** - Discards pages from all Standby lists, and moves them to the Free list.
 - **Clean Standby List (Low Priority)** - Flushes pages from the lowest-priority Standby list to the Free list.
 - **Clean System Working Set** - Removes memory from the system cache working set.
+
+# Command arguments (NO GUI)
+The arguments below can be used to run the program silently.
+
+* `/CombinedPageList` - **Clean Combined Page List**
+* `/ModifiedPageList` - **Clean Modified Page List**
+* `/ProcessesWorkingSet` - **Clean Processes Working Set**
+* `/StandbyList` - **Clean Standby List**
+* `/StandbyListLowPriority` - **Clean Standby List (Low Priority)**
+* `/SystemWorkingSet` - **Clean System Working Set**
+
+![alt text](https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/shortcut-command-arguments.png?raw=true)
+
+# Logs
+Logs are saved on windows event.
+![alt text](https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/event-log.png?raw=true)
