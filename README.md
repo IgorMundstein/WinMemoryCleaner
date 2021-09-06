@@ -6,7 +6,7 @@ This is a RAM cleaner. There are times when programs do not release the memory t
 *This app requires **administrator** privileges to run.*
 
 # How it works
-![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/mainwindow.png)
+![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/mainwindow.png)
 
 It's portable and hence, you do not have to bother with installation or configuration. Simply download and open the executable to get started. The app comes with a minimalistic interface and, before you clean up memory, first you should go through the list and check the areas you want the app to analyze.
 
@@ -29,9 +29,9 @@ The arguments below can be used to run the program silently.
 * `/StandbyListLowPriority` - **Clean Standby List (Low Priority)**
 * `/SystemWorkingSet` - **Clean System Working Set**
 
-![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/shortcut-command-arguments.png)
+![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/shortcut-command-arguments.png)
 
 # Logs
 Logs are saved on windows event.
 
-![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/event-log.png)
+![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/event-log.png)
