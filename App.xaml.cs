@@ -93,14 +93,36 @@ namespace WinMemoryCleaner
 
                 if (!createdNew)
                     Environment.Exit(0);
+
+                // Process command line arguments
+                Enums.Memory.Area memoryAreas = Enums.Memory.Area.None;
+
+                foreach (string arg in e.Args)
+                {
+                    string value = arg.Replace("/", string.Empty).Replace("-", string.Empty);
+
+                    // Memory areas to clean
+                    Enums.Memory.Area area;
+
+                    if (Enum.TryParse(value, out area))
+                        memoryAreas |= area;
+                }
+
+                // GUI
+                if (memoryAreas == Enums.Memory.Area.None)
+                {
+                    new MainWindow().Show();
+                }
+                else // NO GUI
+                {
+                    MemoryHelper.Clean(memoryAreas);
+                    Environment.Exit(0);
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
-            }
-            finally
-            {
-                base.OnStartup(e);
+                ShowDialog(ex);
+                Environment.Exit(0);
             }
         }
 

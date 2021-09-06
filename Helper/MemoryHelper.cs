@@ -16,10 +16,11 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Memory clean
         /// </summary>
-        internal static void Clean()
+        /// <param name="areas">Memory areas</param>
+        internal static void Clean(Enums.Memory.Area areas)
         {
             // Clean Processes Working Set
-            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.ProcessesWorkingSet))
+            if (areas.HasFlag(Enums.Memory.Area.ProcessesWorkingSet))
             {
                 try
                 {
@@ -34,7 +35,7 @@ namespace WinMemoryCleaner
             }
 
             // Clean System Working Set
-            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.SystemWorkingSet))
+            if (areas.HasFlag(Enums.Memory.Area.SystemWorkingSet))
             {
                 try
                 {
@@ -49,7 +50,7 @@ namespace WinMemoryCleaner
             }
 
             // Clean Modified Page List
-            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.ModifiedPageList))
+            if (areas.HasFlag(Enums.Memory.Area.ModifiedPageList))
             {
                 try
                 {
@@ -64,11 +65,11 @@ namespace WinMemoryCleaner
             }
 
             // Clean Standby List
-            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyList) || Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyListLowPriority))
+            if (areas.HasFlag(Enums.Memory.Area.StandbyList) || areas.HasFlag(Enums.Memory.Area.StandbyListLowPriority))
             {
                 try
                 {
-                    CleanStandbyList(Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyListLowPriority));
+                    CleanStandbyList(areas.HasFlag(Enums.Memory.Area.StandbyListLowPriority));
 
                     LogHelper.Info(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyListLowPriority) ? Resources.MemoryHelperLowPriorityStandbyList : Resources.MemoryHelperStandbyList, Resources.LogCleaned.ToUpper(CultureInfo.CurrentCulture)));
                 }
@@ -79,7 +80,7 @@ namespace WinMemoryCleaner
             }
 
             // Clean Combined Page List
-            if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.CombinedPageList))
+            if (areas.HasFlag(Enums.Memory.Area.CombinedPageList))
             {
                 try
                 {
@@ -335,9 +336,13 @@ namespace WinMemoryCleaner
                 {
                     using (process)
                     {
-                        if (NativeMethods.EmptyWorkingSet(process.Handle) == 0)
+                        if (!process.HasExited && NativeMethods.EmptyWorkingSet(process.Handle) == 0)
                             throw new Win32Exception(Marshal.GetLastWin32Error());
                     }
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignored
                 }
                 catch (Win32Exception e)
                 {
