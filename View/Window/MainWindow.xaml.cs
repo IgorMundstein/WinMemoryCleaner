@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows.Navigation;
 
-namespace WinMemoryCleaner.Window
+namespace WinMemoryCleaner
 {
     /// <summary>
     /// Main Window

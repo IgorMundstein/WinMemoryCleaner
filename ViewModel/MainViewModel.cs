@@ -246,7 +246,7 @@ namespace WinMemoryCleaner
                 RaisePropertyChanged(() => Logs);
 
                 // Memory clean
-                MemoryHelper.Clean();
+                MemoryHelper.Clean(Settings.MemoryAreas);
 
                 // Logs
                 RaisePropertyChanged(() => Logs);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Log Helper
     /// </summary>
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     internal static class LogHelper
     {
         #region Fields
@@ -137,7 +139,7 @@ namespace WinMemoryCleaner
         {
             try
             {
-                EventLog.WriteEntry("Windows Memory Cleaner", message, type);
+                EventLog.WriteEntry(Constants.App.Title, message, type);
             }
             catch
             {
@@ -184,6 +186,8 @@ namespace WinMemoryCleaner
                         if ((_level & Enums.Log.Level.Debug) != 0)
                         {
                             _logs.Add(log);
+
+                            Event(message);
                             Trace.WriteLine(traceMessage);
                         }
                         break;
@@ -192,6 +196,8 @@ namespace WinMemoryCleaner
                         if ((_level & Enums.Log.Level.Info) != 0)
                         {
                             _logs.Add(log);
+
+                            Event(message);
                             Trace.TraceInformation(traceMessage);
                         }
                         break;
@@ -200,6 +206,8 @@ namespace WinMemoryCleaner
                         if ((_level & Enums.Log.Level.Warning) != 0)
                         {
                             _logs.Add(log);
+
+                            Event(message, EventLogEntryType.Warning);
                             Trace.TraceWarning(traceMessage);
                         }
                         break;
@@ -208,6 +216,8 @@ namespace WinMemoryCleaner
                         if ((_level & Enums.Log.Level.Error) != 0)
                         {
                             _logs.Add(log);
+
+                            Event(message, EventLogEntryType.Error);
                             Trace.TraceError(traceMessage);
                         }
                         break;
