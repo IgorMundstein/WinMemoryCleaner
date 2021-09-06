@@ -29,4 +29,5 @@ The arguments below can be used to run the program silently.
 
 # Logs
 Logs are saved on windows event.
+
 ![alt text](https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/event-log.png?raw=true)
