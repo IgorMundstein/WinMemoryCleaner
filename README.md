@@ -1,25 +1,28 @@
 # Windows Memory Cleaner
-The app is a free RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to get the used memory back. This is where you use Windows Memory Cleaner to clean your memory, so you can carry on working without wasting time restarting your Windows. 
+[![GitHub all releases](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](#) 
+[![GitHub license](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](#) 
+[![Windows](https://img.shields.io/badge/Windows-Vista%20|%207%20|%208%20|%2010%20|%2011-blue?style=for-the-badge)](#)
+[![Windows](https://img.shields.io/badge/Windows%20Server-2008%20|%202012%20|%202016%20|%202019%20|%202022-blue?style=for-the-badge)](#)
 
-[`Download`](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.zip)
+The app is a free RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to get the used memory back. That is where you use Windows Memory Cleaner to clean your memory, so you can carry on working without wasting time restarting your Windows. 
 
-*This app requires **administrator** privileges to run.*
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?color=red&label=DOWNLOAD&logo=windows)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.zip)
 
-# How it works
+## 🚀 How it works
 ![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/main-window.png)
 
-It's portable and hence, you do not have to bother with installation or configuration. Simply download and open the executable to get started. The app comes with a minimalistic interface and, before you clean up memory, first you should go through the list and check the areas you want the app to analyze.
+It's portable, so you do not have to bother with installation or configuration. Download and open the executable to get started. The app requires **administrator** privileges to run and comes with a minimalistic interface; before you clean up memory, you should go through the list and check the areas you want the app to analyze.
 
 It gives you the ability to clean up the memory in 6 different ways:
 
-- **Clean Combined Page List** - Flushes blocks from the combined page list to the combine Free list.
+- **Clean Combined Page List** - Flushes blocks from the combined page list.
 - **Clean Modified Page List** - Flushes memory from the Modified page list, writing unsaved data to disk and moving the pages to the Standby list.
 - **Clean Processes Working Set** - Removes memory from all user-mode and system working sets and moves it to the Standby or Modified page lists. Note that by the time, processes that run any code will necessarily populate their working sets to do so.
 - **Clean Standby List** - Discards pages from all Standby lists, and moves them to the Free list.
 - **Clean Standby List (Low Priority)** - Flushes pages from the lowest-priority Standby list to the Free list.
 - **Clean System Working Set** - Removes memory from the system cache working set.
 
-# Command arguments (NO GUI)
+## 🖥️ Command arguments (NO GUI)
 The arguments below can be used to run the program silently.
 
 * `/CombinedPageList` - **Clean Combined Page List**
@@ -31,7 +34,7 @@ The arguments below can be used to run the program silently.
 
 ![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/shortcut-command-arguments.png)
 
-# Logs
+## 📖 Logs
 Logs are saved on windows event.
 
 ![alt text](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/windows-event-log.png)
