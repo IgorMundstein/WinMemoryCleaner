@@ -9,7 +9,7 @@ The app is a free RAM cleaner. There are times when programs do not release the 
 [![Download)](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?color=red&label=DOWNLOAD&logo=windows)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.zip)
 
 ## 🚀 How it works
-[![](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/main-window.png)](#)
+![](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/main-window.png)
 
 It's portable, so you do not have to bother with installation or configuration. Download and open the executable to get started. The app requires **administrator** privileges to run and comes with a minimalistic interface; before you clean up memory, you should go through the list and check the areas you want the app to analyze.
 
@@ -32,9 +32,9 @@ The arguments below can be used to run the program silently.
 * `/StandbyListLowPriority` - **Clean Standby List (Low Priority)**
 * `/SystemWorkingSet` - **Clean System Working Set**
 
-[![](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/shortcut-command-arguments.png)](#)
+![](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/shortcut-command-arguments.png)
 
 ## 📖 Logs
 Logs are saved on windows event.
 
-[![](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/windows-event-log.png)](#)
+![](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/windows-event-log.png)
