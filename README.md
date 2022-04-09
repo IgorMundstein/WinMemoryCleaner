@@ -34,3 +34,8 @@ The arguments below can be used to run the program silently.
 Logs are saved on windows event.
 
 ![](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/windows-event-log.png)
+
+## ❤️ Donate
+If you have found the app helpful and want to support me.
+
+<a href="https://www.buymeacoffee.com/mundstein" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: auto !important; width: 250px !important;" ></a>
