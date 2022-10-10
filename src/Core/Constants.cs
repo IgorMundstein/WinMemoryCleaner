@@ -1,13 +1,20 @@
-﻿namespace WinMemoryCleaner
+﻿using System;
+
+namespace WinMemoryCleaner
 {
     internal static class Constants
     {
         internal static class App
         {
-            internal const string GitHub = "github.com/IgorMundstein";
-            internal const string GitHubUri ="https://github.com/IgorMundstein/WinMemoryCleaner/";
-            internal const string License = "GNU General Public License v3.0";
-            internal const string Title = "Windows Memory Cleaner";
+            public const string License = "GNU General Public License v3.0";
+            public const string Title = "Windows Memory Cleaner";
+
+            internal static class Author
+            {
+                public const string Name = "Igor Mundstein";
+                public const string Website = "github.com/IgorMundstein";
+                public static readonly Uri WebsiteUri = new Uri("https://github.com/IgorMundstein/WinMemoryCleaner/");
+            }
 
             internal static class Log
             {
@@ -23,16 +30,37 @@
 
         internal static class Windows
         {
-            internal const string DebugPrivilege = "SeDebugPrivilege";
-            internal const string IncreaseQuotaName = "SeIncreaseQuotaPrivilege";
-            internal const int MemoryFlushModifiedList = 3;
-            internal const int MemoryPurgeLowPriorityStandbyList = 5;
-            internal const int MemoryPurgeStandbyList = 4;
-            internal const int PrivilegeEnabled = 2;
-            internal const string ProfileSingleProcessName = "SeProfileSingleProcessPrivilege";
-            internal const int SystemCombinePhysicalMemoryInformation = 130;
-            internal const int SystemFileCacheInformation = 21;
-            internal const int SystemMemoryListInformation = 80;
+            internal static class Privilege
+            {
+                internal const string SeDebugName = "SeDebugPrivilege"; // Required to debug and adjust the memory of a process owned by another account. User Right: Debug programs.
+                internal const string SeIncreaseQuotaName = "SeIncreaseQuotaPrivilege"; // Required to increase the quota assigned to a process. User Right: Adjust memory quotas for a process.
+                internal const string SeProfSingleProcessName = "SeProfileSingleProcessPrivilege"; // Required to gather profiling information for a single process. User Right: Profile single process.
+            }
+
+            internal static class PrivilegeAttribute
+            {
+                internal const int Enabled = 2;
+            }
+
+            internal static class SystemErrorCode
+            {
+                internal const int ErrorAccessDenied = 5; // (ERROR_ACCESS_DENIED) Access is denied
+                internal const int ErrorSuccess = 0; // (ERROR_SUCCESS) The operation completed successfully
+            }
+
+            internal static class SystemInformationClass
+            {
+                internal const int SystemCombinePhysicalMemoryInformation = 130; // 0x82
+                internal const int SystemFileCacheInformation = 21; // 0x15
+                internal const int SystemMemoryListInformation = 80; // 0x50
+            }
+
+            internal static class SystemMemoryListCommand
+            {
+                internal const int MemoryFlushModifiedList = 3;
+                internal const int MemoryPurgeLowPriorityStandbyList = 5;
+                internal const int MemoryPurgeStandbyList = 4;
+            }
         }
     }
 }

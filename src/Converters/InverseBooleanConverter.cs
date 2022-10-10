@@ -8,7 +8,7 @@ namespace WinMemoryCleaner
     /// Value converter that applies NOT operator to a <see cref="bool"/> value.
     /// </summary>
     [ValueConversion(typeof(bool), typeof(bool))]
-    public class InverseBooleanConverter : IValueConverter
+    internal class InverseBooleanConverter : IValueConverter
     {
         /// <summary>
         /// Convert a boolean value to its negation.

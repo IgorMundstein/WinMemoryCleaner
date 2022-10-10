@@ -8,10 +8,8 @@ namespace WinMemoryCleaner
     /// Color to Brush Converter
     /// </summary>
     /// <seealso cref="System.Windows.Data.IValueConverter" />
-    public class ColorToSolidColorBrushConverter : IValueConverter
+    internal class ColorToSolidColorBrushConverter : IValueConverter
     {
-        #region IValueConverter Members
-
         /// <summary>
         /// Converts a value.
         /// </summary>
@@ -27,9 +25,16 @@ namespace WinMemoryCleaner
             if (value == null) 
                 return default(SolidColorBrush);
 
-            System.Drawing.Color color = (System.Drawing.Color)value;
+            if (value is System.Drawing.Color)
+            {
+                System.Drawing.Color color = (System.Drawing.Color)value;
+                return new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
+            }
 
-            return new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
+            if (value is Color)
+                return new SolidColorBrush((Color)value);
+
+            throw new InvalidOperationException("Unsupported type [" + value.GetType().Name + "], ColorToSolidColorBrushConverter.Convert()");
         }
 
         /// <summary>
@@ -45,9 +50,12 @@ namespace WinMemoryCleaner
         /// <exception cref="System.NotImplementedException"></exception>
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            throw new NotImplementedException();
-        }
+            var solidColorBrush = value as SolidColorBrush;
 
-        #endregion
+            if (solidColorBrush != null)
+                return solidColorBrush.Color;
+
+            return default(SolidColorBrush);
+        }
     }
 }

@@ -19,6 +19,31 @@ namespace WinMemoryCleaner
             }
 
             /// <summary>
+            /// Memory Status EX structure contains information about the current state of both physical and virtual memory, including extended memory
+            /// </summary>
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+            internal class MemoryStatusEx
+            {
+                internal uint dwLength;                 // The size of the structure, in bytes.
+                internal uint dwMemoryLoad;             // A number between 0 and 100 that specifies the approximate percentage of physical memory that is in use.
+                internal ulong ullTotalPhys;            // The amount of actual physical memory, in bytes.
+                internal ulong ullAvailPhys;            // The amount of physical memory currently available, in bytes.
+                internal ulong ullTotalPageFile;        // The current committed memory limit for the system or the current process, whichever is smaller, in bytes.
+                internal ulong ullAvailPageFile;        // The maximum amount of memory the current process can commit, in bytes.
+                internal ulong ullTotalVirtual;         // The size of the user-mode portion of the virtual address space of the calling process, in bytes.
+                internal ulong ullAvailVirtual;         // The amount of unreserved and uncommitted memory currently in the user-mode portion of the virtual address space of the calling process, in bytes.
+                internal ulong ullAvailExtendedVirtual; // Reserved. This value is always 0.
+
+                /// <summary>
+                /// Initializes a new instance of the <see cref="MemoryStatusEx"/> class.
+                /// </summary>
+                internal MemoryStatusEx()
+                {
+                    dwLength = (uint)Marshal.SizeOf(typeof(MemoryStatusEx));
+                }
+            }
+
+            /// <summary>
             /// System Cache Information structure for x86 working set
             /// </summary>
             [StructLayout(LayoutKind.Sequential, Pack = 1)]

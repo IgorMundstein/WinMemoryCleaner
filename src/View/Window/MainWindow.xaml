@@ -4,11 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WinMemoryCleaner"
-        xmlns:properties="clr-namespace:WinMemoryCleaner.Properties"
         mc:Ignorable="d"
-        DataContext="{StaticResource MainViewModel}"
-        Title="{x:Static local:App.Title}" 
-        Icon="/WinMemoryCleaner;component/Resources/WinMemoryCleaner.ico" 
+        DataContext="{Binding MainViewModel, Source={StaticResource ViewModelLocator}}"
+        Title="{x:Static local:Constants+App.Title}" 
+        Icon="/WinMemoryCleaner;component/Resources/Images/WinMemoryCleaner.ico" 
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize" 
         Height="256" 
         Width="600" 
@@ -16,7 +15,7 @@
         FontSize="16" 
         FontWeight="Light">
 
-    <Grid Margin="5, 0, 5, 5" IsEnabled="{Binding Isloading, Converter={StaticResource InverseBooleanConverter}}">
+    <Grid Margin="5, 0, 5, 5" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="210" />
             <ColumnDefinition Width="*" />
@@ -30,47 +29,47 @@
 
         <GroupBox Grid.Column="0" Grid.Row="0" Margin="0, 0, 2.5, 0">
             <GroupBox.Header>
-                <TextBlock Text="{x:Static properties:Resources.SettingMemoryAreas}" FontWeight="Normal" />
+                <TextBlock Text="{x:Static local:Localization.ConfigMemoryAreas}" FontWeight="Normal" />
             </GroupBox.Header>
             <StackPanel Margin="3, 5">
-                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.CombinedPageList}}">
-                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperCombinedPageList}" VerticalAlignment="Center" />
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.CombinedPageList}}">
+                    <TextBlock Text="{x:Static local:Localization.MemoryCombinedPageList}" VerticalAlignment="Center" />
                 </CheckBox>
-                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ModifiedPageList}}">
-                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperModifiedPageList}" VerticalAlignment="Center" />
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ModifiedPageList}}">
+                    <TextBlock Text="{x:Static local:Localization.MemoryModifiedPageList}" VerticalAlignment="Center" />
                 </CheckBox>
-                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ProcessesWorkingSet}}">
-                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperProcessesWorkingSet}" VerticalAlignment="Center" />
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ProcessesWorkingSet}}">
+                    <TextBlock Text="{x:Static local:Localization.MemoryProcessesWorkingSet}" VerticalAlignment="Center" />
                 </CheckBox>
-                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyList}}">
-                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperStandbyList}" VerticalAlignment="Center" />
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyList}}">
+                    <TextBlock Text="{x:Static local:Localization.MemoryStandbyList}" VerticalAlignment="Center" />
                 </CheckBox>
-                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyListLowPriority}}">
-                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperLowPriorityStandbyList}" VerticalAlignment="Center" />
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyListLowPriority}}">
+                    <TextBlock Text="{x:Static local:Localization.MemoryLowPriorityStandbyList}" VerticalAlignment="Center" />
                 </CheckBox>
-                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.SystemWorkingSet}}">
-                    <TextBlock Text="{x:Static properties:Resources.MemoryHelperSystemWorkingSet}" VerticalAlignment="Center" />
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.SystemWorkingSet}}">
+                    <TextBlock Text="{x:Static local:Localization.MemorySystemWorkingSet}" VerticalAlignment="Center" />
                 </CheckBox>
             </StackPanel>
         </GroupBox>
 
         <GroupBox Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="0, 0, 2.5, 0">
             <GroupBox.Header>
-                <TextBlock Text="{x:Static properties:Resources.SettingAbout}" FontWeight="Normal" />
+                <TextBlock Text="{x:Static local:Localization.About}" FontWeight="Normal" />
             </GroupBox.Header>
             <StackPanel>
                 <TextBlock Margin="3, 0, 0, 0">           
-                    <Hyperlink NavigateUri="{Binding GitHubUri}" KeyboardNavigation.IsTabStop="False" RequestNavigate="Hyperlink_RequestNavigate">
-                        <TextBlock Text="{Binding GitHub}" />
+                    <Hyperlink NavigateUri="{x:Static local:Constants+App+Author.WebsiteUri}" KeyboardNavigation.IsTabStop="False" RequestNavigate="Hyperlink_RequestNavigate">
+                        <TextBlock Text="{x:Static local:Constants+App+Author.Website}" />
                     </Hyperlink>
                 </TextBlock>
-                <TextBlock Text="{Binding License}" TextWrapping="Wrap" Margin="3, 3, 0, 0" FontSize="14" />
+                <TextBlock Text="{x:Static local:Constants+App.License}" TextWrapping="Wrap" Margin="3, 3, 0, 0" FontSize="14" />
             </StackPanel>
         </GroupBox>
 
         <GroupBox Grid.Column="1" Grid.Row="0" Margin="2.5, 0, 0, 0">
             <GroupBox.Header>
-                <TextBlock Text="{x:Static properties:Resources.SettingLog}" FontWeight="Normal" />
+                <TextBlock Text="{x:Static local:Localization.Log}" FontWeight="Normal" />
             </GroupBox.Header>
             <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="3, 0, 0, 0">
                 <ItemsControl ItemsSource="{Binding Logs}" IsTabStop="False">
@@ -91,14 +90,14 @@
         <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Stretch" Margin="2.5, 5, 0, 5" TextAlignment="Center" FontWeight="Normal">
             <TextBlock.Text>
                 <MultiBinding StringFormat="{}{0} free of {1} ({2}% Occupied)">
-                    <Binding Path="Computer.MemoryAvailable" />
-                    <Binding Path="Computer.MemorySize" />
-                    <Binding Path="Computer.MemoryUsage" />
+                    <Binding Path="Computer.Memory.Available" />
+                    <Binding Path="Computer.Memory.Total" />
+                    <Binding Path="Computer.Memory.Usage" />
                 </MultiBinding>
             </TextBlock.Text>
         </TextBlock>
 
-        <Button Grid.Column="1" Grid.Row="2" Content="{x:Static properties:Resources.MainViewCleanUpMemoryText}" ContentStringFormat="{} {0} " Foreground="Green" Cursor="Hand" IsEnabled="{Binding Isloading, Converter={StaticResource InverseBooleanConverter}}" Command="{Binding MemoryCleanCommand}" FontWeight="Normal" Margin="2.5, 0, 0, 1">
+        <Button Grid.Column="1" Grid.Row="2" Content="{x:Static local:Localization.MemoryCleanUp}" ContentStringFormat="{} {0} " Foreground="Green" Cursor="Hand" Command="{Binding MemoryCleanCommand}" FontWeight="Normal" Margin="2.5, 0, 0, 1">
             <Button.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="3"/>

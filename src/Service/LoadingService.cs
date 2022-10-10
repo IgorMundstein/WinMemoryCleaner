@@ -7,16 +7,29 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Loading Service
     /// </summary>
-    public class LoadingService : ILoadingService
+    internal class LoadingService : Service, ILoadingService
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoadingService"/> class.
+        /// </summary>
+        /// <param name="configurator">Configurator</param>
+        /// <param name="logger">Logger</param>
+        public LoadingService(IConfigurator configurator, ILogger logger)
+            : base(configurator, logger)
+        {
+        }
+
         /// <summary>
         /// Show/Hide Loading
         /// </summary>
         /// <param name="running">True (ON) / False (OFF)</param>
         public void Loading(bool running)
         {
-            // Multithreading trick
-            Application.Current.Dispatcher.Invoke(new Action(() => Mouse.OverrideCursor = running ? Cursors.Wait : null));
+            // Multi-threading trick
+            Application.Current.Dispatcher.Invoke((Action)delegate
+            {
+                Mouse.OverrideCursor = running ? Cursors.Wait : null;
+            });
         }
     }
 }

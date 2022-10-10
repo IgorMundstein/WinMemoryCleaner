@@ -18,48 +18,18 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
         /// </summary>
-        public App()
+        internal App()
         {
+            // Log
+#if DEBUG
+            DependencyInjection.Logger.Level = Enums.Log.Level.Debug;
+#else
+            DependencyInjection.Logger.Level = Enums.Log.Level.Information;
+#endif
+
             // Events
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             Dispatcher.UnhandledException += OnDispatcherUnhandledException;
-
-            // Log
-#if DEBUG
-            LogHelper.Level = Enums.Log.Level.Debug;
-#else
-            LogHelper.Level = Enums.Log.Level.Info;
-#endif
-
-            // Culture
-            CultureInfo englishUnitedStates = CultureInfo.CreateSpecificCulture("en-US");
-            Thread.CurrentThread.CurrentCulture = englishUnitedStates;
-            Thread.CurrentThread.CurrentUICulture = englishUnitedStates;
-
-            // It could be replaced by a dependency injection library
-            LoadingService = new LoadingService();
-        }
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Loading Service
-        /// </summary>
-        public static ILoadingService LoadingService { get; private set; }
-
-        /// <summary>
-        /// App Title
-        /// </summary>
-        public static string Title
-        {
-            get
-            {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
-
-                return string.Format(CultureInfo.CurrentCulture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
-            }
         }
 
         #endregion
@@ -75,7 +45,7 @@ namespace WinMemoryCleaner
         {
             e.Handled = true;
 
-            LogHelper.Error(e.Exception);
+            DependencyInjection.Logger.Error(e.Exception);
             ShowDialog(e.Exception);
         }
 
@@ -108,6 +78,9 @@ namespace WinMemoryCleaner
                         memoryAreas |= area;
                 }
 
+                // Localization
+                Localization.Load(Enums.Culture.English);
+
                 // GUI
                 if (memoryAreas == Enums.Memory.Area.None)
                 {
@@ -115,7 +88,7 @@ namespace WinMemoryCleaner
                 }
                 else // NO GUI
                 {
-                    MemoryHelper.Clean(memoryAreas);
+                    DependencyInjection.ComputerService.MemoryClean(memoryAreas);
                     Environment.Exit(0);
                 }
             }
@@ -133,7 +106,7 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="UnhandledExceptionEventArgs"/> instance containing the event data.</param>
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            LogHelper.Error((Exception)e.ExceptionObject);
+            DependencyInjection.Logger.Error((Exception)e.ExceptionObject);
             ShowDialog((Exception)e.ExceptionObject);
         }
 
@@ -148,11 +121,24 @@ namespace WinMemoryCleaner
                 if (exception.InnerException != null)
                     ShowDialog(exception.InnerException);
 
-                MessageBox.Show(exception.Message, App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(exception.Message, Constants.App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch
             {
                 // ignored
+            }
+        }
+
+        /// <summary>
+        /// Title
+        /// </summary>
+        public static string Version
+        {
+            get
+            {
+                Version version = Assembly.GetExecutingAssembly().GetName().Version;
+
+                return string.Format(CultureInfo.CurrentCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 

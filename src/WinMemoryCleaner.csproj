@@ -27,7 +27,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
+    <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -61,10 +61,11 @@
     <LangVersion>4</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>bin\Release\WinMemoryCleaner.xml</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
-    <ApplicationIcon>Resources\WinMemoryCleaner.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\Images\WinMemoryCleaner.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -97,31 +98,34 @@
     </Compile>
     <Compile Include="Converters\ColorToSolidColorBrushConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
-    <Compile Include="Converters\EnumBooleanConverter.cs" />
+    <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Core\Attributes.cs" />
+    <Compile Include="Core\Localization.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\Enums.cs" />
-    <Compile Include="Core\Settings.cs" />
+    <Compile Include="Core\Configurator.cs" />
+    <Compile Include="Core\DependencyInjection.cs" />
+    <Compile Include="Interfaces\IComputerService.cs" />
+    <Compile Include="Interfaces\IConfigurator.cs" />
+    <Compile Include="Interfaces\ILogger.cs" />
+    <Compile Include="Model\Computer.cs" />
+    <Compile Include="Model\Config.cs" />
     <Compile Include="Model\Log.cs" />
-    <Compile Include="Model\Base\ObservableObject.cs" />
+    <Compile Include="Core\Base\ObservableObject.cs" />
     <Compile Include="Core\Structs.cs" />
-    <Compile Include="Helper\LogHelper.cs" />
-    <Compile Include="Helper\MemoryHelper.cs" />
     <Compile Include="Interfaces\ILoadingService.cs" />
-    <Compile Include="Model\Base\Model.cs" />
+    <Compile Include="Model\Memory.cs" />
+    <Compile Include="Model\OperatingSystem.cs" />
+    <Compile Include="Service\Base\Service.cs" />
+    <Compile Include="Service\ComputerService.cs" />
     <Compile Include="Service\LoadingService.cs" />
     <Compile Include="Command\RelayCommand.cs" />
-    <Compile Include="Model\Computer.cs" />
-    <Compile Include="Helper\ComputerHelper.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
     <Compile Include="Core\NativeMethods.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    <Compile Include="Core\Logger.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\Base\ViewModel.cs" />
+    <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="View\Window\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -131,20 +135,10 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
     <None Include="app.manifest" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -153,14 +147,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\WinMemoryCleaner.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
+    <Resource Include="Resources\Images\WinMemoryCleaner.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
@@ -175,4 +162,5 @@
     <RemoveDir Directories="$(TargetDir)" />
     <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" />
   </Target>
+  <ProjectExtensions />
 </Project>

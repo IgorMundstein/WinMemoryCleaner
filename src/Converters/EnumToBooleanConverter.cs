@@ -5,11 +5,11 @@ using System.Windows.Data;
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// Enum Boolean Converter
+    /// Enum to Boolean Converter
     /// </summary>
     /// <seealso cref="System.Windows.Data.IValueConverter" />
     [ValueConversion(typeof(bool), typeof(Enum))]
-    public class EnumBooleanConverter : IValueConverter
+    internal class EnumToBooleanConverter : IValueConverter
     {
         /// <summary>
         /// Converts a value.
@@ -23,10 +23,16 @@ namespace WinMemoryCleaner
         /// </returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value != null && parameter != null)
-                return ((Enum)value).HasFlag((Enum)parameter);
+            if (value == null || parameter == null)
+                return false;
 
-            return targetType.DefaultValue();
+            var enum1 = (Enum)value;
+            var enum2 = (Enum)parameter;
+
+            if (enum1.GetType() == enum2.GetType() && enum1.GetType().IsDefined(typeof(FlagsAttribute), false))
+                return enum1.HasFlag(enum2);
+
+            return enum1.Equals(enum2);
         }
 
         /// <summary>

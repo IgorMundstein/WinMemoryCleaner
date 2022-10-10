@@ -9,6 +9,13 @@ namespace WinMemoryCleaner
     /// <seealso cref="ICommand" />
     internal class RelayCommand : ICommand
     {
+        #region Fields
+
+        private readonly Action _execute;
+        private readonly Func<bool> _canExecute;
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -21,13 +28,6 @@ namespace WinMemoryCleaner
             _execute = execute;
             _canExecute = canExecute;
         }
-
-        #endregion
-
-        #region Fields
-
-        private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
 
         #endregion
 

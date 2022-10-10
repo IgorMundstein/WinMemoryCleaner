@@ -13,10 +13,10 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
         /// </summary>
-        public MainWindow()
+        internal MainWindow()
         {
             InitializeComponent();
-#if !DEBUG
+#if RELEASE
             Topmost = true;
 #endif
         }

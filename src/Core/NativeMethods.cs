@@ -14,13 +14,17 @@ namespace WinMemoryCleaner
 
         [DllImport("psapi.dll", SetLastError = true)]
         internal static extern int EmptyWorkingSet(IntPtr hProcess);
+        
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GlobalMemoryStatusEx([In, Out] Structs.Windows.MemoryStatusEx lpBuffer);
 
         [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool LookupPrivilegeValue(string lpSystemName, string lpName, ref long lpLuid);
 
         [DllImport("ntdll.dll", SetLastError = true)]
-        internal static extern UInt32 NtSetSystemInformation(int infoClass, IntPtr info, int length);
+        internal static extern uint NtSetSystemInformation(int infoClass, IntPtr info, int length);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

@@ -9,29 +9,35 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Main View Model
     /// </summary>
-    public class MainViewModel : ViewModel
+    internal class MainViewModel : ViewModel
     {
-        #region Constructor
+        #region Fields
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MainViewModel"/> class.
-        /// </summary>
-        public MainViewModel()
-            : base(App.LoadingService)
-        {
-            // Initialize
-            Computer = new Computer();
-            MemoryCleanCommand = new RelayCommand(MemoryClean, CanExecuteMemoryClean);
-
-            Monitor();
-        }
+        private readonly IComputerService _computerService;
+        private Computer _computer;
+        private BackgroundWorker _monitorWorker;
 
         #endregion
 
-        #region Fields
+        #region Constructor
 
-        private Computer _computer;
-        private BackgroundWorker _monitorWorker;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainViewModel" /> class.
+        /// </summary>
+        /// <param name="computerService">Computer service</param>
+        /// <param name="configurator">Configurator</param>
+        /// <param name="loadingService">Loading service</param>
+        /// <param name="logger">Logger</param>
+        public MainViewModel(IComputerService computerService, IConfigurator configurator, ILoadingService loadingService, ILogger logger)
+            : base(configurator, loadingService, logger)
+        {
+            _computerService = computerService;
+
+            Computer = new Computer();
+            MemoryCleanCommand = new RelayCommand(MemoryClean, CanExecuteMemoryClean);
+            
+            Monitor();
+        }
 
         #endregion
 
@@ -54,56 +60,14 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Gets the git hub URI.
-        /// </summary>
-        /// <value>
-        /// The git hub URI.
-        /// </value>
-        public static string GitHub
-        {
-            get
-            {
-                return Constants.App.GitHub;
-            }
-        }
-
-        /// <summary>
-        /// Gets the git hub URI.
-        /// </summary>
-        /// <value>
-        /// The git hub URI.
-        /// </value>
-        public static Uri GitHubUri
-        {
-            get
-            {
-                return new Uri(Constants.App.GitHubUri);
-            }
-        }
-
-        /// <summary>
-        /// Gets the license.
-        /// </summary>
-        /// <value>
-        /// The license.
-        /// </value>
-        public static string License
-        {
-            get
-            {
-                return Constants.App.License;
-            }
-        }
-
-        /// <summary>
         /// Gets the logs.
         /// </summary>
         /// <value>
         /// The logs.
         /// </value>
-        public ObservableCollection<Log> Logs
+        public ReadOnlyObservableCollection<Log> Logs
         {
-            get { return new ObservableCollection<Log>(LogHelper.Logs); }
+            get { return Logger.Logs; }
         }
 
         /// <summary>
@@ -116,29 +80,29 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return Settings.MemoryAreas;
+                return Configurator.Config.MemoryAreas;
             }
             set
             {
-                if (Settings.MemoryAreas.HasFlag(value))
-                    Settings.MemoryAreas &= ~value;
+                if ((Configurator.Config.MemoryAreas & value) != 0)
+                    Configurator.Config.MemoryAreas &= ~value;
                 else
-                    Settings.MemoryAreas |= value;
+                    Configurator.Config.MemoryAreas |= value;
 
                 switch (value)
                 {
                     case Enums.Memory.Area.StandbyList:
-                        if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyListLowPriority))
-                            Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                        if ((Configurator.Config.MemoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
+                            Configurator.Config.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
                         break;
 
                     case Enums.Memory.Area.StandbyListLowPriority:
-                        if (Settings.MemoryAreas.HasFlag(Enums.Memory.Area.StandbyList))
-                            Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
+                        if ((Configurator.Config.MemoryAreas & Enums.Memory.Area.StandbyList) != 0)
+                            Configurator.Config.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
                         break;
                 }
 
-                Settings.Save();
+                Configurator.Save();
                 RaisePropertyChanged();
             }
         }
@@ -185,7 +149,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                LogHelper.Error(e);
+                Logger.Error(e);
             }
         }
 
@@ -196,12 +160,13 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
         private void Monitor(object sender, DoWorkEventArgs e)
         {
+            Computer.OperatingSystem = _computerService.GetOperatingSystem();
+
             while (!_monitorWorker.CancellationPending)
             {
-                // Refresh memory information
-                Computer.MemoryAvailable = ComputerHelper.GetMemoryAvailable().ByteSizeToString();
-                Computer.MemorySize = ComputerHelper.GetMemorySize().ByteSizeToString();
-                Computer.MemoryUsage = ComputerHelper.GetMemoryUsage();
+                Computer.Memory = _computerService.GetMemory();
+                
+                RaisePropertyChanged(() => Computer);
 
                 if (IsInDesignMode)
                     break;
@@ -225,7 +190,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                LogHelper.Error(e);
+                Logger.Error(e);
             }
         }
 
@@ -238,23 +203,17 @@ namespace WinMemoryCleaner
         {
             try
             {
-                // Loading ON
-                Loading(true);
+                IsBusy = true;
 
-                // Logs
-                LogHelper.Logs.Clear();
-                RaisePropertyChanged(() => Logs);
+                // Clear logs
+                Logger.Flush();
 
                 // Memory clean
-                MemoryHelper.Clean(Settings.MemoryAreas);
-
-                // Logs
-                RaisePropertyChanged(() => Logs);
+                _computerService.MemoryClean(Configurator.Config.MemoryAreas);
             }
             finally
             {
-                // Loading OFF
-                Loading(false);
+                IsBusy = false;
             }
         }
 

@@ -6,7 +6,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Log Item
     /// </summary>
-    public class Log : Model
+    internal class Log
     {
         /// <summary>
         /// Gets or sets the color.
@@ -20,7 +20,7 @@ namespace WinMemoryCleaner
             {
                 switch (Level)
                 {
-                    case Enums.Log.Level.Info:
+                    case Enums.Log.Level.Information:
                         return Color.Green;
 
                     case Enums.Log.Level.Warning:
@@ -49,7 +49,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The level.
         /// </value>
-        public Enums.Log.Level Level { get; set; }
+        internal Enums.Log.Level Level { get; set; }
 
         /// <summary>
         /// Gets or sets the method.
@@ -57,7 +57,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The method.
         /// </value>
-        public string Method { get; set; }
+        internal string Method { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
