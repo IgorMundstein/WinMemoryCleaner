@@ -14,7 +14,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="configurator">Configurator</param>
         /// <param name="logger">Logger</param>
-        public LoadingService(IConfigurator configurator, ILogger logger)
+        internal LoadingService(IConfigurator configurator, ILogger logger)
             : base(configurator, logger)
         {
         }

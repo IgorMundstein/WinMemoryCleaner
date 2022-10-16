@@ -22,6 +22,6 @@
         /// <summary>
         /// Operating System
         /// </summary>
-        public OperatingSystem OperatingSystem { get; set; }
+        internal OperatingSystem OperatingSystem { get; set; }
     }
 }

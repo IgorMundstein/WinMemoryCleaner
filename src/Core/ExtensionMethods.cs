@@ -52,5 +52,22 @@ namespace WinMemoryCleaner
         {
             return value.IsValueType && Nullable.GetUnderlyingType(value) == null ? Activator.CreateInstance(value) : null;
         }
+
+        /// <summary>
+        /// Validates enum value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified enum value is valid; otherwise, <c>false</c>.
+        /// </returns>
+        internal static bool IsValid(this Enum value)
+        {
+            if (value == null)
+                return false;
+
+            char firstDigit = value.ToString()[0];
+
+            return !char.IsDigit(firstDigit) && firstDigit != '-';
+        }
     }
 }

@@ -111,7 +111,7 @@
     <Compile Include="Model\Computer.cs" />
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\Log.cs" />
-    <Compile Include="Core\Base\ObservableObject.cs" />
+    <Compile Include="ViewModel\Base\ObservableObject.cs" />
     <Compile Include="Core\Structs.cs" />
     <Compile Include="Interfaces\ILoadingService.cs" />
     <Compile Include="Model\Memory.cs" />

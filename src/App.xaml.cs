@@ -37,6 +37,17 @@ namespace WinMemoryCleaner
         #region Methods
 
         /// <summary>
+        /// Checks for updates.
+        /// </summary>
+        public void CheckForUpdates()
+        {
+            //TODO: Implement auto-update
+
+            //Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            //var appVersion = string.Format(CultureInfo.CurrentCulture, "{0}.{1}", version.Major, version.Minor);
+        }
+
+        /// <summary>
         /// Called when [dispatcher unhandled exception].
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -77,9 +88,6 @@ namespace WinMemoryCleaner
                     if (Enum.TryParse(value, out area))
                         memoryAreas |= area;
                 }
-
-                // Localization
-                Localization.Load(Enums.Culture.English);
 
                 // GUI
                 if (memoryAreas == Enums.Memory.Area.None)
@@ -126,19 +134,6 @@ namespace WinMemoryCleaner
             catch
             {
                 // ignored
-            }
-        }
-
-        /// <summary>
-        /// Title
-        /// </summary>
-        public static string Version
-        {
-            get
-            {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
-
-                return string.Format(CultureInfo.CurrentCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 

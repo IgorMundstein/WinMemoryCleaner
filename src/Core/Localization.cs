@@ -15,17 +15,26 @@ namespace WinMemoryCleaner
 
         static Localization()
         {
-            Languages = new Dictionary<string, Enums.Culture> 
+            Cultures = new Dictionary<string, Enums.Culture> 
             {
                 { "English", Enums.Culture.English },
                 { "Español", Enums.Culture.Spanish },
                 { "Português", Enums.Culture.Portuguese }
             };
+
+            Load(DependencyInjection.Configurator.Config.Culture);
         }
 
         #endregion
 
         #region Properties
+
+        internal static Enums.Culture? CurrentCulture { get; private set; }
+        internal static readonly Dictionary<string, Enums.Culture> Cultures;
+
+        #endregion
+
+        #region Strings
 
         public static string About { get; private set; }
 
@@ -38,8 +47,6 @@ namespace WinMemoryCleaner
         public static string ErrorCanNotSaveLog { get; private set; }
 
         public static string ErrorFeatureIsNotSupported { get; private set; }
-
-        internal static readonly Dictionary<string, Enums.Culture> Languages;
 
         public static string Log { get; private set; }
 
@@ -63,11 +70,25 @@ namespace WinMemoryCleaner
 
         internal static void Load(Enums.Culture culture)
         {
-            CultureInfo cultureInfo = new CultureInfo((int)culture);
+            if (CurrentCulture == culture)
+                return;
 
+            CultureInfo cultureInfo;
+
+            try
+            {
+                cultureInfo = new CultureInfo((int)culture);
+            }
+            catch
+            {
+                culture = Enums.Culture.English;
+                cultureInfo = new CultureInfo((int)culture);
+            }
+
+            CurrentCulture = culture;
             Thread.CurrentThread.CurrentCulture = cultureInfo;
             Thread.CurrentThread.CurrentUICulture = cultureInfo;
-            
+
             switch (culture)
             {
                 case Enums.Culture.English:
@@ -105,7 +126,7 @@ namespace WinMemoryCleaner
                     break;
 
                 default:
-                    throw new NotImplementedException(string.Format("{0} culture not implemented.", culture));
+                    throw new NotImplementedException(string.Format("{0} culture not implemented.", cultureInfo.DisplayName));
             }
         }
 

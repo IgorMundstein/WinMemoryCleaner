@@ -23,7 +23,7 @@ namespace WinMemoryCleaner
 
         #region Constructor
 
-        public ComputerService(IConfigurator configurator, ILogger logger)
+        internal ComputerService(IConfigurator configurator, ILogger logger)
             : base(configurator, logger)
         {
             _memory = new Memory();

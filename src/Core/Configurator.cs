@@ -37,6 +37,7 @@ namespace WinMemoryCleaner
                 // Default values
                 Config = new Config
                 {
+                    Culture = Enums.Culture.English,
                     MemoryAreas = Enums.Memory.Area.CombinedPageList | Enums.Memory.Area.ModifiedPageList | Enums.Memory.Area.ProcessesWorkingSet | Enums.Memory.Area.StandbyList | Enums.Memory.Area.SystemWorkingSet
                 };
 
@@ -45,10 +46,20 @@ namespace WinMemoryCleaner
                 {
                     if (key != null)
                     {
-                        Config.MemoryAreas = (Enums.Memory.Area)Enum.Parse(typeof(Enums.Memory.Area), Convert.ToString(key.GetValue(Constants.App.RegistryKey.MemoryAreas, Config.MemoryAreas)));
+                        Enums.Culture culture;
 
-                        if ((Config.MemoryAreas & Enums.Memory.Area.StandbyList) != 0 && (Config.MemoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
-                            Config.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.RegistryKey.Culture, Config.Culture)), out culture) && culture.IsValid())
+                            Config.Culture = culture;
+
+                        Enums.Memory.Area memoryAreas;
+
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.RegistryKey.MemoryAreas, Config.MemoryAreas)), out memoryAreas) && memoryAreas.IsValid())
+                        {
+                            if ((memoryAreas & Enums.Memory.Area.StandbyList) != 0 && (memoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
+                                memoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+
+                            Config.MemoryAreas = memoryAreas;
+                        }
                     }
 
                     Save();
@@ -68,6 +79,7 @@ namespace WinMemoryCleaner
                 {
                     if (key != null)
                     {
+                        key.SetValue(Constants.App.RegistryKey.Culture, (int)Config.Culture);
                         key.SetValue(Constants.App.RegistryKey.MemoryAreas, (int)Config.MemoryAreas);
                     }
                 }

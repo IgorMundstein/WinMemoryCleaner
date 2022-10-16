@@ -13,9 +13,9 @@ namespace WinMemoryCleaner
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
             internal struct MemoryCombineInformationEx
             {
-                private readonly IntPtr Handle;
-                private readonly IntPtr PagesCombined;
-                private readonly IntPtr Flags;
+                internal IntPtr Handle;
+                internal IntPtr PagesCombined;
+                internal ulong Flags;
             }
 
             /// <summary>
@@ -24,7 +24,7 @@ namespace WinMemoryCleaner
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
             internal class MemoryStatusEx
             {
-                internal uint dwLength;                 // The size of the structure, in bytes.
+                internal readonly uint dwLength;        // The size of the structure, in bytes.
                 internal uint dwMemoryLoad;             // A number between 0 and 100 that specifies the approximate percentage of physical memory that is in use.
                 internal ulong ullTotalPhys;            // The amount of actual physical memory, in bytes.
                 internal ulong ullAvailPhys;            // The amount of physical memory currently available, in bytes.
@@ -49,15 +49,15 @@ namespace WinMemoryCleaner
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
             internal struct SystemCacheInformation32
             {
-                private readonly uint CurrentSize;
-                private readonly uint PeakSize;
-                private readonly uint PageFaultCount;
+                internal uint CurrentSize;
+                internal uint PeakSize;
+                internal uint PageFaultCount;
                 internal uint MinimumWorkingSet;
                 internal uint MaximumWorkingSet;
-                private readonly uint Unused1;
-                private readonly uint Unused2;
-                private readonly uint Unused3;
-                private readonly uint Unused4;
+                internal uint Unused1;
+                internal uint Unused2;
+                internal uint Unused3;
+                internal uint Unused4;
             }
 
             /// <summary>
@@ -66,15 +66,15 @@ namespace WinMemoryCleaner
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
             internal struct SystemCacheInformation64
             {
-                private readonly long CurrentSize;
-                private readonly long PeakSize;
-                private readonly long PageFaultCount;
+                internal long CurrentSize;
+                internal long PeakSize;
+                internal long PageFaultCount;
                 internal long MinimumWorkingSet;
                 internal long MaximumWorkingSet;
-                private readonly long Unused1;
-                private readonly long Unused2;
-                private readonly long Unused3;
-                private readonly long Unused4;
+                internal long Unused1;
+                internal long Unused2;
+                internal long Unused3;
+                internal long Unused4;
             }
 
             /// <summary>

@@ -23,6 +23,7 @@ namespace WinMemoryCleaner
 
             internal static class RegistryKey
             {
+                internal const string Culture = "Culture";
                 internal const string MemoryAreas = "MemoryAreas";
                 internal const string Name = @"SOFTWARE\WinMemoryCleaner";
             }
