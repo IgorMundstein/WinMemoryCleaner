@@ -15,7 +15,7 @@ namespace WinMemoryCleaner
         [DllImport("psapi.dll", SetLastError = true)]
         internal static extern int EmptyWorkingSet(IntPtr hProcess);
 
-        [DllImport("user32", SetLastError = true)]
+        [DllImport("user32", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -30,6 +30,7 @@ namespace WinMemoryCleaner
         internal static extern uint NtSetSystemInformation(int infoClass, IntPtr info, int length);
 
         [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SetForegroundWindow(IntPtr hWnd);
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -37,6 +38,7 @@ namespace WinMemoryCleaner
         internal static extern bool SetSystemFileCacheSize(IntPtr minimumFileCacheSize, IntPtr maximumFileCacheSize, int flags);
 
         [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     }
 }

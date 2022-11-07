@@ -88,10 +88,10 @@ namespace WinMemoryCleaner
                     // Enables or disables privileges in a specified access token
                     result = NativeMethods.AdjustTokenPrivileges(current.Token, false, ref newState, 0, IntPtr.Zero, IntPtr.Zero);
                 }
-            }
 
-            if (!result)
-                Logger.Error(new Win32Exception(Marshal.GetLastWin32Error()));
+                if (!result)
+                    Logger.Error(new Win32Exception(Marshal.GetLastWin32Error()));
+            }
 
             return result;
         }

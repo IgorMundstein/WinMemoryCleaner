@@ -9,7 +9,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Main View Model
     /// </summary>
-    internal class MainViewModel : ViewModel
+    internal class MainViewModel : ViewModel, IDisposable
     {
         #region Fields
 
@@ -107,6 +107,39 @@ namespace WinMemoryCleaner
 
         #endregion
 
+        #region IDisposable
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                try
+                {
+                    if (_monitorWorker != null)
+                        _monitorWorker.Dispose();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
         #region Commands
 
         /// <summary>
@@ -139,6 +172,9 @@ namespace WinMemoryCleaner
         {
             try
             {
+                if (IsInDesignMode)
+                    return;
+
                 using (_monitorWorker = new BackgroundWorker())
                 {
                     _monitorWorker.DoWork += Monitor;
@@ -165,9 +201,6 @@ namespace WinMemoryCleaner
                 Computer.Memory = _computerService.GetMemory();
 
                 RaisePropertyChanged(() => Computer);
-
-                if (IsInDesignMode)
-                    break;
 
                 Thread.Sleep(3000);
             }

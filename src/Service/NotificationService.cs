@@ -32,6 +32,9 @@ namespace WinMemoryCleaner
             Application.Current.Dispatcher.Invoke((Action)delegate
             {
                 Mouse.OverrideCursor = running ? Cursors.Wait : null;
+
+                if (_notifyIcon != null && _notifyIcon.ContextMenuStrip != null)
+                    _notifyIcon.ContextMenuStrip.Enabled = !running;
             });
         }
 

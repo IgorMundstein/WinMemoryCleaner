@@ -51,6 +51,62 @@ namespace WinMemoryCleaner
 
         #endregion
 
+        #region IDisposable
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_mutex != null)
+                {
+                    try
+                    {
+                        _mutex.ReleaseMutex();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    try
+                    {
+                        _mutex.Dispose();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    _mutex = null;
+                }
+
+                try
+                {
+                    if (_notifyIcon != null)
+                        _notifyIcon.Dispose();
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -59,45 +115,6 @@ namespace WinMemoryCleaner
         public void CheckForUpdates()
         {
             //TODO: Implement auto-update
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_mutex != null)
-            {
-                try
-                {
-                    _mutex.ReleaseMutex();
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                try
-                {
-                    _mutex.Dispose();
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                _mutex = null;
-            }
-
-            try
-            {
-                if (_notifyIcon != null)
-                    _notifyIcon.Dispose();
-            }
-            catch
-            {
-                // ignored
-            }
         }
 
         /// <summary>
@@ -199,8 +216,6 @@ namespace WinMemoryCleaner
                         Environment.Exit(0);
                     }
                 }
-
-                GC.KeepAlive(_mutex);
 
                 // Services
                 ComputerService = new ComputerService();
