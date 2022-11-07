@@ -97,5 +97,28 @@ namespace WinMemoryCleaner
                 SystemWorkingSet = 32
             }
         }
+
+        /// <summary>
+        /// Notification Icon
+        /// </summary>
+        public enum NotificationIcon
+        {
+            /// <summary>
+            /// None
+            /// </summary>
+            None,
+            /// <summary>
+            /// Information
+            /// </summary>
+            Information,
+            /// <summary>
+            /// Warning
+            /// </summary>
+            Warning,
+            /// <summary>
+            /// Error
+            /// </summary>
+            Error
+        }
     }
 }

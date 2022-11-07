@@ -6,8 +6,11 @@ namespace WinMemoryCleaner
     {
         internal static class App
         {
+            internal const string Guid = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
             public const string License = "GNU General Public License v3.0";
+            internal const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
+            internal const string Version = "2.0.0.0";
 
             internal static class Author
             {
@@ -41,6 +44,11 @@ namespace WinMemoryCleaner
             internal static class PrivilegeAttribute
             {
                 internal const int Enabled = 2;
+            }
+
+            internal static class ShowWindow
+            {
+                internal const int Restore = 9; // SW_RESTORE
             }
 
             internal static class SystemErrorCode

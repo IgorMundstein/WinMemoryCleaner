@@ -25,17 +25,15 @@ namespace WinMemoryCleaner
         /// Initializes a new instance of the <see cref="MainViewModel" /> class.
         /// </summary>
         /// <param name="computerService">Computer service</param>
-        /// <param name="configurator">Configurator</param>
-        /// <param name="loadingService">Loading service</param>
-        /// <param name="logger">Logger</param>
-        public MainViewModel(IComputerService computerService, IConfigurator configurator, ILoadingService loadingService, ILogger logger)
-            : base(configurator, loadingService, logger)
+        /// <param name="notificationService">Notification service</param>
+        public MainViewModel(IComputerService computerService, INotificationService notificationService)
+            : base(notificationService)
         {
             _computerService = computerService;
 
             Computer = new Computer();
             MemoryCleanCommand = new RelayCommand(MemoryClean, CanExecuteMemoryClean);
-            
+
             Monitor();
         }
 
@@ -80,29 +78,29 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return Configurator.Config.MemoryAreas;
+                return Settings.MemoryAreas;
             }
             set
             {
-                if ((Configurator.Config.MemoryAreas & value) != 0)
-                    Configurator.Config.MemoryAreas &= ~value;
+                if ((Settings.MemoryAreas & value) != 0)
+                    Settings.MemoryAreas &= ~value;
                 else
-                    Configurator.Config.MemoryAreas |= value;
+                    Settings.MemoryAreas |= value;
 
                 switch (value)
                 {
                     case Enums.Memory.Area.StandbyList:
-                        if ((Configurator.Config.MemoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
-                            Configurator.Config.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                        if ((Settings.MemoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
+                            Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
                         break;
 
                     case Enums.Memory.Area.StandbyListLowPriority:
-                        if ((Configurator.Config.MemoryAreas & Enums.Memory.Area.StandbyList) != 0)
-                            Configurator.Config.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
+                        if ((Settings.MemoryAreas & Enums.Memory.Area.StandbyList) != 0)
+                            Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
                         break;
                 }
 
-                Configurator.Save();
+                Settings.Save();
                 RaisePropertyChanged();
             }
         }
@@ -165,7 +163,7 @@ namespace WinMemoryCleaner
             while (!_monitorWorker.CancellationPending)
             {
                 Computer.Memory = _computerService.GetMemory();
-                
+
                 RaisePropertyChanged(() => Computer);
 
                 if (IsInDesignMode)
@@ -209,7 +207,10 @@ namespace WinMemoryCleaner
                 Logger.Flush();
 
                 // Memory clean
-                _computerService.MemoryClean(Configurator.Config.MemoryAreas);
+                _computerService.MemoryClean(Settings.MemoryAreas);
+
+                // Notification
+                Notify(Localization.MemoryCleaned);
             }
             finally
             {

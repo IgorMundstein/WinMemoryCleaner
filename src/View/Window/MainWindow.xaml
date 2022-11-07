@@ -29,7 +29,7 @@
 
         <GroupBox Grid.Column="0" Grid.Row="0" Margin="0, 0, 2.5, 0">
             <GroupBox.Header>
-                <TextBlock Text="{x:Static local:Localization.ConfigMemoryAreas}" FontWeight="Normal" />
+                <TextBlock Text="{x:Static local:Localization.SettingsMemoryAreas}" FontWeight="Normal" />
             </GroupBox.Header>
             <StackPanel Margin="3, 5">
                 <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.CombinedPageList}}">

@@ -11,7 +11,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Computer Service
     /// </summary>
-    internal class ComputerService : Service, IComputerService
+    internal class ComputerService : IComputerService
     {
         #region Fields
 
@@ -23,8 +23,7 @@ namespace WinMemoryCleaner
 
         #region Constructor
 
-        internal ComputerService(IConfigurator configurator, ILogger logger)
-            : base(configurator, logger)
+        internal ComputerService()
         {
             _memory = new Memory();
             _memoryStatusEx = new Structs.Windows.MemoryStatusEx();

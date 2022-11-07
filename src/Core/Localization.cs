@@ -22,7 +22,7 @@ namespace WinMemoryCleaner
                 { "Português", Enums.Culture.Portuguese }
             };
 
-            Load(DependencyInjection.Configurator.Config.Culture);
+            Load(Settings.Culture);
         }
 
         #endregion
@@ -40,8 +40,6 @@ namespace WinMemoryCleaner
 
         public static string Completed { get; private set; }
 
-        public static string ConfigMemoryAreas { get; private set; }
-
         public static string ErrorAdminPrivilegeRequired { get; private set; }
 
         public static string ErrorCanNotSaveLog { get; private set; }
@@ -49,6 +47,8 @@ namespace WinMemoryCleaner
         public static string ErrorFeatureIsNotSupported { get; private set; }
 
         public static string Log { get; private set; }
+
+        public static string MemoryCleaned { get; private set; }
 
         public static string MemoryCleanUp { get; private set; }
 
@@ -63,6 +63,14 @@ namespace WinMemoryCleaner
         public static string MemoryStandbyList { get; private set; }
 
         public static string MemorySystemWorkingSet { get; private set; }
+
+        public static string NotifyMenuExit { get; private set; }
+
+        public static string NotifyMenuHide { get; private set; }
+
+        public static string NotifyMenuShow { get; private set; }
+
+        public static string SettingsMemoryAreas { get; private set; }
 
         #endregion
 
@@ -94,11 +102,11 @@ namespace WinMemoryCleaner
                 case Enums.Culture.English:
                     About = "About";
                     Completed = "Completed";
-                    ConfigMemoryAreas = "Memory Areas";
                     ErrorAdminPrivilegeRequired = "This operation requires administrator privileges ({0})";
                     ErrorCanNotSaveLog = "Can not save LOG: {0} (Exception: {1})";
                     ErrorFeatureIsNotSupported = "{0} clean is not supported on this operating system version";
                     Log = "Log";
+                    MemoryCleaned = "Memory cleaned";
                     MemoryCleanUp = "Clean up memory";
                     MemoryCombinedPageList = "Combined Page List";
                     MemoryLowPriorityStandbyList = "Standby List (Low Priority)";
@@ -106,16 +114,20 @@ namespace WinMemoryCleaner
                     MemoryProcessesWorkingSet = "Processes Working Set";
                     MemoryStandbyList = "Standby List";
                     MemorySystemWorkingSet = "System Working Set";
+                    NotifyMenuExit = "Exit";
+                    NotifyMenuHide= "Hide";
+                    NotifyMenuShow = "Show";
+                    SettingsMemoryAreas = "Memory Areas";
                     break;
 
                 case Enums.Culture.Portuguese:
                     About = "Sobre";
                     Completed = "Completado";
-                    ConfigMemoryAreas = "Areas de Memória";
                     ErrorAdminPrivilegeRequired = "Esta operação requer privilégios de administrador ({0})";
                     ErrorCanNotSaveLog = "Não é possível salvar o LOG: {0} (Exceção: {1})";
                     ErrorFeatureIsNotSupported = "{0} clean não é compatível com esta versão do sistema operacional";
                     Log = "Log";
+                    MemoryCleaned = "Memória limpa";
                     MemoryCleanUp = "Limpar a memória";
                     MemoryCombinedPageList = "Lista de Páginas Combinadas";
                     MemoryLowPriorityStandbyList = "Lista de Espera (Baixa Prioridade)";
@@ -123,6 +135,10 @@ namespace WinMemoryCleaner
                     MemoryProcessesWorkingSet = "Conjunto de Trabalho de Processos";
                     MemoryStandbyList = "Lista de Espera";
                     MemorySystemWorkingSet = "Conjunto de Trabalho do Sistema";
+                    NotifyMenuExit = "Fechar";
+                    NotifyMenuHide = "Ocultar";
+                    NotifyMenuShow = "Mostrar";
+                    SettingsMemoryAreas = "Areas de Memória";
                     break;
 
                 default:

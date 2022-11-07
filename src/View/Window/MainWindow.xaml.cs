@@ -16,9 +16,6 @@ namespace WinMemoryCleaner
         internal MainWindow()
         {
             InitializeComponent();
-#if RELEASE
-            Topmost = true;
-#endif
         }
 
         /// <summary>

@@ -10,13 +10,13 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Logger
     /// </summary>
-    internal class Logger : ILogger
+    internal static class Logger
     {
         #region Fields
 
-        private Enums.Log.Level _level = Enums.Log.Level.Debug | Enums.Log.Level.Information | Enums.Log.Level.Warning | Enums.Log.Level.Error;
+        private static Enums.Log.Level _level = Enums.Log.Level.Debug | Enums.Log.Level.Information | Enums.Log.Level.Warning | Enums.Log.Level.Error;
         private static readonly ObservableCollection<Log> _logs = new ObservableCollection<Log>();
-        private readonly ReadOnlyObservableCollection<Log> _logsReadOnly = new ReadOnlyObservableCollection<Log>(_logs);
+        private static readonly ReadOnlyObservableCollection<Log> _logsReadOnly = new ReadOnlyObservableCollection<Log>(_logs);
 
         #endregion Fields
 
@@ -28,7 +28,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The log level.
         /// </value>
-        public Enums.Log.Level Level
+        public static Enums.Log.Level Level
         {
             set
             {
@@ -59,7 +59,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The logs.
         /// </value>
-        public ReadOnlyObservableCollection<Log> Logs
+        public static ReadOnlyObservableCollection<Log> Logs
         {
             get
             {
@@ -76,7 +76,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="method">Method</param>
-        public void Debug(string message, [CallerMemberName] string method = null)
+        public static void Debug(string message, [CallerMemberName] string method = null)
         {
             Log(Enums.Log.Level.Debug, message, method);
         }
@@ -87,7 +87,7 @@ namespace WinMemoryCleaner
         /// <param name="exception">Exception</param>
         /// <param name="message">Custom message about the Exception</param>
         /// <param name="method">Method</param>
-        public void Error(Exception exception, string message = null, [CallerMemberName] string method = null)
+        public static void Error(Exception exception, string message = null, [CallerMemberName] string method = null)
         {
             if (string.IsNullOrWhiteSpace(message))
                 message = exception.GetBaseException().Message;
@@ -117,7 +117,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="method">Method</param>
-        public void Error(string message, [CallerMemberName] string method = null)
+        public static void Error(string message, [CallerMemberName] string method = null)
         {
             Log(Enums.Log.Level.Error, message, method);
         }
@@ -127,7 +127,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="type">Type</param>
-        private void Event(string message, EventLogEntryType type = EventLogEntryType.Information)
+        private static void Event(string message, EventLogEntryType type = EventLogEntryType.Information)
         {
             try
             {
@@ -142,7 +142,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Flushes the Logs
         /// </summary>
-        public void Flush()
+        public static void Flush()
         {
             System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate { _logs.Clear(); });
         }
@@ -152,7 +152,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="method">Method</param>
-        public void Information(string message, [CallerMemberName] string method = null)
+        public static void Information(string message, [CallerMemberName] string method = null)
         {
             Log(Enums.Log.Level.Information, message, method);
         }
@@ -163,7 +163,7 @@ namespace WinMemoryCleaner
         /// <param name="level">Level</param>
         /// <param name="message">Message</param>
         /// <param name="method">Method</param>
-        private void Log(Enums.Log.Level level, string message, [CallerMemberName] string method = null)
+        private static void Log(Enums.Log.Level level, string message, [CallerMemberName] string method = null)
         {
             try
             {
@@ -243,7 +243,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="method">Method</param>
-        public void Warning(string message, [CallerMemberName] string method = null)
+        public static void Warning(string message, [CallerMemberName] string method = null)
         {
             Log(Enums.Log.Level.Warning, message, method);
         }

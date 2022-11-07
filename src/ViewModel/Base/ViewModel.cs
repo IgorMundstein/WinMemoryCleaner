@@ -11,7 +11,7 @@ namespace WinMemoryCleaner
         #region Fields
 
         private bool _isBusy;
-        private readonly ILoadingService _loadingService;
+        private readonly INotificationService _notificationService;
 
         #endregion
 
@@ -20,24 +20,15 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewModel" /> class.
         /// </summary>
-        /// <param name="configurator">Configurator</param>
-        /// <param name="loadingService">Loading service</param>
-        /// <param name="logger">Logger</param>
-        protected ViewModel(IConfigurator configurator, ILoadingService loadingService, ILogger logger)
+        /// <param name="notificationService">Notification service</param>
+        protected ViewModel(INotificationService notificationService)
         {
-            Configurator = configurator;
-            _loadingService = loadingService;
-            Logger = logger;
+            _notificationService = notificationService;
         }
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Logger
-        /// </summary>
-        protected readonly IConfigurator Configurator;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is busy.
@@ -55,7 +46,7 @@ namespace WinMemoryCleaner
             {
                 try
                 {
-                    _loadingService.Loading(value);
+                    _notificationService.Loading(value);
                 }
                 catch
                 {
@@ -81,10 +72,21 @@ namespace WinMemoryCleaner
             }
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
-        /// Logger
+        /// Displays a Notification
         /// </summary>
-        protected readonly ILogger Logger;
+        /// <param name="message">The text</param>
+        /// <param name="title">The title</param>
+        /// <param name="timeout">The time period, in seconds</param>
+        /// <param name="icon">The icon</param>
+        protected void Notify(string message, string title = null, int timeout = 5, Enums.NotificationIcon icon = Enums.NotificationIcon.None)
+        {
+            _notificationService.Notify(message, title, timeout, icon);
+        }
 
         #endregion
     }
