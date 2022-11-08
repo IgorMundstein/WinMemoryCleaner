@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text;
 
 namespace WinMemoryCleaner
 {
@@ -106,6 +107,9 @@ namespace WinMemoryCleaner
         /// <param name="areas">The areas.</param>
         public void MemoryClean(Enums.Memory.Area areas)
         {
+            StringBuilder errorLog = new StringBuilder();
+            StringBuilder infoLog = new StringBuilder();
+
             // Clean Processes Working Set
             if ((areas & Enums.Memory.Area.ProcessesWorkingSet) != 0)
             {
@@ -113,11 +117,11 @@ namespace WinMemoryCleaner
                 {
                     MemoryCleanProcessesWorkingSet();
 
-                    Logger.Information(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Localization.MemoryProcessesWorkingSet, Localization.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    infoLog.AppendLine(string.Format("- {0} ({1})", Localization.MemoryProcessesWorkingSet, Localization.Completed.ToUpper()));
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e);
+                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", Localization.MemoryProcessesWorkingSet, Localization.Error.ToUpper(), e.GetBaseException().Message));
                 }
             }
 
@@ -128,11 +132,11 @@ namespace WinMemoryCleaner
                 {
                     MemoryCleanSystemWorkingSet();
 
-                    Logger.Information(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Localization.MemorySystemWorkingSet, Localization.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    infoLog.AppendLine(string.Format("- {0} ({1})", Localization.MemorySystemWorkingSet, Localization.Completed.ToUpper()));
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e);
+                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", Localization.MemorySystemWorkingSet, Localization.Error.ToUpper(), e.GetBaseException().Message));
                 }
             }
 
@@ -143,28 +147,28 @@ namespace WinMemoryCleaner
                 {
                     MemoryCleanModifiedPageList();
 
-                    Logger.Information(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Localization.MemoryModifiedPageList, Localization.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    infoLog.AppendLine(string.Format("- {0} ({1})", Localization.MemoryModifiedPageList, Localization.Completed.ToUpper()));
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e);
+                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", Localization.MemoryModifiedPageList, Localization.Error.ToUpper(), e.GetBaseException().Message));
                 }
             }
 
             // Clean Standby List
             if ((areas & (Enums.Memory.Area.StandbyList | Enums.Memory.Area.StandbyListLowPriority)) != 0)
             {
+                var lowPriority = (areas & Enums.Memory.Area.StandbyListLowPriority) != 0;
+
                 try
                 {
-                    var lowPriority = (areas & Enums.Memory.Area.StandbyListLowPriority) != 0;
-
                     MemoryCleanStandbyList(lowPriority);
 
-                    Logger.Information(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", lowPriority ? Localization.MemoryLowPriorityStandbyList : Localization.MemoryStandbyList, Localization.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    infoLog.AppendLine(string.Format("- {0} ({1})", lowPriority ? Localization.MemoryLowPriorityStandbyList : Localization.MemoryStandbyList, Localization.Completed.ToUpper()));
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e);
+                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", lowPriority ? Localization.MemoryLowPriorityStandbyList : Localization.MemoryStandbyList, Localization.Error.ToUpper(), e.GetBaseException().Message));
                 }
             }
 
@@ -175,16 +179,43 @@ namespace WinMemoryCleaner
                 {
                     MemoryCleanCombinedPageList();
 
-                    Logger.Information(string.Format(CultureInfo.CurrentCulture, "{0} ({1})", Localization.MemoryCombinedPageList, Localization.Completed.ToUpper(CultureInfo.CurrentCulture)));
+                    infoLog.AppendLine(string.Format("- {0} ({1})", Localization.MemoryCombinedPageList, Localization.Completed.ToUpper()));
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e);
+                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", Localization.MemoryCombinedPageList, Localization.Error.ToUpper(), e.GetBaseException().Message));
                 }
             }
 
+            // Log
+            if (infoLog.Length > 0)
+            {
+                infoLog.Insert(0, string.Format("{0}{1}{1}", Localization.MemoryCleanReport.ToUpper(), Environment.NewLine));
+
+                Logger.Information(infoLog.ToString());
+
+                infoLog.Clear();
+            }
+
+            if (errorLog.Length > 0)
+            {
+                errorLog.Insert(0, string.Format("{0}{1}{1}", Localization.MemoryCleanReport.ToUpper(), Environment.NewLine));
+
+                Logger.Error(errorLog.ToString());
+
+                errorLog.Clear();
+            }
+
             // Garbage Collector
-            MemoryGarbageCollection();
+            try
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         /// <summary>
@@ -443,22 +474,6 @@ namespace WinMemoryCleaner
             catch (Win32Exception e)
             {
                 Logger.Error(e);
-            }
-        }
-
-        /// <summary>
-        /// Forces garbage collection.
-        /// </summary>
-        private void MemoryGarbageCollection()
-        {
-            try
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-            catch
-            {
-                // ignored
             }
         }
 

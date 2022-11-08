@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Windows.Forms;
 
 namespace WinMemoryCleaner
 {
@@ -9,6 +7,8 @@ namespace WinMemoryCleaner
     /// </summary>
     internal class ViewModelLocator : IDisposable
     {
+        #region Constructor
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewModelLocator"/> class.
         /// </summary>
@@ -16,6 +16,8 @@ namespace WinMemoryCleaner
         {
             MainViewModel = new MainViewModel(App.ComputerService, App.NotificationService);
         }
+
+        #endregion
 
         #region IDisposable
 
@@ -50,9 +52,13 @@ namespace WinMemoryCleaner
 
         #endregion
 
+        #region Properties
+
         /// <summary>
         /// Main View Model
         /// </summary>
         public MainViewModel MainViewModel { get; private set; }
+
+        #endregion
     }
 }

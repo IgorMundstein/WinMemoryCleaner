@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+
 // ReSharper disable StringLiteralTypo
 
 namespace WinMemoryCleaner
@@ -15,7 +16,7 @@ namespace WinMemoryCleaner
 
         static Localization()
         {
-            Cultures = new Dictionary<string, Enums.Culture> 
+            Cultures = new Dictionary<string, Enums.Culture>
             {
                 { "English", Enums.Culture.English },
                 { "Español", Enums.Culture.Spanish },
@@ -40,6 +41,8 @@ namespace WinMemoryCleaner
 
         public static string Completed { get; private set; }
 
+        public static string Error { get; private set; }
+
         public static string ErrorAdminPrivilegeRequired { get; private set; }
 
         public static string ErrorCanNotSaveLog { get; private set; }
@@ -49,6 +52,8 @@ namespace WinMemoryCleaner
         public static string Log { get; private set; }
 
         public static string MemoryCleaned { get; private set; }
+
+        public static string MemoryCleanReport { get; private set; }
 
         public static string MemoryCleanUp { get; private set; }
 
@@ -102,11 +107,13 @@ namespace WinMemoryCleaner
                 case Enums.Culture.English:
                     About = "About";
                     Completed = "Completed";
+                    Error = "Error";
                     ErrorAdminPrivilegeRequired = "This operation requires administrator privileges ({0})";
                     ErrorCanNotSaveLog = "Can not save LOG: {0} (Exception: {1})";
                     ErrorFeatureIsNotSupported = "{0} clean is not supported on this operating system version";
                     Log = "Log";
                     MemoryCleaned = "Memory cleaned";
+                    MemoryCleanReport = "Memory clean report";
                     MemoryCleanUp = "Clean up memory";
                     MemoryCombinedPageList = "Combined Page List";
                     MemoryLowPriorityStandbyList = "Standby List (Low Priority)";
@@ -115,7 +122,7 @@ namespace WinMemoryCleaner
                     MemoryStandbyList = "Standby List";
                     MemorySystemWorkingSet = "System Working Set";
                     NotifyMenuExit = "Exit";
-                    NotifyMenuHide= "Hide";
+                    NotifyMenuHide = "Hide";
                     NotifyMenuShow = "Show";
                     SettingsMemoryAreas = "Memory Areas";
                     break;
@@ -123,11 +130,13 @@ namespace WinMemoryCleaner
                 case Enums.Culture.Portuguese:
                     About = "Sobre";
                     Completed = "Completado";
+                    Error = "Erro";
                     ErrorAdminPrivilegeRequired = "Esta operação requer privilégios de administrador ({0})";
                     ErrorCanNotSaveLog = "Não é possível salvar o LOG: {0} (Exceção: {1})";
                     ErrorFeatureIsNotSupported = "{0} clean não é compatível com esta versão do sistema operacional";
                     Log = "Log";
                     MemoryCleaned = "Memória limpa";
+                    MemoryCleanReport = "Relatório de limpeza de memória";
                     MemoryCleanUp = "Limpar a memória";
                     MemoryCombinedPageList = "Lista de Páginas Combinadas";
                     MemoryLowPriorityStandbyList = "Lista de Espera (Baixa Prioridade)";
