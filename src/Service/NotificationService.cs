@@ -51,9 +51,9 @@ namespace WinMemoryCleaner
             {
                 _notifyIcon.ShowBalloonTip(timeout * 1000, title, message, (ToolTipIcon)icon);
             }
-            catch (Exception e)
+            catch
             {
-                Logger.Error(e);
+                // ignored
             }
         }
     }

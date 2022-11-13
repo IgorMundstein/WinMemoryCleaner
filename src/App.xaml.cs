@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Net;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
@@ -16,9 +21,11 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
+        private static DateTimeOffset _lastUpdateCheck;
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
         private static ToolStripItem _notifyMenuShowHide;
+        private static ProcessStartInfo _updateProcess;
 
         #endregion
 
@@ -37,6 +44,7 @@ namespace WinMemoryCleaner
 #endif
 
             // Events
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             Dispatcher.UnhandledException += OnDispatcherUnhandledException;
         }
@@ -48,6 +56,8 @@ namespace WinMemoryCleaner
         internal static IComputerService ComputerService { get; private set; }
 
         internal static INotificationService NotificationService { get; private set; }
+
+        internal static Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
 
         #endregion
 
@@ -110,14 +120,6 @@ namespace WinMemoryCleaner
         #region Methods
 
         /// <summary>
-        /// Checks for updates.
-        /// </summary>
-        public void CheckForUpdates()
-        {
-            //TODO: Implement auto-update
-        }
-
-        /// <summary>
         /// Called when [dispatcher unhandled exception].
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -131,12 +133,23 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Windows.Application.Exit" /> event.
+        /// Called when [process exit].
         /// </summary>
-        /// <param name="e">An <see cref="T:System.Windows.ExitEventArgs" /> that contains the event data.</param>
-        protected override void OnExit(ExitEventArgs e)
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void OnProcessExit(object sender, EventArgs e)
         {
             Dispose();
+
+            try
+            {
+                if (_updateProcess != null)
+                    Process.Start(_updateProcess);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         /// <summary>
@@ -217,11 +230,12 @@ namespace WinMemoryCleaner
                     }
                 }
 
-                // Services
-                ComputerService = new ComputerService();
+                // Update to the latest version
+                Update(e.Args);
 
                 // Process command line arguments
                 Enums.Memory.Area memoryAreas = Enums.Memory.Area.None;
+                string updateNotification = null;
 
                 foreach (string arg in e.Args)
                 {
@@ -232,7 +246,18 @@ namespace WinMemoryCleaner
 
                     if (Enum.TryParse(value, out area))
                         memoryAreas |= area;
+
+                    // Version (Update)
+                    if (value.Equals(Version.ToString()))
+                    {
+                        updateNotification = string.Format(CultureInfo.CurrentCulture, Localization.UpdatedToVersion, string.Format("{0}.{1}", Version.Major, Version.Minor));
+
+                        Logger.Information(updateNotification);
+                    }
                 }
+
+                // Services
+                ComputerService = new ComputerService();
 
                 // GUI
                 if (memoryAreas == Enums.Memory.Area.None)
@@ -256,6 +281,10 @@ namespace WinMemoryCleaner
 
                     // Services
                     NotificationService = new NotificationService(_notifyIcon);
+
+                    // Update notification
+                    if (!string.IsNullOrWhiteSpace(updateNotification))
+                        NotificationService.Notify(updateNotification);
 
                     new MainWindow().Show();
                 }
@@ -295,6 +324,61 @@ namespace WinMemoryCleaner
             try
             {
                 System.Windows.MessageBox.Show(exception.GetBaseException().Message, Constants.App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        /// <summary>
+        /// Update to the latest version
+        /// </summary>
+        public static void Update(params string[] args)
+        {
+            try
+            {
+                if (!Settings.KeepAppUpToDate || DateTimeOffset.Now.Subtract(_lastUpdateCheck).TotalHours < Constants.App.UpdateInterval)
+                    return;
+
+                _lastUpdateCheck = DateTimeOffset.Now;
+
+                using (WebClient client = new WebClient())
+                {
+                    ServicePointManager.DefaultConnectionLimit = 10;
+                    ServicePointManager.Expect100Continue = true;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | (SecurityProtocolType)3072 | (SecurityProtocolType)768 | SecurityProtocolType.Tls;
+
+                    var assemblyInfo = client.DownloadString(Constants.App.Repository.AssemblyInfoUri);
+
+                    var assemblyVersionMatch = Regex.Match(assemblyInfo, @"AssemblyVersion\(""(.*)""\)\]");
+
+                    if (!assemblyVersionMatch.Success)
+                        return;
+
+                    var newestVersion = Version.Parse(assemblyVersionMatch.Groups[1].Value);
+
+                    if (Version < newestVersion)
+                    {
+                        var exe = AppDomain.CurrentDomain.FriendlyName;
+                        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
+                        var temp = Path.Combine(Path.GetTempPath(), exe);
+
+                        if (File.Exists(temp))
+                            File.Delete(temp);
+
+                        client.DownloadFile(Constants.App.Repository.LatestExeUri, temp);
+
+                        _updateProcess = new ProcessStartInfo
+                        {
+                            FileName = "cmd",
+                            Arguments = string.Format(@"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, temp, path, newestVersion, string.Join(" ", args)),
+                            WindowStyle = ProcessWindowStyle.Hidden
+                        };
+
+                        Environment.Exit(0);
+                    }
+                }
             }
             catch
             {

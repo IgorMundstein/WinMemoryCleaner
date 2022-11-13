@@ -117,14 +117,26 @@ namespace WinMemoryCleaner
         {
             if (disposing)
             {
-                try
+                if (_monitorWorker != null)
                 {
-                    if (_monitorWorker != null)
+
+                    try
+                    {
+                        _monitorWorker.CancelAsync();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    try
+                    {
                         _monitorWorker.Dispose();
-                }
-                catch
-                {
-                    // ignored
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 }
             }
         }
@@ -178,6 +190,7 @@ namespace WinMemoryCleaner
                 using (_monitorWorker = new BackgroundWorker())
                 {
                     _monitorWorker.DoWork += Monitor;
+                    _monitorWorker.WorkerSupportsCancellation = true;
                     _monitorWorker.RunWorkerAsync();
                 }
             }
@@ -198,10 +211,16 @@ namespace WinMemoryCleaner
 
             while (!_monitorWorker.CancellationPending)
             {
+                // Update memory info
                 Computer.Memory = _computerService.GetMemory();
 
                 RaisePropertyChanged(() => Computer);
 
+                // Update app
+                if (!IsBusy)
+                    App.Update();
+
+                // Delay
                 Thread.Sleep(3000);
             }
         }

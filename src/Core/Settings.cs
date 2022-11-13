@@ -11,6 +11,7 @@ namespace WinMemoryCleaner
         {
             // Default values
             Culture = Enums.Culture.English;
+            KeepAppUpToDate = true;
             MemoryAreas = Enums.Memory.Area.ModifiedPageList | Enums.Memory.Area.ProcessesWorkingSet | Enums.Memory.Area.StandbyList | Enums.Memory.Area.SystemWorkingSet;
 
             // User values
@@ -24,6 +25,8 @@ namespace WinMemoryCleaner
 
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.RegistryKey.Culture, Culture)), out culture) && culture.IsValid())
                             Culture = culture;
+
+                        KeepAppUpToDate = Convert.ToBoolean(key.GetValue(Constants.App.RegistryKey.Culture, Culture));
 
                         Enums.Memory.Area memoryAreas;
 
@@ -59,6 +62,8 @@ namespace WinMemoryCleaner
 
         internal static Enums.Culture Culture { get; set; }
 
+        internal static bool KeepAppUpToDate { get; set; }
+
         internal static Enums.Memory.Area MemoryAreas { get; set; }
 
         #endregion
@@ -74,6 +79,7 @@ namespace WinMemoryCleaner
                     if (key != null)
                     {
                         key.SetValue(Constants.App.RegistryKey.Culture, (int)Culture);
+                        key.SetValue(Constants.App.RegistryKey.KeepAppUpToDate, KeepAppUpToDate ? 1 : 0);
                         key.SetValue(Constants.App.RegistryKey.MemoryAreas, (int)MemoryAreas);
                     }
                 }

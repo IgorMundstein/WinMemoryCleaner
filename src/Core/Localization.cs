@@ -77,6 +77,8 @@ namespace WinMemoryCleaner
 
         public static string SettingsMemoryAreas { get; private set; }
 
+        public static string UpdatedToVersion { get; private set; }
+
         #endregion
 
         #region Methods
@@ -125,6 +127,7 @@ namespace WinMemoryCleaner
                     NotifyMenuHide = "Hide";
                     NotifyMenuShow = "Show";
                     SettingsMemoryAreas = "Memory Areas";
+                    UpdatedToVersion = "Updated to version {0}";
                     break;
 
                 case Enums.Culture.Portuguese:
@@ -148,6 +151,7 @@ namespace WinMemoryCleaner
                     NotifyMenuHide = "Ocultar";
                     NotifyMenuShow = "Mostrar";
                     SettingsMemoryAreas = "Areas de Memória";
+                    UpdatedToVersion = "Atualizado para versão {0}";
                     break;
 
                 default:

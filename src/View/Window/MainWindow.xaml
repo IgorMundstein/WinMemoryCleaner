@@ -59,8 +59,8 @@
             </GroupBox.Header>
             <StackPanel>
                 <TextBlock Margin="3, 0, 0, 0">           
-                    <Hyperlink NavigateUri="{x:Static local:Constants+App+Author.WebsiteUri}" KeyboardNavigation.IsTabStop="False" RequestNavigate="Hyperlink_RequestNavigate">
-                        <TextBlock Text="{x:Static local:Constants+App+Author.Website}" />
+                    <Hyperlink NavigateUri="{x:Static local:Constants+App+Repository.Uri}" KeyboardNavigation.IsTabStop="False" RequestNavigate="Hyperlink_RequestNavigate">
+                        <TextBlock Text="{x:Static local:Constants+App+Author.Name}" />
                     </Hyperlink>
                 </TextBlock>
                 <TextBlock Text="{x:Static local:Constants+App.License}" TextWrapping="Wrap" Margin="3, 3, 0, 0" FontSize="14" />
