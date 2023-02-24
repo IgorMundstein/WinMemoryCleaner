@@ -106,6 +106,8 @@
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
+    <Compile Include="Interfaces\IOperatingSystem.cs" />
+    <Compile Include="Interfaces\IMemoryService.cs" />
     <Compile Include="Model\Computer.cs" />
     <Compile Include="Model\Log.cs" />
     <Compile Include="ViewModel\Base\ObservableObject.cs" />

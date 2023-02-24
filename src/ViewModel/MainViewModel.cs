@@ -259,7 +259,7 @@ namespace WinMemoryCleaner
                 Logger.Flush();
 
                 // Memory clean
-                _computerService.MemoryClean(Settings.MemoryAreas);
+                _computerService.CleanMemory(Settings.MemoryAreas);
 
                 // Notification
                 Notify(Localization.MemoryCleaned);

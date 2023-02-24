@@ -105,7 +105,7 @@ namespace WinMemoryCleaner
         /// Cleans the computer memory
         /// </summary>
         /// <param name="areas">The areas.</param>
-        public void MemoryClean(Enums.Memory.Area areas)
+        public void CleanMemory(Enums.Memory.Area areas)
         {
             StringBuilder errorLog = new StringBuilder();
             StringBuilder infoLog = new StringBuilder();

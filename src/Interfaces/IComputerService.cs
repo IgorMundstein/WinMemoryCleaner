@@ -1,11 +1,6 @@
 ﻿namespace WinMemoryCleaner
 {
-    internal interface IComputerService
+    internal interface IComputerService : IMemoryService, IOperatingSystem
     {
-        Memory GetMemory();
-
-        OperatingSystem GetOperatingSystem();
-
-        void MemoryClean(Enums.Memory.Area areas);
     }
 }

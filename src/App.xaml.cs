@@ -290,7 +290,7 @@ namespace WinMemoryCleaner
                 }
                 else // NO GUI
                 {
-                    ComputerService.MemoryClean(memoryAreas);
+                    ComputerService.CleanMemory(memoryAreas);
 
                     Shutdown();
                 }
