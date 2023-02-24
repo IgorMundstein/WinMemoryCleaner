@@ -1,11 +1,10 @@
 # Windows Memory Cleaner
-[![](https://img.shields.io/badge/Windows-Vista%20|%207%20|%208%20|%2010%20|%2011-blue?style=for-the-badge)](#)
-[![](https://img.shields.io/badge/Windows%20Server-2008%20|%202012%20|%202016%20|%202019%20|%202022-blue?style=for-the-badge)](#)
-
+[![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#)
+[![](https://img.shields.io/badge/Windows%20Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#)
 [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](#) 
 [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](#) 
 
-The app is a free RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to get the used memory back. That is where you use Windows Memory Cleaner to clean your memory, so you can carry on working without wasting time restarting your Windows. 
+The app is a free RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to regain the used memory. That is where you use Windows Memory Cleaner to clean your memory, so you can work without wasting time restarting your system.
 
 [![Download)](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?color=red&label=DOWNLOAD&logo=windows)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.zip)
 
@@ -18,8 +17,8 @@ It gives you the ability to clean up the memory in 6 different ways:
 
 - `Clean Combined Page List` - Flushes blocks from the combined page list.
 - `Clean Modified Page List` - Flushes memory from the Modified page list, writing unsaved data to disk and moving the pages to the Standby list.
-- `Clean Processes Working Set` - Removes memory from all user-mode and system working sets and moves it to the Standby or Modified page lists. Note that by the time, processes that run any code will necessarily populate their working sets to do so.
-- `Clean Standby List`* - Discards pages from all Standby lists, and moves them to the Free list.
+- `Clean Processes Working Set` - Removes memory from all user-mode and system working sets and moves it to the Standby or Modified page lists. Note that by the time processes run, any code will necessarily populate their working sets to do so.
+- `Clean Standby List`* - Discards pages from all Standby lists and moves them to the Free list.
 - `Clean Standby List (Low Priority)` - Flushes pages from the lowest-priority Standby list to the Free list.
 - `Clean System Working Set` - Removes memory from the system cache working set.
 
@@ -34,6 +33,18 @@ The arguments below can be used to run the program silently.
 Logs are saved on windows event.
 
 ![](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/docs/windows-event-log.png)
+
+## 📝 Development notes
+Project requirements.
+
+- Microsoft.NET 4 framework version for Windows retro compatibility
+- Minimalistic user interface
+- Model-View-ViewModel (MVVM) design pattern
+- No third library or DLL dependencies
+- S.O.L.I.D. Principles of Object-Oriented
+- Use of Windows native methods for memory management
+- Windows Presentation Foundation (WPF) for user interface
+- Windows Registry to save user config
 
 ## ❤️ Donate
 If you have found the app helpful and want to support me.
