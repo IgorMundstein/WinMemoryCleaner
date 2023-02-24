@@ -5,7 +5,7 @@
 [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](#) 
 [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](#) 
 
-The app is a free RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to get the used memory back. That is where you use Windows Memory Cleaner to clean your memory, so you can carry on working without wasting time restarting your Windows. 
+The app is a free RAM cleaner. There are times when programs do not release the memory they used, making the machine slow, but you don’t want to restart the system to get the used memory back. That is where you use Windows Memory Cleaner to clean your memory, so you can carry on working without wasting time restarting your system. 
 
 [![Download)](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?color=red&label=DOWNLOAD&logo=windows)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/1.1/WinMemoryCleaner.zip)
 
