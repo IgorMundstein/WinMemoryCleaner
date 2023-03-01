@@ -35,7 +35,7 @@ namespace WinMemoryCleaner
                 internal ulong ullAvailExtendedVirtual; // Reserved. This value is always 0.
 
                 /// <summary>
-                /// Initializes a new instance of the <see cref="MemoryStatusEx"/> class.
+                /// Initializes a new instance of the <see cref="MemoryStatusEx" /> class.
                 /// </summary>
                 internal MemoryStatusEx()
                 {

@@ -24,7 +24,7 @@ namespace WinMemoryCleaner
 
         #region Constructor
 
-        internal ComputerService()
+        public ComputerService()
         {
             _memory = new Memory();
             _memoryStatusEx = new Structs.Windows.MemoryStatusEx();

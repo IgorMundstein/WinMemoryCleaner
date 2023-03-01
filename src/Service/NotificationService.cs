@@ -14,10 +14,10 @@ namespace WinMemoryCleaner
         private readonly NotifyIcon _notifyIcon;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NotificationService"/> class.
+        /// Initializes a new instance of the <see cref="NotificationService" /> class.
         /// </summary>
         /// <param name="notifyIcon">Notify Icon</param>
-        internal NotificationService(NotifyIcon notifyIcon)
+        public NotificationService(NotifyIcon notifyIcon)
         {
             _notifyIcon = notifyIcon;
         }

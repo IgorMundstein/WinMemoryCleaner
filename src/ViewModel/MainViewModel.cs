@@ -13,8 +13,8 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
-        private readonly IComputerService _computerService;
         private Computer _computer;
+        private readonly IComputerService _computerService;
         private BackgroundWorker _monitorWorker;
 
         #endregion
@@ -204,7 +204,7 @@ namespace WinMemoryCleaner
         /// Monitor
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
         private void Monitor(object sender, DoWorkEventArgs e)
         {
             Computer.OperatingSystem = _computerService.GetOperatingSystem();
@@ -248,7 +248,7 @@ namespace WinMemoryCleaner
         /// Memory clean
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
         private void MemoryClean(object sender, DoWorkEventArgs e)
         {
             try

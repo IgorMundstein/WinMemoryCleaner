@@ -6,7 +6,7 @@
     internal class Computer
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Computer"/> class.
+        /// Initializes a new instance of the <see cref="Computer" /> class.
         /// </summary>
         internal Computer()
         {

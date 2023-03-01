@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Windows;
 
 namespace WinMemoryCleaner
 {
@@ -10,11 +12,20 @@ namespace WinMemoryCleaner
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ViewModelLocator"/> class.
+        /// Initializes a new instance of the <see cref="ViewModelLocator" /> class.
         /// </summary>
         public ViewModelLocator()
         {
-            MainViewModel = new MainViewModel(App.ComputerService, App.NotificationService);
+            IComputerService computerService = null;
+            INotificationService notificationService = null;
+
+            if (!IsInDesignMode)
+            {
+                computerService = DependencyInjection.Container.Resolve<IComputerService>();
+                notificationService = DependencyInjection.Container.Resolve<INotificationService>();
+            }
+
+            DependencyInjection.Container.Register(new MainViewModel(computerService, notificationService));
         }
 
         #endregion
@@ -55,9 +66,29 @@ namespace WinMemoryCleaner
         #region Properties
 
         /// <summary>
+        /// Gets a value indicating whether this instance is in design mode.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is in design mode; otherwise, <c>false</c>.
+        /// </value>
+        private bool IsInDesignMode
+        {
+            get
+            {
+                return DesignerProperties.GetIsInDesignMode(new DependencyObject());
+            }
+        }
+
+        /// <summary>
         /// Main View Model
         /// </summary>
-        public MainViewModel MainViewModel { get; private set; }
+        public MainViewModel MainViewModel 
+        {
+            get
+            {
+                return DependencyInjection.Container.Resolve<MainViewModel>();
+            }
+        }
 
         #endregion
     }

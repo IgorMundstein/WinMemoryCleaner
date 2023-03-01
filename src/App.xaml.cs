@@ -24,7 +24,6 @@ namespace WinMemoryCleaner
         private static DateTimeOffset _lastUpdateCheck;
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
-        private static ToolStripItem _notifyMenuShowHide;
         private static ProcessStartInfo _updateProcess;
 
         #endregion
@@ -32,7 +31,7 @@ namespace WinMemoryCleaner
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="App"/> class.
+        /// Initializes a new instance of the <see cref="App" /> class.
         /// </summary>
         internal App()
         {
@@ -47,15 +46,15 @@ namespace WinMemoryCleaner
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             Dispatcher.UnhandledException += OnDispatcherUnhandledException;
+
+            // DI/IOC
+            DependencyInjection.Container.Register<IComputerService, ComputerService>();
+            DependencyInjection.Container.Register<INotificationService, NotificationService>();
         }
 
         #endregion
 
         #region Properties
-
-        internal static IComputerService ComputerService { get; private set; }
-
-        internal static INotificationService NotificationService { get; private set; }
 
         internal static Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
 
@@ -123,7 +122,7 @@ namespace WinMemoryCleaner
         /// Called when [dispatcher unhandled exception].
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DispatcherUnhandledExceptionEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="DispatcherUnhandledExceptionEventArgs" /> instance containing the event data.</param>
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
@@ -136,7 +135,7 @@ namespace WinMemoryCleaner
         /// Called when [process exit].
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void OnProcessExit(object sender, EventArgs e)
         {
             Dispose();
@@ -156,21 +155,19 @@ namespace WinMemoryCleaner
         /// Called when [notify icon click].
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void OnNotifyIconClick(object sender, EventArgs e)
         {
             MouseEventArgs mouseEventArgs = e as MouseEventArgs;
 
             if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left)
-                OnNotifyMenuShowHideClick(sender, e);
+                OnNotifyMenuShowHideClick();
         }
 
         /// <summary>
         /// Called when [notify menu show hide click].
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void OnNotifyMenuShowHideClick(object sender, EventArgs e)
+        private void OnNotifyMenuShowHideClick()
         {
             if (MainWindow != null)
             {
@@ -180,18 +177,12 @@ namespace WinMemoryCleaner
                     case WindowState.Normal:
                         MainWindow.ShowInTaskbar = false;
                         MainWindow.WindowState = WindowState.Minimized;
-
-                        if (_notifyMenuShowHide != null)
-                            _notifyMenuShowHide.Text = Localization.NotifyMenuShow;
                         break;
 
                     case WindowState.Minimized:
                         MainWindow.ShowInTaskbar = true;
                         MainWindow.WindowState = WindowState.Normal;
                         MainWindow.Activate();
-
-                        if (_notifyMenuShowHide != null)
-                            _notifyMenuShowHide.Text = Localization.NotifyMenuHide;
                         break;
                 }
             }
@@ -256,9 +247,6 @@ namespace WinMemoryCleaner
                     }
                 }
 
-                // Services
-                ComputerService = new ComputerService();
-
                 // GUI
                 if (memoryAreas == Enums.Memory.Area.None)
                 {
@@ -271,26 +259,36 @@ namespace WinMemoryCleaner
 
                     // Notification Area (Menu)
                     _notifyIcon.ContextMenuStrip = new ContextMenuStrip();
+                    
+                    // Optimize
+                    _notifyIcon.ContextMenuStrip.Items.Add(Localization.Optimize, null, (sender, args) =>
+                    {
+                        var mainViewModel = DependencyInjection.Container.Resolve<MainViewModel>();
 
-                    _notifyIcon.ContextMenuStrip.Items.Add(Localization.NotifyMenuHide, null, OnNotifyMenuShowHideClick);
-                    _notifyMenuShowHide = _notifyIcon.ContextMenuStrip.Items[0];
+                        if (mainViewModel.MemoryCleanCommand.CanExecute(null))
+                            mainViewModel.MemoryCleanCommand.Execute(null);
+                    });
 
                     _notifyIcon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
 
-                    _notifyIcon.ContextMenuStrip.Items.Add(Localization.NotifyMenuExit, null, (sender, args) => { Shutdown(); });
+                    // Exit
+                    _notifyIcon.ContextMenuStrip.Items.Add(Localization.Exit, null, (sender, args) =>
+                    {
+                        Shutdown();
+                    });
 
-                    // Services
-                    NotificationService = new NotificationService(_notifyIcon);
+                    // DI/IOC
+                    DependencyInjection.Container.Register(_notifyIcon);
 
                     // Update notification
                     if (!string.IsNullOrWhiteSpace(updateNotification))
-                        NotificationService.Notify(updateNotification);
+                        DependencyInjection.Container.Resolve<NotificationService>().Notify(updateNotification);
 
                     new MainWindow().Show();
                 }
                 else // NO GUI
                 {
-                    ComputerService.CleanMemory(memoryAreas);
+                    DependencyInjection.Container.Resolve<ComputerService>().CleanMemory(memoryAreas);
 
                     Shutdown();
                 }
@@ -307,7 +305,7 @@ namespace WinMemoryCleaner
         /// Called when [unhandled exception].
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="UnhandledExceptionEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="UnhandledExceptionEventArgs" /> instance containing the event data.</param>
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Logger.Error((Exception)e.ExceptionObject);

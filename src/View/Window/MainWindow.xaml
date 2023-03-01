@@ -5,17 +5,137 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WinMemoryCleaner"
         mc:Ignorable="d"
+        AllowsTransparency="True" 
+        Background="Transparent"
         DataContext="{Binding MainViewModel, Source={StaticResource ViewModelLocator}}"
-        Title="{x:Static local:Constants+App.Title}" 
-        Icon="/WinMemoryCleaner;component/Resources/Images/WinMemoryCleaner.ico" 
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" 
-        Height="256" 
-        Width="600" 
         FontFamily="Calibri" 
         FontSize="16" 
-        FontWeight="Light">
+        FontWeight="Light"
+        Icon="/WinMemoryCleaner;component/Resources/Images/WinMemoryCleaner.ico" 
+        ResizeMode="CanMinimize" 
+        SizeToContent="WidthAndHeight" 
+        Title="{x:Static local:Constants+App.Title}" 
+        WindowStartupLocation="CenterScreen" 
+        WindowStyle="None">
 
-    <Grid Margin="5, 0, 5, 5" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+    <Border Background="{StaticResource DarkBackground}" 
+            BorderBrush="{StaticResource DarkBorderBrush}" 
+            BorderThickness="0.3" 
+            CornerRadius="8" 
+            Padding="10, 5, 10, 10"
+            TextElement.Foreground="{StaticResource DarkForeground}">
+
+        <StackPanel>
+            <!-- Title Bar -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Image Grid.Column="0" 
+                       Height="16" 
+                       Margin="0, 0, 5, 0"
+                       Source="/WinMemoryCleaner;component/Resources/Images/WinMemoryCleaner.ico" 
+                       Width="16" />
+
+                <TextBlock FontWeight="Normal" 
+                           Grid.Column="1" 
+                           Margin="0, 0, 5, 0"
+                           Text="{x:Static local:Constants+App.Title}" 
+                           TextAlignment="Left" 
+                           VerticalAlignment="Center" />
+
+                <Grid Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Background="Transparent" 
+                            BorderBrush="Transparent" 
+                            BorderThickness="0"
+                            Click="MinimizeButton_Click"
+                            Cursor="Arrow"
+                            Grid.Column="0" 
+                            ToolTip="{x:Static local:Localization.Minimize}">
+                        <Grid Height="25" 
+                              Width="30">
+                            <Path Data="M9,0 L8,1 8,1 8,1 0,1 0,1 z"
+                                  Height="11" 
+                                  HorizontalAlignment="Center" 
+                                  VerticalAlignment="Bottom" 
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}, Mode=FindAncestor}}" 
+                                  StrokeThickness="2"
+                                  Width="9" />
+                        </Grid>
+                    </Button>
+
+                    <Button Background="Transparent" 
+                            BorderBrush="Transparent" 
+                            BorderThickness="0"
+                            Click="CloseButton_Click"
+                            Cursor="Arrow"
+                            Grid.Column="1"
+                            ToolTip="{x:Static local:Localization.Close}">
+                        <Grid Height="25"
+                              Width="30">
+                            <Path Data="M0,0 L1,1 M0,1 L1,0" 
+                                  Height="8" 
+                                  Stretch="Fill" 
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}, Mode=FindAncestor}}" 
+                                  StrokeThickness="2"
+                                  Width="8" />
+                        </Grid>
+                    </Button>
+                </Grid>
+            </Grid>
+            <!-- Content -->
+            <StackPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                <GroupBox Header="{x:Static local:Localization.SettingsMemoryAreas}"
+                      Margin="0, 5, 0, 0">
+                    <StackPanel>
+                        <CheckBox Content="{x:Static local:Localization.MemoryCombinedPageList}"
+                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.CombinedPageList}}" />
+                        <CheckBox Content="{x:Static local:Localization.MemoryModifiedPageList}"
+                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ModifiedPageList}}" />
+                        <CheckBox Content="{x:Static local:Localization.MemoryProcessesWorkingSet}"
+                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ProcessesWorkingSet}}" />
+                        <CheckBox Content="{x:Static local:Localization.MemoryStandbyList}"
+                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyList}}" />
+                        <CheckBox Content="{x:Static local:Localization.MemoryLowPriorityStandbyList}"
+                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyListLowPriority}}"
+                                  Margin="0" />
+                        <CheckBox Content="{x:Static local:Localization.MemorySystemWorkingSet}"
+                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.SystemWorkingSet}}" />
+                    </StackPanel>
+                </GroupBox>
+
+                <StackPanel Margin="0, 5, 0, 0">
+                    <TextBlock FontWeight="Normal" 
+                               TextAlignment="Center"
+                               VerticalAlignment="Stretch">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0} free of {1} ({2}% Occupied)">
+                                <Binding Path="Computer.Memory.Available" />
+                                <Binding Path="Computer.Memory.Total" />
+                                <Binding Path="Computer.Memory.Usage" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+
+                    <Button Command="{Binding MemoryCleanCommand}" 
+                            Content="{x:Static local:Localization.Optimize}" 
+                            ContentStringFormat="{}{0}" 
+                            Margin="0, 10, 0, 0" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+    </Border>
+
+    <!--<Grid Margin="5, 0, 5, 5" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="210" />
             <ColumnDefinition Width="*" />
@@ -97,13 +217,13 @@
             </TextBlock.Text>
         </TextBlock>
 
-        <Button Grid.Column="1" Grid.Row="2" Content="{x:Static local:Localization.MemoryCleanUp}" ContentStringFormat="{} {0} " Foreground="Green" Cursor="Hand" Command="{Binding MemoryCleanCommand}" FontWeight="Normal" Margin="2.5, 0, 0, 1">
+        <Button Grid.Column="1" Grid.Row="2" Content="{x:Static local:Localization.Optimize}" ContentStringFormat="{} {0} " Foreground="Green" Cursor="Hand" Command="{Binding MemoryCleanCommand}" FontWeight="Normal" Margin="2.5, 0, 0, 1">
             <Button.Resources>
                 <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="3"/>
+                    <Setter Property="CornerRadius" Value="3" />
                 </Style>
             </Button.Resources>
         </Button>
-    </Grid>
+    </Grid>-->
 
 </Window>

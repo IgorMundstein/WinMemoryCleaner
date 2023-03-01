@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Threading;
 
 // ReSharper disable StringLiteralTypo
-
 namespace WinMemoryCleaner
 {
     /// <summary>
@@ -39,6 +38,8 @@ namespace WinMemoryCleaner
 
         public static string About { get; private set; }
 
+        public static string Close { get; private set; }
+
         public static string Completed { get; private set; }
 
         public static string Error { get; private set; }
@@ -49,13 +50,15 @@ namespace WinMemoryCleaner
 
         public static string ErrorFeatureIsNotSupported { get; private set; }
 
+        public static string Exit { get; private set; }
+
+        public static string Hide { get; private set; }
+
         public static string Log { get; private set; }
 
         public static string MemoryCleaned { get; private set; }
 
         public static string MemoryCleanReport { get; private set; }
-
-        public static string MemoryCleanUp { get; private set; }
 
         public static string MemoryCombinedPageList { get; private set; }
 
@@ -69,13 +72,13 @@ namespace WinMemoryCleaner
 
         public static string MemorySystemWorkingSet { get; private set; }
 
-        public static string NotifyMenuExit { get; private set; }
-
-        public static string NotifyMenuHide { get; private set; }
-
-        public static string NotifyMenuShow { get; private set; }
+        public static string Minimize { get; private set; }
+        
+        public static string Optimize { get; private set; }
 
         public static string SettingsMemoryAreas { get; private set; }
+
+        public static string Show { get; private set; }
 
         public static string UpdatedToVersion { get; private set; }
 
@@ -108,49 +111,53 @@ namespace WinMemoryCleaner
             {
                 case Enums.Culture.English:
                     About = "About";
+                    Close = "Close";
                     Completed = "Completed";
                     Error = "Error";
                     ErrorAdminPrivilegeRequired = "This operation requires administrator privileges ({0})";
                     ErrorCanNotSaveLog = "Can not save LOG: {0} (Exception: {1})";
                     ErrorFeatureIsNotSupported = "{0} clean is not supported on this operating system version";
+                    Exit = "Exit";
+                    Hide = "Hide";
                     Log = "Log";
                     MemoryCleaned = "Memory cleaned";
                     MemoryCleanReport = "Memory clean report";
-                    MemoryCleanUp = "Clean up memory";
                     MemoryCombinedPageList = "Combined Page List";
                     MemoryLowPriorityStandbyList = "Standby List (Low Priority)";
                     MemoryModifiedPageList = "Modified Page List";
                     MemoryProcessesWorkingSet = "Processes Working Set";
                     MemoryStandbyList = "Standby List";
                     MemorySystemWorkingSet = "System Working Set";
-                    NotifyMenuExit = "Exit";
-                    NotifyMenuHide = "Hide";
-                    NotifyMenuShow = "Show";
+                    Minimize = "Minimize";
+                    Optimize = "Optimize";
                     SettingsMemoryAreas = "Memory Areas";
+                    Show = "Show";
                     UpdatedToVersion = "Updated to version {0}";
                     break;
 
                 case Enums.Culture.Portuguese:
                     About = "Sobre";
+                    Close = "Fechar";
                     Completed = "Completado";
                     Error = "Erro";
                     ErrorAdminPrivilegeRequired = "Esta operação requer privilégios de administrador ({0})";
                     ErrorCanNotSaveLog = "Não é possível salvar o LOG: {0} (Exceção: {1})";
                     ErrorFeatureIsNotSupported = "{0} clean não é compatível com esta versão do sistema operacional";
+                    Exit = "Sair";
+                    Hide = "Ocultar";
                     Log = "Log";
                     MemoryCleaned = "Memória limpa";
                     MemoryCleanReport = "Relatório de limpeza de memória";
-                    MemoryCleanUp = "Limpar a memória";
                     MemoryCombinedPageList = "Lista de Páginas Combinadas";
                     MemoryLowPriorityStandbyList = "Lista de Espera (Baixa Prioridade)";
                     MemoryModifiedPageList = "Lista de Páginas Modificadas";
                     MemoryProcessesWorkingSet = "Conjunto de Trabalho de Processos";
                     MemoryStandbyList = "Lista de Espera";
                     MemorySystemWorkingSet = "Conjunto de Trabalho do Sistema";
-                    NotifyMenuExit = "Fechar";
-                    NotifyMenuHide = "Ocultar";
-                    NotifyMenuShow = "Mostrar";
+                    Minimize = "Minimizar";
+                    Optimize = "Optimizar";
                     SettingsMemoryAreas = "Areas de Memória";
+                    Show = "Mostrar";
                     UpdatedToVersion = "Atualizado para versão {0}";
                     break;
 

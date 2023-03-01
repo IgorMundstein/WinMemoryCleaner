@@ -19,7 +19,7 @@ namespace WinMemoryCleaner
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RelayCommand"/> class.
+        /// Initializes a new instance of the <see cref="RelayCommand" /> class.
         /// </summary>
         /// <param name="execute">Method</param>
         /// <param name="canExecute">Can execute the method?</param>

@@ -5,10 +5,61 @@
 
     <Application.Resources>
         <ResourceDictionary>
+            <!-- Converters -->
             <local:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
             <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <local:ViewModelLocator x:Key="ViewModelLocator" />
+            <!-- Colors -->
+            <SolidColorBrush x:Key="DarkBackground" Color="#202020" />
+            <SolidColorBrush x:Key="DarkBorderBrush" Color="#2B2B2B" />
+            <SolidColorBrush x:Key="DarkControlBackground" Color="#2C2C2C" />
+            <SolidColorBrush x:Key="DarkControlForeground" Color="#D3D3D3" />
+            <SolidColorBrush x:Key="DarkForeground" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="DarkOverForeground" Color="#000000" />
+            <!-- Styles -->
+            <Style TargetType="{x:Type Button}">
+                <Setter Property="Background" Value="{StaticResource DarkControlBackground}" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Foreground" Value="{StaticResource DarkOverForeground}" />
+                    </Trigger>
+                </Style.Triggers>
+                <Style.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="3" />
+                    </Style>
+                </Style.Resources>
+            </Style>
+            <Style TargetType="{x:Type CheckBox}">
+                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+            </Style>
+            <Style TargetType="{x:Type GroupBox}">
+                <Setter Property="Background" Value="{StaticResource DarkControlBackground}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="HeaderTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontWeight="Normal" Foreground="{StaticResource DarkControlForeground}" />
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Padding" Value="3, 5, 0, 5" />
+                <Style.Resources>
+                    <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+                        <Setter Property="Margin" Value="0, 2.5, 0, 0" />
+                    </Style>
+                </Style.Resources>
+            </Style>
+            <Style TargetType="{x:Type ToolTip}">
+                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 
