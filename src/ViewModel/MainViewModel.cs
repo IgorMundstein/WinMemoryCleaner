@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows.Input;
@@ -58,17 +57,6 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Gets the logs.
-        /// </summary>
-        /// <value>
-        /// The logs.
-        /// </value>
-        public ReadOnlyObservableCollection<Log> Logs
-        {
-            get { return Logger.Logs; }
-        }
-
-        /// <summary>
         /// Gets or sets the memory areas.
         /// </summary>
         /// <value>
@@ -78,6 +66,24 @@ namespace WinMemoryCleaner
         {
             get
             {
+                if (!Computer.OperatingSystem.HasCombinedPageList)
+                    Settings.MemoryAreas &= ~Enums.Memory.Area.CombinedPageList;
+
+                if (!Computer.OperatingSystem.HasModifiedPageList)
+                    Settings.MemoryAreas &= ~Enums.Memory.Area.ModifiedPageList;
+
+                if (!Computer.OperatingSystem.HasProcessesWorkingSet)
+                    Settings.MemoryAreas &= ~Enums.Memory.Area.ProcessesWorkingSet;
+
+                if (!Computer.OperatingSystem.HasStandbyList)
+                {
+                    Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
+                    Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                }
+
+                if (!Computer.OperatingSystem.HasSystemWorkingSet)
+                    Settings.MemoryAreas &= ~Enums.Memory.Area.SystemWorkingSet;
+
                 return Settings.MemoryAreas;
             }
             set
@@ -185,7 +191,12 @@ namespace WinMemoryCleaner
             try
             {
                 if (IsInDesignMode)
+                {
+                    Computer.OperatingSystem.IsWindowsVistaOrAbove = true;
+                    Computer.OperatingSystem.IsWindowsXp64BitOrAbove = true;
+
                     return;
+                }
 
                 using (_monitorWorker = new BackgroundWorker())
                 {
@@ -217,7 +228,7 @@ namespace WinMemoryCleaner
                 RaisePropertyChanged(() => Computer);
 
                 // Update app
-                if (!IsBusy)
+                if (Settings.AutoUpdate && !IsBusy)
                     App.Update();
 
                 // Delay
@@ -254,9 +265,6 @@ namespace WinMemoryCleaner
             try
             {
                 IsBusy = true;
-
-                // Clear logs
-                Logger.Flush();
 
                 // Memory clean
                 _computerService.CleanMemory(Settings.MemoryAreas);

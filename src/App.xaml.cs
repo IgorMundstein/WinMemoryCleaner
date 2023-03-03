@@ -222,7 +222,8 @@ namespace WinMemoryCleaner
                 }
 
                 // Update to the latest version
-                Update(e.Args);
+                if (Settings.AutoUpdate)
+                    Update(e.Args);
 
                 // Process command line arguments
                 Enums.Memory.Area memoryAreas = Enums.Memory.Area.None;
@@ -336,7 +337,7 @@ namespace WinMemoryCleaner
         {
             try
             {
-                if (!Settings.KeepAppUpToDate || DateTimeOffset.Now.Subtract(_lastUpdateCheck).TotalHours < Constants.App.UpdateInterval)
+                if (DateTimeOffset.Now.Subtract(_lastUpdateCheck).TotalHours < Constants.App.UpdateInterval)
                     return;
 
                 _lastUpdateCheck = DateTimeOffset.Now;

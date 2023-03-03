@@ -11,7 +11,7 @@
         /// <value>
         ///   <c>true</c> if it has combined page list; otherwise, <c>false</c>.
         /// </value>
-        internal bool HasCombinedPageList { get { return IsWindows8OrAbove; } }
+        public bool HasCombinedPageList { get { return IsWindows8OrAbove; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has modified page list.
@@ -19,15 +19,15 @@
         /// <value>
         ///   <c>true</c> if it has modified page list; otherwise, <c>false</c>.
         /// </value>
-        internal bool HasModifiedPageList { get { return IsWindowsVistaOrAbove; } }
+        public bool HasModifiedPageList { get { return IsWindowsVistaOrAbove; } }
 
         /// <summary>
-        /// Gets a value indicating whether current operating system has process working set.
+        /// Gets a value indicating whether current operating system has processes working set.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if it has process working set; otherwise, <c>false</c>.
+        ///   <c>true</c> if it has processes working set; otherwise, <c>false</c>.
         /// </value>
-        internal bool HasProcessWorkingSet { get { return IsWindowsXp64BitOrAbove; } }
+        public bool HasProcessesWorkingSet { get { return IsWindowsXp64BitOrAbove; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has standby list.
@@ -35,7 +35,7 @@
         /// <value>
         ///   <c>true</c> if it has standby list; otherwise, <c>false</c>.
         /// </value>
-        internal bool HasStandbyList { get { return IsWindowsVistaOrAbove; } }
+        public bool HasStandbyList { get { return IsWindowsVistaOrAbove; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has system working set.
@@ -43,7 +43,7 @@
         /// <value>
         ///   <c>true</c> if it has system working set; otherwise, <c>false</c>.
         /// </value>
-        internal bool HasSystemWorkingSet { get { return IsWindowsXp64BitOrAbove; } }
+        public bool HasSystemWorkingSet { get { return IsWindowsXp64BitOrAbove; } }
 
         /// <summary>
         /// Determines whether the current operating system is a 64-bit operating system

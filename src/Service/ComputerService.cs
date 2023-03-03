@@ -44,6 +44,7 @@ namespace WinMemoryCleaner
                 Logger.Debug(new Win32Exception(Marshal.GetLastWin32Error()).GetBaseException().Message);
             else
             {
+                _memory.Allocated = (_memoryStatusEx.ullTotalPhys - _memoryStatusEx.ullAvailPhys).ByteSizeToString();
                 _memory.Available = _memoryStatusEx.ullAvailPhys.ByteSizeToString();
                 _memory.Total = _memoryStatusEx.ullTotalPhys.ByteSizeToString();
                 _memory.Usage = _memoryStatusEx.dwMemoryLoad;
@@ -226,17 +227,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasCombinedPageList)
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemoryCombinedPageList));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemoryCombinedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
             GCHandle handle = GCHandle.Alloc(0);
 
@@ -250,10 +245,6 @@ namespace WinMemoryCleaner
 
                 if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), length) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-            catch (Win32Exception e)
-            {
-                Logger.Error(e);
             }
             finally
             {
@@ -278,17 +269,12 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasModifiedPageList)
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemoryModifiedPageList));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemoryModifiedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+
 
             GCHandle handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList, GCHandleType.Pinned);
 
@@ -296,10 +282,6 @@ namespace WinMemoryCleaner
             {
                 if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-            catch (Win32Exception e)
-            {
-                Logger.Error(e);
             }
             finally
             {
@@ -322,19 +304,14 @@ namespace WinMemoryCleaner
         private void MemoryCleanProcessesWorkingSet()
         {
             // Windows minimum version
-            if (!GetOperatingSystem().HasProcessWorkingSet)
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemoryProcessesWorkingSet));
-                return;
-            }
+            if (!GetOperatingSystem().HasProcessesWorkingSet)
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemoryProcessesWorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeDebugName))
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
 
+            var errors = new StringBuilder();
             var processes = Process.GetProcesses().Where(process => process != null);
 
             foreach (Process process in processes)
@@ -353,9 +330,15 @@ namespace WinMemoryCleaner
                     catch (Win32Exception e)
                     {
                         if (e.NativeErrorCode != Constants.Windows.SystemErrorCode.ErrorAccessDenied)
-                            Logger.Error(e);
+                            errors.Append(string.Format("{0}: {1} | ", process.ProcessName, e.GetBaseException().Message));
                     }
                 }
+            }
+
+            if (errors.Length > 0)
+            {
+                errors.Remove(errors.Length - 3, 3);
+                throw new Exception(errors.ToString());
             }
         }
 
@@ -369,17 +352,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasStandbyList)
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemoryStandbyList));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemoryStandbyList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
             object memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
             GCHandle handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
@@ -388,10 +365,6 @@ namespace WinMemoryCleaner
             {
                 if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), Marshal.SizeOf(memoryPurgeStandbyList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-            catch (Win32Exception e)
-            {
-                Logger.Error(e);
             }
             finally
             {
@@ -417,17 +390,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasSystemWorkingSet)
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemorySystemWorkingSet));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorFeatureIsNotSupported, Localization.MemorySystemWorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
-            {
-                Logger.Error(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
-                return;
-            }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
 
             GCHandle handle = GCHandle.Alloc(0);
 
@@ -447,10 +414,6 @@ namespace WinMemoryCleaner
                 if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemFileCacheInformation, handle.AddrOfPinnedObject(), length) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
-            catch (Win32Exception e)
-            {
-                Logger.Error(e);
-            }
             finally
             {
                 try
@@ -464,17 +427,10 @@ namespace WinMemoryCleaner
                 }
             }
 
-            try
-            {
-                IntPtr fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
+            IntPtr fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
 
-                if (!NativeMethods.SetSystemFileCacheSize(fileCacheSize, fileCacheSize, 0))
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-            catch (Win32Exception e)
-            {
-                Logger.Error(e);
-            }
+            if (!NativeMethods.SetSystemFileCacheSize(fileCacheSize, fileCacheSize, 0))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
         }
 
         #endregion

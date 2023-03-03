@@ -11,7 +11,7 @@ namespace WinMemoryCleaner
             public const string License = "GNU General Public License v3.0";
             internal const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
-            internal const int UpdateInterval = 24;
+            internal const int UpdateInterval = 24; // Hour
 
             internal static class Author
             {
@@ -23,12 +23,26 @@ namespace WinMemoryCleaner
                 internal const string DatetimeFormat = "yyyy-MM-dd HH:mm:ss.fff";
             }
 
-            internal static class RegistryKey
+            internal static class Registry
             {
-                internal const string Culture = "Culture";
-                internal const string KeepAppUpToDate = "KeepAppUpToDate";
-                internal const string MemoryAreas = "MemoryAreas";
-                internal const string Name = @"SOFTWARE\WinMemoryCleaner";
+                internal static class Key
+                {
+                    internal const string Settings = @"SOFTWARE\WinMemoryCleaner";
+                }
+
+                internal static class Name
+                {
+                    internal const string AlwaysOnTop = "AlwaysOnTop";
+                    internal const string AutoCleanInterval = "AutoCleanInterval";
+                    internal const string AutoCleanPercentage = "AutoCleanPercentage";
+                    internal const string AutoUpdate = "AutoUpdate";
+                    internal const string Culture = "Culture";                    
+                    internal const string MemoryAreas = "MemoryAreas";
+                    internal const string MinimizeToTrayWhenClosed = "MinimizeToTrayWhenClosed";
+                    internal const string RunOnStartup = "RunOnStartup";
+                    internal const string ShowNotifications = "ShowNotifications";
+                    internal const string StartMinimized = "StartMinimized";
+                }
             }
 
             internal static class Repository

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
@@ -15,8 +14,6 @@ namespace WinMemoryCleaner
         #region Fields
 
         private static Enums.Log.Level _level = Enums.Log.Level.Debug | Enums.Log.Level.Information | Enums.Log.Level.Warning | Enums.Log.Level.Error;
-        private static readonly ObservableCollection<Log> _logs = new ObservableCollection<Log>();
-        private static readonly ReadOnlyObservableCollection<Log> _logsReadOnly = new ReadOnlyObservableCollection<Log>(_logs);
 
         #endregion Fields
 
@@ -50,20 +47,6 @@ namespace WinMemoryCleaner
                         _level = Enums.Log.Level.Error;
                         break;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets the logs.
-        /// </summary>
-        /// <value>
-        /// The logs.
-        /// </value>
-        public static ReadOnlyObservableCollection<Log> Logs
-        {
-            get
-            {
-                return _logsReadOnly;
             }
         }
 
@@ -140,14 +123,6 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Flushes the Logs
-        /// </summary>
-        public static void Flush()
-        {
-            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate { _logs.Clear(); });
-        }
-
-        /// <summary>
         /// Information
         /// </summary>
         /// <param name="message">Message</param>
@@ -185,8 +160,6 @@ namespace WinMemoryCleaner
                     case Enums.Log.Level.Debug:
                         if ((_level & Enums.Log.Level.Debug) != 0)
                         {
-                            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate { _logs.Add(log); });
-
                             Event(message);
                             Trace.WriteLine(traceMessage);
                         }
@@ -195,8 +168,6 @@ namespace WinMemoryCleaner
                     case Enums.Log.Level.Information:
                         if ((_level & Enums.Log.Level.Information) != 0)
                         {
-                            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate { _logs.Add(log); });
-
                             Event(message);
                             Trace.TraceInformation(traceMessage);
                         }
@@ -205,8 +176,6 @@ namespace WinMemoryCleaner
                     case Enums.Log.Level.Warning:
                         if ((_level & Enums.Log.Level.Warning) != 0)
                         {
-                            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate { _logs.Add(log); });
-
                             Event(message, EventLogEntryType.Warning);
                             Trace.TraceWarning(traceMessage);
                         }
@@ -215,8 +184,6 @@ namespace WinMemoryCleaner
                     case Enums.Log.Level.Error:
                         if ((_level & Enums.Log.Level.Error) != 0)
                         {
-                            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate { _logs.Add(log); });
-
                             Event(message, EventLogEntryType.Error);
                             Trace.TraceError(traceMessage);
                         }

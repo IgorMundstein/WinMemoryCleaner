@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 
 namespace WinMemoryCleaner
 {
@@ -8,33 +7,6 @@ namespace WinMemoryCleaner
     /// </summary>
     internal class Log
     {
-        /// <summary>
-        /// Gets or sets the color.
-        /// </summary>
-        /// <value>
-        /// The color.
-        /// </value>
-        public Color Color
-        {
-            get
-            {
-                switch (Level)
-                {
-                    case Enums.Log.Level.Information:
-                        return Color.Green;
-
-                    case Enums.Log.Level.Warning:
-                        return Color.Orange;
-
-                    case Enums.Log.Level.Error:
-                        return Color.Red;
-
-                    default:
-                        return Color.Black;
-                }
-            }
-        }
-
         /// <summary>
         /// Gets or sets the date time.
         /// </summary>

@@ -27,7 +27,13 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            if (Settings.MinimizeToTrayWhenClosed)
+            {
+                ShowInTaskbar = false;
+                WindowState = WindowState.Minimized;
+            }
+            else
+                Application.Current.Shutdown();
         }
 
         /// <summary>

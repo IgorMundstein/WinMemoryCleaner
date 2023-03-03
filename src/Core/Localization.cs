@@ -52,10 +52,6 @@ namespace WinMemoryCleaner
 
         public static string Exit { get; private set; }
 
-        public static string Hide { get; private set; }
-
-        public static string Log { get; private set; }
-
         public static string MemoryCleaned { get; private set; }
 
         public static string MemoryCleanReport { get; private set; }
@@ -70,6 +66,8 @@ namespace WinMemoryCleaner
 
         public static string MemoryStandbyList { get; private set; }
 
+        public static string MemoryStats { get; private set; }
+
         public static string MemorySystemWorkingSet { get; private set; }
 
         public static string Minimize { get; private set; }
@@ -77,8 +75,6 @@ namespace WinMemoryCleaner
         public static string Optimize { get; private set; }
 
         public static string SettingsMemoryAreas { get; private set; }
-
-        public static string Show { get; private set; }
 
         public static string UpdatedToVersion { get; private set; }
 
@@ -118,8 +114,6 @@ namespace WinMemoryCleaner
                     ErrorCanNotSaveLog = "Can not save LOG: {0} (Exception: {1})";
                     ErrorFeatureIsNotSupported = "{0} clean is not supported on this operating system version";
                     Exit = "Exit";
-                    Hide = "Hide";
-                    Log = "Log";
                     MemoryCleaned = "Memory cleaned";
                     MemoryCleanReport = "Memory clean report";
                     MemoryCombinedPageList = "Combined Page List";
@@ -127,11 +121,11 @@ namespace WinMemoryCleaner
                     MemoryModifiedPageList = "Modified Page List";
                     MemoryProcessesWorkingSet = "Processes Working Set";
                     MemoryStandbyList = "Standby List";
+                    MemoryStats = "{0} allocated of {1} ({2}%)";
                     MemorySystemWorkingSet = "System Working Set";
                     Minimize = "Minimize";
                     Optimize = "Optimize";
                     SettingsMemoryAreas = "Memory Areas";
-                    Show = "Show";
                     UpdatedToVersion = "Updated to version {0}";
                     break;
 
@@ -144,8 +138,6 @@ namespace WinMemoryCleaner
                     ErrorCanNotSaveLog = "Não é possível salvar o LOG: {0} (Exceção: {1})";
                     ErrorFeatureIsNotSupported = "{0} clean não é compatível com esta versão do sistema operacional";
                     Exit = "Sair";
-                    Hide = "Ocultar";
-                    Log = "Log";
                     MemoryCleaned = "Memória limpa";
                     MemoryCleanReport = "Relatório de limpeza de memória";
                     MemoryCombinedPageList = "Lista de Páginas Combinadas";
@@ -153,11 +145,11 @@ namespace WinMemoryCleaner
                     MemoryModifiedPageList = "Lista de Páginas Modificadas";
                     MemoryProcessesWorkingSet = "Conjunto de Trabalho de Processos";
                     MemoryStandbyList = "Lista de Espera";
+                    MemoryStats = "{0} alocada de {1} ({2}%)";
                     MemorySystemWorkingSet = "Conjunto de Trabalho do Sistema";
                     Minimize = "Minimizar";
                     Optimize = "Optimizar";
                     SettingsMemoryAreas = "Areas de Memória";
-                    Show = "Mostrar";
                     UpdatedToVersion = "Atualizado para versão {0}";
                     break;
 

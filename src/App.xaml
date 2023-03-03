@@ -6,7 +6,6 @@
     <Application.Resources>
         <ResourceDictionary>
             <!-- Converters -->
-            <local:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
             <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <local:ViewModelLocator x:Key="ViewModelLocator" />
@@ -14,18 +13,35 @@
             <SolidColorBrush x:Key="DarkBackground" Color="#202020" />
             <SolidColorBrush x:Key="DarkBorderBrush" Color="#2B2B2B" />
             <SolidColorBrush x:Key="DarkControlBackground" Color="#2C2C2C" />
+            <SolidColorBrush x:Key="DarkControlDisabled" Color="#999999" />
             <SolidColorBrush x:Key="DarkControlForeground" Color="#D3D3D3" />
+            <SolidColorBrush x:Key="DarkControlOver" Color="#00AEF7" />
             <SolidColorBrush x:Key="DarkForeground" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="DarkOverForeground" Color="#000000" />
             <!-- Styles -->
             <Style TargetType="{x:Type Button}">
                 <Setter Property="Background" Value="{StaticResource DarkControlBackground}" />
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
                 <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Background" Value="{StaticResource DarkControlBackground}" />
+                        <Setter Property="Foreground" Value="{StaticResource DarkControlDisabled}" />
+                    </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Foreground" Value="{StaticResource DarkOverForeground}" />
+                        <Setter Property="Foreground" Value="{StaticResource DarkControlOver}" />
                     </Trigger>
                 </Style.Triggers>
                 <Style.Resources>
@@ -38,6 +54,14 @@
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Foreground" Value="{StaticResource DarkControlDisabled}" />
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                    </Trigger>
+                </Style.Triggers>
             </Style>
             <Style TargetType="{x:Type GroupBox}">
                 <Setter Property="Background" Value="{StaticResource DarkControlBackground}" />
