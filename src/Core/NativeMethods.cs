@@ -13,7 +13,7 @@ namespace WinMemoryCleaner
         internal static extern bool AdjustTokenPrivileges(IntPtr tokenHandle, [MarshalAs(UnmanagedType.Bool)]bool disableAllPrivileges, ref Structs.Windows.TokenPrivileges newState, int bufferLength, IntPtr previousState, IntPtr returnLength);
 
         [DllImport("psapi.dll", SetLastError = true)]
-        internal static extern int EmptyWorkingSet(IntPtr hProcess);
+        internal static extern bool EmptyWorkingSet(IntPtr hProcess);
 
         [DllImport("user32", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -39,6 +39,6 @@ namespace WinMemoryCleaner
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+        internal static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     }
 }

@@ -6,32 +6,42 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Relay Command
     /// </summary>
-    /// <seealso cref="ICommand" />
-    internal class RelayCommand : ICommand
+    /// <typeparam name="T"></typeparam>
+    /// <seealso cref="System.Windows.Input.ICommand" />
+    internal class RelayCommand<T> : ICommand
     {
         #region Fields
 
-        private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
+        readonly Func<bool> _canExecute;
+        readonly Action<T> _execute;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RelayCommand" /> class.
+        /// Initializes a new instance of the <see cref="RelayCommand{T}" /> class.
         /// </summary>
-        /// <param name="execute">Method</param>
-        /// <param name="canExecute">Can execute the method?</param>
-        internal RelayCommand(Action execute, Func<bool> canExecute = null)
+        /// <param name="execute">The execution logic.</param>
+        internal RelayCommand(Action<T> execute)
+            : this(execute, null)
         {
-            _execute = execute;
+        }
+
+        /// <summary>
+        /// Creates a new command.
+        /// </summary>
+        /// <param name="execute">The execution logic.</param>
+        /// <param name="canExecute">The execution status logic.</param>
+        internal RelayCommand(Action<T> execute, Func<bool> canExecute)
+        {
             _canExecute = canExecute;
+            _execute = execute;
         }
 
         #endregion
 
-        #region Events
+        #region ICommand Members
 
         /// <summary>
         /// Occurs when changes occur that affect whether or not the command should execute.
@@ -42,14 +52,10 @@ namespace WinMemoryCleaner
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        #endregion
-
-        #region Methods
-
         /// <summary>
         /// Defines the method that determines whether the command can execute in its current state.
         /// </summary>
-        /// <param name="parameter">Data used by the command.  If the command does not require data to be passed, this object can be set to null.</param>
+        /// <param name="parameter">Data used by the command. If the command does not require data to be passed, this object can be set to null.</param>
         /// <returns>
         /// true if this command can be executed; otherwise, false.
         /// </returns>
@@ -61,11 +67,26 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Defines the method to be called when the command is invoked.
         /// </summary>
-        /// <param name="parameter">Data used by the command.  If the command does not require data to be passed, this object can be set to null.</param>
+        /// <param name="parameter">Data used by the command. If the command does not require data to be passed, this object can be set to <see langword="null" />.</param>
         public void Execute(object parameter)
         {
-            if (CanExecute(parameter))
-                _execute();
+            _execute((T)parameter);
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Relay Command
+    /// </summary>
+    /// <seealso cref="System.Windows.Input.ICommand" />
+    internal class RelayCommand : RelayCommand<object>
+    {
+        #region Constructors
+
+        internal RelayCommand(Action execute, Func<bool> canExecute = null)
+            : base(_ => execute(), canExecute)
+        {
         }
 
         #endregion

@@ -22,7 +22,7 @@ namespace WinMemoryCleaner
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         public ComputerService()
         {
@@ -44,10 +44,11 @@ namespace WinMemoryCleaner
                 Logger.Debug(new Win32Exception(Marshal.GetLastWin32Error()).GetBaseException().Message);
             else
             {
-                _memory.Allocated = (_memoryStatusEx.ullTotalPhys - _memoryStatusEx.ullAvailPhys).ByteSizeToString();
-                _memory.Available = _memoryStatusEx.ullAvailPhys.ByteSizeToString();
+                _memory.Free = _memoryStatusEx.ullAvailPhys.ByteSizeToString();
+                _memory.FreePercentage = 100 - _memoryStatusEx.dwMemoryLoad;
                 _memory.Total = _memoryStatusEx.ullTotalPhys.ByteSizeToString();
-                _memory.Usage = _memoryStatusEx.dwMemoryLoad;
+                _memory.Used = (_memoryStatusEx.ullTotalPhys - _memoryStatusEx.ullAvailPhys).ByteSizeToString();
+                _memory.UsedPercentage = _memoryStatusEx.dwMemoryLoad;
             }
 
             return _memory;
@@ -67,7 +68,7 @@ namespace WinMemoryCleaner
                 IsWindowsXp64BitOrAbove = Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 5.2
             });
         }
-
+        
         /// <summary>
         /// Increase the Privilege using a privilege name
         /// </summary>
@@ -165,11 +166,11 @@ namespace WinMemoryCleaner
                 {
                     MemoryCleanStandbyList(lowPriority);
 
-                    infoLog.AppendLine(string.Format("- {0} ({1})", lowPriority ? Localization.MemoryLowPriorityStandbyList : Localization.MemoryStandbyList, Localization.Completed.ToUpper()));
+                    infoLog.AppendLine(string.Format("- {0} ({1})", lowPriority ? Localization.MemoryStandbyListLowPriority : Localization.MemoryStandbyList, Localization.Completed.ToUpper()));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", lowPriority ? Localization.MemoryLowPriorityStandbyList : Localization.MemoryStandbyList, Localization.Error.ToUpper(), e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", lowPriority ? Localization.MemoryStandbyListLowPriority : Localization.MemoryStandbyList, Localization.Error.ToUpper(), e.GetBaseException().Message));
                 }
             }
 
@@ -212,6 +213,7 @@ namespace WinMemoryCleaner
             {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
+                GC.Collect();
             }
             catch
             {
@@ -312,15 +314,15 @@ namespace WinMemoryCleaner
                 throw new Exception(string.Format(CultureInfo.CurrentCulture, Localization.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
 
             var errors = new StringBuilder();
-            var processes = Process.GetProcesses().Where(process => process != null);
+            var processes = Process.GetProcesses().Where(process => process != null && !Settings.ProcessExclusionList.Contains(process.ProcessName));
 
-            foreach (Process process in processes)
+            foreach (var process in processes)
             {
                 using (process)
                 {
                     try
                     {
-                        if (!process.HasExited && NativeMethods.EmptyWorkingSet(process.Handle) == 0)
+                        if (!NativeMethods.EmptyWorkingSet(process.Handle))
                             throw new Win32Exception(Marshal.GetLastWin32Error());
                     }
                     catch (InvalidOperationException)
@@ -335,7 +337,7 @@ namespace WinMemoryCleaner
                 }
             }
 
-            if (errors.Length > 0)
+            if (errors.Length > 3)
             {
                 errors.Remove(errors.Length - 3, 3);
                 throw new Exception(errors.ToString());

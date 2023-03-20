@@ -8,7 +8,7 @@ namespace WinMemoryCleaner
         {
             internal const string Guid = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
             internal const string KeyFile = "WinMemoryCleaner.snk";
-            public const string License = "GNU General Public License v3.0";
+            public const string License = "GPL-3.0";
             internal const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
             internal const int UpdateInterval = 24; // Hour
@@ -27,20 +27,21 @@ namespace WinMemoryCleaner
             {
                 internal static class Key
                 {
+                    internal const string ProcessExclusionList = @"SOFTWARE\WinMemoryCleaner\ProcessExclusionList";
                     internal const string Settings = @"SOFTWARE\WinMemoryCleaner";
                 }
 
                 internal static class Name
                 {
                     internal const string AlwaysOnTop = "AlwaysOnTop";
-                    internal const string AutoCleanInterval = "AutoCleanInterval";
-                    internal const string AutoCleanPercentage = "AutoCleanPercentage";
+                    internal const string AutoOptimizationInterval = "AutoOptimizationInterval";
+                    internal const string AutoOptimizationPercentage = "AutoOptimizationPercentage";
                     internal const string AutoUpdate = "AutoUpdate";
                     internal const string Culture = "Culture";                    
                     internal const string MemoryAreas = "MemoryAreas";
                     internal const string MinimizeToTrayWhenClosed = "MinimizeToTrayWhenClosed";
                     internal const string RunOnStartup = "RunOnStartup";
-                    internal const string ShowNotifications = "ShowNotifications";
+                    internal const string ShowOptimizationNotifications = "ShowOptimizationNotifications";
                     internal const string StartMinimized = "StartMinimized";
                 }
             }
@@ -49,6 +50,7 @@ namespace WinMemoryCleaner
             {
                 public static readonly Uri AssemblyInfoUri = new Uri("https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/src/Properties/AssemblyInfo.cs");
                 public static readonly Uri LatestExeUri = new Uri("https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe");
+                public static readonly string Name = "github.com/IgorMundstein";
                 public static readonly Uri Uri = new Uri("https://github.com/IgorMundstein/WinMemoryCleaner/");
             }
         }

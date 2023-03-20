@@ -20,6 +20,37 @@ namespace WinMemoryCleaner
         public NotificationService(NotifyIcon notifyIcon)
         {
             _notifyIcon = notifyIcon;
+            
+            Initialize();
+        }
+
+        /// <summary>
+        /// Initializes this instance.
+        /// </summary>
+        public void Initialize()
+        {
+            if (_notifyIcon == null)
+                return;
+
+            // Notification Area (Menu)
+            _notifyIcon.ContextMenuStrip = new ContextMenuStrip();
+
+            // Optimize
+            _notifyIcon.ContextMenuStrip.Items.Add(Localization.Optimize, null, (sender, args) =>
+            {
+                var mainViewModel = DependencyInjection.Container.Resolve<MainViewModel>();
+
+                if (mainViewModel.OptimizeCommand.CanExecute(null))
+                    mainViewModel.OptimizeCommand.Execute(null);
+            });
+
+            _notifyIcon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
+
+            // Exit
+            _notifyIcon.ContextMenuStrip.Items.Add(Localization.Exit, null, (sender, args) =>
+            {
+                Application.Current.Shutdown();
+            });
         }
 
         /// <summary>

@@ -25,10 +25,11 @@ namespace WinMemoryCleaner
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
         private static ProcessStartInfo _updateProcess;
+        private static Version _version;
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App" /> class.
@@ -51,12 +52,6 @@ namespace WinMemoryCleaner
             DependencyInjection.Container.Register<IComputerService, ComputerService>();
             DependencyInjection.Container.Register<INotificationService, NotificationService>();
         }
-
-        #endregion
-
-        #region Properties
-
-        internal static Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
 
         #endregion
 
@@ -182,7 +177,10 @@ namespace WinMemoryCleaner
                     case WindowState.Minimized:
                         MainWindow.ShowInTaskbar = true;
                         MainWindow.WindowState = WindowState.Normal;
-                        MainWindow.Activate();
+                        if (MainWindow.IsVisible)
+                            MainWindow.Activate();
+                        else
+                            MainWindow.Show();
                         break;
                 }
             }
@@ -221,6 +219,9 @@ namespace WinMemoryCleaner
                     }
                 }
 
+                // App Version
+                _version = Assembly.GetExecutingAssembly().GetName().Version;
+
                 // Update to the latest version
                 if (Settings.AutoUpdate)
                     Update(e.Args);
@@ -240,9 +241,9 @@ namespace WinMemoryCleaner
                         memoryAreas |= area;
 
                     // Version (Update)
-                    if (value.Equals(Version.ToString()))
+                    if (value.Equals(_version.ToString()))
                     {
-                        updateNotification = string.Format(CultureInfo.CurrentCulture, Localization.UpdatedToVersion, string.Format("{0}.{1}", Version.Major, Version.Minor));
+                        updateNotification = string.Format(CultureInfo.CurrentCulture, Localization.UpdatedToVersion, string.Format("{0}.{1}", _version.Major, _version.Minor));
 
                         Logger.Information(updateNotification);
                     }
@@ -254,29 +255,10 @@ namespace WinMemoryCleaner
                     // Notification Area
                     _notifyIcon = new NotifyIcon();
                     _notifyIcon.Click += OnNotifyIconClick;
+                    _notifyIcon.DoubleClick += OnNotifyIconClick;
                     _notifyIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
                     _notifyIcon.Text = string.Format("{0}{1}{2}", "Windows", Environment.NewLine, "Memory Cleaner");
                     _notifyIcon.Visible = true;
-
-                    // Notification Area (Menu)
-                    _notifyIcon.ContextMenuStrip = new ContextMenuStrip();
-                    
-                    // Optimize
-                    _notifyIcon.ContextMenuStrip.Items.Add(Localization.Optimize, null, (sender, args) =>
-                    {
-                        var mainViewModel = DependencyInjection.Container.Resolve<MainViewModel>();
-
-                        if (mainViewModel.MemoryCleanCommand.CanExecute(null))
-                            mainViewModel.MemoryCleanCommand.Execute(null);
-                    });
-
-                    _notifyIcon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
-
-                    // Exit
-                    _notifyIcon.ContextMenuStrip.Items.Add(Localization.Exit, null, (sender, args) =>
-                    {
-                        Shutdown();
-                    });
 
                     // DI/IOC
                     DependencyInjection.Container.Register(_notifyIcon);
@@ -285,7 +267,15 @@ namespace WinMemoryCleaner
                     if (!string.IsNullOrWhiteSpace(updateNotification))
                         DependencyInjection.Container.Resolve<NotificationService>().Notify(updateNotification);
 
-                    new MainWindow().Show();
+                    MainWindow mainWindow = new MainWindow();
+
+                    if (Settings.StartMinimized)
+                    {
+                        mainWindow.ShowInTaskbar = false;
+                        mainWindow.WindowState = WindowState.Minimized;
+                    }
+                    else
+                        mainWindow.Show();
                 }
                 else // NO GUI
                 {
@@ -357,7 +347,7 @@ namespace WinMemoryCleaner
 
                     var newestVersion = Version.Parse(assemblyVersionMatch.Groups[1].Value);
 
-                    if (Version < newestVersion)
+                    if (_version < newestVersion)
                     {
                         var exe = AppDomain.CurrentDomain.FriendlyName;
                         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);

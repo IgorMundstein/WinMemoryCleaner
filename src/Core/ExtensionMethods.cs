@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 
 namespace WinMemoryCleaner
 {
@@ -68,6 +69,16 @@ namespace WinMemoryCleaner
             char firstDigit = value.ToString()[0];
 
             return !char.IsDigit(firstDigit) && firstDigit != '-';
+        }
+
+        /// <summary>
+        /// Removes whitespaces.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        internal static string RemoveWhitespaces(this string value)
+        {
+            return new string(value.ToCharArray().Where(c => !char.IsWhiteSpace(c)).ToArray());
         }
     }
 }

@@ -11,11 +11,10 @@ namespace WinMemoryCleaner
         #region Fields
 
         private bool _isBusy;
-        private readonly INotificationService _notificationService;
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewModel" /> class.
@@ -23,7 +22,7 @@ namespace WinMemoryCleaner
         /// <param name="notificationService">Notification service</param>
         protected ViewModel(INotificationService notificationService)
         {
-            _notificationService = notificationService;
+            NotificationService = notificationService;
         }
 
         #endregion
@@ -46,7 +45,7 @@ namespace WinMemoryCleaner
             {
                 try
                 {
-                    _notificationService.Loading(value);
+                    NotificationService.Loading(value);
                 }
                 catch
                 {
@@ -72,6 +71,14 @@ namespace WinMemoryCleaner
             }
         }
 
+        /// <summary>
+        /// Gets the notification service.
+        /// </summary>
+        /// <value>
+        /// The notification service.
+        /// </value>
+        protected INotificationService NotificationService { get; private set; }
+
         #endregion
 
         #region Methods
@@ -85,7 +92,7 @@ namespace WinMemoryCleaner
         /// <param name="icon">The icon</param>
         protected void Notify(string message, string title = null, int timeout = 5, Enums.NotificationIcon icon = Enums.NotificationIcon.None)
         {
-            _notificationService.Notify(message, title, timeout, icon);
+            NotificationService.Notify(message, title, timeout, icon);
         }
 
         #endregion

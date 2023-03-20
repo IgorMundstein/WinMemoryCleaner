@@ -13,7 +13,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The date time.
         /// </value>
-        public DateTime DateTime { get; set; }
+        internal DateTime DateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the level.
@@ -37,7 +37,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The message.
         /// </value>
-        public string Message { get; set; }
+        internal string Message { get; set; }
 
         /// <summary>
         /// Converts to string.

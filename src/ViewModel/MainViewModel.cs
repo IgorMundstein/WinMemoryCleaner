@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Input;
 
@@ -15,10 +20,11 @@ namespace WinMemoryCleaner
         private Computer _computer;
         private readonly IComputerService _computerService;
         private BackgroundWorker _monitorWorker;
+        private string _selectedProcess;
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel" /> class.
@@ -30,8 +36,13 @@ namespace WinMemoryCleaner
         {
             _computerService = computerService;
 
+            // Commands
+            AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList);
+            OptimizeCommand = new RelayCommand(Optimize, () => CanOptimize);
+            RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
+
+            // Models
             Computer = new Computer();
-            MemoryCleanCommand = new RelayCommand(MemoryClean, CanExecuteMemoryClean);
 
             Monitor();
         }
@@ -39,6 +50,125 @@ namespace WinMemoryCleaner
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [always on top].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [always on top]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AlwaysOnTop
+        {
+            get { return Settings.AlwaysOnTop; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.AlwaysOnTop = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the automatic optimization interval.
+        /// </summary>
+        /// <value>
+        /// The automatic optimization interval.
+        /// </value>
+        public int AutoOptimizationInterval
+        {
+            get { return Settings.AutoOptimizationInterval; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.AutoOptimizationInterval = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the automatic optimization percentage.
+        /// </summary>
+        /// <value>
+        /// The automatic optimization percentage.
+        /// </value>
+        public int AutoOptimizationPercentage
+        {
+            get { return Settings.AutoOptimizationPercentage; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.AutoOptimizationPercentage = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [automatic update].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic update]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AutoUpdate
+        {
+            get { return Settings.AutoUpdate; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.AutoUpdate = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can optimize.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can optimize; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanOptimize
+        {
+            get { return MemoryAreas != Enums.Memory.Area.None; }
+        }
 
         /// <summary>
         /// Gets or sets the computer.
@@ -53,6 +183,40 @@ namespace WinMemoryCleaner
             {
                 _computer = value;
                 RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Sets the culture.
+        /// </summary>
+        /// <value>
+        /// The culture.
+        /// </value>
+        public Enums.Culture Culture
+        {
+            get
+            {
+                return Localization.Culture;
+            }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Localization.Culture = value;
+
+                    NotificationService.Initialize();
+
+                    Settings.Culture = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
             }
         }
 
@@ -88,26 +252,213 @@ namespace WinMemoryCleaner
             }
             set
             {
-                if ((Settings.MemoryAreas & value) != 0)
-                    Settings.MemoryAreas &= ~value;
-                else
-                    Settings.MemoryAreas |= value;
-
-                switch (value)
+                try
                 {
-                    case Enums.Memory.Area.StandbyList:
-                        if ((Settings.MemoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
-                            Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
-                        break;
+                    IsBusy = true;
 
-                    case Enums.Memory.Area.StandbyListLowPriority:
-                        if ((Settings.MemoryAreas & Enums.Memory.Area.StandbyList) != 0)
-                            Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
-                        break;
+                    if ((Settings.MemoryAreas & value) != 0)
+                        Settings.MemoryAreas &= ~value;
+                    else
+                        Settings.MemoryAreas |= value;
+
+                    switch (value)
+                    {
+                        case Enums.Memory.Area.StandbyList:
+                            if ((Settings.MemoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
+                                Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                            break;
+
+                        case Enums.Memory.Area.StandbyListLowPriority:
+                            if ((Settings.MemoryAreas & Enums.Memory.Area.StandbyList) != 0)
+                                Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
+                            break;
+                    }
+
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                    RaisePropertyChanged(() => CanOptimize);
                 }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
 
-                Settings.Save();
+        /// <summary>
+        /// Gets or sets a value indicating whether [minimize to tray when closed].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [minimize to tray when closed]; otherwise, <c>false</c>.
+        /// </value>
+        public bool MinimizeToTrayWhenClosed
+        {
+            get { return Settings.MinimizeToTrayWhenClosed; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.MinimizeToTrayWhenClosed = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the processes.
+        /// </summary>
+        /// <value>
+        /// The processes.
+        /// </value>
+        public ObservableCollection<string> Processes
+        {
+            get
+            {
+                var processes = new ObservableCollection<string>(Process.GetProcesses()
+                    .Where(process => process != null && !Settings.ProcessExclusionList.Contains(process.ProcessName))
+                    .Select(process => process.ProcessName.ToLower().Replace(".exe", string.Empty))
+                    .Distinct()
+                    .OrderBy(name => name));
+
+                SelectedProcess = processes.FirstOrDefault();
+
+                return processes;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the process exclusion list.
+        /// </summary>
+        /// <value>
+        /// The process exclusion list.
+        /// </value>
+        public ObservableCollection<string> ProcessExclusionList
+        {
+            get
+            {
+                return new ObservableCollection<string>(Settings.ProcessExclusionList);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [run on startup].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [run on startup]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RunOnStartup
+        {
+            get { return Settings.RunOnStartup; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.RunOnStartup = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected process.
+        /// </summary>
+        /// <value>
+        /// The selected process.
+        /// </value>
+        public string SelectedProcess
+        {
+            get { return _selectedProcess; }
+            set
+            {
+                _selectedProcess = value;
                 RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show optimization notifications].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show optimization notifications]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOptimizationNotifications
+        {
+            get { return Settings.ShowOptimizationNotifications; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.ShowOptimizationNotifications = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [start minimized].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [start minimized]; otherwise, <c>false</c>.
+        /// </value>
+        public bool StartMinimized
+        {
+            get { return Settings.StartMinimized; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.StartMinimized = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public static string Title
+        {
+            get
+            {
+                Version version = Assembly.GetExecutingAssembly().GetName().Version;
+
+                return string.Format(CultureInfo.CurrentCulture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
             }
         }
 
@@ -161,26 +512,56 @@ namespace WinMemoryCleaner
         #region Commands
 
         /// <summary>
-        /// Gets the memory clean command.
+        /// Gets the add process to exclusion list.
         /// </summary>
         /// <value>
-        /// The memory clean command.
+        /// The add process to exclusion list.
         /// </value>
-        public ICommand MemoryCleanCommand { get; private set; }
+        public ICommand AddProcessToExclusionListCommand { get; private set; }
+
+        /// <summary>
+        /// Gets the optimize command.
+        /// </summary>
+        /// <value>
+        /// The optimize command.
+        /// </value>
+        public ICommand OptimizeCommand { get; private set; }
+
+        /// <summary>
+        /// Gets the remove process from exclusion list command.
+        /// </summary>
+        /// <value>
+        /// The remove process from exclusion list command.
+        /// </value>
+        public ICommand RemoveProcessFromExclusionListCommand { get; private set; }
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Determines whether this instance [can execute memory clean].
+        /// Adds the process to exclusion list.
         /// </summary>
-        /// <returns>
-        ///   <c>true</c> if this instance [can execute memory clean]; otherwise, <c>false</c>.
-        /// </returns>
-        private bool CanExecuteMemoryClean()
+        /// <param name="process">The process.</param>
+        private void AddProcessToExclusionList(string process)
         {
-            return MemoryAreas != Enums.Memory.Area.None;
+            try
+            {
+                IsBusy = true;
+
+                if (!Settings.ProcessExclusionList.Contains(process) && !string.IsNullOrWhiteSpace(process))
+                {
+                    Settings.ProcessExclusionList.Add(process);
+                    Settings.Save();
+
+                    RaisePropertyChanged(() => Processes);
+                    RaisePropertyChanged(() => ProcessExclusionList);
+                }
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         /// <summary>
@@ -222,14 +603,13 @@ namespace WinMemoryCleaner
 
             while (!_monitorWorker.CancellationPending)
             {
-                // Update memory info
-                Computer.Memory = _computerService.GetMemory();
-
-                RaisePropertyChanged(() => Computer);
-
                 // Update app
                 if (Settings.AutoUpdate && !IsBusy)
                     App.Update();
+
+                // Update memory info
+                Computer.Memory = _computerService.GetMemory();
+                RaisePropertyChanged(() => Computer);
 
                 // Delay
                 Thread.Sleep(3000);
@@ -237,15 +617,15 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Memory clean
+        /// Optimize
         /// </summary>
-        private void MemoryClean()
+        private void Optimize()
         {
             try
             {
                 using (BackgroundWorker worker = new BackgroundWorker())
                 {
-                    worker.DoWork += MemoryClean;
+                    worker.DoWork += Optimize;
                     worker.RunWorkerAsync();
                 }
             }
@@ -256,11 +636,11 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Memory clean
+        /// Optimize
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
-        private void MemoryClean(object sender, DoWorkEventArgs e)
+        private void Optimize(object sender, DoWorkEventArgs e)
         {
             try
             {
@@ -269,8 +649,37 @@ namespace WinMemoryCleaner
                 // Memory clean
                 _computerService.CleanMemory(Settings.MemoryAreas);
 
+                // Update memory info
+                Computer.Memory = _computerService.GetMemory();
+                RaisePropertyChanged(() => Computer);
+
                 // Notification
-                Notify(Localization.MemoryCleaned);
+                if (Settings.ShowOptimizationNotifications)
+                    Notify(Localization.MemoryOptimized);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// Removes the process from exclusion list.
+        /// </summary>
+        /// <param name="process">The process.</param>
+        private void RemoveProcessFromExclusionList(string process)
+        {
+            try
+            {
+                IsBusy = true;
+
+                if (Settings.ProcessExclusionList.Remove(process))
+                {
+                    Settings.Save();
+
+                    RaisePropertyChanged(() => Processes);
+                    RaisePropertyChanged(() => ProcessExclusionList);
+                }
             }
             finally
             {

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Navigation;
@@ -21,11 +22,11 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Handles the Click event of the CloseButton control.
+        /// Called when [close button click].
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
+        /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             if (Settings.MinimizeToTrayWhenClosed)
             {
@@ -41,18 +42,18 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RequestNavigateEventArgs" /> instance containing the event data.</param>
-        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        private void OnHyperlinkRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
         }
 
         /// <summary>
-        /// Handles the Click event of the MinimizeButton control.
+        /// Called when [minimize button click].
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
+        /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
-        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        private void OnMinimizeButtonClick(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
@@ -66,6 +67,37 @@ namespace WinMemoryCleaner
             base.OnMouseLeftButtonDown(e);
 
             DragMove();
+        }
+
+        /// <summary>
+        /// Called when [processes drop down opened].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
+        private void OnProcessesDropDownOpened(object sender, EventArgs e)
+        {
+            var mainViewModel = DependencyInjection.Container.Resolve<MainViewModel>();
+
+            try
+            {
+                mainViewModel.IsBusy = true;
+                mainViewModel.RaisePropertyChanged(() => mainViewModel.Processes);
+            }
+            finally
+            {
+                mainViewModel.IsBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// Called when [window state changed].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void OnWindowStateChanged(object sender, EventArgs e)
+        {
+            if (WindowState != WindowState.Minimized)
+                ShowInTaskbar = true;
         }
     }
 }

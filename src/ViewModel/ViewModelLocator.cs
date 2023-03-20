@@ -9,7 +9,7 @@ namespace WinMemoryCleaner
     /// </summary>
     internal class ViewModelLocator : IDisposable
     {
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewModelLocator" /> class.
