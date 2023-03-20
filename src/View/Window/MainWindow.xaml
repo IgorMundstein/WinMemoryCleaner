@@ -282,14 +282,14 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Margin="0, 0, 0, 5" 
                                                    Text="{Binding Path=(local:Localization.WhenFreeMemoryIsBelow)}" />
-                                        <TextBlock Text="{Binding ElementName=AutoOptimizationPercentage, Path=Value, StringFormat={} {0}%, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBlock Text="{Binding ElementName=AutoOptimizationMemoryUsage, Path=Value, StringFormat={} {0}%, UpdateSourceTrigger=PropertyChanged}" />
                                     </StackPanel>
                                     <Slider Margin="0, 5, 0, 5"
                                             Maximum="100"
                                             Minimum="0"
-                                            Name="AutoOptimizationPercentage"
+                                            Name="AutoOptimizationMemoryUsage"
                                             ToolTip="{Binding Path=(local:Localization.AutoOptimizationInterval)}"
-                                            Value="{Binding AutoOptimizationPercentage}" />
+                                            Value="{Binding AutoOptimizationMemoryUsage}" />
                                 </StackPanel>
                             </Grid>
                         </GroupBox>

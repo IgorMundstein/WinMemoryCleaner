@@ -21,7 +21,7 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
-        private static DateTimeOffset _lastUpdateCheck;
+        private static DateTimeOffset _lastAutoUpdate;
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
         private static ProcessStartInfo _updateProcess;
@@ -91,7 +91,23 @@ namespace WinMemoryCleaner
                 try
                 {
                     if (_notifyIcon != null)
+                    {
+                        _notifyIcon.Visible = false;
+                        _notifyIcon.Visible = true;
+                        _notifyIcon.Visible = false;
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                try
+                {
+                    if (_notifyIcon != null)
+                    {
                         _notifyIcon.Dispose();
+                    }
                 }
                 catch
                 {
@@ -257,7 +273,7 @@ namespace WinMemoryCleaner
                     _notifyIcon.Click += OnNotifyIconClick;
                     _notifyIcon.DoubleClick += OnNotifyIconClick;
                     _notifyIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
-                    _notifyIcon.Text = string.Format("{0}{1}{2}", "Windows", Environment.NewLine, "Memory Cleaner");
+                    _notifyIcon.Text = string.Format("Windows{0}Memory Cleaner", Environment.NewLine);
                     _notifyIcon.Visible = true;
 
                     // DI/IOC
@@ -327,10 +343,10 @@ namespace WinMemoryCleaner
         {
             try
             {
-                if (DateTimeOffset.Now.Subtract(_lastUpdateCheck).TotalHours < Constants.App.UpdateInterval)
+                if (DateTimeOffset.Now.Subtract(_lastAutoUpdate).TotalHours < Constants.App.AutoUpdateInterval)
                     return;
 
-                _lastUpdateCheck = DateTimeOffset.Now;
+                _lastAutoUpdate = DateTimeOffset.Now;
 
                 using (WebClient client = new WebClient())
                 {

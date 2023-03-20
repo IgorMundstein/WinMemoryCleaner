@@ -19,7 +19,10 @@ namespace WinMemoryCleaner
 
         private Computer _computer;
         private readonly IComputerService _computerService;
-        private BackgroundWorker _monitorWorker;
+        private BackgroundWorker _monitorAppWorker;
+        private BackgroundWorker _monitorComputerWorker;
+        private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+        private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
         private string _selectedProcess;
 
         #endregion
@@ -38,13 +41,22 @@ namespace WinMemoryCleaner
 
             // Commands
             AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList);
-            OptimizeCommand = new RelayCommand(Optimize, () => CanOptimize);
+            OptimizeCommand = new RelayCommand(OptimizeAsync, () => CanOptimize);
             RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
 
             // Models
             Computer = new Computer();
 
-            Monitor();
+            if (IsInDesignMode)
+            {
+                Computer.OperatingSystem.IsWindowsVistaOrAbove = true;
+                Computer.OperatingSystem.IsWindowsXp64BitOrAbove = true;
+            }
+            else
+            {
+                Computer.OperatingSystem = _computerService.GetOperatingSystem();
+                MonitorAsync();
+            }
         }
 
         #endregion
@@ -93,6 +105,8 @@ namespace WinMemoryCleaner
                 {
                     IsBusy = true;
 
+                    _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+
                     Settings.AutoOptimizationInterval = value;
                     Settings.Save();
 
@@ -104,23 +118,25 @@ namespace WinMemoryCleaner
                 }
             }
         }
-
+        
         /// <summary>
-        /// Gets or sets the automatic optimization percentage.
+        /// Gets or sets the automatic optimization memory usage.
         /// </summary>
         /// <value>
-        /// The automatic optimization percentage.
+        /// The automatic optimization memory usage.
         /// </value>
-        public int AutoOptimizationPercentage
+        public int AutoOptimizationMemoryUsage
         {
-            get { return Settings.AutoOptimizationPercentage; }
+            get { return Settings.AutoOptimizationMemoryUsage; }
             set
             {
                 try
                 {
                     IsBusy = true;
 
-                    Settings.AutoOptimizationPercentage = value;
+                    _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
+
+                    Settings.AutoOptimizationMemoryUsage = value;
                     Settings.Save();
 
                     RaisePropertyChanged();
@@ -445,7 +461,7 @@ namespace WinMemoryCleaner
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets the title.
         /// </summary>
@@ -474,12 +490,12 @@ namespace WinMemoryCleaner
         {
             if (disposing)
             {
-                if (_monitorWorker != null)
+                if (_monitorAppWorker != null)
                 {
 
                     try
                     {
-                        _monitorWorker.CancelAsync();
+                        _monitorAppWorker.CancelAsync();
                     }
                     catch
                     {
@@ -488,7 +504,29 @@ namespace WinMemoryCleaner
 
                     try
                     {
-                        _monitorWorker.Dispose();
+                        _monitorAppWorker.Dispose();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                if (_monitorComputerWorker != null)
+                {
+
+                    try
+                    {
+                        _monitorComputerWorker.CancelAsync();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    try
+                    {
+                        _monitorComputerWorker.Dispose();
                     }
                     catch
                     {
@@ -565,25 +603,87 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Monitor Computer Resources
+        /// Monitor App Resources
         /// </summary>
-        private void Monitor()
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
+        private void MonitorApp(object sender, DoWorkEventArgs e)
         {
+            while (!_monitorAppWorker.CancellationPending)
+            {
+                try
+                {
+                    // Check if it's busy
+                    if (IsBusy)
+                        continue;
+
+                    // Update app
+                    if (Settings.AutoUpdate)
+                        App.Update();
+
+                    // Auto Optimization
+                    if (CanOptimize)
+                    {
+                        // Interval
+                        if (Settings.AutoOptimizationInterval > 0 &&
+                            DateTimeOffset.Now.Subtract(_lastAutoOptimizationByInterval).TotalHours >= Settings.AutoOptimizationInterval)
+                        {
+                            OptimizeAsync();
+
+                            _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+                        }
+                        else
+                        {
+                            // Memory usage
+                            if (Settings.AutoOptimizationMemoryUsage > 0 &&
+                                Computer.Memory.FreePercentage < Settings.AutoOptimizationMemoryUsage &&
+                                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
+                            {
+                                OptimizeAsync();
+
+                                _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
+                            }
+                        }
+                    }
+
+                    // Delay
+                    Thread.Sleep(60000);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex.GetBaseException().Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Monitor Background Tasks
+        /// </summary>
+        private void MonitorAsync()
+        {
+            // Monitor App Resources
             try
             {
-                if (IsInDesignMode)
+                using (_monitorAppWorker = new BackgroundWorker())
                 {
-                    Computer.OperatingSystem.IsWindowsVistaOrAbove = true;
-                    Computer.OperatingSystem.IsWindowsXp64BitOrAbove = true;
-
-                    return;
+                    _monitorAppWorker.DoWork += MonitorApp;
+                    _monitorAppWorker.WorkerSupportsCancellation = true;
+                    _monitorAppWorker.RunWorkerAsync();
                 }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
 
-                using (_monitorWorker = new BackgroundWorker())
+            // Monitor Computer Resources
+            try
+            {
+                using (_monitorComputerWorker = new BackgroundWorker())
                 {
-                    _monitorWorker.DoWork += Monitor;
-                    _monitorWorker.WorkerSupportsCancellation = true;
-                    _monitorWorker.RunWorkerAsync();
+                    _monitorComputerWorker.DoWork += MonitorComputer;
+                    _monitorComputerWorker.WorkerSupportsCancellation = true;
+                    _monitorComputerWorker.RunWorkerAsync();
                 }
             }
             catch (Exception e)
@@ -593,33 +693,38 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Monitor
+        /// Monitor Computer Resources
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
-        private void Monitor(object sender, DoWorkEventArgs e)
+        private void MonitorComputer(object sender, DoWorkEventArgs e)
         {
-            Computer.OperatingSystem = _computerService.GetOperatingSystem();
-
-            while (!_monitorWorker.CancellationPending)
+            while (!_monitorComputerWorker.CancellationPending)
             {
-                // Update app
-                if (Settings.AutoUpdate && !IsBusy)
-                    App.Update();
+                try
+                {
+                    // Check if it's busy
+                    if (IsBusy)
+                        continue;
 
-                // Update memory info
-                Computer.Memory = _computerService.GetMemory();
-                RaisePropertyChanged(() => Computer);
+                    // Update memory info
+                    Computer.Memory = _computerService.GetMemory();
+                    RaisePropertyChanged(() => Computer);
 
-                // Delay
-                Thread.Sleep(3000);
+                    // Delay
+                    Thread.Sleep(5000);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex.GetBaseException().Message);
+                }
             }
         }
 
         /// <summary>
         /// Optimize
         /// </summary>
-        private void Optimize()
+        private void OptimizeAsync()
         {
             try
             {

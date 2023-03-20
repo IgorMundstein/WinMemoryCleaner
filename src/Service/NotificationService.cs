@@ -80,7 +80,8 @@ namespace WinMemoryCleaner
         {
             try
             {
-                _notifyIcon.ShowBalloonTip(timeout * 1000, title, message, (ToolTipIcon)icon);
+                if (_notifyIcon != null)
+                    _notifyIcon.ShowBalloonTip(timeout * 1000, title, message, (ToolTipIcon)icon);
             }
             catch
             {

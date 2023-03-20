@@ -14,7 +14,7 @@ namespace WinMemoryCleaner
             // Default values
             AlwaysOnTop = false;
             AutoOptimizationInterval = 0;
-            AutoOptimizationPercentage = 0;
+            AutoOptimizationMemoryUsage = 0;
             AutoUpdate = true;
             Culture = Enums.Culture.English;
             MemoryAreas = Enums.Memory.Area.ModifiedPageList | Enums.Memory.Area.ProcessesWorkingSet | Enums.Memory.Area.StandbyList | Enums.Memory.Area.SystemWorkingSet;
@@ -44,7 +44,7 @@ namespace WinMemoryCleaner
                     {
                         AlwaysOnTop = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AlwaysOnTop, AlwaysOnTop));
                         AutoOptimizationInterval = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval));
-                        AutoOptimizationPercentage = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationPercentage, AutoOptimizationPercentage));
+                        AutoOptimizationMemoryUsage = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage));
                         AutoUpdate = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate));
 
                         Enums.Culture culture;
@@ -87,7 +87,7 @@ namespace WinMemoryCleaner
 
         internal static int AutoOptimizationInterval { get; set; }
 
-        internal static int AutoOptimizationPercentage { get; set; }
+        internal static int AutoOptimizationMemoryUsage { get; set; }
 
         internal static bool AutoUpdate { get; set; }
 
@@ -135,7 +135,7 @@ namespace WinMemoryCleaner
                     {
                         key.SetValue(Constants.App.Registry.Name.AlwaysOnTop, AlwaysOnTop ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval);
-                        key.SetValue(Constants.App.Registry.Name.AutoOptimizationPercentage, AutoOptimizationPercentage);
+                        key.SetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage);
                         key.SetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.Culture, (int)Culture);
                         key.SetValue(Constants.App.Registry.Name.MemoryAreas, (int)MemoryAreas);

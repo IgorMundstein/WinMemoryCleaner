@@ -163,7 +163,7 @@ namespace WinMemoryCleaner
                     Add = "Add";
                     AlwaysOnTop = "Always on top";
                     AutoOptimization = "Auto optimization";
-                    AutoOptimizationInterval = "The interval between this auto optimization is 5 minutes";
+                    AutoOptimizationInterval = string.Format("The interval between free memory auto optimization is {0} minutes", Constants.App.AutoOptimizationMemoryUsageInterval);
                     AutoUpdate = "Auto update";
                     Close = "Close";
                     Completed = "Completed";
@@ -203,7 +203,7 @@ namespace WinMemoryCleaner
                     Add = "Adicionar";
                     AlwaysOnTop = "Sempre na frente";
                     AutoOptimization = "Otimização automática";
-                    AutoOptimizationInterval = "O intervalo entre esta otimização automática é de 5 minutos";
+                    AutoOptimizationInterval = string.Format("O intervalo entre a otimização automática de memória livre é de {0} minutos", Constants.App.AutoOptimizationMemoryUsageInterval);
                     AutoUpdate = "Atualização automática";
                     Close = "Fechar";
                     Completed = "Completado";
