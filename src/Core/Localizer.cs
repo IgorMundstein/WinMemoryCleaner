@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -30,12 +29,6 @@ namespace WinMemoryCleaner
         {
             String = new Localization();
             Culture = Settings.Culture;
-
-            Languages = new Dictionary<string, Enums.Culture>
-            {
-                { "English", Enums.Culture.English },
-                { "Português", Enums.Culture.Portuguese }
-            };
         }
 
         #endregion
@@ -58,8 +51,6 @@ namespace WinMemoryCleaner
                 RaiseStaticPropertyChanged("String");
             }
         }
-
-        public static Dictionary<string, Enums.Culture> Languages { get; private set; }
 
         public static Localization String { get; private set; }
 

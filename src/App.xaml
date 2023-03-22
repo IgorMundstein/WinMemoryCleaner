@@ -99,13 +99,6 @@
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="Background" Value="{StaticResource DarkBackground}" />
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
-                <Style.Resources>
-                    <Style TargetType="{x:Type Label}">
-                        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                        <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
-                        <Setter Property="Padding" Value="0" />
-                    </Style>
-                </Style.Resources>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

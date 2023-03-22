@@ -124,13 +124,16 @@
                                     <TextBlock Margin="0, 0, 8, 10" 
                                                Text="{Binding Path=(local:Localizer.String).Language}"
                                                VerticalAlignment="Center" />
-                                    <ComboBox DisplayMemberPath="Key"
-                                              ItemsSource="{Binding Path=(local:Localizer.Languages)}" 
-                                              IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                    <ComboBox IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                                               Margin="0, 0, 0, 10"
                                               SelectedValue="{Binding Culture}" 
-                                              SelectedValuePath="Value"
-                                              VerticalContentAlignment="Center" />
+                                              SelectedValuePath="Tag"
+                                              VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="English" 
+                                                      Tag="{x:Static local:Enums+Culture.English}" />
+                                        <ComboBoxItem Content="Português" 
+                                                      Tag="{x:Static local:Enums+Culture.Portuguese}" />
+                                    </ComboBox>
                                 </StackPanel>
                                 <CheckBox Content="{Binding Path=(local:Localizer.String).AlwaysOnTop}"
                                           IsChecked="{Binding AlwaysOnTop}"
