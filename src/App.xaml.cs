@@ -259,7 +259,7 @@ namespace WinMemoryCleaner
                     // Version (Update)
                     if (value.Equals(_version.ToString()))
                     {
-                        updateNotification = string.Format(CultureInfo.CurrentCulture, Localization.UpdatedToVersion, string.Format("{0}.{1}", _version.Major, _version.Minor));
+                        updateNotification = string.Format(CultureInfo.CurrentCulture, Localizer.String.UpdatedToVersion, string.Format("{0}.{1}", _version.Major, _version.Minor));
 
                         Logger.Information(updateNotification);
                     }

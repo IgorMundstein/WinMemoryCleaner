@@ -201,7 +201,7 @@ namespace WinMemoryCleaner
                     // ignored
                 }
 
-                Event(string.Format(CultureInfo.CurrentCulture, Localization.ErrorCanNotSaveLog, message, e.GetBaseException().Message), EventLogEntryType.Error);
+                Event(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorCanNotSaveLog, message, e.GetBaseException().Message), EventLogEntryType.Error);
             }
         }
 

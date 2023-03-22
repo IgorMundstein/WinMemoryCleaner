@@ -36,7 +36,7 @@ namespace WinMemoryCleaner
             _notifyIcon.ContextMenuStrip = new ContextMenuStrip();
 
             // Optimize
-            _notifyIcon.ContextMenuStrip.Items.Add(Localization.Optimize, null, (sender, args) =>
+            _notifyIcon.ContextMenuStrip.Items.Add(Localizer.String.Optimize, null, (sender, args) =>
             {
                 var mainViewModel = DependencyInjection.Container.Resolve<MainViewModel>();
 
@@ -47,7 +47,7 @@ namespace WinMemoryCleaner
             _notifyIcon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
 
             // Exit
-            _notifyIcon.ContextMenuStrip.Items.Add(Localization.Exit, null, (sender, args) =>
+            _notifyIcon.ContextMenuStrip.Items.Add(Localizer.String.Exit, null, (sender, args) =>
             {
                 Application.Current.Shutdown();
             });

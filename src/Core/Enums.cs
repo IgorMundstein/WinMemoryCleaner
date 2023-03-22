@@ -19,11 +19,7 @@ namespace WinMemoryCleaner
             /// <summary>
             /// Portuguese
             /// </summary>
-            Portuguese = 22,
-            /// <summary>
-            /// Spanish
-            /// </summary>
-            Spanish = 10
+            Portuguese = 22
         }
 
         /// <summary>

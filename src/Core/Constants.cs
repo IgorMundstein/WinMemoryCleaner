@@ -6,11 +6,12 @@ namespace WinMemoryCleaner
     {
         internal static class App
         {
-            internal const int AutoOptimizationMemoryUsageInterval = 5; // Minute
+            public const int AutoOptimizationMemoryUsageInterval = 5; // Minute
             internal const int AutoUpdateInterval = 24; // Hour
             internal const string Guid = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
             internal const string KeyFile = "WinMemoryCleaner.snk";
             public const string License = "GPL-3.0";
+            internal const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization";
             internal const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
 

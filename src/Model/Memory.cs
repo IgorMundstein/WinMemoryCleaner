@@ -5,6 +5,9 @@
     /// </summary>
     internal class Memory
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Memory" /> class.
+        /// </summary>
         public Memory()
         {
             Free = "0";

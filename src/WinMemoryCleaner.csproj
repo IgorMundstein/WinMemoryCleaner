@@ -100,14 +100,15 @@
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Attribute\CallerMemberNameAttribute.cs" />
     <Compile Include="Core\DependencyInjection.cs" />
-    <Compile Include="Core\Localization.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\Enums.cs" />
+    <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
     <Compile Include="Interfaces\IOperatingSystem.cs" />
     <Compile Include="Interfaces\IMemoryService.cs" />
     <Compile Include="Model\Computer.cs" />
+    <Compile Include="Model\Localization.cs" />
     <Compile Include="Model\Log.cs" />
     <Compile Include="ViewModel\Base\ObservableObject.cs" />
     <Compile Include="Core\Structs.cs" />
@@ -134,6 +135,8 @@
     </Compile>
     <None Include="app.manifest" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="Resources\Localization\English.json" />
+    <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
@@ -141,8 +144,10 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>

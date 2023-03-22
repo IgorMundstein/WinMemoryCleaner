@@ -118,7 +118,18 @@ namespace WinMemoryCleaner
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Gets the automatic optimization interval information.
+        /// </summary>
+        /// <value>
+        /// The automatic optimization interval information.
+        /// </value>
+        public string AutoOptimizationIntervalInfo
+        {
+            get { return string.Format(CultureInfo.CurrentCulture, Localizer.String.AutoOptimizationInterval, Constants.App.AutoOptimizationMemoryUsageInterval); }
+        }
+
         /// <summary>
         /// Gets or sets the automatic optimization memory usage.
         /// </summary>
@@ -212,7 +223,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return Localization.Culture;
+                return Localizer.Culture;
             }
             set
             {
@@ -220,14 +231,18 @@ namespace WinMemoryCleaner
                 {
                     IsBusy = true;
 
-                    Localization.Culture = value;
+                    if (Localizer.Culture == value)
+                        return;
 
-                    NotificationService.Initialize();
+                    Localizer.Culture = value;
+
+                    if (!IsInDesignMode)
+                        NotificationService.Initialize();
 
                     Settings.Culture = value;
                     Settings.Save();
 
-                    RaisePropertyChanged();
+                    RaisePropertyChanged(string.Empty);
                 }
                 finally
                 {
@@ -760,7 +775,7 @@ namespace WinMemoryCleaner
 
                 // Notification
                 if (Settings.ShowOptimizationNotifications)
-                    Notify(Localization.MemoryOptimized);
+                    Notify(Localizer.String.MemoryOptimized);
             }
             finally
             {
