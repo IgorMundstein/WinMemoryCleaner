@@ -96,6 +96,13 @@
                     </Style>
                 </Style.Resources>
             </Style>
+            <Style TargetType="{x:Type Slider}">
+                <Style.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="1" />
+                    </Style>
+                </Style.Resources>
+            </Style>
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="Background" Value="{StaticResource DarkBackground}" />
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -268,6 +269,9 @@ namespace WinMemoryCleaner
                 // GUI
                 if (memoryAreas == Enums.Memory.Area.None)
                 {
+                    // Run On Startup
+                    RunOnStartup(Settings.RunOnStartup);
+
                     // Notification Area
                     _notifyIcon = new NotifyIcon();
                     _notifyIcon.Click += OnNotifyIconClick;
@@ -321,6 +325,70 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Runs the app on startup
+        /// </summary>
+        /// <param name="enable">if set to <c>true</c> [enable].</param>
+        internal static void RunOnStartup(bool enable)
+        {
+            try
+            {
+                var startupPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+
+                // Registry
+                try
+                {
+                    if (enable)
+                    {
+                        using (var key = Registry.LocalMachine.CreateSubKey(Constants.App.Registry.Key.Startup))
+                        {
+                            if (key != null)
+                                key.SetValue(Constants.App.Title, string.Format(@"""{0}""", startupPath));
+                        }
+                    }
+                    else
+                    {
+                        Registry.LocalMachine.DeleteSubKey(Constants.App.Registry.Key.Startup, false);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Debug(e.GetBaseException().Message);
+                }
+
+                // Scheduled Task
+                try
+                {
+                    var arguments = enable
+                        ? string.Format(@"/CREATE /F /RL HIGHEST /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, startupPath)
+                        : string.Format(@"/DELETE /F /TN ""{0}""", Constants.App.Title);
+
+                    new Process
+                    {
+                        StartInfo =
+                        {
+                            Arguments = arguments,
+                            CreateNoWindow = true,
+                            FileName = "schtasks",
+                            RedirectStandardError = false,
+                            RedirectStandardInput = false,
+                            RedirectStandardOutput = false,
+                            UseShellExecute = false,
+                            WindowStyle = ProcessWindowStyle.Hidden
+                        }
+                    }.Start();
+                }
+                catch (Exception e)
+                {
+                    Logger.Debug(e.GetBaseException().Message);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Debug(e.GetBaseException().Message);
+            }
+        }
+
+        /// <summary>
         /// Shows a dialog
         /// </summary>
         /// <param name="exception">Exception</param>
@@ -339,7 +407,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Update to the latest version
         /// </summary>
-        public static void Update(params string[] args)
+        internal static void Update(params string[] args)
         {
             try
             {
@@ -376,8 +444,13 @@ namespace WinMemoryCleaner
 
                         _updateProcess = new ProcessStartInfo
                         {
-                            FileName = "cmd",
                             Arguments = string.Format(@"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, temp, path, newestVersion, string.Join(" ", args)),
+                            CreateNoWindow = true,
+                            FileName = "cmd",
+                            RedirectStandardError = false,
+                            RedirectStandardInput = false,
+                            RedirectStandardOutput = false,
+                            UseShellExecute = false,
                             WindowStyle = ProcessWindowStyle.Hidden
                         };
 

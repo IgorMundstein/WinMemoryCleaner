@@ -31,6 +31,7 @@ namespace WinMemoryCleaner
                 {
                     internal const string ProcessExclusionList = @"SOFTWARE\WinMemoryCleaner\ProcessExclusionList";
                     internal const string Settings = @"SOFTWARE\WinMemoryCleaner";
+                    internal const string Startup = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run";
                 }
 
                 internal static class Name

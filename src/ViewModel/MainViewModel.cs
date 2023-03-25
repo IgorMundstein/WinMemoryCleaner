@@ -395,6 +395,8 @@ namespace WinMemoryCleaner
                 {
                     IsBusy = true;
 
+                    App.RunOnStartup(value);
+
                     Settings.RunOnStartup = value;
                     Settings.Save();
 
