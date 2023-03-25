@@ -1,3 +1,0 @@
-# Security Policy
-
-Not defined
