@@ -17,7 +17,7 @@
     It's portable, so you do not need installation or configuration. Download and open the executable to get started. The app requires administrator privileges and has a minimalistic interface and smart features.
   </p>
 
-  [![Download)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.zip)
+  [![Download)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 </div>
 
 ## 🚀 Features
