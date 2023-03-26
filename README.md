@@ -91,4 +91,4 @@ Project requirements.
 
 ## 🌐 Translation
 
-If you are a native speaker of any language other than English, you can contribute by translating the file: [English.json](https://github.com/IgorMundstein/WinMemoryCleaner/blob/dev/src/Resources/Localization/English.json)
+If you are a native speaker of any language other than English, you can contribute by translating the file: [English.json](/src/Resources/Localization/English.json)
