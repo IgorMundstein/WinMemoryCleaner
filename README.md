@@ -84,6 +84,7 @@ Project requirements.
 - Minimalistic user interface
 - Model-View-ViewModel (MVVM) design pattern
 - No third library or DLL dependencies
+- Portable (Single .exe file)
 - S.O.L.I.D. Principles of Object-Oriented
 - Use of Windows native methods for memory management
 - Windows Presentation Foundation (WPF) for user interface
