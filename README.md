@@ -93,3 +93,7 @@ Project requirements.
 ## 🌐 Translation
 
 If you are a native speaker of any language other than English, you can contribute by translating the file: [English.json](/src/Resources/Localization/English.json)
+
+❤️ Contributors
+
+- `Slovene (Slovenščina)` [Jadran Rudec](https://github.com/JadranR) 
