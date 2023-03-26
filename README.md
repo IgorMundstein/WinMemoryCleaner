@@ -1,10 +1,6 @@
 <div align="center">
-  <h1>
-    <picture>
-      <img src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/dev/.github/images/win-memory-cleaner.png" height="24" width="24">
-    </picture>
-    Windows Memory Cleaner
-  </h1>
+
+  # [![](/.github/images/win-memory-cleaner-24x24.png)](#) Windows Memory Cleaner
 
   [![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#)
   [![](https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#)
@@ -12,11 +8,7 @@
   [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](#)
   [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](#)
 
-  <p align="center">
-    <picture>
-      <img src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/dev/.github/images/main-window.png">
-    </picture>
-  </p>
+  [![](/.github/images/main-window.png)](#)
 
   <p align="justify">
     This free RAM cleaner uses native Windows features to clear memory areas. Sometimes, programs do not release the allocated memory, making the computer slow. That is when you use Windows Memory Cleaner to optimize the memory, so you can keep working without wasting time restarting your system. 
@@ -26,7 +18,7 @@
     It's portable, so you do not need installation or configuration. Download and open the executable to get started. The app requires administrator privileges and has a minimalistic interface and smart features.
   </p>
 
-  [![Download)](https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/dev/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.zip)
+  [![Download)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.zip)
 </div>
 
 ## 🚀 Features
@@ -83,9 +75,7 @@ Logs are saved on windows event.
 1. Press **Win + R** to open the Run command dialog box.
 2. Type **eventvwr** and press **Enter** to open the Event Viewer.
 
-<picture>
-  <img src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/dev/.github/images/windows-event-log.png">
-</picture>
+[![](/.github/images/windows-event-log.png)](#)
 
 ## 📝 Development notes
 
