@@ -1,13 +1,13 @@
 <div align="center">
   <h1>Windows Memory Cleaner</h1>
 
-  [![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#)
-  [![](https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#)
+  [![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#windows-memory-cleaner)
+  [![](https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#windows-memory-cleaner)
 
-  [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](#)
-  [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](#)
+  [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE)
+  [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
-  [![](/.github/images/main-window.png)](#)
+  [![](/.github/images/main-window.png)](#windows-memory-cleaner)
 
   <p align="justify">
     This free RAM cleaner uses native Windows features to clear memory areas. Sometimes, programs do not release the allocated memory, making the computer slow. That is when you use Windows Memory Cleaner to optimize the memory, so you can keep working without wasting time restarting your system. 
@@ -74,7 +74,7 @@ Logs are saved on windows event.
 1. Press **Win + R** to open the Run command dialog box.
 2. Type **eventvwr** and press **Enter** to open the Event Viewer.
 
-[![](/.github/images/windows-event-log.png)](#)
+[![](/.github/images/windows-event-log.png)](#-logs)
 
 ## 📝 Development notes
 
