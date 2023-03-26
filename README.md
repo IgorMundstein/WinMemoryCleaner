@@ -1,6 +1,5 @@
 <div align="center">
-
-  # [![](/.github/images/win-memory-cleaner-24x24.png)](#) Windows Memory Cleaner
+  <h1>Windows Memory Cleaner</h1>
 
   [![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#)
   [![](https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#)
