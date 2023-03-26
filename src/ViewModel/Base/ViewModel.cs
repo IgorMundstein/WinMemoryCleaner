@@ -4,31 +4,58 @@ using System.Windows;
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// View Model Base
+    /// View Model
     /// </summary>
-    public abstract class ViewModel : ObservableObject
+    internal abstract class ViewModel : ObservableObject
     {
         #region Fields
 
-        private bool _isLoading;
-        private readonly ILoadingService _loadingService;
+        private bool _isBusy;
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ViewModel"/> class.
+        /// Initializes a new instance of the <see cref="ViewModel" /> class.
         /// </summary>
-        /// <param name="loadingService">The loading service.</param>
-        protected ViewModel(ILoadingService loadingService)
+        /// <param name="notificationService">Notification service</param>
+        protected ViewModel(INotificationService notificationService)
         {
-            _loadingService = loadingService;
+            NotificationService = notificationService;
         }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is busy.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is busy; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsBusy
+        {
+            get
+            {
+                return _isBusy;
+            }
+            set
+            {
+                try
+                {
+                    NotificationService.Loading(value);
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                _isBusy = value;
+                RaisePropertyChanged();
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this instance is in design mode.
@@ -45,37 +72,27 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ViewModel"/> is loading.
+        /// Gets the notification service.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if is loading; otherwise, <c>false</c>.
+        /// The notification service.
         /// </value>
-        public bool Isloading
-        {
-            get
-            {
-                return _isLoading;
-            }
-            set
-            {
-                _isLoading = value;
-                RaisePropertyChanged();
-            }
-        }
+        protected INotificationService NotificationService { get; private set; }
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Show/Hide Loading
+        /// Displays a Notification
         /// </summary>
-        /// <param name="on">True (ON) / False (OFF)</param>
-        protected void Loading(bool on)
+        /// <param name="message">The text</param>
+        /// <param name="title">The title</param>
+        /// <param name="timeout">The time period, in seconds</param>
+        /// <param name="icon">The icon</param>
+        protected void Notify(string message, string title = null, int timeout = 5, Enums.NotificationIcon icon = Enums.NotificationIcon.None)
         {
-            Isloading = on;
-
-            _loadingService.Loading(on);
+            NotificationService.Notify(message, title, timeout, icon);
         }
 
         #endregion

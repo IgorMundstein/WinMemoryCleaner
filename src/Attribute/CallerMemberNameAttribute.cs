@@ -1,4 +1,4 @@
-﻿// .NET 4.0 Framework
+﻿// Class required because of .NET 4.0 Framework
 // ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices
 {

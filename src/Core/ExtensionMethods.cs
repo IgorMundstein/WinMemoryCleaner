@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 
 namespace WinMemoryCleaner
 {
@@ -13,10 +14,8 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        internal static string ByteSizeToString(this long value)
+        internal static string ByteSizeToString(this ulong value)
         {
-            value = value < 0 ? -value : value;
-
             // Exabyte (1024^6)
             if (value >= 1152921504606846976L)
                 return string.Format(CultureInfo.CurrentCulture, "{0:0.#} EB", (value >> 50) / 1024.0);
@@ -48,11 +47,38 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Gets the default value.
         /// </summary>
-        /// <param name="t">The t.</param>
+        /// <param name="value">The value.</param>
         /// <returns></returns>
-        internal static object DefaultValue(this Type t)
+        internal static object DefaultValue(this Type value)
         {
-            return t.IsValueType && Nullable.GetUnderlyingType(t) == null ? Activator.CreateInstance(t) : null;
+            return value.IsValueType && Nullable.GetUnderlyingType(value) == null ? Activator.CreateInstance(value) : null;
+        }
+
+        /// <summary>
+        /// Validates enum value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified enum value is valid; otherwise, <c>false</c>.
+        /// </returns>
+        internal static bool IsValid(this Enum value)
+        {
+            if (value == null)
+                return false;
+
+            char firstDigit = value.ToString()[0];
+
+            return !char.IsDigit(firstDigit) && firstDigit != '-';
+        }
+
+        /// <summary>
+        /// Removes whitespaces.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        internal static string RemoveWhitespaces(this string value)
+        {
+            return new string(value.ToCharArray().Where(c => !char.IsWhiteSpace(c)).ToArray());
         }
     }
 }

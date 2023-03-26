@@ -9,7 +9,8 @@ namespace WinMemoryCleaner
     /// <summary>
     /// A base class for objects of which the properties must be observable.
     /// </summary>
-    public abstract class ObservableObject : INotifyPropertyChanged
+    /// <seealso cref="INotifyPropertyChanged" />
+    internal abstract class ObservableObject : INotifyPropertyChanged
     {
         #region Events
 

@@ -2,18 +2,20 @@
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Windows;
+using WinMemoryCleaner;
 
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany(Constants.App.Author.Name)]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCopyright("GNU General Public License v3.0")]
+[assembly: AssemblyCopyright(Constants.App.License)]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyDescription("Windows Memory Cleaner allows you to clean up your computer RAM memory")]
-[assembly: AssemblyFileVersion("1.1.0.0")]
-[assembly: AssemblyKeyFile("WinMemoryCleaner.snk")]
-[assembly: AssemblyProduct("WinMemoryCleaner")]
-[assembly: AssemblyTitle("Windows Memory Cleaner")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyVersion("1.1.0.0")]
+[assembly: AssemblyDescription(Constants.App.Title)]
+[assembly: AssemblyFileVersion("2.0.0.0")]
+[assembly: AssemblyKeyFile(Constants.App.KeyFile)]
+[assembly: AssemblyProduct(Constants.App.Name)]
+[assembly: AssemblyTitle(Constants.App.Title)]
+[assembly: AssemblyTrademark(Constants.App.Author.Name)]
+[assembly: AssemblyVersion("2.0.0.0")]
 [assembly: ComVisible(false)]
-[assembly: NeutralResourcesLanguage("en-US", UltimateResourceFallbackLocation.MainAssembly)]
-[assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
+[assembly: Guid(Constants.App.Guid)]
+[assembly: NeutralResourcesLanguage("")]
+[assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.None)]

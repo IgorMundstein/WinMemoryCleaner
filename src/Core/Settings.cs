@@ -1,77 +1,154 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Win32;
 
 namespace WinMemoryCleaner
 {
     internal static class Settings
     {
-        #region Constructor
+        #region Constructors
 
         static Settings()
         {
             // Default values
-            MemoryAreas = Enums.Memory.Area.StandbyListLowPriority | Enums.Memory.Area.SystemWorkingSet | Enums.Memory.Area.ProcessesWorkingSet;
+            AlwaysOnTop = false;
+            AutoOptimizationInterval = 0;
+            AutoOptimizationMemoryUsage = 0;
+            AutoUpdate = true;
+            Culture = Enums.Culture.English;
+            MemoryAreas = Enums.Memory.Area.ModifiedPageList | Enums.Memory.Area.ProcessesWorkingSet | Enums.Memory.Area.StandbyList | Enums.Memory.Area.SystemWorkingSet;
+            MinimizeToTrayWhenClosed = false;
+            ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+            RunOnStartup = false;
+            ShowOptimizationNotifications = true;
+            StartMinimized = false;
 
             // User values
-            Reload();
+            try
+            {
+                // Process Exclusion List
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(Constants.App.Registry.Key.ProcessExclusionList))
+                {
+                    if (key != null)
+                    {
+                        foreach (var name in key.GetValueNames())
+                            ProcessExclusionList.Add(name.RemoveWhitespaces().Replace(".exe", string.Empty).ToLower());
+                    }
+                }
+
+                // Settings
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(Constants.App.Registry.Key.Settings))
+                {
+                    if (key != null)
+                    {
+                        AlwaysOnTop = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AlwaysOnTop, AlwaysOnTop));
+                        AutoOptimizationInterval = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval));
+                        AutoOptimizationMemoryUsage = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage));
+                        AutoUpdate = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate));
+
+                        Enums.Culture culture;
+
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.Culture, Culture)), out culture) && culture.IsValid())
+                            Culture = culture;
+
+                        Enums.Memory.Area memoryAreas;
+
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.MemoryAreas, MemoryAreas)), out memoryAreas) && memoryAreas.IsValid())
+                        {
+                            if ((memoryAreas & Enums.Memory.Area.StandbyList) != 0 && (memoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
+                                memoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+
+                            MemoryAreas = memoryAreas;
+                        }
+
+                        MinimizeToTrayWhenClosed = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.MinimizeToTrayWhenClosed, MinimizeToTrayWhenClosed));
+                        RunOnStartup = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup));
+                        ShowOptimizationNotifications = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications));
+                        StartMinimized = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+            finally
+            {
+                Save();
+            }
         }
 
         #endregion
 
         #region Properties
 
-        internal static Enums.Memory.Area MemoryAreas;
+        internal static bool AlwaysOnTop { get; set; }
+
+        internal static int AutoOptimizationInterval { get; set; }
+
+        internal static int AutoOptimizationMemoryUsage { get; set; }
+
+        internal static bool AutoUpdate { get; set; }
+
+        internal static Enums.Culture Culture { get; set; }
+
+        internal static Enums.Memory.Area MemoryAreas { get; set; }
+
+        internal static bool MinimizeToTrayWhenClosed { get; set; }
+
+        internal static SortedSet<string> ProcessExclusionList { get; set; }
+
+        internal static bool RunOnStartup { get; set; }
+
+        internal static bool ShowOptimizationNotifications { get; set; }
+
+        internal static bool StartMinimized { get; set; }
 
         #endregion
 
         #region Methods
 
-        private static void Load()
-        {
-            try
-            {
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(Constants.App.RegistryKey.Name))
-                {
-                    if (key == null)
-                    {
-                        Save();
-                    }
-                    else
-                    {
-                        MemoryAreas = (Enums.Memory.Area)Enum.Parse(typeof(Enums.Memory.Area), Convert.ToString(key.GetValue(Constants.App.RegistryKey.MemoryAreas, MemoryAreas)));
-
-                        if (MemoryAreas.HasFlag(Enums.Memory.Area.StandbyList | Enums.Memory.Area.StandbyListLowPriority))
-                            MemoryAreas &= ~Enums.Memory.Area.StandbyList;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                LogHelper.Error(e);
-            }
-        }
-
-        private static void Reload()
-        {
-            Load();
-            Save();
-        }
-
         internal static void Save()
         {
             try
             {
-                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(Constants.App.RegistryKey.Name))
+                // Process Exclusion List
+                Registry.CurrentUser.DeleteSubKey(Constants.App.Registry.Key.ProcessExclusionList, false);
+
+                if (ProcessExclusionList.Any())
+                {
+                    using (RegistryKey key = Registry.CurrentUser.CreateSubKey(Constants.App.Registry.Key.ProcessExclusionList))
+                    {
+                        if (key != null)
+                        {
+                            foreach (var process in ProcessExclusionList)
+                                key.SetValue(process.RemoveWhitespaces().Replace(".exe", string.Empty).ToLower(), string.Empty, RegistryValueKind.String);
+                        }
+                    }
+                }
+
+                // Settings
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(Constants.App.Registry.Key.Settings))
                 {
                     if (key != null)
                     {
-                        key.SetValue(Constants.App.RegistryKey.MemoryAreas, (int)MemoryAreas);
+                        key.SetValue(Constants.App.Registry.Name.AlwaysOnTop, AlwaysOnTop ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval);
+                        key.SetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage);
+                        key.SetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.Culture, (int)Culture);
+                        key.SetValue(Constants.App.Registry.Name.MemoryAreas, (int)MemoryAreas);
+                        key.SetValue(Constants.App.Registry.Name.MinimizeToTrayWhenClosed, MinimizeToTrayWhenClosed ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized ? 1 : 0);
                     }
                 }
             }
             catch (Exception e)
             {
-                LogHelper.Error(e);
+                Logger.Error(e);
             }
         }
 

@@ -1,47 +1,19 @@
 ﻿using System;
-using System.Drawing;
 
 namespace WinMemoryCleaner
 {
     /// <summary>
     /// Log Item
     /// </summary>
-    public class Log : Model
+    internal class Log
     {
-        /// <summary>
-        /// Gets or sets the color.
-        /// </summary>
-        /// <value>
-        /// The color.
-        /// </value>
-        public Color Color
-        {
-            get
-            {
-                switch (Level)
-                {
-                    case Enums.Log.Level.Info:
-                        return Color.Green;
-
-                    case Enums.Log.Level.Warning:
-                        return Color.Orange;
-
-                    case Enums.Log.Level.Error:
-                        return Color.Red;
-
-                    default:
-                        return Color.Black;
-                }
-            }
-        }
-
         /// <summary>
         /// Gets or sets the date time.
         /// </summary>
         /// <value>
         /// The date time.
         /// </value>
-        public DateTime DateTime { get; set; }
+        internal DateTime DateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the level.
@@ -49,7 +21,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The level.
         /// </value>
-        public Enums.Log.Level Level { get; set; }
+        internal Enums.Log.Level Level { get; set; }
 
         /// <summary>
         /// Gets or sets the method.
@@ -57,7 +29,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The method.
         /// </value>
-        public string Method { get; set; }
+        internal string Method { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
@@ -65,7 +37,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The message.
         /// </value>
-        public string Message { get; set; }
+        internal string Message { get; set; }
 
         /// <summary>
         /// Converts to string.
