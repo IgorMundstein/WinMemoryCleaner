@@ -35,7 +35,7 @@
 - `Clean Combined Page List` - Flushes blocks from the combined page list. Effective only when page combining is enabled.
 - `Clean Modified Page List` - Flushes memory from the Modified page list, writing unsaved data to disk and moving the pages to the Standby list.
 - `Clean Processes Working Set` - Removes memory from all user-mode and system working sets and moves it to the Standby or Modified page lists. Note that by the time, processes that run any code will necessarily populate their working sets to do so.
-- `Clean Standby List` - Flushes pages from all Standby list to the Free list.
+- `Clean Standby List` - Flushes pages from all Standby lists to the Free list.
 - `Clean Standby List (Low Priority)` - Flushes pages from the lowest-priority Standby list to the Free list.
 - `Clean System Working Set` - Removes memory from the system cache working set.
 
@@ -96,6 +96,8 @@ Project requirements.
 ## 🌐 Translation
 
 If you are a native speaker of any language other than English, you can contribute by translating the file: [English.json](/src/Resources/Localization/English.json)
+
+Use the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14) to upload the file.
 
 ❤️ Contributors
 
