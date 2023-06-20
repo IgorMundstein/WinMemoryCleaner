@@ -137,6 +137,7 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="Resources\Localization\English.json" />
     <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
+    <EmbeddedResource Include="Resources\Localization\Spanish.json" />
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
