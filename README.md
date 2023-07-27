@@ -1,23 +1,26 @@
 <div align="center">
   <h1>Windows Memory Cleaner</h1>
 
-  [![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#)
-  [![](https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#)
+  [![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#windows-memory-cleaner)
+  [![](https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#windows-memory-cleaner)
 
-  [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](#)
-  [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](#)
+  [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE)
+  [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
-  [![](/.github/images/main-window.png)](#)
+  [![](/.github/images/main-window.png)](#windows-memory-cleaner)
 
   <p align="justify">
     This free RAM cleaner uses native Windows features to clear memory areas. Sometimes, programs do not release the allocated memory, making the computer slow. That is when you use Windows Memory Cleaner to optimize the memory, so you can keep working without wasting time restarting your system. 
   </p>
 
   <p align="justify">
-    It's portable, so you do not need installation or configuration. Download and open the executable to get started. The app requires administrator privileges and has a minimalistic interface and smart features.
+    The app has a minimalistic interface and smart features. It's portable, so you do not need installation or configuration. Download and open the executable to get started.
   </p>
 
   [![Download)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
+
+  *The app requires administrator privileges*
+
 </div>
 
 ## 🚀 Features
@@ -27,18 +30,22 @@
 - `Every X hours` - The optimization will run by period. 0h disables it.
 - `When free memory is below X percent` - The optimization will run if free memory is below the specified percentage. 0% disables it.
 
+### Hotkey
+
+- `Ctrl + Alt + M` - Optimize
+
 ### Memory Areas
 
 - `Clean Combined Page List` - Flushes blocks from the combined page list. Effective only when page combining is enabled.
 - `Clean Modified Page List` - Flushes memory from the Modified page list, writing unsaved data to disk and moving the pages to the Standby list.
-- `Clean Processes Working Set` - Removes memory from all user-mode and system working sets and moves it to the Standby or Modified page lists. Note that by the time, processes that run any code will necessarily populate their working sets to do so.
-- `Clean Standby List` - Flushes pages from all Standby list to the Free list.
+- `Clean Processes Working Set` - Removes memory from all user-mode and system working sets and moves it to the Standby or Modified page lists. Note that by the time processes run, any code will necessarily populate their working sets to do so.
+- `Clean Standby List` - Flushes pages from all Standby lists to the Free list.
 - `Clean Standby List (Low Priority)` - Flushes pages from the lowest-priority Standby list to the Free list.
 - `Clean System Working Set` - Removes memory from the system cache working set.
 
 ### Multi-Language
 
-- `English` `Portuguese`
+- `Chinese` `Dutch` `English` `French` `German` `Greek` `Italian` `Macedonian` `Portuguese` `Slovenian` `Spanish` `Turkish`
 
 ### Processes excluded from optimization
 
@@ -48,7 +55,8 @@
 
 - `Always on top` - Pins the window to the top of all your windows.
 - `Auto update` - Keeps the app up to date.
-- `Minimize to the tray when closed` - Minimize the app to the system tray when clicking the close (X) button.
+- `Close after optimization` - Closes the app after optimization.
+- `Close to the notification area` - Minimize the app to the system tray when clicking the close (X) button.
 - `Run on startup` - Runs the app after the system boots up.
 - `Show optimization notifications` - Sends a message to the notification area after optimization.
 - `Start minimized` - The app will start minimized to the system tray. Single/Double click on the icon to restore.
@@ -69,12 +77,12 @@ Example
 
 ## 📖 Logs
 
-Logs are saved on windows event.
+Logs are saved on Windows event.
 
 1. Press **Win + R** to open the Run command dialog box.
 2. Type **eventvwr** and press **Enter** to open the Event Viewer.
 
-[![](/.github/images/windows-event-log.png)](#)
+[![](/.github/images/windows-event-log.png)](#-logs)
 
 ## 📝 Development notes
 
@@ -84,6 +92,7 @@ Project requirements.
 - Minimalistic user interface
 - Model-View-ViewModel (MVVM) design pattern
 - No third library or DLL dependencies
+- Portable (Single .exe file)
 - S.O.L.I.D. Principles of Object-Oriented
 - Use of Windows native methods for memory management
 - Windows Presentation Foundation (WPF) for user interface
@@ -92,3 +101,23 @@ Project requirements.
 ## 🌐 Translation
 
 If you are a native speaker of any language other than English, you can contribute by translating the file: [English.json](/src/Resources/Localization/English.json)
+
+You can test any translation by creating a file alongside the executable.
+1. Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the locale description of the language.
+2. Save it as {locale-description}.json
+3. Launch the application. If successful, the new language and changes will be available.
+4. Use the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14) to upload the file.
+
+❤️ Contributors
+
+- `Chinese - Simplified (中文(简体))` [Kun Zhao](https://github.com/kzhdev) | [raydenake22](https://github.com/raydenake22)
+- `Chinese - Traditional (中文(繁體))` [raydenake22](https://github.com/raydenake22) | [rtyrtyrtyqw](https://github.com/rtyrtyrtyqw)
+- `Dutch (Nederlands)` [hax4dazy](https://github.com/hax4dazy)
+- `French (Français)` [William VINCENT](https://github.com/wixaw)
+- `German (Deutsch)` [Calvin](https://github.com/Slluxx)
+- `Greek (Ελληνικά)` [tkatsageorgis](https://github.com/tkatsageorgis)
+- `Italian (Italiano)` [wintrymichi](https://github.com/wintrymichi)
+- `Macedonian (Македонски)` [Dimitrij Gjorgji](https://github.com/Cathadox)
+- `Slovenian (Slovenščina)` [Jadran Rudec](https://github.com/JadranR)
+- `Spanish (Español)` [Ajneb Al Revés](https://github.com/AjnebAlReves) | [Nekrodamus](https://github.com/FrannDzs)
+- `Turkish (Türkçe)` [Viollje](https://github.com/Viollje)
