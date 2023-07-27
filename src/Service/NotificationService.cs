@@ -25,7 +25,7 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Initializes this instance.
+        /// Initializes
         /// </summary>
         public void Initialize()
         {
@@ -82,6 +82,22 @@ namespace WinMemoryCleaner
             {
                 if (_notifyIcon != null)
                     _notifyIcon.ShowBalloonTip(timeout * 1000, title, message, (ToolTipIcon)icon);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        /// <summary>
+        /// Update Info
+        /// </summary>
+        /// <param name="memory">The memory.</param>
+        public void UpdateInfo(Memory memory)
+        {
+            try
+            {
+                _notifyIcon.Text = string.Format("{0} {1}{2}%", Localizer.String.MemoryUsage, Environment.NewLine, memory.UsedPercentage);
             }
             catch
             {

@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -19,6 +18,7 @@ namespace WinMemoryCleaner
 
         private Computer _computer;
         private readonly IComputerService _computerService;
+        private readonly HotKeyManager _hotkeyManager;
         private BackgroundWorker _monitorAppWorker;
         private BackgroundWorker _monitorComputerWorker;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
@@ -43,6 +43,10 @@ namespace WinMemoryCleaner
             AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList);
             OptimizeCommand = new RelayCommand(OptimizeAsync, () => CanOptimize);
             RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
+
+            // HotKey
+            _hotkeyManager = new HotKeyManager();
+            _hotkeyManager.Register(new HotKey { Key = Key.M, ModifierKeys = ModifierKeys.Control | ModifierKeys.Alt }, OptimizeAsync);
 
             // Models
             Computer = new Computer();
@@ -120,17 +124,6 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Gets the automatic optimization interval information.
-        /// </summary>
-        /// <value>
-        /// The automatic optimization interval information.
-        /// </value>
-        public string AutoOptimizationIntervalInfo
-        {
-            get { return string.Format(CultureInfo.CurrentCulture, Localizer.String.AutoOptimizationInterval, Constants.App.AutoOptimizationMemoryUsageInterval); }
-        }
-
-        /// <summary>
         /// Gets or sets the automatic optimization memory usage.
         /// </summary>
         /// <value>
@@ -151,12 +144,35 @@ namespace WinMemoryCleaner
                     Settings.Save();
 
                     RaisePropertyChanged();
+                    RaisePropertyChanged(() => AutoOptimizationMemoryUsageDescription);
                 }
                 finally
                 {
                     IsBusy = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the automatic optimization memory usage description.
+        /// </summary>
+        /// <value>
+        /// The automatic optimization memory usage description.
+        /// </value>
+        public string AutoOptimizationMemoryUsageDescription
+        {
+            get { return string.Format(Localizer.String.WhenFreeMemoryIsBelow, AutoOptimizationMemoryUsage); }
+        }
+
+        /// <summary>
+        /// Gets the automatic optimization memory usage warning.
+        /// </summary>
+        /// <value>
+        /// The automatic optimization memory usage warning.
+        /// </value>
+        public string AutoOptimizationMemoryUsageWarning
+        {
+            get { return string.Format(Localizer.String.AutoOptimizationInterval, Constants.App.AutoOptimizationMemoryUsageInterval); }
         }
 
         /// <summary>
@@ -198,6 +214,60 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [close after optimization].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [close after optimization]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CloseAfterOptimization
+        {
+            get { return Settings.CloseAfterOptimization; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.CloseAfterOptimization = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [close to the notification area].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [close to the notification area]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CloseToTheNotificationArea
+        {
+            get { return Settings.CloseToTheNotificationArea; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.CloseToTheNotificationArea = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the computer.
         /// </summary>
         /// <value>
@@ -214,16 +284,16 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Sets the culture.
+        /// Gets or sets the language.
         /// </summary>
         /// <value>
-        /// The culture.
+        /// The language.
         /// </value>
-        public Enums.Culture Culture
+        public string Language
         {
             get
             {
-                return Localizer.Culture;
+                return Localizer.Language;
             }
             set
             {
@@ -231,18 +301,26 @@ namespace WinMemoryCleaner
                 {
                     IsBusy = true;
 
-                    if (Localizer.Culture == value)
+                    if (Localizer.Language == value)
                         return;
 
-                    Localizer.Culture = value;
+                    Localizer.Language = value;
 
                     if (!IsInDesignMode)
+                    {
                         NotificationService.Initialize();
+                        NotificationService.UpdateInfo(Computer.Memory);
+                    }
 
-                    Settings.Culture = value;
+                    Settings.Language = value;
                     Settings.Save();
 
                     RaisePropertyChanged(string.Empty);
+                }
+                catch (Exception e)
+                {
+                    NotificationService.Notify(e.Message);
+                    Logger.Error(e);
                 }
                 finally
                 {
@@ -318,33 +396,6 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [minimize to tray when closed].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [minimize to tray when closed]; otherwise, <c>false</c>.
-        /// </value>
-        public bool MinimizeToTrayWhenClosed
-        {
-            get { return Settings.MinimizeToTrayWhenClosed; }
-            set
-            {
-                try
-                {
-                    IsBusy = true;
-
-                    Settings.MinimizeToTrayWhenClosed = value;
-                    Settings.Save();
-
-                    RaisePropertyChanged();
-                }
-                finally
-                {
-                    IsBusy = false;
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets the processes.
         /// </summary>
         /// <value>
@@ -360,7 +411,8 @@ namespace WinMemoryCleaner
                     .Distinct()
                     .OrderBy(name => name));
 
-                SelectedProcess = processes.FirstOrDefault();
+                if (!processes.Contains(SelectedProcess))
+                    SelectedProcess = processes.FirstOrDefault();
 
                 return processes;
             }
@@ -491,7 +543,7 @@ namespace WinMemoryCleaner
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
 
-                return string.Format(CultureInfo.CurrentCulture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
+                return string.Format("{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
             }
         }
 
@@ -507,6 +559,9 @@ namespace WinMemoryCleaner
         {
             if (disposing)
             {
+                if (_hotkeyManager != null)
+                    _hotkeyManager.Dispose();
+
                 if (_monitorAppWorker != null)
                 {
 
@@ -581,6 +636,11 @@ namespace WinMemoryCleaner
         /// The optimize command.
         /// </value>
         public ICommand OptimizeCommand { get; private set; }
+
+        /// <summary>
+        /// Occurs when [optimize command is completed].
+        /// </summary>
+        public event Action OptimizeCommandCompleted;
 
         /// <summary>
         /// Gets the remove process from exclusion list command.
@@ -727,6 +787,7 @@ namespace WinMemoryCleaner
                     // Update memory info
                     Computer.Memory = _computerService.GetMemory();
                     RaisePropertyChanged(() => Computer);
+                    NotificationService.UpdateInfo(Computer.Memory);
 
                     // Delay
                     Thread.Sleep(5000);
@@ -778,6 +839,14 @@ namespace WinMemoryCleaner
                 // Notification
                 if (Settings.ShowOptimizationNotifications)
                     Notify(Localizer.String.MemoryOptimized);
+
+                if (OptimizeCommandCompleted != null)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                    {
+                        OptimizeCommandCompleted();
+                    });
+                }
             }
             finally
             {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -229,11 +228,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasCombinedPageList)
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryCombinedPageList));
+                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryCombinedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
             GCHandle handle = GCHandle.Alloc(0);
 
@@ -271,11 +270,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasModifiedPageList)
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryModifiedPageList));
+                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryModifiedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
 
             GCHandle handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList, GCHandleType.Pinned);
@@ -307,11 +306,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasProcessesWorkingSet)
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryProcessesWorkingSet));
+                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryProcessesWorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeDebugName))
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
+                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
 
             var errors = new StringBuilder();
             var processes = Process.GetProcesses().Where(process => process != null && !Settings.ProcessExclusionList.Contains(process.ProcessName));
@@ -354,11 +353,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasStandbyList)
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryStandbyList));
+                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryStandbyList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
             object memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
             GCHandle handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
@@ -392,11 +391,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasSystemWorkingSet)
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemorySystemWorkingSet));
+                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemorySystemWorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
+                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
 
             GCHandle handle = GCHandle.Alloc(0);
 

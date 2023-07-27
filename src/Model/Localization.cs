@@ -3,7 +3,7 @@
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// Internationalization (I18N)
+    /// Localization (L10N)
     /// </summary>
     [DataContract]
     internal class Localization
@@ -25,6 +25,12 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string Close { get; private set; }
+
+        [DataMember]
+        public string CloseAfterOptimization { get; set; }
+
+        [DataMember]
+        public string CloseToTheNotificationArea { get; private set; }
 
         [DataMember]
         public string DevelopedBy { get; private set; }
@@ -51,9 +57,6 @@ namespace WinMemoryCleaner
         public string Free { get; private set; }
 
         [DataMember]
-        public string Language { get; private set; }
-
-        [DataMember]
         public string MemoryAreas { get; private set; }
 
         [DataMember]
@@ -78,10 +81,11 @@ namespace WinMemoryCleaner
         public string MemorySystemWorkingSet { get; private set; }
 
         [DataMember]
-        public string Minimize { get; private set; }
+        public string MemoryUsage { get; private set; }
 
         [DataMember]
-        public string MinimizeToTrayWhenClosed { get; private set; }
+        public string Minimize { get; private set; }
+
 
         [DataMember]
         public string Optimize { get; private set; }

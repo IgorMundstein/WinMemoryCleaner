@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -84,7 +83,7 @@ namespace WinMemoryCleaner
                     MethodBase methodBase = frame.GetMethod();
 
                     if (methodBase.DeclaringType != null)
-                        method = string.Format(CultureInfo.CurrentCulture, "{0} > LN: {1}", methodBase.DeclaringType.Name + "." + methodBase.Name, frame.GetFileLineNumber());
+                        method = string.Format("{0} > LN: {1}", methodBase.DeclaringType.Name + "." + methodBase.Name, frame.GetFileLineNumber());
                 }
                 catch
                 {
@@ -150,10 +149,10 @@ namespace WinMemoryCleaner
                     Message = message
                 };
 
-                string traceMessage = string.Format(CultureInfo.CurrentCulture, "{0}\t{1}\t{2}",
-                    log.DateTime.ToString(Constants.App.Log.DatetimeFormat, CultureInfo.CurrentCulture),
-                    log.Level.ToString().ToUpper(CultureInfo.CurrentCulture),
-                    string.IsNullOrWhiteSpace(log.Method) ? log.Message : string.Format(CultureInfo.CurrentCulture, "[{0}] {1}", log.Method, log.Message));
+                string traceMessage = string.Format("{0}\t{1}\t{2}",
+                    log.DateTime.ToString(Constants.App.Log.DatetimeFormat),
+                    log.Level.ToString().ToUpper(),
+                    string.IsNullOrWhiteSpace(log.Method) ? log.Message : string.Format("[{0}] {1}", log.Method, log.Message));
 
                 switch (level)
                 {
@@ -201,7 +200,7 @@ namespace WinMemoryCleaner
                     // ignored
                 }
 
-                Event(string.Format(CultureInfo.CurrentCulture, Localizer.String.ErrorCanNotSaveLog, message, e.GetBaseException().Message), EventLogEntryType.Error);
+                Event(string.Format(Localizer.String.ErrorCanNotSaveLog, message, e.GetBaseException().Message), EventLogEntryType.Error);
             }
         }
 

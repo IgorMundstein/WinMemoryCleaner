@@ -10,8 +10,10 @@ namespace WinMemoryCleaner
             internal const int AutoUpdateInterval = 24; // Hour
             internal const string Guid = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
             internal const string KeyFile = "WinMemoryCleaner.snk";
+            internal const string Language = "English";
             public const string License = "GPL-3.0";
-            internal const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization";
+            internal const string LocalizationResourceExtension = ".json";
+            internal const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization.";
             internal const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
 
@@ -40,9 +42,10 @@ namespace WinMemoryCleaner
                     internal const string AutoOptimizationInterval = "AutoOptimizationInterval";
                     internal const string AutoOptimizationMemoryUsage = "AutoOptimizationMemoryUsage";
                     internal const string AutoUpdate = "AutoUpdate";
-                    internal const string Culture = "Culture";                    
+                    internal const string CloseAfterOptimization = "CloseAfterOptimization";
+                    internal const string CloseToTheNotificationArea = "CloseToTheNotificationArea";
+                    internal const string Language = "Language";                    
                     internal const string MemoryAreas = "MemoryAreas";
-                    internal const string MinimizeToTrayWhenClosed = "MinimizeToTrayWhenClosed";
                     internal const string RunOnStartup = "RunOnStartup";
                     internal const string ShowOptimizationNotifications = "ShowOptimizationNotifications";
                     internal const string StartMinimized = "StartMinimized";
@@ -59,6 +62,11 @@ namespace WinMemoryCleaner
 
         internal static class Windows
         {
+            internal static class Keyboard
+            {
+                internal const int WmHotkey = 786; // 0x312
+            }
+
             internal static class Privilege
             {
                 internal const string SeDebugName = "SeDebugPrivilege"; // Required to debug and adjust the memory of a process owned by another account. User Right: Debug programs.

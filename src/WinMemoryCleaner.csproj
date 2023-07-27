@@ -102,12 +102,14 @@
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\Enums.cs" />
+    <Compile Include="Core\HotKeyManager.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
     <Compile Include="Interfaces\IOperatingSystem.cs" />
     <Compile Include="Interfaces\IMemoryService.cs" />
     <Compile Include="Model\Computer.cs" />
+    <Compile Include="Model\HotKey.cs" />
     <Compile Include="Model\Localization.cs" />
     <Compile Include="Model\Log.cs" />
     <Compile Include="ViewModel\Base\ObservableObject.cs" />
@@ -136,7 +138,18 @@
     <None Include="app.manifest" />
     <None Include="packages.config" />
     <EmbeddedResource Include="Resources\Localization\English.json" />
+    <EmbeddedResource Include="Resources\Localization\Greek.json" />
     <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
+    <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
+    <EmbeddedResource Include="Resources\Localization\French.json" />
+    <EmbeddedResource Include="Resources\Localization\Turkish.json" />
+    <EmbeddedResource Include="Resources\Localization\Chinese %28Simplified%29.json" />
+    <EmbeddedResource Include="Resources\Localization\Chinese %28Traditional%29.json" />
+    <EmbeddedResource Include="Resources\Localization\German.json" />
+    <EmbeddedResource Include="Resources\Localization\Dutch.json" />
+    <EmbeddedResource Include="Resources\Localization\Italian.json" />
+    <EmbeddedResource Include="Resources\Localization\Spanish.json" />
+    <EmbeddedResource Include="Resources\Localization\Macedonian.json" />
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>

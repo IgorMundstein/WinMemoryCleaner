@@ -16,9 +16,10 @@ namespace WinMemoryCleaner
             AutoOptimizationInterval = 0;
             AutoOptimizationMemoryUsage = 0;
             AutoUpdate = true;
-            Culture = Enums.Culture.English;
+            CloseAfterOptimization = false;
+            CloseToTheNotificationArea = false;
+            Language = Constants.App.Language;
             MemoryAreas = Enums.Memory.Area.ModifiedPageList | Enums.Memory.Area.ProcessesWorkingSet | Enums.Memory.Area.StandbyList | Enums.Memory.Area.SystemWorkingSet;
-            MinimizeToTrayWhenClosed = false;
             ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             RunOnStartup = false;
             ShowOptimizationNotifications = true;
@@ -46,11 +47,9 @@ namespace WinMemoryCleaner
                         AutoOptimizationInterval = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval));
                         AutoOptimizationMemoryUsage = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage));
                         AutoUpdate = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate));
-
-                        Enums.Culture culture;
-
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.Culture, Culture)), out culture) && culture.IsValid())
-                            Culture = culture;
+                        CloseAfterOptimization = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseAfterOptimization, CloseAfterOptimization));
+                        CloseToTheNotificationArea = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseToTheNotificationArea, CloseToTheNotificationArea));
+                        Language = Convert.ToString(key.GetValue(Constants.App.Registry.Name.Language, Language));
 
                         Enums.Memory.Area memoryAreas;
 
@@ -62,7 +61,6 @@ namespace WinMemoryCleaner
                             MemoryAreas = memoryAreas;
                         }
 
-                        MinimizeToTrayWhenClosed = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.MinimizeToTrayWhenClosed, MinimizeToTrayWhenClosed));
                         RunOnStartup = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup));
                         ShowOptimizationNotifications = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications));
                         StartMinimized = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized));
@@ -91,12 +89,14 @@ namespace WinMemoryCleaner
 
         internal static bool AutoUpdate { get; set; }
 
-        internal static Enums.Culture Culture { get; set; }
+        internal static bool CloseAfterOptimization { get; set; }
+
+        internal static bool CloseToTheNotificationArea { get; set; }
+
+        internal static string Language { get; set; }
 
         internal static Enums.Memory.Area MemoryAreas { get; set; }
-
-        internal static bool MinimizeToTrayWhenClosed { get; set; }
-
+        
         internal static SortedSet<string> ProcessExclusionList { get; set; }
 
         internal static bool RunOnStartup { get; set; }
@@ -137,9 +137,10 @@ namespace WinMemoryCleaner
                         key.SetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval);
                         key.SetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage);
                         key.SetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.Culture, (int)Culture);
+                        key.SetValue(Constants.App.Registry.Name.CloseAfterOptimization, CloseAfterOptimization ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.CloseToTheNotificationArea, CloseToTheNotificationArea ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.Language, Language);
                         key.SetValue(Constants.App.Registry.Name.MemoryAreas, (int)MemoryAreas);
-                        key.SetValue(Constants.App.Registry.Name.MinimizeToTrayWhenClosed, MinimizeToTrayWhenClosed ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized ? 1 : 0);

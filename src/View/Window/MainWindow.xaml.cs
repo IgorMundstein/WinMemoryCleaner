@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
 
@@ -13,12 +15,17 @@ namespace WinMemoryCleaner
     /// <seealso cref="System.Windows.Markup.IComponentConnector" />
     public partial class MainWindow
     {
+        private readonly MainViewModel _viewModel;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
         /// </summary>
         internal MainWindow()
         {
             InitializeComponent();
+
+            _viewModel = (MainViewModel)DataContext;
+            _viewModel.OptimizeCommandCompleted += OnOptimizeCommandCompleted;
         }
 
         /// <summary>
@@ -28,10 +35,10 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
-            if (Settings.MinimizeToTrayWhenClosed)
+            if (Settings.CloseToTheNotificationArea)
             {
                 ShowInTaskbar = false;
-                WindowState = WindowState.Minimized;
+                Hide();
             }
             else
                 Application.Current.Shutdown();
@@ -70,34 +77,46 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Called when [optimize button is enabled changed].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs" /> instance containing the event data.</param>
+        private void OnOptimizeButtonIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var button = (Button)sender;
+
+            if (button.IsEnabled)
+                button.Focus();
+        }
+
+        /// <summary>
+        /// Called when [optimize command is completed].
+        /// </summary>
+        private void OnOptimizeCommandCompleted()
+        {
+            if (Settings.CloseAfterOptimization)
+            {
+                if (Settings.CloseToTheNotificationArea)
+                {
+                    ShowInTaskbar = false;
+                    Hide();
+                }
+                else
+                {
+                    Thread.Sleep(1000);
+                    Application.Current.Shutdown();
+                }
+            }
+        }
+
+        /// <summary>
         /// Called when [processes drop down opened].
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         private void OnProcessesDropDownOpened(object sender, EventArgs e)
         {
-            var mainViewModel = DependencyInjection.Container.Resolve<MainViewModel>();
-
-            try
-            {
-                mainViewModel.IsBusy = true;
-                mainViewModel.RaisePropertyChanged(() => mainViewModel.Processes);
-            }
-            finally
-            {
-                mainViewModel.IsBusy = false;
-            }
-        }
-
-        /// <summary>
-        /// Called when [window state changed].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnWindowStateChanged(object sender, EventArgs e)
-        {
-            if (WindowState != WindowState.Minimized)
-                ShowInTaskbar = true;
+            _viewModel.RaisePropertyChanged(() => _viewModel.Processes);
         }
     }
 }

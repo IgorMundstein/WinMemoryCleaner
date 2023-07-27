@@ -8,21 +8,6 @@ namespace WinMemoryCleaner
     public static class Enums
     {
         /// <summary>
-        /// Culture
-        /// </summary>
-        public enum Culture
-        {
-            /// <summary>
-            /// English
-            /// </summary>
-            English = 9,
-            /// <summary>
-            /// Portuguese
-            /// </summary>
-            Portuguese = 22
-        }
-
-        /// <summary>
         /// Log
         /// </summary>
         public static class Log

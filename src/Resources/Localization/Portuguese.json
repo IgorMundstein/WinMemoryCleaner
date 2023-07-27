@@ -5,6 +5,8 @@
   "AutoOptimizationInterval": "O intervalo entre a otimização automática de memória livre é de {0} minutos",
   "AutoUpdate": "Atualização automática",
   "Close": "Fechar",
+  "CloseAfterOptimization": "Fechar após a otimização",
+  "CloseToTheNotificationArea": "Fechar para a área de notificação",
   "DevelopedBy": "Desenvolvido por",
   "Error": "Erro",
   "ErrorAdminPrivilegeRequired": "Esta operação requer privilégios de administrador ({0})",
@@ -13,7 +15,6 @@
   "Every": "A cada",
   "Exit": "Sair",
   "Free": "Livre",
-  "Language": "Idioma",
   "MemoryAreas": "Áreas de memória",
   "MemoryCombinedPageList": "Lista de Páginas Combinadas",
   "MemoryModifiedPageList": "Lista de Páginas Modificadas",
@@ -22,8 +23,8 @@
   "MemoryStandbyList": "Lista de Espera",
   "MemoryStandbyListLowPriority": "Lista de Espera (Baixa Prioridade)",
   "MemorySystemWorkingSet": "Conjunto de Trabalho do Sistema",
+  "MemoryUsage": "Uso de memória",
   "Minimize": "Minimizar",
-  "MinimizeToTrayWhenClosed": "Minimizar para a bandeja quando fechado",
   "Optimize": "Otimizar",
   "Optimized": "Otimizada",
   "ProcessExclusionList": "Processos excluídos da otimização",
@@ -35,5 +36,5 @@
   "StartMinimized": "Iniciar minimizado",
   "UpdatedToVersion": "Atualizado para versão {0}",
   "Used": "Usada",
-  "WhenFreeMemoryIsBelow": "Quando a memória livre estiver abaixo de"
+  "WhenFreeMemoryIsBelow": "Quando a memória livre estiver abaixo de {0}%"
 }

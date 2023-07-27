@@ -2,7 +2,6 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -93,20 +92,6 @@ namespace WinMemoryCleaner
                 {
                     if (_notifyIcon != null)
                     {
-                        _notifyIcon.Visible = false;
-                        _notifyIcon.Visible = true;
-                        _notifyIcon.Visible = false;
-                    }
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                try
-                {
-                    if (_notifyIcon != null)
-                    {
                         _notifyIcon.Dispose();
                     }
                 }
@@ -172,32 +157,25 @@ namespace WinMemoryCleaner
         {
             MouseEventArgs mouseEventArgs = e as MouseEventArgs;
 
-            if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left)
-                OnNotifyMenuShowHideClick();
-        }
-
-        /// <summary>
-        /// Called when [notify menu show hide click].
-        /// </summary>
-        private void OnNotifyMenuShowHideClick()
-        {
-            if (MainWindow != null)
+            // Show/Hide
+            if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
             {
-                switch (MainWindow.WindowState)
+                switch (MainWindow.Visibility)
                 {
-                    case WindowState.Maximized:
-                    case WindowState.Normal:
-                        MainWindow.ShowInTaskbar = false;
-                        MainWindow.WindowState = WindowState.Minimized;
-                        break;
-
-                    case WindowState.Minimized:
+                    case Visibility.Collapsed:
+                    case Visibility.Hidden:
                         MainWindow.ShowInTaskbar = true;
                         MainWindow.WindowState = WindowState.Normal;
-                        if (MainWindow.IsVisible)
-                            MainWindow.Activate();
-                        else
-                            MainWindow.Show();
+
+                        MainWindow.Show();
+                        MainWindow.Activate();
+                        break;
+
+                    case Visibility.Visible:
+                        MainWindow.ShowInTaskbar = false;
+                        MainWindow.WindowState = WindowState.Normal;
+
+                        MainWindow.Hide();
                         break;
                 }
             }
@@ -222,7 +200,7 @@ namespace WinMemoryCleaner
                     {
                         var appHandle = NativeMethods.FindWindow(null, Constants.App.Title);
 
-                        if (appHandle != IntPtr.Zero)
+                        if (appHandle != IntPtr.Zero && NativeMethods.IsWindowVisible(appHandle))
                         {
                             NativeMethods.ShowWindowAsync(appHandle, Constants.Windows.ShowWindow.Restore);
                             NativeMethods.SetForegroundWindow(appHandle);
@@ -260,7 +238,7 @@ namespace WinMemoryCleaner
                     // Version (Update)
                     if (value.Equals(_version.ToString()))
                     {
-                        updateNotification = string.Format(CultureInfo.CurrentCulture, Localizer.String.UpdatedToVersion, string.Format("{0}.{1}", _version.Major, _version.Minor));
+                        updateNotification = string.Format(Localizer.String.UpdatedToVersion, string.Format("{0}.{1}", _version.Major, _version.Minor));
 
                         Logger.Information(updateNotification);
                     }
@@ -277,7 +255,6 @@ namespace WinMemoryCleaner
                     _notifyIcon.Click += OnNotifyIconClick;
                     _notifyIcon.DoubleClick += OnNotifyIconClick;
                     _notifyIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
-                    _notifyIcon.Text = string.Format("Windows{0}Memory Cleaner", Environment.NewLine);
                     _notifyIcon.Visible = true;
 
                     // DI/IOC
@@ -292,7 +269,7 @@ namespace WinMemoryCleaner
                     if (Settings.StartMinimized)
                     {
                         mainWindow.ShowInTaskbar = false;
-                        mainWindow.WindowState = WindowState.Minimized;
+                        mainWindow.Hide();
                     }
                     else
                         mainWindow.Show();
@@ -337,17 +314,15 @@ namespace WinMemoryCleaner
                 // Registry
                 try
                 {
-                    if (enable)
+                    using (var key = Registry.LocalMachine.CreateSubKey(Constants.App.Registry.Key.Startup))
                     {
-                        using (var key = Registry.LocalMachine.CreateSubKey(Constants.App.Registry.Key.Startup))
+                        if (key != null)
                         {
-                            if (key != null)
+                            if (enable)
                                 key.SetValue(Constants.App.Title, string.Format(@"""{0}""", startupPath));
+                            else
+                                key.DeleteValue(Constants.App.Title, false);
                         }
-                    }
-                    else
-                    {
-                        Registry.LocalMachine.DeleteSubKey(Constants.App.Registry.Key.Startup, false);
                     }
                 }
                 catch (Exception e)

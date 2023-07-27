@@ -8,11 +8,11 @@
         AllowsTransparency="True" 
         Background="Transparent"
         DataContext="{Binding MainViewModel, Source={StaticResource ViewModelLocator}}"
+        FocusManager.FocusedElement="{Binding ElementName=Optimize}"
         FontFamily="Calibri" 
         FontSize="16" 
         FontWeight="Light"
         Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico" 
-        StateChanged="OnWindowStateChanged"
         ResizeMode="CanMinimize" 
         SizeToContent="WidthAndHeight" 
         SnapsToDevicePixels="False"
@@ -25,7 +25,8 @@
     <Border Background="{StaticResource DarkBackground}" 
             BorderBrush="{StaticResource DarkBorderBrush}" 
             BorderThickness="0.3" 
-            CornerRadius="8" 
+            CornerRadius="8"
+            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
             TextElement.Foreground="{StaticResource DarkForeground}">
         <!-- Window -->
         <StackPanel>
@@ -110,7 +111,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="220" />
+                            <RowDefinition Height="239" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
@@ -119,20 +120,20 @@
                                   Grid.Row="0"
                                   Header="{Binding Path=(local:Localizer.String).Settings}"
                                   Margin="0, 5, 5, 0">
-                            <StackPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Margin="0, 0, 8, 10" 
-                                               Text="{Binding Path=(local:Localizer.String).Language}"
-                                               VerticalAlignment="Center" />
-                                    <ComboBox IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
-                                              Margin="0, 0, 0, 10"
-                                              SelectedValue="{Binding Culture}" 
-                                              SelectedValuePath="Tag"
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0, 0, 0, 5">
+                                    <TextBlock FontSize="15"
+                                               Margin="-2, 0, 2, 0" 
+                                               VerticalAlignment="Center">
+                                        🌐
+                                    </TextBlock>
+                                    <ComboBox DisplayMemberPath="Value"
+                                              ItemsSource="{x:Static local:Localizer.Languages}"
+                                              Margin="0"
+                                              SelectedValue="{Binding Language}" 
+                                              SelectedValuePath="Key"
                                               VerticalContentAlignment="Center">
-                                        <ComboBoxItem Content="English" 
-                                                      Tag="{x:Static local:Enums+Culture.English}" />
-                                        <ComboBoxItem Content="Português" 
-                                                      Tag="{x:Static local:Enums+Culture.Portuguese}" />
                                     </ComboBox>
                                 </StackPanel>
                                 <CheckBox Content="{Binding Path=(local:Localizer.String).AlwaysOnTop}"
@@ -141,8 +142,11 @@
                                 <CheckBox Content="{Binding Path=(local:Localizer.String).AutoUpdate}"
                                           IsChecked="{Binding AutoUpdate}" 
                                           Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).MinimizeToTrayWhenClosed}"
-                                          IsChecked="{Binding MinimizeToTrayWhenClosed}" 
+                                <CheckBox Content="{Binding Path=(local:Localizer.String).CloseAfterOptimization}"
+                                          IsChecked="{Binding CloseAfterOptimization}" 
+                                          Margin="0, 0, 0, 5" />
+                                <CheckBox Content="{Binding Path=(local:Localizer.String).CloseToTheNotificationArea}"
+                                          IsChecked="{Binding CloseToTheNotificationArea}" 
                                           Margin="0, 0, 0, 5" />
                                 <CheckBox Content="{Binding Path=(local:Localizer.String).RunOnStartup}"
                                           IsChecked="{Binding RunOnStartup}" 
@@ -159,7 +163,7 @@
                                   Grid.Row="0"
                                   Header="{Binding Path=(local:Localizer.String).ProcessExclusionList}"
                                   Margin="5, 5, 0, 0">
-                            <Grid IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -218,7 +222,7 @@
                                         Grid.Column="1"
                                         Grid.Row="1"
                                         Margin="0, 5, 0, 0"
-                                        Padding="8, 0, 8, 0"
+                                        Padding="7, 0, 7, 0"
                                         ToolTip="{Binding Path=(local:Localizer.String).Add}" />
                             </Grid>
                         </GroupBox>
@@ -227,7 +231,7 @@
                                   Grid.Row="1"
                                   Header="{Binding Path=(local:Localizer.String).MemoryAreas}"
                                   Margin="0, 5, 5, 0">
-                            <StackPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                            <StackPanel>
                                 <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryCombinedPageList}"
                                           IsEnabled="{Binding Computer.OperatingSystem.HasCombinedPageList}"
                                           IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.CombinedPageList}}" 
@@ -242,7 +246,8 @@
                                           Margin="0, 0, 0, 5" />
                                 <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryStandbyList}"
                                           IsEnabled="{Binding Computer.OperatingSystem.HasStandbyList}"
-                                          IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyList}}" />
+                                          IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyList}}"
+                                          Margin="0, 0, 0, 5" />
                                 <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryStandbyListLowPriority}"
                                           IsEnabled="{Binding Computer.OperatingSystem.HasStandbyList}"
                                           IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyListLowPriority}}" 
@@ -257,7 +262,7 @@
                                   Grid.Row="1"
                                   Header="{Binding Path=(local:Localizer.String).AutoOptimization}"
                                   Margin="5, 5, 0, 0">
-                            <Grid IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
@@ -282,16 +287,13 @@
                                            Grid.Row="1"
                                            Margin="0, 5, 0, 5" />
                                 <StackPanel Grid.Row="2">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Margin="0, 0, 0, 5" 
-                                                   Text="{Binding Path=(local:Localizer.String).WhenFreeMemoryIsBelow}" />
-                                        <TextBlock Text="{Binding ElementName=AutoOptimizationMemoryUsage, Path=Value, StringFormat={} {0}%, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
+                                    <TextBlock Margin="0, 0, 0, 5" 
+                                               Text="{Binding AutoOptimizationMemoryUsageDescription}" />
                                     <Slider Margin="0, 5, 0, 5"
                                             Maximum="100"
                                             Minimum="0"
                                             Name="AutoOptimizationMemoryUsage"
-                                            ToolTip="{Binding AutoOptimizationIntervalInfo}"
+                                            ToolTip="{Binding AutoOptimizationMemoryUsageWarning}"
                                             Value="{Binding AutoOptimizationMemoryUsage}" />
                                 </StackPanel>
                             </Grid>
@@ -308,7 +310,6 @@
                             </Grid.ColumnDefinitions>
                             <!-- About -->
                             <TextBlock Grid.Column="0" 
-                                       IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                                        Margin="0, 0, 10, 0"
                                        VerticalAlignment="Center">
                                 <Hyperlink NavigateUri="{x:Static local:Constants+App+Repository.Uri}" 
@@ -406,8 +407,12 @@
                             <Button Command="{Binding OptimizeCommand}" 
                                     Content="{Binding Path=(local:Localizer.String).Optimize}" 
                                     Grid.Column="2" 
-                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
-                                    Padding="10, 0, 10, 0" />
+                                    Focusable="True"
+                                    IsEnabledChanged="OnOptimizeButtonIsEnabledChanged"
+                                    KeyboardNavigation.TabIndex="0"
+                                    Name="Optimize"
+                                    Padding="10, 0, 10, 0"
+                                    TabIndex="0" />
                         </Grid>
                     </Grid>
                 </StackPanel>
