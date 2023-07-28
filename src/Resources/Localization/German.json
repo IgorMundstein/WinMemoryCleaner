@@ -6,7 +6,7 @@
   "AutoUpdate": "Automatisches updaten",
   "Close": "Schließen",
   "CloseAfterOptimization": "Fenster nach Optimierung schließen",
-  "CloseToTheNotificationArea": "Zum Benachrichtigungsbereich minimieren anstatt beenden",
+  "CloseToTheNotificationArea": "Zum Benachrichtigungsbereich minimieren anstatt schließen",
   "DevelopedBy": "Entwickelt von",
   "Error": "Fehler",
   "ErrorAdminPrivilegeRequired": "Dieser Vorgang erfordert Administratorrechte ({0})",
