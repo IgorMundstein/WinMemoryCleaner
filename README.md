@@ -14,12 +14,9 @@
   </p>
 
   <p align="justify">
-    The app has a minimalistic interface and smart features. It's portable, so you do not need installation or configuration. Download and open the executable to get started.
+    The app has a minimalistic interface and smart features. It's portable, so you do not need installation or configuration. It requires administrator privileges to run. Click on the download button below and open the executable to get started.
   </p>
-
   [![Download)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
-
-  *The app requires administrator privileges*
 
 </div>
 
@@ -27,8 +24,8 @@
 
 ### Auto optimization
 
-- `Every X hours` - The optimization will run by period. 0h disables it.
-- `When free memory is below X percent` - The optimization will run if free memory is below the specified percentage. 0% disables it.
+- `Every X hours` - The optimization will run by period. 0h turns it off.
+- `When free memory is below X percent` - The optimization will run if free memory is below the specified percentage. 0% turns it off.
 
 ### Hotkey
 
@@ -49,7 +46,7 @@
 
 ### Processes excluded from optimization
 
-- Allows the user to create a list of processes that will be ignored when memory is optimized.
+- The user can build a list of processes to ignore when memory is optimized.
 
 ### Settings
 
@@ -63,7 +60,7 @@
 
 ## 🖥️ Command arguments (NO GUI)
 
-The arguments below can be used to run the program silently.
+Use the following arguments to run the app silently.
 
 - `/CombinedPageList`
 - `/ModifiedPageList`
@@ -77,7 +74,7 @@ Example
 
 ## 📖 Logs
 
-Logs are saved on Windows event.
+The app generates logs in the Windows event.
 
 1. Press **Win + R** to open the Run command dialog box.
 2. Type **eventvwr** and press **Enter** to open the Event Viewer.
