@@ -14,7 +14,7 @@
   </p>
 
   <p align="justify">
-    The app has a minimalistic interface and smart features. It's portable, so you do not need installation or configuration. It requires administrator privileges to run. Click on the download button below and open the executable to get started.
+    The app has a minimalistic interface and smart features. It's portable, and you do not need to install it, but it requires administrator privileges to run. Click on the download button below and run the executable to get started.
   </p>
 
   [![Download)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
@@ -47,7 +47,7 @@
 
 ### Processes excluded from optimization
 
-- The user can build a list of processes to ignore when memory is optimized.
+- You can build a list of processes to ignore when memory is optimized.
 
 ### Settings
 
@@ -61,7 +61,7 @@
 
 ## 🖥️ Command arguments (NO GUI)
 
-Use the following arguments to run the app silently.
+You can use the following arguments to run the app silently.
 
 - `/CombinedPageList`
 - `/ModifiedPageList`
@@ -82,9 +82,7 @@ The app generates logs in the Windows event.
 
 [![](/.github/images/windows-event-log.png)](#-logs)
 
-## 📝 Development notes
-
-Project requirements.
+## 📝 Project notes
 
 - Microsoft.NET 4 framework version for Windows retro compatibility
 - Minimalistic user interface
