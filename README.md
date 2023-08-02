@@ -110,7 +110,7 @@ You can test any translation by creating a file alongside the executable.
 1. Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the locale description of the language.
 2. Save it as {locale-description}.json
 3. Launch the application. If successful, the new language and changes will be available.
-4. Use the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14) to upload the file.
+4. Either submit a pull request or upload the file on the [translations discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14)
 
 ❤️ Contributors
 
