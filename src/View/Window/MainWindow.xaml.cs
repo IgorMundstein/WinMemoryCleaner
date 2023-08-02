@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Navigation;
 
@@ -26,6 +27,26 @@ namespace WinMemoryCleaner
 
             _viewModel = (MainViewModel)DataContext;
             _viewModel.OptimizeCommandCompleted += OnOptimizeCommandCompleted;
+
+            // Slider
+            var sliderPreviewMouseLeftButtonDownEvent = new MouseButtonEventHandler((sender, e) =>
+            {
+                Slider slider = (Slider)sender;
+                Track track = slider.Template.FindName("PART_Track", slider) as Track;
+
+                if (!slider.IsMoveToPointEnabled || track == null || track.Thumb == null || track.Thumb.IsMouseOver)
+                    return;
+
+                track.Thumb.UpdateLayout();
+                track.Thumb.RaiseEvent(new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, MouseButton.Left)
+                {
+                    RoutedEvent = MouseLeftButtonDownEvent,
+                    Source = track.Thumb
+                });
+            });
+
+            AutoOptimizationInterval.AddHandler(PreviewMouseLeftButtonDownEvent, sliderPreviewMouseLeftButtonDownEvent, true);
+            AutoOptimizationMemoryUsage.AddHandler(PreviewMouseLeftButtonDownEvent, sliderPreviewMouseLeftButtonDownEvent, true);
         }
 
         /// <summary>
@@ -77,19 +98,6 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Called when [optimize button is enabled changed].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs" /> instance containing the event data.</param>
-        private void OnOptimizeButtonIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var button = (Button)sender;
-
-            if (button.IsEnabled)
-                button.Focus();
-        }
-
-        /// <summary>
         /// Called when [optimize command is completed].
         /// </summary>
         private void OnOptimizeCommandCompleted()
@@ -107,6 +115,11 @@ namespace WinMemoryCleaner
                     Application.Current.Shutdown();
                 }
             }
+            else
+            {
+                _viewModel.IsBusy = false;
+                Optimize.Focus();
+            }
         }
 
         /// <summary>
@@ -117,6 +130,31 @@ namespace WinMemoryCleaner
         private void OnProcessesDropDownOpened(object sender, EventArgs e)
         {
             _viewModel.RaisePropertyChanged(() => _viewModel.Processes);
+        }
+
+        /// <summary>
+        /// Called when [slider preview key down].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="KeyEventArgs" /> instance containing the event data.</param>
+        private void OnSliderPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            Slider slider = (Slider)sender;
+
+            switch (e.Key)
+            {
+                case Key.Left:
+                case Key.Down:
+                    if (slider.Value > slider.Minimum)
+                        slider.Value -= 1;
+                    break;
+
+                case Key.Right:
+                case Key.Up:
+                    if (slider.Value < slider.Maximum)
+                        slider.Value += 1;
+                    break;
+            }
         }
     }
 }

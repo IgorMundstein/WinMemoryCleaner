@@ -12,53 +12,46 @@
         FontFamily="Calibri" 
         FontSize="16" 
         FontWeight="Light"
+        Foreground="{StaticResource DarkForeground}"
         Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico" 
         ResizeMode="CanMinimize" 
         SizeToContent="WidthAndHeight" 
         SnapsToDevicePixels="False"
-        Title="{x:Static local:Constants+App.Title}" 
+        Title="{x:Static local:Constants+App.Title}"
         Topmost="{Binding AlwaysOnTop}"
         UseLayoutRounding="True"
         WindowStartupLocation="CenterScreen" 
         WindowStyle="None">
-
-    <Border Background="{StaticResource DarkBackground}" 
-            BorderBrush="{StaticResource DarkBorderBrush}" 
+    <!-- Window -->
+    <Border Background="{StaticResource DarkWindowBackground}" 
+            BorderBrush="{StaticResource DarkWindowBorderBrush}" 
             BorderThickness="0.3" 
             CornerRadius="8"
-            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
-            TextElement.Foreground="{StaticResource DarkForeground}">
-        <!-- Window -->
+            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}">
         <StackPanel>
             <!-- Title Bar -->
             <Grid Margin="10, 5, 0, 0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-
-                <Image Grid.Column="0" 
-                       KeyboardNavigation.IsTabStop="False"
-                       RenderOptions.BitmapScalingMode="NearestNeighbor"
-                       RenderOptions.EdgeMode="Aliased"
-                       Source="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico" />
-
-                <TextBlock FontWeight="Normal" 
-                           Grid.Column="1" 
-                           KeyboardNavigation.IsTabStop="False"
-                           Margin="5, 0, 5, 0"
-                           Text="{Binding Title}"
-                           TextAlignment="Left" 
-                           VerticalAlignment="Center">
-                </TextBlock>
-
-                <Grid Grid.Column="2">
+                <StackPanel Grid.Column="0"
+                            KeyboardNavigation.IsTabStop="False"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <Image RenderOptions.BitmapScalingMode="NearestNeighbor"
+                           RenderOptions.EdgeMode="Aliased"
+                           Source="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico" />
+                    <TextBlock FontWeight="Normal"
+                               Margin="5, 0, 5, 0"
+                               Text="{Binding Title}">
+                    </TextBlock>
+                </StackPanel>
+                <Grid Grid.Column="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-
                     <Button Background="Transparent" 
                             BorderBrush="Transparent" 
                             BorderThickness="0"
@@ -78,7 +71,6 @@
                                   Width="8" />
                         </Grid>
                     </Button>
-
                     <Button Background="Transparent" 
                             BorderBrush="Transparent" 
                             BorderThickness="0"
@@ -104,63 +96,136 @@
             </Grid>
             <!-- Content -->
             <Border Padding="10, 0, 10, 10">
-                <StackPanel>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="227" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <!-- Settings -->
+                    <GroupBox Grid.Column="0"
+                              Grid.Row="0"
+                              Header="{Binding Path=(local:Localizer.String).Settings}"
+                              Margin="0, 5, 5, 0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0, 0, 0, 6">
+                                <TextBlock FontSize="14"
+                                           Margin="-2, 0, 2, 0" 
+                                           VerticalAlignment="Center">
+                                    🌐
+                                </TextBlock>
+                                <ComboBox DisplayMemberPath="Value"
+                                          ItemsSource="{x:Static local:Localizer.Languages}"
+                                          SelectedValue="{Binding Language}" 
+                                          SelectedValuePath="Key"
+                                          VerticalContentAlignment="Center">
+                                </ComboBox>
+                            </StackPanel>
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).AlwaysOnTop}"
+                                      IsChecked="{Binding AlwaysOnTop}"
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).AutoUpdate}"
+                                      IsChecked="{Binding AutoUpdate}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).CloseAfterOptimization}"
+                                      IsChecked="{Binding CloseAfterOptimization}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).CloseToTheNotificationArea}"
+                                      IsChecked="{Binding CloseToTheNotificationArea}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).RunOnStartup}"
+                                      IsChecked="{Binding RunOnStartup}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).ShowOptimizationNotifications}"
+                                      IsChecked="{Binding ShowOptimizationNotifications}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).StartMinimized}"
+                                      IsChecked="{Binding StartMinimized}"
+                                      Margin="0, 0, 0, 0" />
+                        </StackPanel>
+                    </GroupBox>
+                    <!-- Memory Areas -->
+                    <GroupBox Grid.Column="0" 
+                              Grid.Row="1"
+                              Header="{Binding Path=(local:Localizer.String).MemoryAreas}"
+                              Margin="0, 5, 5, 0">
+                        <StackPanel>
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryCombinedPageList}"
+                                      IsEnabled="{Binding Computer.OperatingSystem.HasCombinedPageList}"
+                                      IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.CombinedPageList}}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryModifiedPageList}"
+                                      IsEnabled="{Binding Computer.OperatingSystem.HasModifiedPageList}"
+                                      IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ModifiedPageList}}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryProcessesWorkingSet}"
+                                      IsEnabled="{Binding Computer.OperatingSystem.HasProcessesWorkingSet}"
+                                      IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ProcessesWorkingSet}}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryStandbyList}"
+                                      IsEnabled="{Binding Computer.OperatingSystem.HasStandbyList}"
+                                      IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyList}}"
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryStandbyListLowPriority}"
+                                      IsEnabled="{Binding Computer.OperatingSystem.HasStandbyList}"
+                                      IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyListLowPriority}}" 
+                                      Margin="0, 0, 0, 3" />
+                            <CheckBox Content="{Binding Path=(local:Localizer.String).MemorySystemWorkingSet}"
+                                      IsEnabled="{Binding Computer.OperatingSystem.HasSystemWorkingSet}"
+                                      IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.SystemWorkingSet}}"
+                                      Margin="0, 0, 0, 0" />
+                        </StackPanel>
+                    </GroupBox>
+                    <!-- Optimization Hotkey | Process Exclusion List -->
+                    <Grid Grid.Column="1"
+                          Grid.Row="0">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="244" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <!-- Settings -->
-                        <GroupBox Grid.Column="0"
-                                  Grid.Row="0"
-                                  Header="{Binding Path=(local:Localizer.String).Settings}"
-                                  Margin="0, 5, 5, 0">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0, 0, 0, 10">
-                                    <TextBlock FontSize="15"
-                                               Margin="-2, 0, 2, 0" 
-                                               VerticalAlignment="Center">
-                                        🌐
-                                    </TextBlock>
-                                    <ComboBox DisplayMemberPath="Value"
-                                              ItemsSource="{x:Static local:Localizer.Languages}"
-                                              Margin="0"
-                                              SelectedValue="{Binding Language}" 
-                                              SelectedValuePath="Key"
-                                              VerticalContentAlignment="Center">
-                                    </ComboBox>
-                                </StackPanel>
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).AlwaysOnTop}"
-                                          IsChecked="{Binding AlwaysOnTop}"
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).AutoUpdate}"
-                                          IsChecked="{Binding AutoUpdate}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).CloseAfterOptimization}"
-                                          IsChecked="{Binding CloseAfterOptimization}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).CloseToTheNotificationArea}"
-                                          IsChecked="{Binding CloseToTheNotificationArea}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).RunOnStartup}"
-                                          IsChecked="{Binding RunOnStartup}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).ShowOptimizationNotifications}"
-                                          IsChecked="{Binding ShowOptimizationNotifications}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).StartMinimized}"
-                                          IsChecked="{Binding StartMinimized}" />
+                        <!-- Optimization Hotkey -->
+                        <GroupBox Grid.Row="0"
+                                  Header="{Binding Path=(local:Localizer.String).OptimizationHotkey}"
+                                  Margin="5, 5, 0, 0"
+                                  Visibility="{Binding Computer.OperatingSystem.HasHotKeyManager, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <ComboBox DisplayMemberPath="Value" 
+                                          ItemsSource="{Binding KeyboardModifiers}"
+                                          SelectedValuePath="Key"
+                                          SelectedValue="{Binding OptimizationModifiers}"
+                                          VerticalContentAlignment="Center" />
+                                <Label IsHitTestVisible="False" 
+                                       Margin="5, 0, 5, 0"
+                                       Content="+" 
+                                       VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding KeyboardKeys}"
+                                          SelectedValue="{Binding Path=OptimizationKey}"
+                                          VerticalContentAlignment="Center" />
+                                <TextBlock Foreground="{StaticResource DarkDisabled}"
+                                           KeyboardNavigation.IsTabStop="False"
+                                           Margin="5, 0, 0, 0"
+                                           Text="{Binding Path=(local:Localizer.String).Invalid}" 
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsOptimizationKeyValid}" Value="True">
+                                                    <Setter Property="Visibility" Value="{x:Static Visibility.Collapsed}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </GroupBox>
                         <!-- Process Exclusion List -->
-                        <GroupBox Grid.Column="1"
-                                  Grid.Row="0"
+                        <GroupBox Grid.Row="1"
                                   Header="{Binding Path=(local:Localizer.String).ProcessExclusionList}"
                                   Margin="5, 5, 0, 0">
                             <Grid>
@@ -175,15 +240,14 @@
                                 <ScrollViewer Grid.Column="0"
                                               Grid.ColumnSpan="2"
                                               Grid.Row="0"
-                                              Margin="0, 0, 0, 5"
+                                              Margin="0"
                                               VerticalScrollBarVisibility="Auto">
-                                    <ItemsControl BorderBrush="{StaticResource DarkBackground}"
-                                                  BorderThickness="1" 
-                                                  ItemsSource="{Binding ProcessExclusionList}">
+                                    <ItemsControl ItemsSource="{Binding ProcessExclusionList}"
+                                                  IsTabStop="False">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid HorizontalAlignment="Stretch" 
-                                                      Margin="5, 2.5, 5, 2.5">
+                                                      Margin="0, 0, 5, 0">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="Auto" />
                                                         <ColumnDefinition Width="*" />
@@ -198,10 +262,10 @@
                                                             Padding="5, -3, 5, 0"
                                                             Margin="0, 2.5, 0, 2.5"
                                                             ToolTip="{Binding Path=(local:Localizer.String).Remove}" />
-                                                    <TextBlock Foreground="White" 
-                                                               Grid.Column="1" 
-                                                               Margin="5, 0, 0, 0"
-                                                               Text="{Binding}" />
+                                                    <Label Content="{Binding}"
+                                                           Foreground="{StaticResource DarkForeground}"
+                                                           Grid.Column="1" 
+                                                           Margin="5, 0, 0, 0" />
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -211,211 +275,174 @@
                                           Grid.Column="0"
                                           Grid.Row="1"
                                           ItemsSource="{Binding Processes}" 
-                                          Margin="0, 5, 5, 0"
+                                          Margin="0, 5, 0, 0"
                                           Name="Processes"
-                                          SelectedItem="{Binding SelectedProcess}"
-                                          VerticalContentAlignment="Center" >
-                                </ComboBox>
+                                          SelectedValue="{Binding SelectedProcess}"
+                                          VerticalContentAlignment="Center" />
                                 <Button Content="+"
                                         Command="{Binding AddProcessToExclusionListCommand}"
                                         CommandParameter="{Binding ElementName=Processes, Path=Text}"
                                         Grid.Column="1"
                                         Grid.Row="1"
-                                        Margin="0, 5, 0, 0"
+                                        Margin="5, 5, 0, 0"
                                         Padding="7, 0, 7, 0"
                                         ToolTip="{Binding Path=(local:Localizer.String).Add}" />
                             </Grid>
                         </GroupBox>
-                        <!-- Memory Areas -->
-                        <GroupBox Grid.Column="0" 
-                                  Grid.Row="1"
-                                  Header="{Binding Path=(local:Localizer.String).MemoryAreas}"
-                                  Margin="0, 5, 5, 0">
-                            <StackPanel>
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryCombinedPageList}"
-                                          IsEnabled="{Binding Computer.OperatingSystem.HasCombinedPageList}"
-                                          IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.CombinedPageList}}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryModifiedPageList}"
-                                          IsEnabled="{Binding Computer.OperatingSystem.HasModifiedPageList}"
-                                          IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ModifiedPageList}}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryProcessesWorkingSet}"
-                                          IsEnabled="{Binding Computer.OperatingSystem.HasProcessesWorkingSet}"
-                                          IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.ProcessesWorkingSet}}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryStandbyList}"
-                                          IsEnabled="{Binding Computer.OperatingSystem.HasStandbyList}"
-                                          IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyList}}"
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryStandbyListLowPriority}"
-                                          IsEnabled="{Binding Computer.OperatingSystem.HasStandbyList}"
-                                          IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.StandbyListLowPriority}}" 
-                                          Margin="0, 0, 0, 5" />
-                                <CheckBox Content="{Binding Path=(local:Localizer.String).MemorySystemWorkingSet}"
-                                          IsEnabled="{Binding Computer.OperatingSystem.HasSystemWorkingSet}"
-                                          IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Area.SystemWorkingSet}}" />
+                    </Grid>
+                    <!-- Auto Optimization -->
+                    <GroupBox Grid.Column="1"
+                              Grid.Row="1"
+                              Header="{Binding Path=(local:Localizer.String).AutoOptimization}"
+                              Margin="5, 5, 0, 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="45*" />
+                                <RowDefinition Height="10*" />
+                                <RowDefinition Height="45*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Path=(local:Localizer.String).Every}" />
+                                    <TextBlock Text="{Binding ElementName=AutoOptimizationInterval, Path=Value, StringFormat={} {0}h, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <Slider Margin="0, 9, 0, 0"
+                                        Maximum="168"
+                                        Minimum="0"
+                                        Name="AutoOptimizationInterval" 
+                                        PreviewKeyDown="OnSliderPreviewKeyDown"
+                                        Value="{Binding AutoOptimizationInterval}" />
                             </StackPanel>
-                        </GroupBox>
-                        <!-- Auto Optimization -->
-                        <GroupBox Grid.Column="1"
-                                  Grid.Row="1"
-                                  Header="{Binding Path=(local:Localizer.String).AutoOptimization}"
-                                  Margin="5, 5, 0, 0">
+                            <StackPanel Grid.Row="2">
+                                <TextBlock Text="{Binding AutoOptimizationMemoryUsageDescription}" />
+                                <Slider Margin="0, 9, 0, 0"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Name="AutoOptimizationMemoryUsage"
+                                        PreviewKeyDown="OnSliderPreviewKeyDown"
+                                        ToolTip="{Binding AutoOptimizationMemoryUsageWarning}"
+                                        Value="{Binding AutoOptimizationMemoryUsage}" />
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+                    <!-- Footer -->
+                    <Grid Grid.Column="0"
+                          Grid.ColumnSpan="2"
+                          Grid.Row="2"
+                          Margin="0, 10, 0, 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <!-- About -->
+                        <TextBlock Grid.Column="0"
+                                   Margin="0, 0, 10, 0"
+                                   VerticalAlignment="Center">
+                            <Hyperlink KeyboardNavigation.IsTabStop="False"
+                                       NavigateUri="{x:Static local:Constants+App+Repository.Uri}" 
+                                       RequestNavigate="OnHyperlinkRequestNavigate"
+                                       TextDecorations="None">
+                                <Image Height="32"
+                                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                       RenderOptions.EdgeMode="Aliased"
+                                       Source="/WinMemoryCleaner;component/Resources/Images/github.png"
+                                       Width="32">
+                                    <Image.ToolTip>
+                                        <TextBlock>
+                                            <Run Text="{Binding Path=(local:Localizer.String).RepositoryInfo, Mode=OneWay}" />
+                                            <LineBreak/><LineBreak/>
+                                            © <Run Text="{x:Static local:Constants+App.License}" />
+                                            <LineBreak/>
+                                            <Run Text="{Binding Path=(local:Localizer.String).DevelopedBy, Mode=OneWay}" /> <Run Text="{x:Static local:Constants+App+Author.Name}" />
+                                        </TextBlock>
+                                    </Image.ToolTip>
+                                </Image>
+                            </Hyperlink>
+                        </TextBlock>
+                        <!-- Memory Stats -->
+                        <Border Background="{StaticResource DarkBackground}" 
+                                CornerRadius="3"
+                                Grid.Column="1" 
+                                KeyboardNavigation.IsTabStop="False"
+                                Margin="0, 0, 10, 0" 
+                                Padding="10, 5, 10, 5">
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <StackPanel Grid.Row="0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Margin="0, 0, 0, 5" 
-                                                   Text="{Binding Path=(local:Localizer.String).Every}" />
-                                        <TextBlock Text="{Binding ElementName=AutoOptimizationInterval, Path=Value, StringFormat={} {0}h, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <Slider Margin="0, 5, 0, 5"
-                                            Maximum="168"
-                                            Minimum="0"
-                                            Name="AutoOptimizationInterval" 
-                                            Value="{Binding AutoOptimizationInterval}" />
-                                </StackPanel>
-                                <Separator Background="{StaticResource DarkControlDisabled}"
-                                           Grid.Row="1"
-                                           Margin="0, 5, 0, 5" />
-                                <StackPanel Grid.Row="2">
-                                    <TextBlock Margin="0, 0, 0, 5" 
-                                               Text="{Binding AutoOptimizationMemoryUsageDescription}" />
-                                    <Slider Margin="0, 5, 0, 5"
-                                            Maximum="100"
-                                            Minimum="0"
-                                            Name="AutoOptimizationMemoryUsage"
-                                            ToolTip="{Binding AutoOptimizationMemoryUsageWarning}"
-                                            Value="{Binding AutoOptimizationMemoryUsage}" />
-                                </StackPanel>
+                                <ProgressBar Grid.Column="0" 
+                                             Grid.ColumnSpan="5"
+                                             Grid.Row="0"
+                                             Height="5" 
+                                             Maximum="100" 
+                                             Margin="0, 0, 0, 5"
+                                             Minimum="0" 
+                                             Value="{Binding Computer.Memory.UsedPercentage}">
+                                    <ProgressBar.Template>
+                                        <ControlTemplate>
+                                            <Grid>
+                                                <Border Background="{StaticResource DarkMemoryBarTrackBackground}"
+                                                        BorderThickness="0"
+                                                        CornerRadius="3"
+                                                        Name="PART_Track" />
+                                                <Border Background="{StaticResource DarkMemoryBarIndicatorBackground}" 
+                                                        BorderThickness="0" 
+                                                        CornerRadius="3"
+                                                        HorizontalAlignment="Left"
+                                                        Name="PART_Indicator" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </ProgressBar.Template>
+                                </ProgressBar>
+                                <Border Background="{StaticResource DarkMemoryBarIndicatorBackground}" 
+                                        BorderThickness="0" 
+                                        CornerRadius="3"
+                                        Grid.Column="0"
+                                        Grid.Row="1"
+                                        Height="12" 
+                                        Margin="0, 0, 5, 0"
+                                        Width="12" />
+                                <TextBlock Grid.Column="1"
+                                           Grid.Row="1">
+                                    <Run Text="{Binding Path=(local:Localizer.String).Used, Mode=OneWay}" /> | <Run Text="{Binding Computer.Memory.Used}" /> (<Run Text="{Binding Computer.Memory.UsedPercentage}" />%)
+                                </TextBlock>
+                                <Border Background="{StaticResource DarkMemoryBarTrackBackground}" 
+                                        BorderThickness="0" 
+                                        CornerRadius="3" 
+                                        Grid.Column="3"
+                                        Grid.Row="1"
+                                        Height="12" 
+                                        Margin="20, 0, 5, 0"
+                                        Width="12" />
+                                <TextBlock Grid.Column="4"
+                                           Grid.Row="1">
+                                    <Run Text="{Binding Path=(local:Localizer.String).Free, Mode=OneWay}" /> | <Run Text="{Binding Computer.Memory.Free}" /> (<Run Text="{Binding Computer.Memory.FreePercentage}" />%)
+                                </TextBlock>
                             </Grid>
-                        </GroupBox>
-                        <!-- Footer -->
-                        <Grid Grid.Column="0"
-                              Grid.ColumnSpan="2"
-                              Grid.Row="2"
-                              Margin="0, 10, 0, 0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <!-- About -->
-                            <TextBlock Grid.Column="0" 
-                                       Margin="0, 0, 10, 0"
-                                       VerticalAlignment="Center">
-                                <Hyperlink NavigateUri="{x:Static local:Constants+App+Repository.Uri}" 
-                                           RequestNavigate="OnHyperlinkRequestNavigate"
-                                           TextDecorations="None">
-                                    <Image Height="32"
-                                           RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                           RenderOptions.EdgeMode="Aliased"
-                                           Source="/WinMemoryCleaner;component/Resources/Images/github.png"
-                                           Width="32">
-                                        <Image.ToolTip>
-                                            <TextBlock>
-                                                <Run Text="{Binding Path=(local:Localizer.String).RepositoryInfo, Mode=OneWay}" />
-                                                <LineBreak/><LineBreak/>
-                                                © <Run Text="{x:Static local:Constants+App.License}" />
-                                                <LineBreak/>
-                                                <Run Text="{Binding Path=(local:Localizer.String).DevelopedBy, Mode=OneWay}" /> <Run Text="{x:Static local:Constants+App+Author.Name}" />
-                                            </TextBlock>
-                                        </Image.ToolTip>
-                                    </Image>
-                                </Hyperlink>
-                            </TextBlock>
-                            <!-- Memory Stats -->
-                            <Border Background="{StaticResource DarkControlBackground}" 
-                                    CornerRadius="3"
-                                    Grid.Column="1" 
-                                    KeyboardNavigation.IsTabStop="False"
-                                    Margin="0, 0, 10, 0" 
-                                    Padding="10, 5, 10, 5">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <ProgressBar Grid.Column="0" 
-                                                 Grid.ColumnSpan="5"
-                                                 Grid.Row="0"
-                                                 Height="5" 
-                                                 Maximum="100" 
-                                                 Margin="0, 0, 0, 5"
-                                                 Minimum="0" 
-                                                 Value="{Binding Computer.Memory.UsedPercentage}">
-                                        <ProgressBar.Template>
-                                            <ControlTemplate>
-                                                <Grid>
-                                                    <Border Background="#00AA41"
-                                                            BorderBrush="#00AA41"
-                                                            BorderThickness="0"
-                                                            CornerRadius="3"
-                                                            Name="PART_Track" />
-                                                    <Border Background="#E0360A" 
-                                                            BorderBrush="#E0360A"
-                                                            BorderThickness="0" 
-                                                            CornerRadius="3"
-                                                            HorizontalAlignment="Left"
-                                                            Name="PART_Indicator" />
-                                                </Grid>
-                                            </ControlTemplate>
-                                        </ProgressBar.Template>
-                                    </ProgressBar>
-                                    <Border Background="#E0360A" 
-                                            BorderThickness="0" 
-                                            CornerRadius="3"
-                                            Grid.Column="0"
-                                            Grid.Row="1"
-                                            Height="12" 
-                                            Margin="0, 0, 5, 0"
-                                            Width="12" />
-                                    <TextBlock Grid.Column="1"
-                                               Grid.Row="1">
-                                        <Run Text="{Binding Path=(local:Localizer.String).Used, Mode=OneWay}" /> | <Run Text="{Binding Computer.Memory.Used}" /> (<Run Text="{Binding Computer.Memory.UsedPercentage}" />%)
-                                    </TextBlock>
-                                    <Border Background="#00AA41" 
-                                            BorderThickness="0" 
-                                            CornerRadius="3" 
-                                            Grid.Column="3"
-                                            Grid.Row="1"
-                                            Height="12" 
-                                            Margin="20, 0, 5, 0"
-                                            Width="12" />
-                                    <TextBlock Grid.Column="4"
-                                               Grid.Row="1">
-                                        <Run Text="{Binding Path=(local:Localizer.String).Free, Mode=OneWay}" /> | <Run Text="{Binding Computer.Memory.Free}" /> (<Run Text="{Binding Computer.Memory.FreePercentage}" />%)
-                                    </TextBlock>
-                                </Grid>
-                            </Border>
-                            <!-- Optimize -->
-                            <Button Command="{Binding OptimizeCommand}" 
-                                    Content="{Binding Path=(local:Localizer.String).Optimize}" 
-                                    Grid.Column="2" 
-                                    Focusable="True"
-                                    IsEnabledChanged="OnOptimizeButtonIsEnabledChanged"
-                                    KeyboardNavigation.TabIndex="0"
-                                    Name="Optimize"
-                                    Padding="10, 0, 10, 0"
-                                    TabIndex="0" />
-                        </Grid>
+                        </Border>
+                        <!-- Optimize -->
+                        <Button Command="{Binding OptimizeCommand}" 
+                                Content="{Binding Path=(local:Localizer.String).Optimize}" 
+                                Grid.Column="2" 
+                                Focusable="True"
+                                KeyboardNavigation.TabIndex="0"
+                                Name="Optimize"
+                                Padding="10, 0, 10, 0"
+                                TabIndex="0" />
                     </Grid>
-                </StackPanel>
+                </Grid>
             </Border>
         </StackPanel>
     </Border>

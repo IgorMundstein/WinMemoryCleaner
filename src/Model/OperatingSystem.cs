@@ -14,6 +14,14 @@
         public bool HasCombinedPageList { get { return IsWindows8OrAbove; } }
 
         /// <summary>
+        /// Gets a value indicating whether current operating system has a hotkey manager.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if it has a hotkey manager; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasHotKeyManager { get { return IsWindowsVistaOrAbove; } }
+
+        /// <summary>
         /// Gets a value indicating whether current operating system has modified page list.
         /// </summary>
         /// <value>

@@ -4,9 +4,14 @@ namespace WinMemoryCleaner
 {
     internal class HotKey
     {
-        internal Key Key { get; set; }
+        internal HotKey(ModifierKeys modifiers, Key key)
+        {
+            Key = key;
+            Modifiers = modifiers;
+        }
 
-        internal ModifierKeys ModifierKeys { get; set; }
+        internal readonly Key Key;
+        internal readonly ModifierKeys Modifiers;
 
         public override bool Equals(object obj)
         {
@@ -27,20 +32,20 @@ namespace WinMemoryCleaner
             if (ReferenceEquals(this, hotKey))
                 return true;
 
-            return Equals(hotKey.Key, Key) && Equals(hotKey.ModifierKeys, ModifierKeys);
+            return Equals(hotKey.Key, Key) && Equals(hotKey.Modifiers, Modifiers);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (Key.GetHashCode() * 397) ^ ModifierKeys.GetHashCode();
+                return (Key.GetHashCode() * 397) ^ Modifiers.GetHashCode();
             }
         }
 
         public override string ToString()
         {
-            return string.Format("{0}, {1}", ModifierKeys, Key);
+            return string.Format("{0}, {1}", Modifiers, Key);
         }
     }
 }

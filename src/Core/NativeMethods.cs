@@ -12,6 +12,9 @@ namespace WinMemoryCleaner
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AdjustTokenPrivileges(IntPtr tokenHandle, [MarshalAs(UnmanagedType.Bool)]bool disableAllPrivileges, ref Structs.Windows.TokenPrivileges newState, int bufferLength, IntPtr previousState, IntPtr returnLength);
 
+        [DllImport("dwmapi.dll", SetLastError = true)]
+        internal static extern void DwmSetWindowAttribute(IntPtr hWnd, int attribute, ref int value, int size);
+
         [DllImport("psapi.dll", SetLastError = true)]
         internal static extern bool EmptyWorkingSet(IntPtr hProcess);
 
