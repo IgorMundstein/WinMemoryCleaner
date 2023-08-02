@@ -28,10 +28,6 @@
 - `Every X hours` - The optimization will run by period. 0h turns it off.
 - `When free memory is below X percent` - The optimization will run if free memory is below the specified percentage. 0% turns it off.
 
-### Hotkey
-
-- `Ctrl + Alt + M` - Optimize
-
 ### Memory Areas
 
 - `Clean Combined Page List` - Flushes blocks from the combined page list. Effective only when page combining is enabled.
@@ -43,11 +39,19 @@
 
 ### Multi-Language
 
-- `Chinese` `Dutch` `English` `French` `German` `Greek` `Italian` `Macedonian` `Portuguese` `Slovenian` `Spanish` `Turkish`
+- `Arabic` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Italian` `Japanese` `Macedonian` `Portuguese` `Slovenian` `Spanish` `Turkish`
+
+### Notifications
+
+[![](/.github/images/notification.png)](#notifications)
 
 ### Processes excluded from optimization
 
 - You can build a list of processes to ignore when memory is optimized.
+
+### Optimization Hotkey (Global)
+
+- `CTRL + ALT + M (Customizable)` - Optimize
 
 ### Settings
 
@@ -58,6 +62,10 @@
 - `Run on startup` - Runs the app after the system boots up.
 - `Show optimization notifications` - Sends a message to the notification area after optimization.
 - `Start minimized` - The app will start minimized to the system tray. Single/Double click on the icon to restore.
+
+### System tray
+
+[![](/.github/images/system-tray.png)](#system-tray)
 
 ## 🖥️ Command arguments (NO GUI)
 
@@ -106,13 +114,16 @@ You can test any translation by creating a file alongside the executable.
 
 ❤️ Contributors
 
+- `Arabic (اللغة العربية)` [Abdulmajeed-Alrajhi](https://github.com/Abdulmajeed-Alrajhi)
 - `Chinese - Simplified (中文(简体))` [Kun Zhao](https://github.com/kzhdev) | [raydenake22](https://github.com/raydenake22)
 - `Chinese - Traditional (中文(繁體))` [raydenake22](https://github.com/raydenake22) | [rtyrtyrtyqw](https://github.com/rtyrtyrtyqw)
 - `Dutch (Nederlands)` [hax4dazy](https://github.com/hax4dazy)
 - `French (Français)` [William VINCENT](https://github.com/wixaw)
 - `German (Deutsch)` [Calvin](https://github.com/Slluxx)
 - `Greek (Ελληνικά)` [tkatsageorgis](https://github.com/tkatsageorgis)
+- `Indonesian (Bahasa Indonesia)` [Eskey](https://github.com/Eskeyz)
 - `Italian (Italiano)` [wintrymichi](https://github.com/wintrymichi)
+- `Japanese (日本語)` [dai](https://github.com/dai)
 - `Macedonian (Македонски)` [Dimitrij Gjorgji](https://github.com/Cathadox)
 - `Slovenian (Slovenščina)` [Jadran Rudec](https://github.com/JadranR)
 - `Spanish (Español)` [Ajneb Al Revés](https://github.com/AjnebAlReves) | [Nekrodamus](https://github.com/FrannDzs)
