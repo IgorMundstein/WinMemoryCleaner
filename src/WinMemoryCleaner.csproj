@@ -96,6 +96,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Control\CustomContextMenuStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Attribute\CallerMemberNameAttribute.cs" />
@@ -137,19 +140,22 @@
     </Compile>
     <None Include="app.manifest" />
     <None Include="packages.config" />
-    <EmbeddedResource Include="Resources\Localization\English.json" />
-    <EmbeddedResource Include="Resources\Localization\Greek.json" />
-    <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
-    <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
-    <EmbeddedResource Include="Resources\Localization\French.json" />
-    <EmbeddedResource Include="Resources\Localization\Turkish.json" />
+    <EmbeddedResource Include="Resources\Localization\Arabic.json" />
     <EmbeddedResource Include="Resources\Localization\Chinese %28Simplified%29.json" />
     <EmbeddedResource Include="Resources\Localization\Chinese %28Traditional%29.json" />
-    <EmbeddedResource Include="Resources\Localization\German.json" />
     <EmbeddedResource Include="Resources\Localization\Dutch.json" />
+    <EmbeddedResource Include="Resources\Localization\English.json" />
+    <EmbeddedResource Include="Resources\Localization\French.json" />
+    <EmbeddedResource Include="Resources\Localization\German.json" />
+    <EmbeddedResource Include="Resources\Localization\Greek.json" />
+    <EmbeddedResource Include="Resources\Localization\Indonesian.json" />
     <EmbeddedResource Include="Resources\Localization\Italian.json" />
-    <EmbeddedResource Include="Resources\Localization\Spanish.json" />
+    <EmbeddedResource Include="Resources\Localization\Japanese.json" />
     <EmbeddedResource Include="Resources\Localization\Macedonian.json" />
+    <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
+    <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
+    <EmbeddedResource Include="Resources\Localization\Spanish.json" />
+    <EmbeddedResource Include="Resources\Localization\Turkish.json" />
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
@@ -182,6 +188,7 @@
   <ItemGroup>
     <Resource Include="Resources\Images\win-memory-cleaner.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CleanBinAndObjFolders" AfterTargets="Clean">
     <RemoveDir Directories="$(TargetDir)" />

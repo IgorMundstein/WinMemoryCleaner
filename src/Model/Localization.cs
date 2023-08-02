@@ -27,7 +27,7 @@ namespace WinMemoryCleaner
         public string Close { get; private set; }
 
         [DataMember]
-        public string CloseAfterOptimization { get; set; }
+        public string CloseAfterOptimization { get; private set; }
 
         [DataMember]
         public string CloseToTheNotificationArea { get; private set; }
@@ -55,6 +55,12 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string Free { get; private set; }
+
+        [DataMember]
+        public string HotkeyIsInUseByWindows { get; private set; }
+
+        [DataMember]
+        public string Invalid { get; private set; }
 
         [DataMember]
         public string MemoryAreas { get; private set; }
@@ -85,7 +91,9 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string Minimize { get; private set; }
-
+        
+        [DataMember]
+        public string OptimizationHotkey { get; private set; }
 
         [DataMember]
         public string Optimize { get; private set; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -19,6 +20,7 @@ namespace WinMemoryCleaner
         private Computer _computer;
         private readonly IComputerService _computerService;
         private readonly HotKeyManager _hotkeyManager;
+        private bool _isOptimizationKeyValid;
         private BackgroundWorker _monitorAppWorker;
         private BackgroundWorker _monitorComputerWorker;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
@@ -44,9 +46,9 @@ namespace WinMemoryCleaner
             OptimizeCommand = new RelayCommand(OptimizeAsync, () => CanOptimize);
             RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
 
-            // HotKey
+            //HotKey
             _hotkeyManager = new HotKeyManager();
-            _hotkeyManager.Register(new HotKey { Key = Key.M, ModifierKeys = ModifierKeys.Control | ModifierKeys.Alt }, OptimizeAsync);
+            RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
 
             // Models
             Computer = new Computer();
@@ -284,6 +286,50 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether optimization key is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if optimization key is valid; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsOptimizationKeyValid
+        {
+            get { return _isOptimizationKeyValid; }
+            set
+            {
+                _isOptimizationKeyValid = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets the keyboard keys.
+        /// </summary>
+        /// <value>
+        /// The keyboard keys.
+        /// </value>
+        public List<Key> KeyboardKeys
+        {
+            get
+            {
+                return _hotkeyManager.Keys;
+            }
+        }
+
+        /// <summary>
+        /// Gets the keyboard modifiers.
+        /// </summary>
+        /// <value>
+        /// The keyboard modifiers.
+        /// </value>
+        public Dictionary<ModifierKeys, string> KeyboardModifiers
+        {
+            get
+            {
+                return _hotkeyManager.Modifiers;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the language.
         /// </summary>
         /// <value>
@@ -393,6 +439,30 @@ namespace WinMemoryCleaner
                     IsBusy = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the optimization key.
+        /// </summary>
+        /// <value>
+        /// The optimization key.
+        /// </value>
+        public Key OptimizationKey
+        {
+            get { return Settings.OptimizationKey; }
+            set { RegisterOptimizationHotKey(Settings.OptimizationModifiers, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the optimization modifiers.
+        /// </summary>
+        /// <value>
+        /// The optimization modifiers.
+        /// </value>
+        public ModifierKeys OptimizationModifiers
+        {
+            get { return Settings.OptimizationModifiers; }
+            set { RegisterOptimizationHotKey(value, Settings.OptimizationKey); }
         }
 
         /// <summary>
@@ -847,6 +917,46 @@ namespace WinMemoryCleaner
                         OptimizeCommandCompleted();
                     });
                 }
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// Registers the optimization hot key.
+        /// </summary>
+        /// <param name="modifiers">The modifiers.</param>
+        /// <param name="key">The key.</param>
+        private void RegisterOptimizationHotKey(ModifierKeys modifiers, Key key)
+        {
+            try
+            {
+                IsBusy = true;
+
+                _hotkeyManager.Unregister(new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey));
+
+                Settings.OptimizationKey = key;
+                Settings.OptimizationModifiers = modifiers;
+
+                var hotKey = new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
+                IsOptimizationKeyValid = _hotkeyManager.Register(hotKey, OptimizeAsync);
+
+                if (!IsOptimizationKeyValid)
+                {
+                    var message = string.Format(Localizer.String.HotkeyIsInUseByWindows, hotKey);
+                    
+                    Logger.Warning(message);
+                    NotificationService.Notify(message);
+
+                    return;
+                }
+
+                Settings.Save();
+
+                RaisePropertyChanged(() => OptimizationKey);
+                RaisePropertyChanged(() => OptimizationModifiers);
             }
             finally
             {

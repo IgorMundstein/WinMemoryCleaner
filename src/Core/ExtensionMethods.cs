@@ -82,6 +82,16 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Converts to System.Drawing.Color.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        internal static System.Drawing.Color ToColor(this System.Windows.Media.SolidColorBrush value)
+        {
+            return System.Drawing.Color.FromArgb(value.Color.A, value.Color.R, value.Color.G, value.Color.B);
+        }
+
+        /// <summary>
         /// Converts the specified string to title case (except for words that are entirely in uppercase, which are considered to be acronyms)
         /// </summary>
         /// <param name="value">The string to convert to title case</param>

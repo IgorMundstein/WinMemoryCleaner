@@ -44,8 +44,10 @@ namespace WinMemoryCleaner
                     internal const string AutoUpdate = "AutoUpdate";
                     internal const string CloseAfterOptimization = "CloseAfterOptimization";
                     internal const string CloseToTheNotificationArea = "CloseToTheNotificationArea";
-                    internal const string Language = "Language";                    
+                    internal const string Language = "Language";
                     internal const string MemoryAreas = "MemoryAreas";
+                    internal const string OptimizationKey = "OptimizationKey";
+                    internal const string OptimizationModifiers = "OptimizationModifiers";
                     internal const string RunOnStartup = "RunOnStartup";
                     internal const string ShowOptimizationNotifications = "ShowOptimizationNotifications";
                     internal const string StartMinimized = "StartMinimized";
@@ -62,6 +64,19 @@ namespace WinMemoryCleaner
 
         internal static class Windows
         {
+            internal static class DesktopWindowManager
+            {
+                internal class Attribute
+                {
+                    internal const int BorderColor = 34;
+                    internal const int WindowCornerPreference = 33;
+                }
+                internal class Value
+                {
+                    internal const int WindowCornerPreferenceRound = 2;
+                }
+            }
+
             internal static class Keyboard
             {
                 internal const int WmHotkey = 786; // 0x312

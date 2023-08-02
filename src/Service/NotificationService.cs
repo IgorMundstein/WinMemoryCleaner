@@ -20,7 +20,7 @@ namespace WinMemoryCleaner
         public NotificationService(NotifyIcon notifyIcon)
         {
             _notifyIcon = notifyIcon;
-            
+
             Initialize();
         }
 
@@ -33,8 +33,8 @@ namespace WinMemoryCleaner
                 return;
 
             // Notification Area (Menu)
-            _notifyIcon.ContextMenuStrip = new ContextMenuStrip();
-
+            _notifyIcon.ContextMenuStrip = new CustomContextMenuStrip();
+            
             // Optimize
             _notifyIcon.ContextMenuStrip.Items.Add(Localizer.String.Optimize, null, (sender, args) =>
             {
