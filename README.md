@@ -49,7 +49,7 @@
 
 - You can build a list of processes to ignore when memory is optimized.
 
-### Optimization Hotkey (Global)
+### Optimization hotkey (Global)
 
 - `CTRL + ALT + M (Customizable)` - Optimize
 
