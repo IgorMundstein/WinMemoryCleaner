@@ -39,7 +39,7 @@
 
 ### Multi-Language
 
-- `Arabic` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Italian` `Japanese` `Macedonian` `Portuguese` `Slovenian` `Spanish` `Turkish`
+- `Arabic` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Italian` `Japanese` `Korean` `Macedonian` `Portuguese` `Serbian` `Slovenian` `Spanish` `Turkish`
 
 ### Notifications
 
@@ -124,7 +124,9 @@ You can test any translation by creating a file alongside the executable.
 - `Indonesian (Bahasa Indonesia)` [Eskey](https://github.com/Eskeyz)
 - `Italian (Italiano)` [wintrymichi](https://github.com/wintrymichi)
 - `Japanese (日本語)` [dai](https://github.com/dai)
+- `Korean (한국어)` [VenusGirl](https://github.com/VenusGirl)
 - `Macedonian (Македонски)` [Dimitrij Gjorgji](https://github.com/Cathadox)
+- `Serbian (Srpski)` [DragorMilos](https://github.com/DragorMilos)
 - `Slovenian (Slovenščina)` [Jadran Rudec](https://github.com/JadranR)
 - `Spanish (Español)` [Ajneb Al Revés](https://github.com/AjnebAlReves) | [Nekrodamus](https://github.com/FrannDzs)
 - `Turkish (Türkçe)` [Viollje](https://github.com/Viollje)
