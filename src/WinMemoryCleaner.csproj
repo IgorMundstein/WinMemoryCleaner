@@ -160,7 +160,7 @@
     <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
     <EmbeddedResource Include="Resources\Localization\Spanish.json" />
     <EmbeddedResource Include="Resources\Localization\Turkish.json" />
-    <None Include="Resources\Localization\Ukrainian.json" />
+    <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
