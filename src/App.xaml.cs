@@ -273,6 +273,9 @@ namespace WinMemoryCleaner
                     }
                     else
                         mainWindow.Show();
+
+                    // Reduce app memory usage
+                    NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle);
                 }
                 else // NO GUI
                 {

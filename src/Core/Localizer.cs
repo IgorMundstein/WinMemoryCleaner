@@ -119,7 +119,7 @@ namespace WinMemoryCleaner
 
             var localResource = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format("{0}{1}", language, Constants.App.LocalizationResourceExtension));
             var resource = string.Format("{0}{1}{2}", Constants.App.LocalizationResourcePath, language, Constants.App.LocalizationResourceExtension);
-            
+
             using (Stream stream = File.Exists(localResource) ? File.OpenRead(localResource) : Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
             {
                 DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Localization));

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\build\Microsoft.CodeAnalysis.NetAnalyzers.props" Condition="Exists('packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\build\Microsoft.CodeAnalysis.NetAnalyzers.props')" />
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.props" Condition="Exists('packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -28,7 +28,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
+    <ApplicationVersion>2.3.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -48,7 +48,8 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <NoWarn>CA1822</NoWarn>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -62,6 +63,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>bin\Release\WinMemoryCleaner.xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -151,8 +153,10 @@
     <EmbeddedResource Include="Resources\Localization\Indonesian.json" />
     <EmbeddedResource Include="Resources\Localization\Italian.json" />
     <EmbeddedResource Include="Resources\Localization\Japanese.json" />
+    <EmbeddedResource Include="Resources\Localization\Korean.json" />
     <EmbeddedResource Include="Resources\Localization\Macedonian.json" />
     <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
+    <EmbeddedResource Include="Resources\Localization\Serbian.json" />
     <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
     <EmbeddedResource Include="Resources\Localization\Spanish.json" />
     <EmbeddedResource Include="Resources\Localization\Turkish.json" />
@@ -173,14 +177,14 @@
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
+      <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="packages\Microsoft.CodeAnalysis.Analyzers.3.3.4\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
     <Analyzer Include="packages\Microsoft.CodeAnalysis.Analyzers.3.3.4\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
-    <Analyzer Include="packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
-    <Analyzer Include="packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.NetAnalyzers.dll" />
+    <Analyzer Include="packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
+    <Analyzer Include="packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\analyzers\dotnet\cs\Microsoft.CodeAnalysis.NetAnalyzers.dll" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\github.png" />
@@ -188,7 +192,6 @@
   <ItemGroup>
     <Resource Include="Resources\Images\win-memory-cleaner.ico" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CleanBinAndObjFolders" AfterTargets="Clean">
     <RemoveDir Directories="$(TargetDir)" />
@@ -199,8 +202,8 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\build\Microsoft.CodeAnalysis.NetAnalyzers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\build\Microsoft.CodeAnalysis.NetAnalyzers.props'))" />
-    <Error Condition="!Exists('packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\build\Microsoft.CodeAnalysis.NetAnalyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\build\Microsoft.CodeAnalysis.NetAnalyzers.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.targets'))" />
   </Target>
-  <Import Project="packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\build\Microsoft.CodeAnalysis.NetAnalyzers.targets" Condition="Exists('packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.0\build\Microsoft.CodeAnalysis.NetAnalyzers.targets')" />
+  <Import Project="packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.targets" Condition="Exists('packages\Microsoft.CodeAnalysis.NetAnalyzers.7.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.targets')" />
 </Project>

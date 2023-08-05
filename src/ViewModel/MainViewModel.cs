@@ -476,7 +476,7 @@ namespace WinMemoryCleaner
             get
             {
                 var processes = new ObservableCollection<string>(Process.GetProcesses()
-                    .Where(process => process != null && !Settings.ProcessExclusionList.Contains(process.ProcessName))
+                    .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName))
                     .Select(process => process.ProcessName.ToLower().Replace(".exe", string.Empty))
                     .Distinct()
                     .OrderBy(name => name));
@@ -946,7 +946,7 @@ namespace WinMemoryCleaner
                 if (!IsOptimizationKeyValid)
                 {
                     var message = string.Format(Localizer.String.HotkeyIsInUseByWindows, hotKey);
-                    
+
                     Logger.Warning(message);
                     NotificationService.Notify(message);
 

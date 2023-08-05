@@ -23,12 +23,12 @@ namespace WinMemoryCleaner
             // Rounded border
             var windowCornerPreference = Constants.Windows.DesktopWindowManager.Value.WindowCornerPreferenceRound;
             NativeMethods.DwmSetWindowAttribute(Handle, Constants.Windows.DesktopWindowManager.Attribute.WindowCornerPreference, ref windowCornerPreference, sizeof(int));
-            
+
             // Border color
             var borderColor = ColorTranslator.ToWin32(_darkBorderBrush);
             NativeMethods.DwmSetWindowAttribute(Handle, Constants.Windows.DesktopWindowManager.Attribute.BorderColor, ref borderColor, sizeof(int));
         }
-        
+
         internal sealed class ToolStripRenderer : ToolStripProfessionalRenderer
         {
             internal ToolStripRenderer()
@@ -41,7 +41,7 @@ namespace WinMemoryCleaner
             {
                 base.OnRenderItemText(e);
 
-                e.Item.ForeColor = e.Item.Selected ? _darkOver: _darkForeground;
+                e.Item.ForeColor = e.Item.Selected ? _darkOver : _darkForeground;
             }
 
             protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)

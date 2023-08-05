@@ -34,7 +34,7 @@ namespace WinMemoryCleaner
 
             // Notification Area (Menu)
             _notifyIcon.ContextMenuStrip = new CustomContextMenuStrip();
-            
+
             // Optimize
             _notifyIcon.ContextMenuStrip.Items.Add(Localizer.String.Optimize, null, (sender, args) =>
             {
