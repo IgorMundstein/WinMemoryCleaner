@@ -112,6 +112,10 @@ You can test any translation by creating a file alongside the executable.
 3. Launch the application. If successful, the new language and changes will be available.
 4. Either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14)
 
+:bulb: **Resources are exposed through the assembly manifest, so make sure to include the translation file as `EmbeddedResource`.**
+
+:bulb: **Make sure to save tranlation file under `UTF-8` encoding (not `UTF-8 with BOM`), otherwise `DataContractJsonSerializer` won't be able to serialize it.**
+
 ❤️ Contributors
 
 - `Arabic (اللغة العربية)` [Abdulmajeed-Alrajhi](https://github.com/Abdulmajeed-Alrajhi)
