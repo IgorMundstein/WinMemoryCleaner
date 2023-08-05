@@ -16,7 +16,7 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string AutoOptimization { get; private set; }
-        
+
         [DataMember]
         public string AutoOptimizationInterval { get; private set; }
 
@@ -91,7 +91,7 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string Minimize { get; private set; }
-        
+
         [DataMember]
         public string OptimizationHotkey { get; private set; }
 

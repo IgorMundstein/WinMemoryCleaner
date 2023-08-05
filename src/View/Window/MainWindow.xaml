@@ -39,7 +39,7 @@
                             KeyboardNavigation.IsTabStop="False"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
-                    <Image RenderOptions.BitmapScalingMode="NearestNeighbor"
+                    <Image RenderOptions.BitmapScalingMode="Fant"
                            RenderOptions.EdgeMode="Aliased"
                            Source="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico" />
                     <TextBlock FontWeight="Normal"
@@ -347,10 +347,9 @@
                                        RequestNavigate="OnHyperlinkRequestNavigate"
                                        TextDecorations="None">
                                 <Image Height="32"
-                                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                       RenderOptions.BitmapScalingMode="Fant"
                                        RenderOptions.EdgeMode="Aliased"
-                                       Source="/WinMemoryCleaner;component/Resources/Images/github.png"
-                                       Width="32">
+                                       Source="/WinMemoryCleaner;component/Resources/Images/github.png">
                                     <Image.ToolTip>
                                         <TextBlock>
                                             <Run Text="{Binding Path=(local:Localizer.String).RepositoryInfo, Mode=OneWay}" />

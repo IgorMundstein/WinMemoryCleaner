@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
-using Microsoft.Win32;
 
 namespace WinMemoryCleaner
 {

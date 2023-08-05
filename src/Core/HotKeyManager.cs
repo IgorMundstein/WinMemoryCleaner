@@ -74,7 +74,7 @@ namespace WinMemoryCleaner
             try
             {
                 hotKey = new HotKey
-                ( 
+                (
                     key: KeyInterop.KeyFromVirtualKey(((int)msg.lParam >> 16) & 0xFFFF),
                     modifiers: (ModifierKeys)((int)msg.lParam & 0xFFFF)
                 );

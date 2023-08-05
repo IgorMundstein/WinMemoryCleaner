@@ -67,7 +67,7 @@ namespace WinMemoryCleaner
                 IsWindowsXp64BitOrAbove = Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 5.2
             });
         }
-        
+
         /// <summary>
         /// Increase the Privilege using a privilege name
         /// </summary>

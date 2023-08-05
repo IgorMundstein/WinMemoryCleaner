@@ -64,12 +64,6 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-                <Style.Triggers>
-                    <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                        <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
-                    </Trigger>
-                </Style.Triggers>
                 <Style.Resources>
                     <Style TargetType="{x:Type Border}">
                         <Setter Property="CornerRadius" Value="3" />
@@ -205,7 +199,6 @@
                                     <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
                                     <Setter TargetName="ToggleButton" Property="Foreground" Value="{StaticResource DarkDisabled}" />
                                 </Trigger>
                                 <Trigger Property="IsFocused" Value="True">
@@ -246,7 +239,7 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                                    <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
                                 </Trigger>
                                 <Trigger Property="IsFocused" Value="True">
                                     <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
@@ -314,7 +307,7 @@
                 </Style.Triggers>
             </Style>
             <!-- ScrollBar (BEGIN) -->
-            <Style x:Key="ScrollThumbs" TargetType="{x:Type Thumb}">
+            <Style x:Key="ScrollThumbs" TargetType="{x:Type Thumb}" BasedOn="{StaticResource FrameworkElementBase}">
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Thumb}">
@@ -344,7 +337,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <Style TargetType="{x:Type ScrollBar}">
+            <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource FrameworkElementBase}">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
                 <Setter Property="Margin" Value="-5, 0, -5, 0" />
@@ -375,7 +368,7 @@
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="ScrollBarThumb" Property="Visibility" Value="Collapsed" />
+                                    <Setter TargetName="ScrollBarThumb" Property="Background" Value="{StaticResource DarkDisabled}" />
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="ScrollBarThumb" Property="Background" Value="{StaticResource DarkOver}" />
@@ -403,6 +396,7 @@
                 </Setter>
             </Style>
             <!-- ScrollBar (END) -->
+            <Style TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource FrameworkElementBase}" />
             <Style TargetType="{x:Type Slider}" BasedOn="{StaticResource FrameworkElementBase}">
                 <Setter Property="Background" Value="{StaticResource DarkBackground}" />
                 <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />

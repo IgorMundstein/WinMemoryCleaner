@@ -82,7 +82,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Main View Model
         /// </summary>
-        public MainViewModel MainViewModel 
+        public MainViewModel MainViewModel
         {
             get
             {
