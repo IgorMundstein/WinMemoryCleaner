@@ -114,7 +114,7 @@ You can test any translation by creating a file alongside the executable.
 
 :bulb: **Resources are exposed through the assembly manifest, so make sure to include the translation file as `EmbeddedResource`.**
 
-:bulb: **Make sure to save tranlation file under `UTF-8` encoding (not `UTF-8 with BOM`), otherwise `DataContractJsonSerializer` won't be able to deserialize it.**
+:bulb: **Make sure to save tranlation file under `UTF-8` encoding (not `UTF-8 with BOM`), otherwise `DataContractJsonSerializer` won't be able to deserialize it correctly in case of some language specific symbols.**
 
 ❤️ Contributors
 
