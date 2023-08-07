@@ -25,21 +25,21 @@
 
 ### Auto optimization
 
-- `Every X hours` - The optimization will run by period. 0h turns it off.
-- `When free memory is below X percent` - The optimization will run if free memory is below the specified percentage. 0% turns it off.
+- `Every X hours` - The optimization will run by period
+- `When free memory is below X percent` - The optimization will run if free memory is below the specified percentage
 
 ### Memory Areas
 
-- `Clean Combined Page List` - Flushes blocks from the combined page list. Effective only when page combining is enabled.
-- `Clean Modified Page List` - Flushes memory from the Modified page list, writing unsaved data to disk and moving the pages to the Standby list.
-- `Clean Processes Working Set` - Removes memory from all user-mode and system working sets and moves it to the Standby or Modified page lists. Note that by the time processes run, any code will necessarily populate their working sets to do so.
-- `Clean Standby List` - Flushes pages from all Standby lists to the Free list.
-- `Clean Standby List (Low Priority)` - Flushes pages from the lowest-priority Standby list to the Free list.
-- `Clean System Working Set` - Removes memory from the system cache working set.
+- `Clean Combined Page List` - Flushes the blocks from the combined page list effectively only when page combining is enabled
+- `Clean Modified Page List` - Flushes memory from the modified page list, writing unsaved data to disk and moving the pages to the standby list
+- `Clean Processes Working Set` - Removes memory from all user-mode and system working sets and moves it to the standby or modified page lists. Note that by the time processes run, any code will necessarily populate their working sets to do so
+- `Clean Standby List` - Flushes pages from all standby lists to the free list
+- `Clean Standby List (Low Priority)` - Flushes pages from the lowest-priority standby list to the free list
+- `Clean System Working Set` - Removes memory from the system cache working set
 
 ### Multi-Language
 
-- `Arabic` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Italian` `Japanese` `Korean` `Macedonian` `Portuguese` `Serbian` `Slovenian` `Spanish` `Turkish`
+- `Arabic` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Italian` `Japanese` `Korean` `Macedonian` `Polish` `Portuguese` `Serbian` `Slovenian` `Spanish` `Turkish` `Ukrainian`
 
 ### Notifications
 
@@ -47,7 +47,7 @@
 
 ### Processes excluded from optimization
 
-- You can build a list of processes to ignore when memory is optimized.
+- You can build a list of processes to ignore when memory is optimized
 
 ### Optimization hotkey (Global)
 
@@ -55,13 +55,13 @@
 
 ### Settings
 
-- `Always on top` - Pins the window to the top of all your windows.
-- `Auto update` - Keeps the app up to date.
-- `Close after optimization` - Closes the app after optimization.
-- `Close to the notification area` - Minimize the app to the system tray when clicking the close (X) button.
-- `Run on startup` - Runs the app after the system boots up.
-- `Show optimization notifications` - Sends a message to the notification area after optimization.
-- `Start minimized` - The app will start minimized to the system tray. Single/Double click on the icon to restore.
+- `Always on top` - Pins the window to the top of all your windows
+- `Auto update` - Keeps the app up to date
+- `Close after optimization` - Closes the app after optimization
+- `Close to the notification area` - Minimize the app to the system tray when clicking the close (X) button
+- `Run on startup` - Runs the app after the system boots up
+- `Show optimization notifications` - Sends a message to the notification area after optimization
+- `Start minimized` - The app will start minimized to the system tray. Single/Double click on the icon to restore
 
 ### System tray
 
@@ -83,10 +83,10 @@ Example
 
 ## 📖 Logs
 
-The app generates logs in the Windows event.
+The app generates logs in the Windows event
 
-1. Press **Win + R** to open the Run command dialog box.
-2. Type **eventvwr** and press **Enter** to open the Event Viewer.
+1. Press **Win + R** to open the Run command dialog box
+2. Type **eventvwr** and press **Enter** to open the Event Viewer
 
 [![](/.github/images/windows-event-log.png)](#-logs)
 
@@ -106,11 +106,17 @@ The app generates logs in the Windows event.
 
 If you are a native speaker of any language other than English, you can contribute by translating the file: [English.json](/src/Resources/Localization/English.json)
 
-You can test any translation by creating a file alongside the executable.
-1. Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the locale description of the language.
-2. Save it as {locale-description}.json
-3. Launch the application. If successful, the new language and changes will be available.
+💡 You can test any translation by creating a file alongside the executable
+1. Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the **locale description** of the language
+2. Save it as **{locale-description}.json** using **UTF-8** as character encoding
+3. Launch the application. If successful, the new language and changes will be visible
 4. Either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14)
+
+💡 If you are .NET developer
+
+1. You can add the new file to the Resources\Localization folder
+2. Change the file build action property to Embedded Resource
+3. Rebuild and run the WinMemoryCleaner project
 
 ❤️ Contributors
 
@@ -126,7 +132,9 @@ You can test any translation by creating a file alongside the executable.
 - `Japanese (日本語)` [dai](https://github.com/dai)
 - `Korean (한국어)` [VenusGirl](https://github.com/VenusGirl)
 - `Macedonian (Македонски)` [Dimitrij Gjorgji](https://github.com/Cathadox)
+- `Polish (Polski)` [Fresta56](https://github.com/Fresta56)
 - `Serbian (Srpski)` [DragorMilos](https://github.com/DragorMilos)
 - `Slovenian (Slovenščina)` [Jadran Rudec](https://github.com/JadranR)
 - `Spanish (Español)` [Ajneb Al Revés](https://github.com/AjnebAlReves) | [Nekrodamus](https://github.com/FrannDzs)
 - `Turkish (Türkçe)` [Viollje](https://github.com/Viollje)
+- `Ukrainian (Українська)` [Oleksander](https://github.com/Mariachi1231)

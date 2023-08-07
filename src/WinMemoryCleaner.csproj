@@ -28,7 +28,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>2.3.0.0</ApplicationVersion>
+    <ApplicationVersion>0.0.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -155,6 +155,7 @@
     <EmbeddedResource Include="Resources\Localization\Japanese.json" />
     <EmbeddedResource Include="Resources\Localization\Korean.json" />
     <EmbeddedResource Include="Resources\Localization\Macedonian.json" />
+    <EmbeddedResource Include="Resources\Localization\Polish.json" />
     <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
     <EmbeddedResource Include="Resources\Localization\Serbian.json" />
     <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
