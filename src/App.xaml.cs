@@ -1,7 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -254,8 +253,6 @@ namespace WinMemoryCleaner
                     _notifyIcon = new NotifyIcon();
                     _notifyIcon.Click += OnNotifyIconClick;
                     _notifyIcon.DoubleClick += OnNotifyIconClick;
-                    _notifyIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
-                    _notifyIcon.Visible = true;
 
                     // DI/IOC
                     DependencyInjection.Container.Register(_notifyIcon);
