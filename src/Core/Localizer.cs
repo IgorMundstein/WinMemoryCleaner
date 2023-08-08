@@ -95,7 +95,7 @@ namespace WinMemoryCleaner
 
                     return CultureInfo.GetCultures(CultureTypes.AllCultures)
                         .Where(culture => resourceNames.Contains(culture.EnglishName, StringComparer.OrdinalIgnoreCase))
-                        .OrderBy(culture => culture.NativeName)
+                        .OrderBy(culture => culture.NativeName, StringComparer.InvariantCultureIgnoreCase)
                         .ToDictionary(culture => culture.EnglishName, culture => culture.NativeName.ToTitleCase());
                 }
                 catch (Exception e)

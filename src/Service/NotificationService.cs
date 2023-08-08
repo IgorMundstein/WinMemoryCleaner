@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Application = System.Windows.Application;
@@ -51,6 +53,9 @@ namespace WinMemoryCleaner
             {
                 Application.Current.Shutdown();
             });
+
+            _notifyIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+            _notifyIcon.Visible = true;
         }
 
         /// <summary>
@@ -80,8 +85,10 @@ namespace WinMemoryCleaner
         {
             try
             {
-                if (_notifyIcon != null)
-                    _notifyIcon.ShowBalloonTip(timeout * 1000, title, message, (ToolTipIcon)icon);
+                if (_notifyIcon == null)
+                    return;
+
+                _notifyIcon.ShowBalloonTip(timeout * 1000, title, message, (ToolTipIcon)icon);
             }
             catch
             {
@@ -97,6 +104,9 @@ namespace WinMemoryCleaner
         {
             try
             {
+                if (_notifyIcon == null)
+                    return;
+
                 _notifyIcon.Text = string.Format("{0} {1}{2}%", Localizer.String.MemoryUsage, Environment.NewLine, memory.UsedPercentage);
             }
             catch
