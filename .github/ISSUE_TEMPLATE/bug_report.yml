@@ -1,15 +1,15 @@
-name: 🐞 BUG
+name: Bug
 description: File a bug/issue
-title: "[BUG] <title>"
 labels: [ "bug" ]
 body:
   - type: checkboxes
     attributes:
-      label: Is there an existing issue for this?
-      description: Please search to see if an issue already exists for the bug you encountered.
+      label: Checklist
       options:
-      - label: I have searched the existing issues
-        required: true
+        - label: I have used the search function to see if someone else has submitted the same bug report.
+          required: true
+        - label: I will describe the problem in as much detail as possible.
+          required: true
   - type: input
     attributes:
       label: App version
@@ -22,6 +22,18 @@ body:
       description: What Windows version do you use?
     validations:
       required: true
+  - type: textarea
+    attributes:
+      label: Current Behavior
+      description: A concise description of what you are experiencing.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A concise description of what you expected to happen.
+    validations:
+      required: false
   - type: textarea
     attributes:
       label: Steps To Reproduce
