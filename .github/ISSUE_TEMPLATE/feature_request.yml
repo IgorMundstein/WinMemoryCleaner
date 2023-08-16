@@ -1,7 +1,6 @@
-name: Feature request
-title: "[Feature]"
+name: ✨ Feature request
 description: Suggest an idea for this project.
-labels: [ "feature" ]
+labels: [ "enhancement" ]
 body:
   - type: checkboxes
     id: checklist
@@ -32,7 +31,7 @@ body:
     id: solution
     attributes:
       label: Suggested solution
-      description: Describe how you would like the app to help you solve that problem. Could you try to be as specific as possible?
+      description: Describe how you would like the app to help you solve that problem. Please be as specific as possible.
     validations:
       required: true
   - type: textarea
