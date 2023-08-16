@@ -42,13 +42,6 @@ body:
     validations:
       required: true
   - type: textarea
-    id: expected
-    attributes:
-      label: Expected behavior
-      description: What did you think the application would do after following the steps?
-    validations:
-      required: false
-  - type: textarea
     id: actual
     attributes:
       label: Actual behavior
@@ -56,10 +49,17 @@ body:
     validations:
       required: true
   - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you think the application would do after following the steps?
+    validations:
+      required: false
+  - type: textarea
     id: logs
     attributes:
       label: Logs
       description: |
-        - If the application has a Windows event log, you can insert it here.
+        If the application has a Windows event log, you can attach it here.
     
         Tip: You can attach images, log files, or crash dumps by clicking this area to highlight it and then dragging files in.
