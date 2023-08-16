@@ -1,4 +1,4 @@
-name: 🐞 Bug report
+name: ⚠️ Bug report
 description: Report any error or feature that produces an incorrect or unexpected result.
 labels: [ "bug" ]
 body:
