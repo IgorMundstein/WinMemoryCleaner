@@ -1,38 +1,65 @@
----
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
----
-
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
-
-**Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
+title: "[Bug]"
+description: Let me know about crashes or existing functionality needing to be fixed.
+labels: [ "bug" ]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this bug report!
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have used the search function to see if someone else has submitted the same bug report.
+          required: true
+        - label: I will describe the problem in as much detail as possible.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: What application version do you use?
+      placeholder: x.y.z
+    validations:
+      required: true
+  - type: input
+    id: windows_version
+    attributes:
+      label: Windows version
+      description: What Windows version do you use?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to '…'
+        2. Click on '…'
+        3. Scroll down to '…'
+        4. etc.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you think the application would do after following the steps?
+    validations:
+      required: false
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What did the application do instead? Screenshots might help.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        - If the application has a Windows event log, you can insert it here.
+    
+        Tip: You can attach images, log files, or crash dumps by clicking this area to highlight it and then dragging files in.
