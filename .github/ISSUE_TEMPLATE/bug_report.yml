@@ -1,5 +1,5 @@
-name: Bug
-description: File a bug/issue.
+name: Bug report
+description: Report any error or feature that produces an incorrect or unexpected result.
 labels: [ "bug" ]
 body:
   - type: checkboxes
