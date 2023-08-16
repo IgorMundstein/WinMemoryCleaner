@@ -12,4 +12,21 @@ body:
           required: true
         - label: This issue only requests one feature, **not** multiple (related) features.
           required: true
-
+  - type: input
+    attributes:
+      label: App version
+      description: What application version do you use?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Problem you are trying to solve
+      Description: Could you explain the problem you are trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Suggested solution
+      description: Describe how you would like the app to help you solve that problem. Please be as specific as possible.
+    validations:
+      required: true
