@@ -1,5 +1,5 @@
 name: Bug
-description: File a bug/issue
+description: File a bug/issue.
 labels: [ "bug" ]
 body:
   - type: checkboxes
@@ -24,18 +24,6 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: Current Behavior
-      description: A concise description of what you are experiencing.
-    validations:
-      required: false
-  - type: textarea
-    attributes:
-      label: Expected Behavior
-      description: A concise description of what you expected to happen.
-    validations:
-      required: false
-  - type: textarea
-    attributes:
       label: Steps To Reproduce
       description: Steps to reproduce the behavior.
       placeholder: |
@@ -45,6 +33,18 @@ body:
         4. etc.
     validations:
       required: true
+  - type: textarea
+    attributes:
+      label: Current Behavior
+      description: A concise description of what you are experiencing.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A concise description of what you expected to happen.
+    validations:
+      required: false
   - type: textarea
     attributes:
       label: Anything else?
