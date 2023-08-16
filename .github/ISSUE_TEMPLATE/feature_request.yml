@@ -26,14 +26,14 @@ body:
     attributes:
       label: Problem you are trying to solve
       Description: Could you explain the problem you are trying to solve?
-    Validations:
+    validations:
       required: true
   - type: textarea
     id: solution
     attributes:
-      Label: Suggested solution
+      label: Suggested solution
       description: Describe how you would like the app to help you solve that problem. Could you try to be as specific as possible?
-    Validations:
+    validations:
       required: true
   - type: textarea
     id: screenshots
