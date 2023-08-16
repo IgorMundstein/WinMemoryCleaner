@@ -1,6 +1,6 @@
 name: Feature request
-description: Report any error or feature that produces an incorrect or unexpected result.
-labels: [ "bug" ]
+description: Suggest an idea for this project.
+labels: [ "enhancement" ]
 body:
   - type: checkboxes
     attributes:
