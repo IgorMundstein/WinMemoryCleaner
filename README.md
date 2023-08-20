@@ -28,6 +28,12 @@
 - `Every X hours` - The optimization will run by period
 - `When free memory is below X percent` - The optimization will run if free memory is below the specified percentage
 
+### Compact Mode
+
+- Arrow (Up/Down) next to the minimize button to expand and collapse the window
+
+[![](/.github/images/main-window-compact.png)](#compact-mode)
+
 ### Memory Areas
 
 - `Clean Combined Page List` - Flushes the blocks from the combined page list effectively only when page combining is enabled
