@@ -30,7 +30,7 @@
 
 ### Compact Mode
 
-- Arrow (Up/Down) next to the minimize button to expand and collapse the window
+- Arrow (Up/Down) next to the minimize button to collapse and extend the window
 
 [![](/.github/images/main-window-compact.png)](#compact-mode)
 
@@ -69,7 +69,7 @@
 - `Show optimization notifications` - Sends a message to the notification area after optimization
 - `Start minimized` - The app will start minimized to the system tray. Single/Double click on the icon to restore
 
-### System tray
+### System tray (Notification area)
 
 [![](/.github/images/system-tray.png)](#system-tray)
 
@@ -119,7 +119,7 @@ If you are a native speaker of any language other than English, you can contribu
 3. Launch the application. If successful, the new language and changes will be visible
 4. Either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14)
 
-💡 If you are .NET developer
+💡 If you are a .NET developer
 
 1. You can add the new file to the Resources\Localization folder
 2. Change the file build action property to Embedded Resource
