@@ -99,6 +99,7 @@ The app generates logs in the Windows event
 - Portable (Single .exe file)
 - S.O.L.I.D. Principles of Object-Oriented
 - Use of Windows native methods for memory management
+- Windows Event to save logs
 - Windows Presentation Foundation (WPF) for user interface
 - Windows Registry to save user config
 
