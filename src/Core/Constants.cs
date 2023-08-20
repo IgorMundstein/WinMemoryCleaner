@@ -44,6 +44,7 @@ namespace WinMemoryCleaner
                     internal const string AutoUpdate = "AutoUpdate";
                     internal const string CloseAfterOptimization = "CloseAfterOptimization";
                     internal const string CloseToTheNotificationArea = "CloseToTheNotificationArea";
+                    internal const string CompactMode = "CompactMode";
                     internal const string Language = "Language";
                     internal const string MemoryAreas = "MemoryAreas";
                     internal const string OptimizationKey = "OptimizationKey";

@@ -33,6 +33,9 @@ namespace WinMemoryCleaner
         public string CloseToTheNotificationArea { get; private set; }
 
         [DataMember]
+        public string Collapse { get; private set; }
+
+        [DataMember]
         public string DevelopedBy { get; private set; }
 
         [DataMember]
@@ -52,6 +55,9 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string Exit { get; private set; }
+
+        [DataMember]
+        public string Expand { get; private set; }
 
         [DataMember]
         public string Free { get; private set; }
@@ -112,6 +118,9 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string RunOnStartup { get; private set; }
+
+        [DataMember]
+        public string Seconds { get; private set; }
 
         [DataMember]
         public string Settings { get; private set; }

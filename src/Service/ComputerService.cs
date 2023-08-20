@@ -108,21 +108,32 @@ namespace WinMemoryCleaner
         /// <param name="areas">The areas.</param>
         public void CleanMemory(Enums.Memory.Area areas)
         {
-            StringBuilder errorLog = new StringBuilder();
-            StringBuilder infoLog = new StringBuilder();
+            if (areas == Enums.Memory.Area.None)
+                return;
+
+            var errorLog = new StringBuilder();
+            var errorLogFormat = "{0} ({1}: {2})";
+            var infoLog = new StringBuilder();
+            var infoLogFormat = "{0} ({1}) ({2:0.0} {3})";
+            var runtime = new TimeSpan();
+            var stopwatch = new Stopwatch();
 
             // Clean Processes Working Set
             if ((areas & Enums.Memory.Area.ProcessesWorkingSet) != 0)
             {
                 try
                 {
+                    stopwatch.Restart();
+
                     MemoryCleanProcessesWorkingSet();
 
-                    infoLog.AppendLine(string.Format("- {0} ({1})", Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Optimized.ToUpper()));
+                    runtime = runtime.Add(stopwatch.Elapsed);
+
+                    infoLog.AppendLine(string.Format(infoLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Error.ToUpper(), e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(errorLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
@@ -131,13 +142,17 @@ namespace WinMemoryCleaner
             {
                 try
                 {
+                    stopwatch.Restart();
+
                     MemoryCleanSystemWorkingSet();
 
-                    infoLog.AppendLine(string.Format("- {0} ({1})", Localizer.String.MemorySystemWorkingSet, Localizer.String.Optimized.ToUpper()));
+                    runtime = runtime.Add(stopwatch.Elapsed);
+
+                    infoLog.AppendLine(string.Format(infoLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", Localizer.String.MemorySystemWorkingSet, Localizer.String.Error.ToUpper(), e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(errorLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
@@ -146,13 +161,17 @@ namespace WinMemoryCleaner
             {
                 try
                 {
+                    stopwatch.Restart();
+
                     MemoryCleanModifiedPageList();
 
-                    infoLog.AppendLine(string.Format("- {0} ({1})", Localizer.String.MemoryModifiedPageList, Localizer.String.Optimized.ToUpper()));
+                    runtime = runtime.Add(stopwatch.Elapsed);
+
+                    infoLog.AppendLine(string.Format(infoLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", Localizer.String.MemoryModifiedPageList, Localizer.String.Error.ToUpper(), e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(errorLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
@@ -163,13 +182,17 @@ namespace WinMemoryCleaner
 
                 try
                 {
+                    stopwatch.Restart();
+
                     MemoryCleanStandbyList(lowPriority);
 
-                    infoLog.AppendLine(string.Format("- {0} ({1})", lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Optimized.ToUpper()));
+                    runtime = runtime.Add(stopwatch.Elapsed);
+
+                    infoLog.AppendLine(string.Format(infoLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Error.ToUpper(), e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(errorLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
@@ -178,20 +201,24 @@ namespace WinMemoryCleaner
             {
                 try
                 {
+                    stopwatch.Restart();
+
                     MemoryCleanCombinedPageList();
 
-                    infoLog.AppendLine(string.Format("- {0} ({1})", Localizer.String.MemoryCombinedPageList, Localizer.String.Optimized.ToUpper()));
+                    runtime = runtime.Add(stopwatch.Elapsed);
+
+                    infoLog.AppendLine(string.Format(infoLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format("- {0} ({1}: {2})", Localizer.String.MemoryCombinedPageList, Localizer.String.Error.ToUpper(), e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(errorLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
             // Log
             if (infoLog.Length > 0)
             {
-                infoLog.Insert(0, string.Format("{0}{1}{1}", Localizer.String.MemoryAreas.ToUpper(), Environment.NewLine));
+                infoLog.Insert(0, string.Format("{0} ({1:0.0} {2}){3}{3}", Localizer.String.MemoryAreas.ToUpper(), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(), Environment.NewLine));
 
                 Logger.Information(infoLog.ToString());
 

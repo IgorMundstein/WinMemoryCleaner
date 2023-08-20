@@ -8,6 +8,7 @@
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
             <local:ViewModelLocator x:Key="ViewModelLocator" />
             <!-- Colors -->
             <SolidColorBrush x:Key="DarkBackground" Color="#2C2C2C" />
@@ -56,7 +57,8 @@
                         <ControlTemplate TargetType="{x:Type Button}">
                             <Border Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
                                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                                   Margin="{TemplateBinding Padding}"
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -64,11 +66,6 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-                <Style.Resources>
-                    <Style TargetType="{x:Type Border}">
-                        <Setter Property="CornerRadius" Value="3" />
-                    </Style>
-                </Style.Resources>
             </Style>
             <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource ControlBase}">
                 <Setter Property="Background" Value="{StaticResource DarkBackground}" />
@@ -175,14 +172,14 @@
                                     <Grid MinWidth="{TemplateBinding ActualWidth}"
                                           MaxHeight="{TemplateBinding MaxDropDownHeight}"
                                           Name="DropDown"
-                                          SnapsToDevicePixels="True">
+                                          SnapsToDevicePixels="False">
                                         <Border x:Name="DropDownBorder"
                                                 Background="{StaticResource DarkBackground}"
                                                 BorderThickness="1"
                                                 BorderBrush="{StaticResource DarkBorderBrush}"
                                                 CornerRadius="3" />
                                         <ScrollViewer Margin="1, 3, 2, 2" 
-                                                      SnapsToDevicePixels="True">
+                                                      SnapsToDevicePixels="False">
                                             <StackPanel IsItemsHost="True"
                                                         KeyboardNavigation.DirectionalNavigation="Contained" />
                                         </ScrollViewer>
@@ -471,6 +468,39 @@
                         <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
                     </Trigger>
                 </Style.Triggers>
+            </Style>
+            <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource ControlBase}">
+                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="Content" Value="" />
+                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="Padding" Value="3, 0, 3, 0" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                  Margin="{TemplateBinding Padding}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="BorderBrush" Value="{StaticResource DarkOver}" />
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="False">
+                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
             <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource ControlBase}">
                 <Setter Property="Background" Value="{StaticResource DarkBackground}" />

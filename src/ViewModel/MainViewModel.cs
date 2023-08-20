@@ -21,10 +21,10 @@ namespace WinMemoryCleaner
         private readonly IComputerService _computerService;
         private readonly HotKeyManager _hotkeyManager;
         private bool _isOptimizationKeyValid;
-        private BackgroundWorker _monitorAppWorker;
-        private BackgroundWorker _monitorComputerWorker;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
         private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
+        private BackgroundWorker _monitorAppWorker;
+        private BackgroundWorker _monitorComputerWorker;
         private string _selectedProcess;
 
         #endregion
@@ -270,6 +270,33 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [compact mode].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [compact mode]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CompactMode
+        {
+            get { return Settings.CompactMode; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.CompactMode = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the computer.
         /// </summary>
         /// <value>
@@ -496,10 +523,7 @@ namespace WinMemoryCleaner
         /// </value>
         public ObservableCollection<string> ProcessExclusionList
         {
-            get
-            {
-                return new ObservableCollection<string>(Settings.ProcessExclusionList);
-            }
+            get { return new ObservableCollection<string>(Settings.ProcessExclusionList); }
         }
 
         /// <summary>
@@ -689,7 +713,7 @@ namespace WinMemoryCleaner
 
         #endregion
 
-        #region Commands
+        #region Commands | Events
 
         /// <summary>
         /// Gets the add process to exclusion list.
@@ -720,6 +744,11 @@ namespace WinMemoryCleaner
         /// </value>
         public ICommand RemoveProcessFromExclusionListCommand { get; private set; }
 
+        /// <summary>
+        /// Occurs when [remove process from exclusion list command is completed].
+        /// </summary>
+        public event Action RemoveProcessFromExclusionListCommandCompleted;
+
         #endregion
 
         #region Methods
@@ -736,11 +765,13 @@ namespace WinMemoryCleaner
 
                 if (!Settings.ProcessExclusionList.Contains(process) && !string.IsNullOrWhiteSpace(process))
                 {
-                    Settings.ProcessExclusionList.Add(process);
-                    Settings.Save();
+                    if (Settings.ProcessExclusionList.Add(process))
+                    {
+                        Settings.Save();
 
-                    RaisePropertyChanged(() => Processes);
-                    RaisePropertyChanged(() => ProcessExclusionList);
+                        RaisePropertyChanged(() => Processes);
+                        RaisePropertyChanged(() => ProcessExclusionList);
+                    }
                 }
             }
             finally
@@ -756,6 +787,9 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
         private void MonitorApp(object sender, DoWorkEventArgs e)
         {
+            // App priority
+            App.SetPriority(Enums.Priority.Low);
+
             while (!_monitorAppWorker.CancellationPending)
             {
                 try
@@ -846,6 +880,9 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
         private void MonitorComputer(object sender, DoWorkEventArgs e)
         {
+            // App priority
+            App.SetPriority(Enums.Priority.Low);
+
             while (!_monitorComputerWorker.CancellationPending)
             {
                 try
@@ -898,6 +935,9 @@ namespace WinMemoryCleaner
             try
             {
                 IsBusy = true;
+
+                // App priority
+                App.SetPriority(Enums.Priority.Low);
 
                 // Memory clean
                 _computerService.CleanMemory(Settings.MemoryAreas);
@@ -980,6 +1020,14 @@ namespace WinMemoryCleaner
 
                     RaisePropertyChanged(() => Processes);
                     RaisePropertyChanged(() => ProcessExclusionList);
+
+                    if (RemoveProcessFromExclusionListCommandCompleted != null)
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                        {
+                            RemoveProcessFromExclusionListCommandCompleted();
+                        });
+                    }
                 }
             }
             finally
