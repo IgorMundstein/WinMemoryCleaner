@@ -213,6 +213,9 @@ namespace WinMemoryCleaner
                     }
                 }
 
+                // App priority
+                SetPriority(Enums.Priority.Low);
+
                 // App Version
                 _version = Assembly.GetExecutingAssembly().GetName().Version;
 
@@ -360,6 +363,101 @@ namespace WinMemoryCleaner
             catch (Exception e)
             {
                 Logger.Debug(e.GetBaseException().Message);
+            }
+        }
+
+        /// <summary>
+        /// Sets the app priority for the Windows
+        /// </summary>
+        public static void SetPriority(Enums.Priority priority)
+        {
+            bool priorityBoostEnabled;
+            ProcessPriorityClass processPriorityClass;
+            ThreadPriority threadPriority;
+            ThreadPriorityLevel threadPriorityLevel;
+
+            switch (priority)
+            {
+                case Enums.Priority.Low:
+                    priorityBoostEnabled = false;
+                    processPriorityClass = ProcessPriorityClass.Idle;
+                    threadPriority = ThreadPriority.Lowest;
+                    threadPriorityLevel = ThreadPriorityLevel.Idle;
+                    break;
+
+                case Enums.Priority.Normal:
+                    priorityBoostEnabled = true;
+                    processPriorityClass = ProcessPriorityClass.Normal;
+                    threadPriority = ThreadPriority.Normal;
+                    threadPriorityLevel = ThreadPriorityLevel.Normal;
+                    break;
+
+                case Enums.Priority.High:
+                    priorityBoostEnabled = true;
+                    processPriorityClass = ProcessPriorityClass.High;
+                    threadPriority = ThreadPriority.Highest;
+                    threadPriorityLevel = ThreadPriorityLevel.Highest;
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            try
+            {
+                Thread.CurrentThread.Priority = threadPriority;
+            }
+            catch
+            {
+                // ignored
+            }
+
+            try
+            {
+                var process = Process.GetCurrentProcess();
+
+                try
+                {
+                    process.PriorityBoostEnabled = priorityBoostEnabled;
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                try
+                {
+                    process.PriorityClass = processPriorityClass;
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                foreach (ProcessThread thread in process.Threads)
+                {
+                    try
+                    {
+                        thread.PriorityBoostEnabled = priorityBoostEnabled;
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    try
+                    {
+                        thread.PriorityLevel = threadPriorityLevel;
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+            catch
+            {
+                // ignored
             }
         }
 

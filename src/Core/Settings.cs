@@ -20,6 +20,7 @@ namespace WinMemoryCleaner
             AutoUpdate = true;
             CloseAfterOptimization = false;
             CloseToTheNotificationArea = false;
+            CompactMode = false;
             Language = Constants.App.Language;
             MemoryAreas = Enums.Memory.Area.ModifiedPageList | Enums.Memory.Area.ProcessesWorkingSet | Enums.Memory.Area.StandbyList | Enums.Memory.Area.SystemWorkingSet;
             OptimizationKey = Key.M;
@@ -53,6 +54,7 @@ namespace WinMemoryCleaner
                         AutoUpdate = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate));
                         CloseAfterOptimization = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseAfterOptimization, CloseAfterOptimization));
                         CloseToTheNotificationArea = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseToTheNotificationArea, CloseToTheNotificationArea));
+                        CompactMode = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CompactMode, CompactMode));
                         Language = Convert.ToString(key.GetValue(Constants.App.Registry.Name.Language, Language));
 
                         Enums.Memory.Area memoryAreas;
@@ -126,6 +128,8 @@ namespace WinMemoryCleaner
 
         internal static bool CloseToTheNotificationArea { get; set; }
 
+        internal static bool CompactMode { get; set; }
+
         internal static string Language { get; set; }
 
         internal static Enums.Memory.Area MemoryAreas { get; set; }
@@ -176,6 +180,7 @@ namespace WinMemoryCleaner
                         key.SetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.CloseAfterOptimization, CloseAfterOptimization ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.CloseToTheNotificationArea, CloseToTheNotificationArea ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.CompactMode, CompactMode ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.Language, Language);
                         key.SetValue(Constants.App.Registry.Name.MemoryAreas, (int)MemoryAreas);
                         key.SetValue(Constants.App.Registry.Name.OptimizationKey, (int)OptimizationKey);

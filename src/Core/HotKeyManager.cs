@@ -129,8 +129,7 @@ namespace WinMemoryCleaner
                     result = NativeMethods.UnregisterHotKey(IntPtr.Zero, hotkey.GetHashCode());
                 }));
 
-                if (_registered.ContainsKey(hotkey))
-                    _registered.Remove(hotkey);
+                _registered.Remove(hotkey);
             }
             catch
             {

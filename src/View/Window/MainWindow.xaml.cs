@@ -27,6 +27,7 @@ namespace WinMemoryCleaner
 
             _viewModel = (MainViewModel)DataContext;
             _viewModel.OptimizeCommandCompleted += OnOptimizeCommandCompleted;
+            _viewModel.RemoveProcessFromExclusionListCommandCompleted += SetFocusToOptimizationButton;
 
             // Slider
             var sliderPreviewMouseLeftButtonDownEvent = new MouseButtonEventHandler((sender, e) =>
@@ -58,11 +59,23 @@ namespace WinMemoryCleaner
         {
             if (Settings.CloseToTheNotificationArea)
             {
+                SetFocusToOptimizationButton();
+
                 ShowInTaskbar = false;
                 Hide();
             }
             else
                 Application.Current.Shutdown();
+        }
+
+        /// <summary>
+        /// Called when [compact mode button click].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
+        private void OnCompactModeButtonClick(object sender, RoutedEventArgs e)
+        {
+            SetFocusToOptimizationButton();
         }
 
         /// <summary>
@@ -72,6 +85,8 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="RequestNavigateEventArgs" /> instance containing the event data.</param>
         private void OnHyperlinkRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
+            SetFocusToOptimizationButton();
+
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
         }
@@ -83,6 +98,8 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void OnMinimizeButtonClick(object sender, RoutedEventArgs e)
         {
+            SetFocusToOptimizationButton();
+
             WindowState = WindowState.Minimized;
         }
 
@@ -106,6 +123,8 @@ namespace WinMemoryCleaner
             {
                 if (Settings.CloseToTheNotificationArea)
                 {
+                    SetFocusToOptimizationButton();
+
                     ShowInTaskbar = false;
                     Hide();
                 }
@@ -118,7 +137,8 @@ namespace WinMemoryCleaner
             else
             {
                 _viewModel.IsBusy = false;
-                Optimize.Focus();
+
+                SetFocusToOptimizationButton();
             }
         }
 
@@ -155,6 +175,26 @@ namespace WinMemoryCleaner
                         slider.Value += 1;
                     break;
             }
+        }
+
+        /// <summary>
+        /// Called when [window mouse down].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
+        private void OnWindowMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            SetFocusToOptimizationButton();
+        }
+
+        /// <summary>
+        /// Sets the focus to optimization button.
+        /// </summary>
+        private void SetFocusToOptimizationButton()
+        {
+            Keyboard.ClearFocus();
+            FocusManager.SetFocusedElement(this, Optimize);
+            Optimize.Focus();
         }
     }
 }
