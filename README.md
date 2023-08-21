@@ -128,13 +128,13 @@ If you are a native speaker of any language other than English, you can contribu
 ❤️ Contributors
 
 - `Arabic (اللغة العربية)` [Abdulmajeed-Alrajhi](https://github.com/Abdulmajeed-Alrajhi)
-- `Chinese - Simplified (中文(简体))` [Kun Zhao](https://github.com/kzhdev) | [raydenake22](https://github.com/raydenake22)
-- `Chinese - Traditional (中文(繁體))` [raydenake22](https://github.com/raydenake22) | [rtyrtyrtyqw](https://github.com/rtyrtyrtyqw)
+- `Chinese (Simplified) (中文(简体))` [Kun Zhao](https://github.com/kzhdev) | [raydenake22](https://github.com/raydenake22)
+- `Chinese (Traditional) (中文(繁體))` [raydenake22](https://github.com/raydenake22) | [rtyrtyrtyqw](https://github.com/rtyrtyrtyqw)
 - `Dutch (Nederlands)` [hax4dazy](https://github.com/hax4dazy)
 - `French (Français)` [William VINCENT](https://github.com/wixaw)
 - `German (Deutsch)` [Calvin](https://github.com/Slluxx)
 - `Greek (Ελληνικά)` [tkatsageorgis](https://github.com/tkatsageorgis)
-- `Indonesian (Bahasa Indonesia)` [Eskey](https://github.com/Eskeyz)
+- `Indonesian (Indonesia)` [Eskey](https://github.com/Eskeyz)
 - `Italian (Italiano)` [wintrymichi](https://github.com/wintrymichi)
 - `Japanese (日本語)` [dai](https://github.com/dai)
 - `Korean (한국어)` [VenusGirl](https://github.com/VenusGirl)
