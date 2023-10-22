@@ -20,7 +20,7 @@ namespace WinMemoryCleaner
 
         [DllImport("user32", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
+        
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GlobalMemoryStatusEx([In, Out] Structs.Windows.MemoryStatusEx lpBuffer);

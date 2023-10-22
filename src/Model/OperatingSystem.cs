@@ -11,7 +11,7 @@
         /// <value>
         ///   <c>true</c> if it has combined page list; otherwise, <c>false</c>.
         /// </value>
-        public bool HasCombinedPageList { get { return IsWindows8OrAbove; } }
+        public bool HasCombinedPageList { get { return IsWindows8OrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has a hotkey manager.
@@ -19,7 +19,7 @@
         /// <value>
         ///   <c>true</c> if it has a hotkey manager; otherwise, <c>false</c>.
         /// </value>
-        public bool HasHotKeyManager { get { return IsWindowsVistaOrAbove; } }
+        public bool HasHotKeyManager { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has modified page list.
@@ -27,7 +27,7 @@
         /// <value>
         ///   <c>true</c> if it has modified page list; otherwise, <c>false</c>.
         /// </value>
-        public bool HasModifiedPageList { get { return IsWindowsVistaOrAbove; } }
+        public bool HasModifiedPageList { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has processes working set.
@@ -35,7 +35,7 @@
         /// <value>
         ///   <c>true</c> if it has processes working set; otherwise, <c>false</c>.
         /// </value>
-        public bool HasProcessesWorkingSet { get { return IsWindowsXp64BitOrAbove; } }
+        public bool HasProcessesWorkingSet { get { return IsWindowsXpOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has standby list.
@@ -43,7 +43,7 @@
         /// <value>
         ///   <c>true</c> if it has standby list; otherwise, <c>false</c>.
         /// </value>
-        public bool HasStandbyList { get { return IsWindowsVistaOrAbove; } }
+        public bool HasStandbyList { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has system working set.
@@ -51,7 +51,7 @@
         /// <value>
         ///   <c>true</c> if it has system working set; otherwise, <c>false</c>.
         /// </value>
-        public bool HasSystemWorkingSet { get { return IsWindowsXp64BitOrAbove; } }
+        public bool HasSystemWorkingSet { get { return IsWindowsXpOrGreater; } }
 
         /// <summary>
         /// Determines whether the current operating system is a 64-bit operating system
@@ -62,27 +62,27 @@
         internal bool Is64Bit { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the current operating system is Windows 8 or above.
+        /// Gets or sets a value indicating whether the current operating system is Windows 8 or greater.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if it is Windows 8 or above; otherwise, <c>false</c>.
+        ///   <c>true</c> if it is Windows 8 or greater; otherwise, <c>false</c>.
         /// </value>
-        internal bool IsWindows8OrAbove { get; set; }
+        internal bool IsWindows8OrGreater { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the current operating system is Windows vista or above.
+        /// Gets or sets a value indicating whether the current operating system is Windows Vista or greater.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if it Windows vista or above; otherwise, <c>false</c>.
+        ///   <c>true</c> if it is Windows Vista or greater; otherwise, <c>false</c>.
         /// </value>
-        internal bool IsWindowsVistaOrAbove { get; set; }
+        internal bool IsWindowsVistaOrGreater { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the current operating system is Windows XP 64-Bit or above.
+        /// Gets or sets a value indicating whether the current operating system is Windows XP or greater.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if it Windows XP 64-Bit or above; otherwise, <c>false</c>.
+        ///   <c>true</c> if it is Windows XP or greater; otherwise, <c>false</c>.
         /// </value>
-        internal bool IsWindowsXp64BitOrAbove { get; set; }
+        internal bool IsWindowsXpOrGreater { get; set; }
     }
 }

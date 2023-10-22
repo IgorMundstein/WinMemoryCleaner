@@ -5,14 +5,14 @@ using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 
 namespace WinMemoryCleaner
 {
-    internal class CustomContextMenuStrip : ContextMenuStrip
+    internal class ContextMenuStripControl : ContextMenuStrip
     {
         private static readonly Color _darkBackground = ((SolidColorBrush)Application.Current.FindResource("DarkBackground")).ToColor();
         private static readonly Color _darkBorderBrush = ((SolidColorBrush)Application.Current.FindResource("DarkBorderBrush")).ToColor();
         private static readonly Color _darkForeground = ((SolidColorBrush)Application.Current.FindResource("DarkForeground")).ToColor();
         private static readonly Color _darkOver = ((SolidColorBrush)Application.Current.FindResource("DarkOver")).ToColor();
 
-        public CustomContextMenuStrip()
+        public ContextMenuStripControl()
         {
             BackColor = _darkBackground;
             ForeColor = _darkForeground;
@@ -29,7 +29,7 @@ namespace WinMemoryCleaner
             NativeMethods.DwmSetWindowAttribute(Handle, Constants.Windows.DesktopWindowManager.Attribute.BorderColor, ref borderColor, sizeof(int));
         }
 
-        internal sealed class ToolStripRenderer : ToolStripProfessionalRenderer
+        internal class ToolStripRenderer : ToolStripProfessionalRenderer
         {
             internal ToolStripRenderer()
                 : base(new ToolStripColorTable())
@@ -58,10 +58,13 @@ namespace WinMemoryCleaner
                     return;
                 }
 
-                e.Graphics.DrawLine(new Pen(_darkBorderBrush), 0, toolStripSeparator.Height / 2, toolStripSeparator.Width, toolStripSeparator.Height / 2);
+                using (var pen = new Pen(_darkBorderBrush))
+                {
+                    e.Graphics.DrawLine(pen, 0, toolStripSeparator.Height / 2, toolStripSeparator.Width, toolStripSeparator.Height / 2);
+                }
             }
 
-            internal sealed class ToolStripColorTable : ProfessionalColorTable
+            internal class ToolStripColorTable : ProfessionalColorTable
             {
                 public override Color MenuBorder
                 {

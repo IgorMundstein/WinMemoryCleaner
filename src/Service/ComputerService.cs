@@ -15,19 +15,9 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
-        private readonly Memory _memory;
-        private readonly Structs.Windows.MemoryStatusEx _memoryStatusEx;
+        private readonly Memory _memory = new Memory();
+        private readonly Structs.Windows.MemoryStatusEx _memoryStatusEx = new Structs.Windows.MemoryStatusEx();
         private OperatingSystem _operatingSystem;
-
-        #endregion
-
-        #region Constructors
-
-        public ComputerService()
-        {
-            _memory = new Memory();
-            _memoryStatusEx = new Structs.Windows.MemoryStatusEx();
-        }
 
         #endregion
 
@@ -59,12 +49,14 @@ namespace WinMemoryCleaner
         /// <returns></returns>
         public OperatingSystem GetOperatingSystem()
         {
+            var operatingSystem = Environment.OSVersion;
+
             return _operatingSystem ?? (_operatingSystem = new OperatingSystem
             {
                 Is64Bit = Environment.Is64BitOperatingSystem,
-                IsWindows8OrAbove = Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 6.2,
-                IsWindowsVistaOrAbove = Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 6,
-                IsWindowsXp64BitOrAbove = Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 5.2
+                IsWindows8OrGreater = operatingSystem.Version.Major >= 6.2,
+                IsWindowsVistaOrGreater = operatingSystem.Version.Major >= 6,
+                IsWindowsXpOrGreater = operatingSystem.Version.Major >= 5.1
             });
         }
 
@@ -84,7 +76,7 @@ namespace WinMemoryCleaner
                 newState.Luid = 0L;
                 newState.Attr = Constants.Windows.PrivilegeAttribute.Enabled;
 
-                // Retrieves the LUID used on a specified system to locally represent the specified privilege name
+                // Retrieves the uid used on a specified system to locally represent the specified privilege name
                 if (NativeMethods.LookupPrivilegeValue(null, privilegeName, ref newState.Luid))
                 {
                     // Enables or disables privileges in a specified access token
@@ -129,11 +121,11 @@ namespace WinMemoryCleaner
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
-                    infoLog.AppendLine(string.Format(infoLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
+                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(errorLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
@@ -148,11 +140,11 @@ namespace WinMemoryCleaner
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
-                    infoLog.AppendLine(string.Format(infoLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
+                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(errorLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
@@ -167,11 +159,11 @@ namespace WinMemoryCleaner
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
-                    infoLog.AppendLine(string.Format(infoLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
+                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(errorLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
@@ -188,11 +180,11 @@ namespace WinMemoryCleaner
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
-                    infoLog.AppendLine(string.Format(infoLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
+                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(errorLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
@@ -207,18 +199,18 @@ namespace WinMemoryCleaner
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
-                    infoLog.AppendLine(string.Format(infoLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower()));
+                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(errorLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Error, e.GetBaseException().Message));
                 }
             }
 
             // Log
             if (infoLog.Length > 0)
             {
-                infoLog.Insert(0, string.Format("{0} ({1:0.0} {2}){3}{3}", Localizer.String.MemoryAreas.ToUpper(), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(), Environment.NewLine));
+                infoLog.Insert(0, string.Format(Localizer.Culture, "{0} ({1:0.0} {2}){3}{3}", Localizer.String.MemoryAreas.ToUpper(Localizer.Culture), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), Environment.NewLine));
 
                 Logger.Information(infoLog.ToString());
 
@@ -227,7 +219,7 @@ namespace WinMemoryCleaner
 
             if (errorLog.Length > 0)
             {
-                errorLog.Insert(0, string.Format("{0}{1}{1}", Localizer.String.MemoryAreas.ToUpper(), Environment.NewLine));
+                errorLog.Insert(0, string.Format(Localizer.Culture, "{0}{1}{1}", Localizer.String.MemoryAreas.ToUpper(Localizer.Culture), Environment.NewLine));
 
                 Logger.Error(errorLog.ToString());
 
@@ -255,11 +247,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasCombinedPageList)
-                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryCombinedPageList));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryCombinedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
             GCHandle handle = GCHandle.Alloc(0);
 
@@ -297,11 +289,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasModifiedPageList)
-                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryModifiedPageList));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryModifiedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
 
             GCHandle handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList, GCHandleType.Pinned);
@@ -333,11 +325,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasProcessesWorkingSet)
-                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryProcessesWorkingSet));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryProcessesWorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeDebugName))
-                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
 
             var errors = new StringBuilder();
             var processes = Process.GetProcesses().Where(process => process != null && !Settings.ProcessExclusionList.Contains(process.ProcessName));
@@ -358,7 +350,7 @@ namespace WinMemoryCleaner
                     catch (Win32Exception e)
                     {
                         if (e.NativeErrorCode != Constants.Windows.SystemErrorCode.ErrorAccessDenied)
-                            errors.Append(string.Format("{0}: {1} | ", process.ProcessName, e.GetBaseException().Message));
+                            errors.Append(string.Format(Localizer.Culture, "{0}: {1} | ", process.ProcessName, e.GetBaseException().Message));
                     }
                 }
             }
@@ -380,11 +372,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasStandbyList)
-                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryStandbyList));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryStandbyList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
             object memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
             GCHandle handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
@@ -418,11 +410,11 @@ namespace WinMemoryCleaner
         {
             // Windows minimum version
             if (!GetOperatingSystem().HasSystemWorkingSet)
-                throw new Exception(string.Format(Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemorySystemWorkingSet));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemorySystemWorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
-                throw new Exception(string.Format(Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
 
             GCHandle handle = GCHandle.Alloc(0);
 
