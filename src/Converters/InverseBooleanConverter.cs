@@ -9,7 +9,7 @@ namespace WinMemoryCleaner
     /// </summary>
     /// <seealso cref="System.Windows.Data.IValueConverter" />
     [ValueConversion(typeof(bool), typeof(bool))]
-    internal class InverseBooleanConverter : IValueConverter
+    public sealed class InverseBooleanConverter : IValueConverter
     {
         /// <summary>
         /// Convert a boolean value to its negation.

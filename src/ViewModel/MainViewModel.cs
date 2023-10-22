@@ -55,8 +55,8 @@ namespace WinMemoryCleaner
 
             if (IsInDesignMode)
             {
-                Computer.OperatingSystem.IsWindowsVistaOrAbove = true;
-                Computer.OperatingSystem.IsWindowsXp64BitOrAbove = true;
+                Computer.OperatingSystem.IsWindowsVistaOrGreater = true;
+                Computer.OperatingSystem.IsWindowsXpOrGreater = true;
             }
             else
             {
@@ -163,7 +163,7 @@ namespace WinMemoryCleaner
         /// </value>
         public string AutoOptimizationMemoryUsageDescription
         {
-            get { return string.Format(Localizer.String.WhenFreeMemoryIsBelow, AutoOptimizationMemoryUsage); }
+            get { return string.Format(Localizer.Culture, Localizer.String.WhenFreeMemoryIsBelow, AutoOptimizationMemoryUsage); }
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace WinMemoryCleaner
         /// </value>
         public string AutoOptimizationMemoryUsageWarning
         {
-            get { return string.Format(Localizer.String.AutoOptimizationInterval, Constants.App.AutoOptimizationMemoryUsageInterval); }
+            get { return string.Format(Localizer.Culture, Localizer.String.AutoOptimizationInterval, Constants.App.AutoOptimizationMemoryUsageInterval); }
         }
 
         /// <summary>
@@ -362,7 +362,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The language.
         /// </value>
-        public string Language
+        public Language Language
         {
             get
             {
@@ -374,19 +374,19 @@ namespace WinMemoryCleaner
                 {
                     IsBusy = true;
 
-                    if (Localizer.Language == value)
+                    if (Localizer.Language != null && Localizer.Language.Equals(value))
                         return;
 
                     Localizer.Language = value;
 
                     if (!IsInDesignMode)
                     {
+                        Computer.Memory = _computerService.GetMemory();
+                        RaisePropertyChanged(() => Computer);
+
                         NotificationService.Initialize();
                         NotificationService.UpdateInfo(Computer.Memory);
                     }
-
-                    Settings.Language = value;
-                    Settings.Save();
 
                     RaisePropertyChanged(string.Empty);
                 }
@@ -504,7 +504,7 @@ namespace WinMemoryCleaner
             {
                 var processes = new ObservableCollection<string>(Process.GetProcesses()
                     .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName))
-                    .Select(process => process.ProcessName.ToLower().Replace(".exe", string.Empty))
+                    .Select(process => process.ProcessName.ToLower(Localizer.Culture).Replace(".exe", string.Empty))
                     .Distinct()
                     .OrderBy(name => name));
 
@@ -637,7 +637,7 @@ namespace WinMemoryCleaner
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
 
-                return string.Format("{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
+                return string.Format(Localizer.Culture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
             }
         }
 
@@ -985,7 +985,7 @@ namespace WinMemoryCleaner
 
                 if (!IsOptimizationKeyValid)
                 {
-                    var message = string.Format(Localizer.String.HotkeyIsInUseByWindows, hotKey);
+                    var message = string.Format(Localizer.Culture, Localizer.String.HotkeyIsInUseByWindows, hotKey);
 
                     Logger.Warning(message);
                     NotificationService.Notify(message);

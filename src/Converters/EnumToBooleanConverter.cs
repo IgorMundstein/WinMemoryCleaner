@@ -9,10 +9,10 @@ namespace WinMemoryCleaner
     /// </summary>
     /// <seealso cref="System.Windows.Data.IValueConverter" />
     [ValueConversion(typeof(bool), typeof(Enum))]
-    internal class EnumToBooleanConverter : IValueConverter
+    public sealed class EnumToBooleanConverter : IValueConverter
     {
         /// <summary>
-        /// Converts a value.
+        /// Converts an enumeration value to Boolean value 
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>
@@ -36,7 +36,7 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Converts a value.
+        /// Converts an enumeration value to Boolean value
         /// </summary>
         /// <param name="value">The value that is produced by the binding target.</param>
         /// <param name="targetType">The type to convert to.</param>
@@ -47,7 +47,10 @@ namespace WinMemoryCleaner
         /// </returns>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return System.Convert.ChangeType(parameter ?? targetType.DefaultValue(), targetType);
+            if (targetType == null)
+                return false;
+
+            return System.Convert.ChangeType(parameter ?? targetType.DefaultValue(), targetType, Localizer.Culture);
         }
     }
 }
