@@ -160,14 +160,15 @@
     <EmbeddedResource Include="Resources\Localization\Japanese.json" />
     <EmbeddedResource Include="Resources\Localization\Korean.json" />
     <EmbeddedResource Include="Resources\Localization\Macedonian.json" />
+    <EmbeddedResource Include="Resources\Localization\Persian.json" />
     <EmbeddedResource Include="Resources\Localization\Polish.json" />
     <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
+    <EmbeddedResource Include="Resources\Localization\Russian.json" />
     <EmbeddedResource Include="Resources\Localization\Serbian.json" />
     <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
     <EmbeddedResource Include="Resources\Localization\Spanish.json" />
     <EmbeddedResource Include="Resources\Localization\Turkish.json" />
     <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
-    <EmbeddedResource Include="Resources\Localization\Persian.json" />
     <None Include="nuget.config" />
     <None Include="packages.config" />
     <None Include="WinMemoryCleaner.snk" />
