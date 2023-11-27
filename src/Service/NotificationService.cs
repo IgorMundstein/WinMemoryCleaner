@@ -11,9 +11,15 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Notification Service
     /// </summary>
-    internal class NotificationService : INotificationService
+    internal class NotificationService : IDisposable, INotificationService
     {
+        #region Fields
+
         private readonly NotifyIcon _notifyIcon;
+
+        #endregion
+
+        #region Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationService" /> class.
@@ -26,6 +32,29 @@ namespace WinMemoryCleaner
             Initialize();
         }
 
+        #endregion
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            try
+            {
+                if (_notifyIcon != null)
+                {
+                    _notifyIcon.Dispose();
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Initializes
         /// </summary>
@@ -35,7 +64,7 @@ namespace WinMemoryCleaner
                 return;
 
             // Notification Area (Menu)
-            _notifyIcon.ContextMenuStrip = new CustomContextMenuStrip();
+            _notifyIcon.ContextMenuStrip = new ContextMenuStripControl();
 
             // Optimize
             _notifyIcon.ContextMenuStrip.Items.Add(Localizer.String.Optimize, null, (sender, args) =>
@@ -107,12 +136,14 @@ namespace WinMemoryCleaner
                 if (_notifyIcon == null)
                     return;
 
-                _notifyIcon.Text = string.Format("{0} {1}{2}%", Localizer.String.MemoryUsage, Environment.NewLine, memory.UsedPercentage);
+                _notifyIcon.Text = string.Format(Localizer.Culture, "{0} {1}{2}%", Localizer.String.MemoryUsage, Environment.NewLine, memory.UsedPercentage);
             }
             catch
             {
                 // ignored
             }
         }
+
+        #endregion
     }
 }

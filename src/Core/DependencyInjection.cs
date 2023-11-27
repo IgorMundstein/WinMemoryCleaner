@@ -27,7 +27,7 @@ namespace WinMemoryCleaner
                 var key = typeof(TImplementation);
 
                 if (_container.ContainsKey(key))
-                    throw new InvalidOperationException(string.Format("{0} is already registered.", key.Name));
+                    throw new InvalidOperationException(string.Format(Localizer.Culture, "{0} is already registered.", key.Name));
 
                 _singleton.Add(typeof(TImplementation), instance);
             }
@@ -37,7 +37,7 @@ namespace WinMemoryCleaner
                 var key = typeof(TInterface);
 
                 if (_container.ContainsKey(key))
-                    throw new InvalidOperationException(string.Format("{0} is already registered.", key.Name));
+                    throw new InvalidOperationException(string.Format(Localizer.Culture, "{0} is already registered.", key.Name));
 
                 if (singleton)
                     _singleton.Add(typeof(TImplementation), null);
@@ -60,7 +60,7 @@ namespace WinMemoryCleaner
                     instance = Create(type);
 
                 if (instance == null)
-                    throw new InvalidOperationException(string.Format("{0} is not registered.", type.Name));
+                    throw new InvalidOperationException(string.Format(Localizer.Culture, "{0} is not registered.", type.Name));
 
                 if (_singleton.ContainsKey(type))
                     _singleton[type] = instance;
