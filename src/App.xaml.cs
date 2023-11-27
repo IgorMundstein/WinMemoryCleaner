@@ -154,7 +154,7 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void OnNotifyIconClick(object sender, EventArgs e)
         {
-            MouseEventArgs mouseEventArgs = e as MouseEventArgs;
+            var mouseEventArgs = e as MouseEventArgs;
 
             // Show/Hide
             if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
@@ -219,7 +219,7 @@ namespace WinMemoryCleaner
                 // App Version
                 _version = Assembly.GetExecutingAssembly().GetName().Version;
 
-                Enums.Memory.Area memoryAreas = Enums.Memory.Area.None;
+                var memoryAreas = Enums.Memory.Area.None;
                 string updateNotification = null;
 
                 if (e != null)
@@ -229,9 +229,9 @@ namespace WinMemoryCleaner
                         Update(e.Args);
 
                     // Process command line arguments
-                    foreach (string arg in e.Args)
+                    foreach (var arg in e.Args)
                     {
-                        string value = arg.Replace("/", string.Empty).Replace("-", string.Empty);
+                        var value = arg.Replace("/", string.Empty).Replace("-", string.Empty);
 
                         // Memory areas to clean
                         Enums.Memory.Area area;
@@ -267,7 +267,7 @@ namespace WinMemoryCleaner
                     if (!string.IsNullOrWhiteSpace(updateNotification))
                         DependencyInjection.Container.Resolve<INotificationService>().Notify(updateNotification);
 
-                    MainWindow mainWindow = new MainWindow();
+                    var mainWindow = new MainWindow();
 
                     if (Settings.StartMinimized)
                     {
@@ -289,6 +289,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception ex)
             {
+                Logger.Error(ex);
                 ShowDialog(ex);
 
                 Environment.Exit(0);
@@ -333,7 +334,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    Logger.Debug(e.GetBaseException().Message);
+                    Logger.Error(e);
                 }
 
                 // Scheduled Task
@@ -357,12 +358,12 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    Logger.Debug(e.GetBaseException().Message);
+                    Logger.Error(e);
                 }
             }
             catch (Exception e)
             {
-                Logger.Debug(e.GetBaseException().Message);
+                Logger.Error(e);
             }
         }
 
@@ -469,7 +470,7 @@ namespace WinMemoryCleaner
         {
             try
             {
-                System.Windows.MessageBox.Show(exception.GetBaseException().Message, Constants.App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(exception.GetMessage(), Constants.App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch
             {
@@ -489,7 +490,7 @@ namespace WinMemoryCleaner
 
                 _lastAutoUpdate = DateTimeOffset.Now;
 
-                using (WebClient client = new WebClient())
+                using (var client = new WebClient())
                 {
                     ServicePointManager.DefaultConnectionLimit = 10;
                     ServicePointManager.Expect100Continue = true;
@@ -535,7 +536,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                Logger.Warning(string.Format(Localizer.Culture, "({0}) {1}: {2}", Localizer.String.AutoUpdate, Localizer.String.Error, e.GetBaseException().Message));
+                Logger.Warning(string.Format(Localizer.Culture, "({0}) {1}: {2}", Localizer.String.AutoUpdate, Localizer.String.Error, e.GetMessage()));
             }
         }
 

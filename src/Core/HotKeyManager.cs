@@ -100,7 +100,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                Logger.Debug(e.GetBaseException().Message);
+                Logger.Debug(e.GetMessage());
             }
 
             if (hotKey != null && _registered.TryGetValue(hotKey, out action))
@@ -109,7 +109,7 @@ namespace WinMemoryCleaner
 
         internal bool Register(HotKey hotkey, Action action)
         {
-            bool result = false;
+            var result = false;
 
             try
             {
@@ -136,7 +136,7 @@ namespace WinMemoryCleaner
 
         internal bool Unregister(HotKey hotkey)
         {
-            bool result = false;
+            var result = false;
 
             try
             {

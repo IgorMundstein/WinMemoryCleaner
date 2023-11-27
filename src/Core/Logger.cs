@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace WinMemoryCleaner
@@ -71,25 +70,25 @@ namespace WinMemoryCleaner
         /// <param name="method">Method</param>
         public static void Error(Exception exception, string message = null, [CallerMemberName] string method = null)
         {
-            if (string.IsNullOrWhiteSpace(message))
-                message = exception.GetBaseException().Message;
-
             if ((_level & Enums.Log.Level.Debug) != 0)
             {
                 try
                 {
-                    StackTrace st = new StackTrace(exception, true);
-                    StackFrame frame = st.GetFrame(st.FrameCount - 1);
-                    MethodBase methodBase = frame.GetMethod();
+                    var stackTrace = new StackTrace(exception, true);
+                    var frame = stackTrace.GetFrame(stackTrace.FrameCount - 1);
+                    var methodBase = frame.GetMethod();
 
                     if (methodBase.DeclaringType != null)
-                        method = string.Format(Localizer.Culture, "{0} > LN: {1}", methodBase.DeclaringType.Name + "." + methodBase.Name, frame.GetFileLineNumber());
+                        method = string.Format(Localizer.Culture, "{0}.{1}", methodBase.DeclaringType.Name, methodBase.Name);
                 }
                 catch
                 {
                     // ignored
                 }
             }
+
+            if (string.IsNullOrWhiteSpace(message))
+                message = exception.GetMessage();
 
             Log(Enums.Log.Level.Error, message, method);
         }
@@ -141,7 +140,7 @@ namespace WinMemoryCleaner
         {
             try
             {
-                Log log = new Log
+                var log = new Log
                 {
                     DateTime = DateTime.Now,
                     Level = level,
@@ -149,7 +148,7 @@ namespace WinMemoryCleaner
                     Message = message
                 };
 
-                string traceMessage = string.Format(Localizer.Culture, "{0}\t{1}\t{2}",
+                var traceMessage = string.Format(Localizer.Culture, "{0}\t{1}\t{2}",
                     log.DateTime.ToString(Constants.App.Log.DatetimeFormat, Localizer.Culture),
                     log.Level.ToString().ToUpper(Localizer.Culture),
                     string.IsNullOrWhiteSpace(log.Method) ? log.Message : string.Format(Localizer.Culture, "[{0}] {1}", log.Method, log.Message));
@@ -193,14 +192,14 @@ namespace WinMemoryCleaner
             {
                 try
                 {
-                    Trace.TraceError(e.GetBaseException().Message);
+                    Trace.TraceError(e.GetMessage());
                 }
                 catch
                 {
                     // ignored
                 }
 
-                Event(string.Format(Localizer.Culture, Localizer.String.ErrorCanNotSaveLog, message, e.GetBaseException().Message), EventLogEntryType.Error);
+                Event(string.Format(Localizer.Culture, Localizer.String.ErrorCanNotSaveLog, message, e.GetMessage()), EventLogEntryType.Error);
             }
         }
 

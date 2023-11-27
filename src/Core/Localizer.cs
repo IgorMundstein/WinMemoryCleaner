@@ -141,14 +141,14 @@ namespace WinMemoryCleaner
             var localResource = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(Localizer.Culture, "{0}{1}", language.EnglishName, Constants.App.LocalizationResourceExtension));
             var resource = string.Format(Localizer.Culture, "{0}{1}{2}", Constants.App.LocalizationResourcePath, language.EnglishName, Constants.App.LocalizationResourceExtension);
 
-            using (Stream stream = File.Exists(localResource) ? File.OpenRead(localResource) : Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
+            using (var stream = File.Exists(localResource) ? File.OpenRead(localResource) : Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
             {
                 try
                 {
                     if (stream == null)
                         throw new NullReferenceException();
 
-                    DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Localization));
+                    var serializer = new DataContractJsonSerializer(typeof(Localization));
 
                     localization = (Localization)serializer.ReadObject(stream);
                 }

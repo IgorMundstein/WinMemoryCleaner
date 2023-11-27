@@ -635,7 +635,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                Version version = Assembly.GetExecutingAssembly().GetName().Version;
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
 
                 return string.Format(Localizer.Culture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
             }
@@ -832,7 +832,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception ex)
                 {
-                    Logger.Debug(ex.GetBaseException().Message);
+                    Logger.Debug(ex.GetMessage());
                 }
             }
         }
@@ -901,7 +901,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception ex)
                 {
-                    Logger.Debug(ex.GetBaseException().Message);
+                    Logger.Debug(ex.GetMessage());
                 }
             }
         }
@@ -913,7 +913,7 @@ namespace WinMemoryCleaner
         {
             try
             {
-                using (BackgroundWorker worker = new BackgroundWorker())
+                using (var worker = new BackgroundWorker())
                 {
                     worker.DoWork += Optimize;
                     worker.RunWorkerAsync();

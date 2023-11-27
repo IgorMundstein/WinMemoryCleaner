@@ -34,7 +34,7 @@ namespace WinMemoryCleaner
             try
             {
                 // Process Exclusion List
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(Constants.App.Registry.Key.ProcessExclusionList))
+                using (var key = Registry.CurrentUser.OpenSubKey(Constants.App.Registry.Key.ProcessExclusionList))
                 {
                     if (key != null)
                     {
@@ -44,7 +44,7 @@ namespace WinMemoryCleaner
                 }
 
                 // Settings
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(Constants.App.Registry.Key.Settings))
+                using (var key = Registry.CurrentUser.OpenSubKey(Constants.App.Registry.Key.Settings))
                 {
                     if (key != null)
                     {
@@ -159,7 +159,7 @@ namespace WinMemoryCleaner
 
                 if (ProcessExclusionList.Any())
                 {
-                    using (RegistryKey key = Registry.CurrentUser.CreateSubKey(Constants.App.Registry.Key.ProcessExclusionList))
+                    using (var key = Registry.CurrentUser.CreateSubKey(Constants.App.Registry.Key.ProcessExclusionList))
                     {
                         if (key != null)
                         {
@@ -170,7 +170,7 @@ namespace WinMemoryCleaner
                 }
 
                 // Settings
-                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(Constants.App.Registry.Key.Settings))
+                using (var key = Registry.CurrentUser.CreateSubKey(Constants.App.Registry.Key.Settings))
                 {
                     if (key != null)
                     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace WinMemoryCleaner
@@ -47,6 +48,27 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Get exception error message.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        internal static string GetMessage(this Exception value)
+        {
+            Exception innerException;
+            var messages = new List<string>();
+
+            do
+            {
+                messages.Add(value.Message.Trim());
+
+                innerException = value.InnerException;
+            }
+            while (innerException != null);
+
+            return string.Join(" ", messages.Distinct());
+        }
+
+        /// <summary>
         /// Validates enum value.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -58,7 +80,7 @@ namespace WinMemoryCleaner
             if (value == null)
                 return false;
 
-            char firstDigit = value.ToString()[0];
+            var firstDigit = value.ToString()[0];
 
             return !char.IsDigit(firstDigit) && firstDigit != '-';
         }
