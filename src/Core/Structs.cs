@@ -40,6 +40,14 @@ namespace WinMemoryCleaner
                 internal MemoryStatusEx()
                 {
                     dwLength = (uint)Marshal.SizeOf(typeof(MemoryStatusEx));
+                    dwMemoryLoad = 0;
+                    ullTotalPhys = 0;
+                    ullAvailPhys = 0;
+                    ullTotalPageFile = 0;
+                    ullAvailPageFile = 0;
+                    ullTotalVirtual = 0;
+                    ullAvailVirtual = 0;
+                    ullAvailExtendedVirtual = 0;
                 }
             }
 

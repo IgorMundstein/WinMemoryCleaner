@@ -5,13 +5,12 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Enumerators
     /// </summary>
-    public static class Enums
+    internal static class Enums
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-        public static class Log
+        internal static class Log
         {
             [Flags]
-            public enum Level
+            internal enum Level
             {
                 Debug = 1,
                 Information = 2,
@@ -20,10 +19,10 @@ namespace WinMemoryCleaner
             }
         }
 
-        public static class Memory
+        internal static class Memory
         {
             [Flags]
-            public enum Area
+            internal enum Area
             {
                 None = 0,
                 CombinedPageList = 1,
@@ -35,7 +34,7 @@ namespace WinMemoryCleaner
             }
         }
 
-        public enum NotificationIcon
+        internal enum NotificationIcon
         {
             None,
             Information,
@@ -43,12 +42,11 @@ namespace WinMemoryCleaner
             Error
         }
 
-        public enum Priority
+        internal enum Priority
         {
             Low,
             Normal,
             High
         }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }
