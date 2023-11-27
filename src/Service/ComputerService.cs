@@ -29,15 +29,20 @@ namespace WinMemoryCleaner
         /// <returns></returns>
         public Memory GetMemory()
         {
-            if (!NativeMethods.GlobalMemoryStatusEx(_memoryStatusEx))
-                Logger.Debug(new Win32Exception(Marshal.GetLastWin32Error()).GetBaseException().Message);
-            else
+            try
             {
+                if (!NativeMethods.GlobalMemoryStatusEx(_memoryStatusEx))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
                 _memory.Free = _memoryStatusEx.ullAvailPhys.ByteSizeToString();
                 _memory.FreePercentage = 100 - _memoryStatusEx.dwMemoryLoad;
                 _memory.Total = _memoryStatusEx.ullTotalPhys.ByteSizeToString();
                 _memory.Used = (_memoryStatusEx.ullTotalPhys - _memoryStatusEx.ullAvailPhys).ByteSizeToString();
                 _memory.UsedPercentage = _memoryStatusEx.dwMemoryLoad;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
             }
 
             return _memory;
@@ -67,9 +72,9 @@ namespace WinMemoryCleaner
         /// <returns></returns>
         private bool SetIncreasePrivilege(string privilegeName)
         {
-            bool result = false;
+            var result = false;
 
-            using (WindowsIdentity current = WindowsIdentity.GetCurrent(TokenAccessLevels.Query | TokenAccessLevels.AdjustPrivileges))
+            using (var current = WindowsIdentity.GetCurrent(TokenAccessLevels.Query | TokenAccessLevels.AdjustPrivileges))
             {
                 Structs.Windows.TokenPrivileges newState;
                 newState.Count = 1;
@@ -125,7 +130,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Error, e.GetMessage()));
                 }
             }
 
@@ -144,7 +149,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Error, e.GetMessage()));
                 }
             }
 
@@ -163,7 +168,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Error, e.GetMessage()));
                 }
             }
 
@@ -184,7 +189,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Error, e.GetMessage()));
                 }
             }
 
@@ -203,7 +208,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Error, e.GetBaseException().Message));
+                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Error, e.GetMessage()));
                 }
             }
 
@@ -253,15 +258,15 @@ namespace WinMemoryCleaner
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
-            GCHandle handle = GCHandle.Alloc(0);
+            var handle = GCHandle.Alloc(0);
 
             try
             {
-                Structs.Windows.MemoryCombineInformationEx memoryCombineInformationEx = new Structs.Windows.MemoryCombineInformationEx();
+                var memoryCombineInformationEx = new Structs.Windows.MemoryCombineInformationEx();
 
                 handle = GCHandle.Alloc(memoryCombineInformationEx, GCHandleType.Pinned);
 
-                int length = Marshal.SizeOf(memoryCombineInformationEx);
+                var length = Marshal.SizeOf(memoryCombineInformationEx);
 
                 if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), length) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -296,7 +301,7 @@ namespace WinMemoryCleaner
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
 
-            GCHandle handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList, GCHandleType.Pinned);
 
             try
             {
@@ -350,7 +355,7 @@ namespace WinMemoryCleaner
                     catch (Win32Exception e)
                     {
                         if (e.NativeErrorCode != Constants.Windows.SystemErrorCode.ErrorAccessDenied)
-                            errors.Append(string.Format(Localizer.Culture, "{0}: {1} | ", process.ProcessName, e.GetBaseException().Message));
+                            errors.Append(string.Format(Localizer.Culture, "{0}: {1} | ", process.ProcessName, e.GetMessage()));
                     }
                 }
             }
@@ -379,7 +384,7 @@ namespace WinMemoryCleaner
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
             object memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
-            GCHandle handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
 
             try
             {
@@ -416,7 +421,7 @@ namespace WinMemoryCleaner
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
 
-            GCHandle handle = GCHandle.Alloc(0);
+            var handle = GCHandle.Alloc(0);
 
             try
             {
@@ -429,7 +434,7 @@ namespace WinMemoryCleaner
 
                 handle = GCHandle.Alloc(systemCacheInformation, GCHandleType.Pinned);
 
-                int length = Marshal.SizeOf(systemCacheInformation);
+                var length = Marshal.SizeOf(systemCacheInformation);
 
                 if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemFileCacheInformation, handle.AddrOfPinnedObject(), length) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -447,7 +452,7 @@ namespace WinMemoryCleaner
                 }
             }
 
-            IntPtr fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
+            var fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
 
             if (!NativeMethods.SetSystemFileCacheSize(fileCacheSize, fileCacheSize, 0))
                 throw new Win32Exception(Marshal.GetLastWin32Error());

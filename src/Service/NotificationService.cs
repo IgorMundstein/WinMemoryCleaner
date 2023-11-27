@@ -143,7 +143,7 @@ namespace WinMemoryCleaner
                 // ignored
             }
         }
-        
+
         #endregion
     }
 }

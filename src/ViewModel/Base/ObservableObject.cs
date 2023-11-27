@@ -46,15 +46,15 @@ namespace WinMemoryCleaner
 
             if (handler != null)
             {
-                MemberExpression body = propertyExpression.Body as MemberExpression;
+                var body = propertyExpression.Body as MemberExpression;
 
                 if (body != null)
                 {
-                    PropertyInfo property = body.Member as PropertyInfo;
+                    var property = body.Member as PropertyInfo;
 
                     if (property != null)
                     {
-                        string propertyName = property.Name;
+                        var propertyName = property.Name;
 
                         if (!string.IsNullOrEmpty(propertyName))
                             RaisePropertyChanged(propertyName);
