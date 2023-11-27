@@ -10,8 +10,14 @@ namespace WinMemoryCleaner
 {
     internal sealed class HotKeyManager : IDisposable
     {
-        private readonly bool _isSupported = Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 6; // Minimum supported Windows Vista / Server 2003
+        #region Fields
+
+        private readonly bool _isSupported = Environment.OSVersion.Version.Major >= 6; // Minimum supported Windows Vista / Server 2003
         private readonly Dictionary<HotKey, Action> _registered = new Dictionary<HotKey, Action>();
+
+        #endregion
+
+        #region Constructors
 
         internal HotKeyManager()
         {
@@ -23,7 +29,7 @@ namespace WinMemoryCleaner
                 Enum.GetValues(typeof(Key))
                     .Cast<Key>()
                     .Where(key => new Regex("^([A-Z]|F([1-9]|1[0-2]))$", RegexOptions.IgnoreCase) // (A-Z) (F1-F12)
-                    .Match(key.ToString().ToUpper()).Success)
+                    .Match(key.ToString().ToUpper(Localizer.Culture)).Success)
             );
 
             Modifiers = new Dictionary<ModifierKeys, string>
@@ -36,8 +42,9 @@ namespace WinMemoryCleaner
             ComponentDispatcher.ThreadPreprocessMessage += OnThreadPreprocessMessage;
         }
 
-        internal readonly List<Key> Keys;
-        internal readonly Dictionary<ModifierKeys, string> Modifiers;
+        #endregion
+
+        #region IDisposable
 
         public void Dispose()
         {
@@ -62,6 +69,18 @@ namespace WinMemoryCleaner
                 // ignored
             }
         }
+
+        #endregion
+
+        #region Properties
+
+        internal List<Key> Keys { get; private set; }
+
+        internal Dictionary<ModifierKeys, string> Modifiers { get; private set; }
+
+        #endregion
+
+        #region Methods
 
         private void OnThreadPreprocessMessage(ref MSG msg, ref bool handled)
         {
@@ -138,5 +157,7 @@ namespace WinMemoryCleaner
 
             return result;
         }
+
+        #endregion
     }
 }

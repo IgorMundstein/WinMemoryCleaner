@@ -25,7 +25,7 @@ namespace WinMemoryCleaner
                 notificationService = DependencyInjection.Container.Resolve<INotificationService>();
             }
 
-            DependencyInjection.Container.Register(new MainViewModel(computerService, notificationService));
+            MainViewModel = new MainViewModel(computerService, notificationService);
         }
 
         #endregion
@@ -87,6 +87,10 @@ namespace WinMemoryCleaner
             get
             {
                 return DependencyInjection.Container.Resolve<MainViewModel>();
+            }
+            private set
+            {
+                DependencyInjection.Container.Register(value);
             }
         }
 

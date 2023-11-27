@@ -10,19 +10,9 @@ namespace WinMemoryCleaner
             Modifiers = modifiers;
         }
 
-        internal readonly Key Key;
-        internal readonly ModifierKeys Modifiers;
+        internal Key Key { get; private set; }
 
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-                return false;
-
-            if (ReferenceEquals(this, obj))
-                return true;
-
-            return obj.GetType() == typeof(HotKey) && Equals((HotKey)obj);
-        }
+        internal ModifierKeys Modifiers { get; private set; }
 
         internal bool Equals(HotKey hotKey)
         {
@@ -35,6 +25,17 @@ namespace WinMemoryCleaner
             return Equals(hotKey.Key, Key) && Equals(hotKey.Modifiers, Modifiers);
         }
 
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+
+            if (ReferenceEquals(this, obj))
+                return true;
+
+            return obj.GetType() == typeof(HotKey) && Equals((HotKey)obj);
+        }
+
         public override int GetHashCode()
         {
             unchecked
@@ -45,7 +46,7 @@ namespace WinMemoryCleaner
 
         public override string ToString()
         {
-            return string.Format("{0}, {1}", Modifiers, Key);
+            return string.Format(Localizer.Culture, "{0}, {1}", Modifiers, Key);
         }
     }
 }
