@@ -154,7 +154,7 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void OnNotifyIconClick(object sender, EventArgs e)
         {
-            MouseEventArgs mouseEventArgs = e as MouseEventArgs;
+            var mouseEventArgs = e as MouseEventArgs;
 
             // Show/Hide
             if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
@@ -219,30 +219,33 @@ namespace WinMemoryCleaner
                 // App Version
                 _version = Assembly.GetExecutingAssembly().GetName().Version;
 
-                // Update to the latest version
-                if (Settings.AutoUpdate)
-                    Update(e.Args);
-
-                // Process command line arguments
-                Enums.Memory.Area memoryAreas = Enums.Memory.Area.None;
+                var memoryAreas = Enums.Memory.Area.None;
                 string updateNotification = null;
 
-                foreach (string arg in e.Args)
+                if (e != null)
                 {
-                    string value = arg.Replace("/", string.Empty).Replace("-", string.Empty);
+                    // Update to the latest version
+                    if (Settings.AutoUpdate)
+                        Update(e.Args);
 
-                    // Memory areas to clean
-                    Enums.Memory.Area area;
-
-                    if (Enum.TryParse(value, out area))
-                        memoryAreas |= area;
-
-                    // Version (Update)
-                    if (value.Equals(_version.ToString()))
+                    // Process command line arguments
+                    foreach (var arg in e.Args)
                     {
-                        updateNotification = string.Format(Localizer.String.UpdatedToVersion, string.Format("{0}.{1}", _version.Major, _version.Minor));
+                        var value = arg.Replace("/", string.Empty).Replace("-", string.Empty);
 
-                        Logger.Information(updateNotification);
+                        // Memory areas to clean
+                        Enums.Memory.Area area;
+
+                        if (Enum.TryParse(value, out area))
+                            memoryAreas |= area;
+
+                        // Version (Update)
+                        if (value.Equals(_version.ToString()))
+                        {
+                            updateNotification = string.Format(Localizer.Culture, Localizer.String.UpdatedToVersion, string.Format(Localizer.Culture, "{0}.{1}", _version.Major, _version.Minor));
+
+                            Logger.Information(updateNotification);
+                        }
                     }
                 }
 
@@ -262,9 +265,9 @@ namespace WinMemoryCleaner
 
                     // Update notification
                     if (!string.IsNullOrWhiteSpace(updateNotification))
-                        DependencyInjection.Container.Resolve<NotificationService>().Notify(updateNotification);
+                        DependencyInjection.Container.Resolve<INotificationService>().Notify(updateNotification);
 
-                    MainWindow mainWindow = new MainWindow();
+                    var mainWindow = new MainWindow();
 
                     if (Settings.StartMinimized)
                     {
@@ -279,13 +282,14 @@ namespace WinMemoryCleaner
                 }
                 else // NO GUI
                 {
-                    DependencyInjection.Container.Resolve<ComputerService>().CleanMemory(memoryAreas);
+                    DependencyInjection.Container.Resolve<IComputerService>().CleanMemory(memoryAreas);
 
                     Shutdown();
                 }
             }
             catch (Exception ex)
             {
+                Logger.Error(ex);
                 ShowDialog(ex);
 
                 Environment.Exit(0);
@@ -322,7 +326,7 @@ namespace WinMemoryCleaner
                         if (key != null)
                         {
                             if (enable)
-                                key.SetValue(Constants.App.Title, string.Format(@"""{0}""", startupPath));
+                                key.SetValue(Constants.App.Title, string.Format(Localizer.Culture, @"""{0}""", startupPath));
                             else
                                 key.DeleteValue(Constants.App.Title, false);
                         }
@@ -330,46 +334,43 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    Logger.Debug(e.GetBaseException().Message);
+                    Logger.Error(e);
                 }
 
                 // Scheduled Task
                 try
                 {
                     var arguments = enable
-                        ? string.Format(@"/CREATE /F /RL HIGHEST /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, startupPath)
-                        : string.Format(@"/DELETE /F /TN ""{0}""", Constants.App.Title);
+                        ? string.Format(Localizer.Culture, @"/CREATE /F /RL HIGHEST /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, startupPath)
+                        : string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title);
 
-                    new Process
+                    using (Process.Start(new ProcessStartInfo
                     {
-                        StartInfo =
-                        {
-                            Arguments = arguments,
-                            CreateNoWindow = true,
-                            FileName = "schtasks",
-                            RedirectStandardError = false,
-                            RedirectStandardInput = false,
-                            RedirectStandardOutput = false,
-                            UseShellExecute = false,
-                            WindowStyle = ProcessWindowStyle.Hidden
-                        }
-                    }.Start();
+                        Arguments = arguments,
+                        CreateNoWindow = true,
+                        FileName = "schtasks",
+                        RedirectStandardError = false,
+                        RedirectStandardInput = false,
+                        RedirectStandardOutput = false,
+                        UseShellExecute = false,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    })) { }
                 }
                 catch (Exception e)
                 {
-                    Logger.Debug(e.GetBaseException().Message);
+                    Logger.Error(e);
                 }
             }
             catch (Exception e)
             {
-                Logger.Debug(e.GetBaseException().Message);
+                Logger.Error(e);
             }
         }
 
         /// <summary>
         /// Sets the app priority for the Windows
         /// </summary>
-        public static void SetPriority(Enums.Priority priority)
+        internal static void SetPriority(Enums.Priority priority)
         {
             bool priorityBoostEnabled;
             ProcessPriorityClass processPriorityClass;
@@ -469,7 +470,7 @@ namespace WinMemoryCleaner
         {
             try
             {
-                System.Windows.MessageBox.Show(exception.GetBaseException().Message, Constants.App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(exception.GetMessage(), Constants.App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch
             {
@@ -489,11 +490,13 @@ namespace WinMemoryCleaner
 
                 _lastAutoUpdate = DateTimeOffset.Now;
 
-                using (WebClient client = new WebClient())
+                using (var client = new WebClient())
                 {
                     ServicePointManager.DefaultConnectionLimit = 10;
                     ServicePointManager.Expect100Continue = true;
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | (SecurityProtocolType)3072 | (SecurityProtocolType)768 | SecurityProtocolType.Tls;
+
+                    if (ServicePointManager.SecurityProtocol != 0)
+                        ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072 | (SecurityProtocolType)12288;
 
                     var assemblyInfo = client.DownloadString(Constants.App.Repository.AssemblyInfoUri);
 
@@ -517,7 +520,7 @@ namespace WinMemoryCleaner
 
                         _updateProcess = new ProcessStartInfo
                         {
-                            Arguments = string.Format(@"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, temp, path, newestVersion, string.Join(" ", args)),
+                            Arguments = string.Format(Localizer.Culture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, temp, path, newestVersion, string.Join(" ", args)),
                             CreateNoWindow = true,
                             FileName = "cmd",
                             RedirectStandardError = false,
@@ -531,9 +534,9 @@ namespace WinMemoryCleaner
                     }
                 }
             }
-            catch
+            catch (Exception e)
             {
-                // ignored
+                Logger.Warning(string.Format(Localizer.Culture, "({0}) {1}: {2}", Localizer.String.AutoUpdate, Localizer.String.Error, e.GetMessage()));
             }
         }
 

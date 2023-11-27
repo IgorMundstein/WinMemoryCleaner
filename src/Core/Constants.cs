@@ -10,7 +10,6 @@ namespace WinMemoryCleaner
             internal const int AutoUpdateInterval = 24; // Hour
             internal const string Guid = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
             internal const string KeyFile = "WinMemoryCleaner.snk";
-            internal const string Language = "English";
             public const string License = "GPL-3.0";
             internal const string LocalizationResourceExtension = ".json";
             internal const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization.";
@@ -81,6 +80,14 @@ namespace WinMemoryCleaner
             internal static class Keyboard
             {
                 internal const int WmHotkey = 786; // 0x312
+            }
+
+            internal static class Locale
+            {
+                internal static class Name
+                {
+                    internal const string English = "en";
+                }
             }
 
             internal static class Privilege

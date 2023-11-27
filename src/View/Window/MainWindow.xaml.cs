@@ -32,8 +32,8 @@ namespace WinMemoryCleaner
             // Slider
             var sliderPreviewMouseLeftButtonDownEvent = new MouseButtonEventHandler((sender, e) =>
             {
-                Slider slider = (Slider)sender;
-                Track track = slider.Template.FindName("PART_Track", slider) as Track;
+                var slider = (Slider)sender;
+                var track = slider.Template.FindName("PART_Track", slider) as Track;
 
                 if (!slider.IsMoveToPointEnabled || track == null || track.Thumb == null || track.Thumb.IsMouseOver)
                     return;
@@ -159,7 +159,7 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="KeyEventArgs" /> instance containing the event data.</param>
         private void OnSliderPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            Slider slider = (Slider)sender;
+            var slider = (Slider)sender;
 
             switch (e.Key)
             {

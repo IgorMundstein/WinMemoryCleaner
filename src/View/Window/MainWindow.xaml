@@ -3,25 +3,26 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:WinMemoryCleaner"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"        
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         mc:Ignorable="d"
-        AllowsTransparency="True" 
+        AllowsTransparency="True"
         Background="Transparent"
         DataContext="{Binding MainViewModel, Source={StaticResource ViewModelLocator}}"
+        FlowDirection="{Binding Path=(local:Localizer.Language).Direction}"
         FocusManager.FocusedElement="{Binding ElementName=Optimize}"
-        FontFamily="Calibri" 
-        FontSize="16" 
+        FontFamily="Calibri"
+        FontSize="16"
         FontWeight="Light"
         Foreground="{StaticResource DarkForeground}"
-        Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico" 
+        Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico"
         MouseDown="OnWindowMouseDown"
-        ResizeMode="CanMinimize" 
-        SizeToContent="WidthAndHeight" 
+        ResizeMode="CanMinimize"
+        SizeToContent="WidthAndHeight"
         SnapsToDevicePixels="False"
         Title="{x:Static local:Constants+App.Title}"
         Topmost="{Binding AlwaysOnTop}"
         UseLayoutRounding="True"
-        WindowStartupLocation="CenterScreen" 
+        WindowStartupLocation="CenterScreen"
         WindowStyle="None">
     <!-- Window -->
     <Border Background="{StaticResource DarkWindowBackground}" 
@@ -155,10 +156,8 @@
                                        Margin="-2, 0, 2, 0"
                                        Text="🌐"
                                        VerticalAlignment="Center" />
-                            <ComboBox DisplayMemberPath="Value"
-                                      ItemsSource="{x:Static local:Localizer.Languages}"
-                                      SelectedValue="{Binding Language}" 
-                                      SelectedValuePath="Key"
+                            <ComboBox ItemsSource="{x:Static local:Localizer.Languages}"
+                                      SelectedValue="{Binding Language}"
                                       VerticalContentAlignment="Center">
                             </ComboBox>
                         </StackPanel>
@@ -233,15 +232,15 @@
                                     VerticalAlignment="Center">
                             <ComboBox DisplayMemberPath="Value" 
                                       ItemsSource="{Binding KeyboardModifiers}"
-                                      SelectedValuePath="Key"
                                       SelectedValue="{Binding OptimizationModifiers}"
+                                      SelectedValuePath="Key"
                                       VerticalContentAlignment="Center" />
                             <Label IsHitTestVisible="False" 
                                    Margin="5, 0, 5, 0"
                                    Content="+" 
                                    VerticalAlignment="Center" />
                             <ComboBox ItemsSource="{Binding KeyboardKeys}"
-                                      SelectedValue="{Binding Path=OptimizationKey}"
+                                      SelectedValue="{Binding OptimizationKey}"
                                       VerticalContentAlignment="Center" />
                             <TextBlock Foreground="{StaticResource DarkDisabled}"
                                        KeyboardNavigation.TabNavigation="None"
@@ -336,7 +335,9 @@
                         <StackPanel Grid.Row="0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Path=(local:Localizer.String).Every}" />
-                                <TextBlock Text="{Binding ElementName=AutoOptimizationInterval, Path=Value, StringFormat={} {0}h, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text=" " />
+                                <TextBlock Text="{Binding AutoOptimizationInterval}" />
+                                <TextBlock Text="h" />
                             </StackPanel>
                             <Slider Margin="0, 9, 0, 0"
                                     Maximum="168"
@@ -380,14 +381,19 @@
                                    RenderOptions.EdgeMode="Aliased"
                                    Source="/WinMemoryCleaner;component/Resources/Images/github.png">
                                 <Image.ToolTip>
-                                    <TextBlock>
-                                        <Run Text="{Binding Path=(local:Localizer.String).RepositoryInfo, Mode=OneWay}" />
-                                        <LineBreak />
-                                        <LineBreak />
-                                        © <Run Text="{x:Static local:Constants+App.License}" />
-                                        <LineBreak />
-                                        <Run Text="{Binding Path=(local:Localizer.String).DevelopedBy, Mode=OneWay}" /> <Run Text="{x:Static local:Constants+App+Author.Name}" />
-                                    </TextBlock>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="{Binding Path=(local:Localizer.String).RepositoryInfo}" />
+                                        <TextBlock />
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="© " />
+                                            <TextBlock Text="{x:Static local:Constants+App.License}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Path=(local:Localizer.String).DevelopedBy}" />
+                                            <TextBlock Text=" " />
+                                            <TextBlock Text="{x:Static local:Constants+App+Author.Name}" />
+                                        </StackPanel>
+                                    </StackPanel>
                                 </Image.ToolTip>
                             </Image>
                         </Hyperlink>
@@ -443,10 +449,16 @@
                                 Height="12" 
                                 Margin="0, 0, 5, 0"
                                 Width="12" />
-                        <TextBlock Grid.Column="1"
-                                   Grid.Row="1">
-                            <Run Text="{Binding Path=(local:Localizer.String).Used, Mode=OneWay}" /> | <Run Text="{Binding Computer.Memory.Used}" /> (<Run Text="{Binding Computer.Memory.UsedPercentage}" />%)
-                        </TextBlock>
+                        <StackPanel Grid.Column="1"
+                                    Grid.Row="1"
+                                    Orientation="Horizontal">
+                            <TextBlock Text="{Binding Path=(local:Localizer.String).Used}" />
+                            <TextBlock Text=" | " />
+                            <TextBlock Text="{Binding Computer.Memory.Used}" />
+                            <TextBlock Text=" (" />
+                            <TextBlock Text="{Binding Computer.Memory.UsedPercentage}" />
+                            <TextBlock Text="%)" />
+                        </StackPanel>
                         <Border Background="{StaticResource DarkMemoryBarTrackBackground}" 
                                 BorderThickness="0" 
                                 CornerRadius="3" 
@@ -455,10 +467,16 @@
                                 Height="12" 
                                 Margin="20, 0, 5, 0"
                                 Width="12" />
-                        <TextBlock Grid.Column="4"
-                                   Grid.Row="1">
-                            <Run Text="{Binding Path=(local:Localizer.String).Free, Mode=OneWay}" /> | <Run Text="{Binding Computer.Memory.Free}" /> (<Run Text="{Binding Computer.Memory.FreePercentage}" />%)
-                        </TextBlock>
+                        <StackPanel Grid.Column="4"
+                                    Grid.Row="1"
+                                    Orientation="Horizontal">
+                            <TextBlock Text="{Binding Path=(local:Localizer.String).Free}" />
+                            <TextBlock Text=" | " />
+                            <TextBlock Text="{Binding Computer.Memory.Free}" />
+                            <TextBlock Text=" (" />
+                            <TextBlock Text="{Binding Computer.Memory.FreePercentage}" />
+                            <TextBlock Text="%)" />
+                        </StackPanel>
                     </Grid>
                 </Border>
                 <!-- Optimize -->

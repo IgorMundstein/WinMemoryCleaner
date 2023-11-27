@@ -12,8 +12,8 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
-        readonly Func<bool> _canExecute;
-        readonly Action<T> _execute;
+        private readonly Func<bool> _canExecute;
+        private readonly Action<T> _execute;
 
         #endregion
 
