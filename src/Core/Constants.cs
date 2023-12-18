@@ -1,60 +1,68 @@
 ﻿using System;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace WinMemoryCleaner
 {
-    internal static class Constants
+    /// <summary>
+    /// Constants
+    /// </summary>
+    public static class Constants
     {
-        internal static class App
+        public static class App
         {
             public const int AutoOptimizationMemoryUsageInterval = 5; // Minute
-            internal const int AutoUpdateInterval = 24; // Hour
-            internal const string Guid = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
-            internal const string KeyFile = "WinMemoryCleaner.snk";
+            public const int AutoUpdateInterval = 24; // Hour
+            public const string Id = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
+            public const string KeyFile = "WinMemoryCleaner.snk";
             public const string License = "GPL-3.0";
-            internal const string LocalizationResourceExtension = ".json";
-            internal const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization.";
-            internal const string Name = "WinMemoryCleaner";
+            public const string LocalizationResourceExtension = ".json";
+            public const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization.";
+            public const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
 
-            internal static class Author
+            public static class Author
             {
                 public const string Name = "Igor Mundstein";
             }
 
-            internal static class Log
+            public static class Log
             {
-                internal const string DatetimeFormat = "yyyy-MM-dd HH:mm:ss.fff";
+                public const string DatetimeFormat = "yyyy-MM-dd HH:mm:ss.fff";
             }
 
-            internal static class Registry
+            public static class Registry
             {
-                internal static class Key
+                public static class Key
                 {
-                    internal const string ProcessExclusionList = @"SOFTWARE\WinMemoryCleaner\ProcessExclusionList";
-                    internal const string Settings = @"SOFTWARE\WinMemoryCleaner";
-                    internal const string Startup = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run";
+                    public const string ProcessExclusionList = @"SOFTWARE\WinMemoryCleaner\ProcessExclusionList";
+                    public const string Settings = @"SOFTWARE\WinMemoryCleaner";
+                    public const string Startup = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run";
                 }
 
-                internal static class Name
+                public static class Name
                 {
-                    internal const string AlwaysOnTop = "AlwaysOnTop";
-                    internal const string AutoOptimizationInterval = "AutoOptimizationInterval";
-                    internal const string AutoOptimizationMemoryUsage = "AutoOptimizationMemoryUsage";
-                    internal const string AutoUpdate = "AutoUpdate";
-                    internal const string CloseAfterOptimization = "CloseAfterOptimization";
-                    internal const string CloseToTheNotificationArea = "CloseToTheNotificationArea";
-                    internal const string CompactMode = "CompactMode";
-                    internal const string Language = "Language";
-                    internal const string MemoryAreas = "MemoryAreas";
-                    internal const string OptimizationKey = "OptimizationKey";
-                    internal const string OptimizationModifiers = "OptimizationModifiers";
-                    internal const string RunOnStartup = "RunOnStartup";
-                    internal const string ShowOptimizationNotifications = "ShowOptimizationNotifications";
-                    internal const string StartMinimized = "StartMinimized";
+                    public const string AlwaysOnTop = "AlwaysOnTop";
+                    public const string AutoOptimizationInterval = "AutoOptimizationInterval";
+                    public const string AutoOptimizationMemoryUsage = "AutoOptimizationMemoryUsage";
+                    public const string AutoUpdate = "AutoUpdate";
+                    public const string CloseAfterOptimization = "CloseAfterOptimization";
+                    public const string CloseToTheNotificationArea = "CloseToTheNotificationArea";
+                    public const string CompactMode = "CompactMode";
+                    public const string Language = "Language";
+                    public const string MemoryAreas = "MemoryAreas";
+                    public const string OptimizationKey = "OptimizationKey";
+                    public const string OptimizationModifiers = "OptimizationModifiers";
+                    public const string RunOnPriority = "RunOnPriority";
+                    public const string RunOnStartup = "RunOnStartup";
+                    public const string ShowOptimizationNotifications = "ShowOptimizationNotifications";
+                    public const string ShowVirtualMemory = "ShowVirtualMemory";
+                    public const string StartMinimized = "StartMinimized";
+                    public const string TrayIcon = "TrayIcon";
                 }
             }
 
-            internal static class Repository
+            public static class Repository
             {
                 public static readonly Uri AssemblyInfoUri = new Uri("https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/src/Properties/AssemblyInfo.cs");
                 public static readonly Uri LatestExeUri = new Uri("https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe");
@@ -62,70 +70,72 @@ namespace WinMemoryCleaner
             }
         }
 
-        internal static class Windows
+        public static class Windows
         {
-            internal static class DesktopWindowManager
+            public static class DesktopWindowManager
             {
-                internal class Attribute
+                public static class Attribute
                 {
-                    internal const int BorderColor = 34;
-                    internal const int WindowCornerPreference = 33;
+                    public const int BorderColor = 34;
+                    public const int WindowCornerPreference = 33;
                 }
-                internal class Value
+                public static class Value
                 {
-                    internal const int WindowCornerPreferenceRound = 2;
-                }
-            }
-
-            internal static class Keyboard
-            {
-                internal const int WmHotkey = 786; // 0x312
-            }
-
-            internal static class Locale
-            {
-                internal static class Name
-                {
-                    internal const string English = "en";
+                    public const int WindowCornerPreferenceRound = 2;
                 }
             }
 
-            internal static class Privilege
+            public static class Keyboard
             {
-                internal const string SeDebugName = "SeDebugPrivilege"; // Required to debug and adjust the memory of a process owned by another account. User Right: Debug programs.
-                internal const string SeIncreaseQuotaName = "SeIncreaseQuotaPrivilege"; // Required to increase the quota assigned to a process. User Right: Adjust memory quotas for a process.
-                internal const string SeProfSingleProcessName = "SeProfileSingleProcessPrivilege"; // Required to gather profiling information for a single process. User Right: Profile single process.
+                public const int WmHotkey = 786; // 0x312
             }
 
-            internal static class PrivilegeAttribute
+            public static class Locale
             {
-                internal const int Enabled = 2;
+                public static class Name
+                {
+                    public const string English = "en";
+                }
             }
 
-            internal static class ShowWindow
+            public static class Privilege
             {
-                internal const int Restore = 9; // SW_RESTORE
+                public const string SeDebugName = "SeDebugPrivilege"; // Required to debug and adjust the memory of a process owned by another account. User Right: Debug programs.
+                public const string SeIncreaseQuotaName = "SeIncreaseQuotaPrivilege"; // Required to increase the quota assigned to a process. User Right: Adjust memory quotas for a process.
+                public const string SeProfSingleProcessName = "SeProfileSingleProcessPrivilege"; // Required to gather profiling information for a single process. User Right: Profile single process.
             }
 
-            internal static class SystemErrorCode
+            public static class PrivilegeAttribute
             {
-                internal const int ErrorAccessDenied = 5; // (ERROR_ACCESS_DENIED) Access is denied
-                internal const int ErrorSuccess = 0; // (ERROR_SUCCESS) The operation completed successfully
+                public const int Enabled = 2;
             }
 
-            internal static class SystemInformationClass
+            public static class ShowWindow
             {
-                internal const int SystemCombinePhysicalMemoryInformation = 130; // 0x82
-                internal const int SystemFileCacheInformation = 21; // 0x15
-                internal const int SystemMemoryListInformation = 80; // 0x50
+                public const int Restore = 9; // SW_RESTORE
             }
 
-            internal static class SystemMemoryListCommand
+            public static class SystemErrorCode
             {
-                internal const int MemoryFlushModifiedList = 3;
-                internal const int MemoryPurgeLowPriorityStandbyList = 5;
-                internal const int MemoryPurgeStandbyList = 4;
+                public const int ErrorAccessDenied = 5; // (ERROR_ACCESS_DENIED) Access is denied
+                public const int ErrorSuccess = 0; // (ERROR_SUCCESS) The operation completed successfully
+            }
+
+            public static class SystemInformationClass
+            {
+                public const int SystemCombinePhysicalMemoryInformation = 130; // 0x82
+                public const int SystemFileCacheInformation = 21; // 0x15
+                public const int SystemMemoryListInformation = 80; // 0x50
+            }
+
+            public static class SystemMemoryListCommand
+            {
+                public const int MemoryFlushModifiedList = 3;
+                public const int MemoryPurgeLowPriorityStandbyList = 5;
+                public const int MemoryPurgeStandbyList = 4;
             }
         }
     }
 }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

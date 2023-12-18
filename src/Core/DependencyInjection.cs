@@ -7,12 +7,12 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Dependency Injection
     /// </summary>
-    internal static class DependencyInjection
+    public static class DependencyInjection
     {
         /// <summary>
         /// IoC Container
         /// </summary>
-        internal static class Container
+        public static class Container
         {
             private static readonly Dictionary<Type, Func<object>> _container = new Dictionary<Type, Func<object>>();
             private static readonly Dictionary<Type, object> _singleton = new Dictionary<Type, object>();
@@ -22,6 +22,12 @@ namespace WinMemoryCleaner
                 return Activator.CreateInstance(type, type.GetConstructors().Single().GetParameters().Select(p => Resolve(p.ParameterType)).ToArray());
             }
 
+            /// <summary>
+            /// Registers the specified instance.
+            /// </summary>
+            /// <typeparam name="TImplementation">The type of the implementation.</typeparam>
+            /// <param name="instance">The instance.</param>
+            /// <exception cref="InvalidOperationException"></exception>
             public static void Register<TImplementation>(TImplementation instance)
             {
                 var key = typeof(TImplementation);
@@ -32,6 +38,13 @@ namespace WinMemoryCleaner
                 _singleton.Add(typeof(TImplementation), instance);
             }
 
+            /// <summary>
+            /// Registers the specified singleton.
+            /// </summary>
+            /// <typeparam name="TInterface">The type of the interface.</typeparam>
+            /// <typeparam name="TImplementation">The type of the implementation.</typeparam>
+            /// <param name="singleton">if set to <c>true</c> [singleton].</param>
+            /// <exception cref="InvalidOperationException"></exception>
             public static void Register<TInterface, TImplementation>(bool singleton = false) where TImplementation : TInterface
             {
                 var key = typeof(TInterface);
@@ -45,6 +58,12 @@ namespace WinMemoryCleaner
                 _container.Add(key, () => Resolve<TImplementation>());
             }
 
+            /// <summary>
+            /// Resolves the specified type.
+            /// </summary>
+            /// <param name="type">The type.</param>
+            /// <returns></returns>
+            /// <exception cref="InvalidOperationException"></exception>
             private static object Resolve(Type type)
             {
                 if (_singleton.ContainsKey(type) && _singleton[type] != null)
@@ -68,6 +87,11 @@ namespace WinMemoryCleaner
                 return instance;
             }
 
+            /// <summary>
+            /// Resolves this instance.
+            /// </summary>
+            /// <typeparam name="T"></typeparam>
+            /// <returns></returns>
             public static T Resolve<T>()
             {
                 return (T)Resolve(typeof(T));

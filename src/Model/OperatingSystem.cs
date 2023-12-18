@@ -3,7 +3,7 @@
     /// <summary>
     /// Operating System
     /// </summary>
-    internal class OperatingSystem
+    public class OperatingSystem
     {
         /// <summary>
         /// Gets a value indicating whether current operating system has combined page list.
@@ -59,7 +59,7 @@
         /// <value>
         ///   <c>true</c> if it is 64-bit; otherwise, <c>false</c>.
         /// </value>
-        internal bool Is64Bit { get; set; }
+        public bool Is64Bit { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the current operating system is Windows 8 or greater.
@@ -67,7 +67,7 @@
         /// <value>
         ///   <c>true</c> if it is Windows 8 or greater; otherwise, <c>false</c>.
         /// </value>
-        internal bool IsWindows8OrGreater { get; set; }
+        public bool IsWindows8OrGreater { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the current operating system is Windows Vista or greater.
@@ -75,7 +75,7 @@
         /// <value>
         ///   <c>true</c> if it is Windows Vista or greater; otherwise, <c>false</c>.
         /// </value>
-        internal bool IsWindowsVistaOrGreater { get; set; }
+        public bool IsWindowsVistaOrGreater { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the current operating system is Windows XP or greater.
@@ -83,6 +83,6 @@
         /// <value>
         ///   <c>true</c> if it is Windows XP or greater; otherwise, <c>false</c>.
         /// </value>
-        internal bool IsWindowsXpOrGreater { get; set; }
+        public bool IsWindowsXpOrGreater { get; set; }
     }
 }

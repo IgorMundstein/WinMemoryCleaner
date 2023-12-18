@@ -51,8 +51,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <NoWarn>
-    </NoWarn>
+    <NoWarn>CS3001, CS3003</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -67,8 +66,7 @@
     <DocumentationFile>bin\Release\WinMemoryCleaner.xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <NoWarn>
-    </NoWarn>
+    <NoWarn>CS3001, CS3003</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\Images\win-memory-cleaner.ico</ApplicationIcon>
@@ -106,11 +104,13 @@
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
-    <Compile Include="Core\HotKeyManager.cs" />
+    <Compile Include="Interfaces\IHotKeyService.cs" />
+    <Compile Include="Service\HotKeyService.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\NativeMethods.cs" />
@@ -126,7 +126,9 @@
     <Compile Include="Model\Language.cs" />
     <Compile Include="Model\Localization.cs" />
     <Compile Include="Model\Log.cs" />
-    <Compile Include="Model\Memory.cs" />
+    <Compile Include="Model\Memory\Memory.cs" />
+    <Compile Include="Model\Memory\MemorySize.cs" />
+    <Compile Include="Model\Memory\MemoryStats.cs" />
     <Compile Include="Model\OperatingSystem.cs" />
     <Compile Include="Service\ComputerService.cs" />
     <Compile Include="Service\NotificationService.cs" />
@@ -146,8 +148,9 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <None Include="app.manifest" />
+    <EmbeddedResource Include="Resources\Localization\Albanian.json" />
     <EmbeddedResource Include="Resources\Localization\Arabic.json" />
+    <EmbeddedResource Include="Resources\Localization\Bulgarian.json" />
     <EmbeddedResource Include="Resources\Localization\Chinese %28Simplified%29.json" />
     <EmbeddedResource Include="Resources\Localization\Chinese %28Traditional%29.json" />
     <EmbeddedResource Include="Resources\Localization\Dutch.json" />
@@ -156,6 +159,7 @@
     <EmbeddedResource Include="Resources\Localization\German.json" />
     <EmbeddedResource Include="Resources\Localization\Greek.json" />
     <EmbeddedResource Include="Resources\Localization\Indonesian.json" />
+    <EmbeddedResource Include="Resources\Localization\Irish.json" />
     <EmbeddedResource Include="Resources\Localization\Italian.json" />
     <EmbeddedResource Include="Resources\Localization\Japanese.json" />
     <EmbeddedResource Include="Resources\Localization\Korean.json" />
@@ -169,6 +173,7 @@
     <EmbeddedResource Include="Resources\Localization\Spanish.json" />
     <EmbeddedResource Include="Resources\Localization\Turkish.json" />
     <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
+    <None Include="app.manifest" />
     <None Include="nuget.config" />
     <None Include="packages.config" />
     <None Include="WinMemoryCleaner.snk" />
@@ -208,6 +213,7 @@
     <Analyzer Include="packages\Microsoft.NetFramework.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.NetFramework.Analyzers.dll" />
     <Analyzer Include="packages\Microsoft.NetFramework.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.NetFramework.CSharp.Analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CleanBinAndObjFolders" AfterTargets="Clean">
     <RemoveDir Directories="$(TargetDir)" />

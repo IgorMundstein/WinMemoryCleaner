@@ -8,7 +8,11 @@ using System.Windows.Interop;
 
 namespace WinMemoryCleaner
 {
-    internal sealed class HotKeyManager : IDisposable
+    /// <summary>
+    /// Hotkey Service
+    /// </summary>
+    /// <seealso cref="IDisposable" />
+    public class HotKeyService : IHotKeyService
     {
         #region Fields
 
@@ -19,7 +23,10 @@ namespace WinMemoryCleaner
 
         #region Constructors
 
-        internal HotKeyManager()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HotKeyService"/> class.
+        /// </summary>
+        public HotKeyService()
         {
             if (!_isSupported)
                 return;
@@ -46,27 +53,52 @@ namespace WinMemoryCleaner
 
         #region IDisposable
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
-            try
-            {
-                var hotKeys = _registered.Keys.ToList();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-                foreach (var hotKey in hotKeys)
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                try
                 {
-                    try
+                    var hotKeys = _registered.Keys.ToList();
+
+                    foreach (var hotKey in hotKeys)
                     {
-                        Unregister(hotKey);
-                    }
-                    catch
-                    {
-                        // ignored
+                        try
+                        {
+                            Unregister(hotKey);
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
                     }
                 }
-            }
-            catch
-            {
-                // ignored
+                catch
+                {
+                    // ignored
+                }
+
+                try
+                {
+                    ComponentDispatcher.ThreadPreprocessMessage -= OnThreadPreprocessMessage;
+                }
+                catch
+                {
+                    // ignored
+                }
             }
         }
 
@@ -74,14 +106,31 @@ namespace WinMemoryCleaner
 
         #region Properties
 
-        internal List<Key> Keys { get; private set; }
+        /// <summary>
+        /// Gets the keys.
+        /// </summary>
+        /// <value>
+        /// The keys.
+        /// </value>
+        public List<Key> Keys { get; private set; }
 
-        internal Dictionary<ModifierKeys, string> Modifiers { get; private set; }
+        /// <summary>
+        /// Gets the modifiers.
+        /// </summary>
+        /// <value>
+        /// The modifiers.
+        /// </value>
+        public Dictionary<ModifierKeys, string> Modifiers { get; private set; }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Called when the message pump receives a keyboard message.
+        /// </summary>
+        /// <param name="msg">The MSG.</param>
+        /// <param name="handled">if set to <c>true</c> [handled].</param>
         private void OnThreadPreprocessMessage(ref MSG msg, ref bool handled)
         {
             if (msg.message != Constants.Windows.Keyboard.WmHotkey)
@@ -107,7 +156,13 @@ namespace WinMemoryCleaner
                 action();
         }
 
-        internal bool Register(HotKey hotkey, Action action)
+        /// <summary>
+        /// Registers the specified hotkey.
+        /// </summary>
+        /// <param name="hotkey">The hotkey.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public bool Register(HotKey hotkey, Action action)
         {
             var result = false;
 
@@ -134,7 +189,12 @@ namespace WinMemoryCleaner
             return result;
         }
 
-        internal bool Unregister(HotKey hotkey)
+        /// <summary>
+        /// Unregisters the specified hotkey.
+        /// </summary>
+        /// <param name="hotkey">The hotkey.</param>
+        /// <returns></returns>
+        public bool Unregister(HotKey hotkey)
         {
             var result = false;
 

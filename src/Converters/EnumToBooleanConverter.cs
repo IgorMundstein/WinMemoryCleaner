@@ -7,7 +7,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Enum to Boolean Converter
     /// </summary>
-    /// <seealso cref="System.Windows.Data.IValueConverter" />
+    /// <seealso cref="IValueConverter" />
     [ValueConversion(typeof(bool), typeof(Enum))]
     public sealed class EnumToBooleanConverter : IValueConverter
     {

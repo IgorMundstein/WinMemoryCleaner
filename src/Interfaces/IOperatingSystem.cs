@@ -1,7 +1,13 @@
 ﻿namespace WinMemoryCleaner
 {
-    internal interface IOperatingSystem
+    /// <summary>
+    /// IOperatingSystem
+    /// </summary>
+    public interface IOperatingSystem
     {
-        OperatingSystem GetOperatingSystem();
+        /// <summary>
+        /// Gets the operating system info
+        /// </summary>
+        OperatingSystem OperatingSystem { get; }
     }
 }

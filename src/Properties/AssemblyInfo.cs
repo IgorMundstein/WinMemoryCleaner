@@ -16,6 +16,6 @@ using WinMemoryCleaner;
 [assembly: AssemblyTrademark(Constants.App.Author.Name)]
 [assembly: AssemblyVersion("2.6.0.0")]
 [assembly: ComVisible(false)]
-[assembly: Guid(Constants.App.Guid)]
+[assembly: Guid(Constants.App.Id)]
 [assembly: NeutralResourcesLanguage("")]
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.None)]

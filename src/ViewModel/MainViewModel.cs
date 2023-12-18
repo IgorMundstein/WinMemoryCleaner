@@ -13,13 +13,13 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Main View Model
     /// </summary>
-    internal class MainViewModel : ViewModel, IDisposable
+    public class MainViewModel : ViewModel, IDisposable
     {
         #region Fields
 
         private Computer _computer;
         private readonly IComputerService _computerService;
-        private readonly HotKeyManager _hotkeyManager;
+        private readonly IHotKeyService _hotKeyService;
         private bool _isOptimizationKeyValid;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
         private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
@@ -35,20 +35,18 @@ namespace WinMemoryCleaner
         /// Initializes a new instance of the <see cref="MainViewModel" /> class.
         /// </summary>
         /// <param name="computerService">Computer service</param>
+        /// <param name="hotKeyService">Hotkey service.</param>
         /// <param name="notificationService">Notification service</param>
-        public MainViewModel(IComputerService computerService, INotificationService notificationService)
+        public MainViewModel(IComputerService computerService, IHotKeyService hotKeyService, INotificationService notificationService)
             : base(notificationService)
         {
             _computerService = computerService;
+            _hotKeyService = hotKeyService;
 
             // Commands
-            AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList);
+            AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList, () => CanAddProcessToExclusionList);
             OptimizeCommand = new RelayCommand(OptimizeAsync, () => CanOptimize);
             RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
-
-            //HotKey
-            _hotkeyManager = new HotKeyManager();
-            RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
 
             // Models
             Computer = new Computer();
@@ -57,10 +55,15 @@ namespace WinMemoryCleaner
             {
                 Computer.OperatingSystem.IsWindowsVistaOrGreater = true;
                 Computer.OperatingSystem.IsWindowsXpOrGreater = true;
+                IsOptimizationKeyValid = false;
+
+                _hotKeyService = new HotKeyService();
             }
             else
             {
-                Computer.OperatingSystem = _computerService.GetOperatingSystem();
+                Computer.OperatingSystem = _computerService.OperatingSystem;
+
+                RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
                 MonitorAsync();
             }
         }
@@ -205,6 +208,17 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance can add process to exclusion list.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can add process to exclusion list; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAddProcessToExclusionList
+        {
+            get { return SelectedProcess != null; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance can optimize.
         /// </summary>
         /// <value>
@@ -212,7 +226,7 @@ namespace WinMemoryCleaner
         /// </value>
         public bool CanOptimize
         {
-            get { return MemoryAreas != Enums.Memory.Area.None; }
+            get { return MemoryAreas != Enums.Memory.Areas.None; }
         }
 
         /// <summary>
@@ -338,7 +352,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return _hotkeyManager.Keys;
+                return _hotKeyService.Keys;
             }
         }
 
@@ -352,7 +366,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return _hotkeyManager.Modifiers;
+                return _hotKeyService.Modifiers;
             }
         }
 
@@ -381,11 +395,11 @@ namespace WinMemoryCleaner
 
                     if (!IsInDesignMode)
                     {
-                        Computer.Memory = _computerService.GetMemory();
+                        Computer.Memory = _computerService.Memory;
                         RaisePropertyChanged(() => Computer);
 
                         NotificationService.Initialize();
-                        NotificationService.UpdateInfo(Computer.Memory);
+                        NotificationService.Update(Computer.Memory);
                     }
 
                     RaisePropertyChanged(string.Empty);
@@ -408,27 +422,27 @@ namespace WinMemoryCleaner
         /// <value>
         /// The memory areas.
         /// </value>
-        public Enums.Memory.Area MemoryAreas
+        public Enums.Memory.Areas MemoryAreas
         {
             get
             {
                 if (!Computer.OperatingSystem.HasCombinedPageList)
-                    Settings.MemoryAreas &= ~Enums.Memory.Area.CombinedPageList;
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.CombinedPageList;
 
                 if (!Computer.OperatingSystem.HasModifiedPageList)
-                    Settings.MemoryAreas &= ~Enums.Memory.Area.ModifiedPageList;
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.ModifiedPageList;
 
                 if (!Computer.OperatingSystem.HasProcessesWorkingSet)
-                    Settings.MemoryAreas &= ~Enums.Memory.Area.ProcessesWorkingSet;
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.ProcessesWorkingSet;
 
                 if (!Computer.OperatingSystem.HasStandbyList)
                 {
-                    Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
-                    Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.StandbyList;
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.StandbyListLowPriority;
                 }
 
                 if (!Computer.OperatingSystem.HasSystemWorkingSet)
-                    Settings.MemoryAreas &= ~Enums.Memory.Area.SystemWorkingSet;
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.SystemWorkingSet;
 
                 return Settings.MemoryAreas;
             }
@@ -445,14 +459,14 @@ namespace WinMemoryCleaner
 
                     switch (value)
                     {
-                        case Enums.Memory.Area.StandbyList:
-                            if ((Settings.MemoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
-                                Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                        case Enums.Memory.Areas.StandbyList:
+                            if ((Settings.MemoryAreas & Enums.Memory.Areas.StandbyListLowPriority) != 0)
+                                Settings.MemoryAreas &= ~Enums.Memory.Areas.StandbyListLowPriority;
                             break;
 
-                        case Enums.Memory.Area.StandbyListLowPriority:
-                            if ((Settings.MemoryAreas & Enums.Memory.Area.StandbyList) != 0)
-                                Settings.MemoryAreas &= ~Enums.Memory.Area.StandbyList;
+                        case Enums.Memory.Areas.StandbyListLowPriority:
+                            if ((Settings.MemoryAreas & Enums.Memory.Areas.StandbyList) != 0)
+                                Settings.MemoryAreas &= ~Enums.Memory.Areas.StandbyList;
                             break;
                     }
 
@@ -493,6 +507,17 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Physical Memory Header
+        /// </summary>
+        public string PhysicalMemoryHeader
+        {
+            get
+            {
+                return string.Format(Localizer.Culture, "{0} ({1:0.#} {2})", Localizer.String.Physical, Computer.Memory.Physical.Total.Value, Computer.Memory.Physical.Total.Unit);
+            }
+        }
+
+        /// <summary>
         /// Gets the processes.
         /// </summary>
         /// <value>
@@ -524,6 +549,37 @@ namespace WinMemoryCleaner
         public ObservableCollection<string> ProcessExclusionList
         {
             get { return new ObservableCollection<string>(Settings.ProcessExclusionList); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [run on low priority].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [run on low priority]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RunOnLowPriority
+        {
+            get { return Settings.RunOnPriority == Enums.Priority.Low; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    var priority = value ? Enums.Priority.Low : Enums.Priority.Normal;
+
+                    App.SetPriority(priority);
+
+                    Settings.RunOnPriority = priority;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
         }
 
         /// <summary>
@@ -599,6 +655,35 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show virtual memory].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show virtual memory]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowVirtualMemory
+        {
+            get { return Settings.ShowVirtualMemory; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.ShowVirtualMemory = value;
+                    Settings.Save();
+
+                    NotificationService.Update(Computer.Memory);
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [start minimized].
         /// </summary>
         /// <value>
@@ -628,10 +713,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Gets the title.
         /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public static string Title
+        public string Title
         {
             get
             {
@@ -641,9 +723,58 @@ namespace WinMemoryCleaner
             }
         }
 
+        /// <summary>
+        /// Gets or sets the tray icon.
+        /// </summary>
+        /// <value>
+        /// The tray icon.
+        /// </value>
+        public Enums.Icon.Tray TrayIcon
+        {
+            get { return Settings.TrayIcon; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.TrayIcon = value;
+                    Settings.Save();
+
+                    NotificationService.Update(Computer.Memory);
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Virtual Memory Header
+        /// </summary>
+        public string VirtualMemoryHeader
+        {
+            get
+            {
+                return string.Format(Localizer.Culture, "{0} ({1:0.#} {2})", Localizer.String.Virtual, Computer.Memory.Virtual.Total.Value, Computer.Memory.Virtual.Total.Unit);
+            }
+        }
+
         #endregion
 
         #region IDisposable
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
@@ -653,8 +784,8 @@ namespace WinMemoryCleaner
         {
             if (disposing)
             {
-                if (_hotkeyManager != null)
-                    _hotkeyManager.Dispose();
+                if (_hotKeyService != null)
+                    _hotKeyService.Dispose();
 
                 if (_monitorAppWorker != null)
                 {
@@ -700,15 +831,6 @@ namespace WinMemoryCleaner
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         #endregion
@@ -788,7 +910,7 @@ namespace WinMemoryCleaner
         private void MonitorApp(object sender, DoWorkEventArgs e)
         {
             // App priority
-            App.SetPriority(Enums.Priority.Low);
+            App.SetPriority(Settings.RunOnPriority);
 
             while (!_monitorAppWorker.CancellationPending)
             {
@@ -817,7 +939,7 @@ namespace WinMemoryCleaner
                         {
                             // Memory usage
                             if (Settings.AutoOptimizationMemoryUsage > 0 &&
-                                Computer.Memory.FreePercentage < Settings.AutoOptimizationMemoryUsage &&
+                                Computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
                                 DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
                             {
                                 OptimizeAsync();
@@ -881,7 +1003,7 @@ namespace WinMemoryCleaner
         private void MonitorComputer(object sender, DoWorkEventArgs e)
         {
             // App priority
-            App.SetPriority(Enums.Priority.Low);
+            App.SetPriority(Settings.RunOnPriority);
 
             while (!_monitorComputerWorker.CancellationPending)
             {
@@ -892,9 +1014,12 @@ namespace WinMemoryCleaner
                         continue;
 
                     // Update memory info
-                    Computer.Memory = _computerService.GetMemory();
+                    Computer.Memory = _computerService.Memory;
+
                     RaisePropertyChanged(() => Computer);
-                    NotificationService.UpdateInfo(Computer.Memory);
+                    RaisePropertyChanged(() => VirtualMemoryHeader);
+
+                    NotificationService.Update(Computer.Memory);
 
                     // Delay
                     Thread.Sleep(5000);
@@ -937,18 +1062,30 @@ namespace WinMemoryCleaner
                 IsBusy = true;
 
                 // App priority
-                App.SetPriority(Enums.Priority.Low);
+                App.SetPriority(Settings.RunOnPriority);
 
-                // Memory clean
-                _computerService.CleanMemory(Settings.MemoryAreas);
+                // Memory optimize
+                var tempPhysicalAvailable = Computer.Memory.Physical.Free.Bytes;
+                var tempVirtualAvailable = Computer.Memory.Virtual.Free.Bytes;
+
+                _computerService.Optimize(Settings.MemoryAreas);
 
                 // Update memory info
-                Computer.Memory = _computerService.GetMemory();
+                Computer.Memory = _computerService.Memory;
                 RaisePropertyChanged(() => Computer);
 
                 // Notification
                 if (Settings.ShowOptimizationNotifications)
-                    Notify(Localizer.String.MemoryOptimized);
+                {
+                    var physicalReleased = (Computer.Memory.Physical.Free.Bytes > tempPhysicalAvailable ? Computer.Memory.Physical.Free.Bytes - tempPhysicalAvailable : tempPhysicalAvailable - Computer.Memory.Physical.Free.Bytes).ToMemoryUnit();
+                    var virtualReleased = (Computer.Memory.Virtual.Free.Bytes > tempVirtualAvailable ? Computer.Memory.Virtual.Free.Bytes - tempVirtualAvailable : tempVirtualAvailable - Computer.Memory.Virtual.Free.Bytes).ToMemoryUnit();
+
+                    var message = Settings.ShowVirtualMemory
+                        ? string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3:0.#} {4} | {5}: {6:0.#} {7}", Environment.NewLine, Localizer.String.MemoryOptimized, Localizer.String.Physical, physicalReleased.Key, physicalReleased.Value, Localizer.String.Virtual, virtualReleased.Key, virtualReleased.Value)
+                        : string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3:0.#} {4}", Environment.NewLine, Localizer.String.MemoryOptimized, Localizer.String.Physical, physicalReleased.Key, physicalReleased.Value);
+
+                    Notify(message);
+                }
 
                 if (OptimizeCommandCompleted != null)
                 {
@@ -965,7 +1102,7 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Registers the optimization hot key.
+        /// Registers the optimization hotkey.
         /// </summary>
         /// <param name="modifiers">The modifiers.</param>
         /// <param name="key">The key.</param>
@@ -975,13 +1112,13 @@ namespace WinMemoryCleaner
             {
                 IsBusy = true;
 
-                _hotkeyManager.Unregister(new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey));
+                _hotKeyService.Unregister(new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey));
 
                 Settings.OptimizationKey = key;
                 Settings.OptimizationModifiers = modifiers;
 
                 var hotKey = new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
-                IsOptimizationKeyValid = _hotkeyManager.Register(hotKey, OptimizeAsync);
+                IsOptimizationKeyValid = _hotKeyService.Register(hotKey, OptimizeAsync);
 
                 if (!IsOptimizationKeyValid)
                 {
@@ -1015,19 +1152,17 @@ namespace WinMemoryCleaner
                 IsBusy = true;
 
                 if (Settings.ProcessExclusionList.Remove(process))
-                {
                     Settings.Save();
 
-                    RaisePropertyChanged(() => Processes);
-                    RaisePropertyChanged(() => ProcessExclusionList);
+                RaisePropertyChanged(() => Processes);
+                RaisePropertyChanged(() => ProcessExclusionList);
 
-                    if (RemoveProcessFromExclusionListCommandCompleted != null)
+                if (RemoveProcessFromExclusionListCommandCompleted != null)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
                     {
-                        System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
-                        {
-                            RemoveProcessFromExclusionListCommandCompleted();
-                        });
-                    }
+                        RemoveProcessFromExclusionListCommandCompleted();
+                    });
                 }
             }
             finally

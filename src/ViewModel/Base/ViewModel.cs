@@ -6,7 +6,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// View Model
     /// </summary>
-    internal abstract class ViewModel : ObservableObject
+    public abstract class ViewModel : ObservableObject
     {
         #region Fields
 
@@ -90,7 +90,7 @@ namespace WinMemoryCleaner
         /// <param name="title">The title</param>
         /// <param name="timeout">The time period, in seconds</param>
         /// <param name="icon">The icon</param>
-        protected void Notify(string message, string title = null, int timeout = 5, Enums.NotificationIcon icon = Enums.NotificationIcon.None)
+        protected void Notify(string message, string title = null, int timeout = 5, Enums.Icon.Notification icon = Enums.Icon.Notification.None)
         {
             NotificationService.Notify(message, title, timeout, icon);
         }

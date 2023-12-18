@@ -12,6 +12,14 @@ namespace WinMemoryCleaner
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AdjustTokenPrivileges(IntPtr tokenHandle, [MarshalAs(UnmanagedType.Bool)] bool disableAllPrivileges, ref Structs.Windows.TokenPrivileges newState, int bufferLength, IntPtr previousState, IntPtr returnLength);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DestroyIcon(IntPtr hIcon);
+
         [DllImport("dwmapi.dll", SetLastError = true)]
         internal static extern void DwmSetWindowAttribute(IntPtr hWnd, int attribute, ref int value, int size);
 
@@ -20,6 +28,9 @@ namespace WinMemoryCleaner
 
         [DllImport("user32", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
