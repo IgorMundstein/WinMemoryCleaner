@@ -7,7 +7,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// View Model Locator
     /// </summary>
-    internal class ViewModelLocator : IDisposable
+    public class ViewModelLocator : IDisposable
     {
         #region Constructors
 
@@ -17,20 +17,31 @@ namespace WinMemoryCleaner
         public ViewModelLocator()
         {
             IComputerService computerService = null;
+            IHotKeyService hotKeyService = null;
             INotificationService notificationService = null;
 
             if (!IsInDesignMode)
             {
                 computerService = DependencyInjection.Container.Resolve<IComputerService>();
+                hotKeyService = DependencyInjection.Container.Resolve<IHotKeyService>();
                 notificationService = DependencyInjection.Container.Resolve<INotificationService>();
             }
 
-            MainViewModel = new MainViewModel(computerService, notificationService);
+            MainViewModel = new MainViewModel(computerService, hotKeyService, notificationService);
         }
 
         #endregion
 
         #region IDisposable
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
@@ -50,15 +61,6 @@ namespace WinMemoryCleaner
                     // ignored
                 }
             }
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         #endregion

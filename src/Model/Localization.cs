@@ -1,12 +1,14 @@
 ﻿using System.Runtime.Serialization;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace WinMemoryCleaner
 {
     /// <summary>
     /// Localization (L10N)
     /// </summary>
     [DataContract]
-    internal class Localization
+    public class Localization
     {
         [DataMember]
         public string Add { get; private set; }
@@ -48,7 +50,7 @@ namespace WinMemoryCleaner
         public string ErrorCanNotSaveLog { get; private set; }
 
         [DataMember]
-        public string ErrorFeatureIsNotSupported { get; private set; }
+        public string ErrorMemoryAreaOptimizationNotSupported { get; private set; }
 
         [DataMember]
         public string Every { get; private set; }
@@ -64,6 +66,9 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string HotkeyIsInUseByWindows { get; private set; }
+
+        [DataMember]
+        public string Image { get; private set; }
 
         [DataMember]
         public string Invalid { get; private set; }
@@ -108,6 +113,9 @@ namespace WinMemoryCleaner
         public string Optimized { get; private set; }
 
         [DataMember]
+        public string Physical { get; private set; }
+
+        [DataMember]
         public string ProcessExclusionList { get; private set; }
 
         [DataMember]
@@ -115,6 +123,9 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string RepositoryInfo { get; private set; }
+
+        [DataMember]
+        public string RunOnLowPriority { get; private set; }
 
         [DataMember]
         public string RunOnStartup { get; private set; }
@@ -129,7 +140,13 @@ namespace WinMemoryCleaner
         public string ShowOptimizationNotifications { get; private set; }
 
         [DataMember]
+        public string ShowVirtualMemory { get; private set; }
+
+        [DataMember]
         public string StartMinimized { get; private set; }
+
+        [DataMember]
+        public string TrayIcon { get; private set; }
 
         [DataMember]
         public string UpdatedToVersion { get; private set; }
@@ -138,6 +155,11 @@ namespace WinMemoryCleaner
         public string Used { get; private set; }
 
         [DataMember]
+        public string Virtual { get; private set; }
+
+        [DataMember]
         public string WhenFreeMemoryIsBelow { get; private set; }
     }
 }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

@@ -1,53 +1,58 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace WinMemoryCleaner
 {
-    internal static class Structs
+    /// <summary>
+    /// Structs
+    /// </summary>
+    public static class Structs
     {
-        internal static class Windows
+        public static class Windows
         {
             /// <summary>
             /// Memory Combine Information Ex
             /// </summary>
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            internal struct MemoryCombineInformationEx
+            public struct MemoryCombineInformationEx
             {
-                internal IntPtr Handle;
-                internal IntPtr PagesCombined;
-                internal ulong Flags;
+                public IntPtr Handle;
+                public IntPtr PagesCombined;
+                public ulong Flags;
             }
 
             /// <summary>
             /// Memory Status EX structure contains information about the current state of both physical and virtual memory, including extended memory
             /// </summary>
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-            internal class MemoryStatusEx
+            public class MemoryStatusEx
             {
-                internal readonly uint dwLength;        // The size of the structure, in bytes.
-                internal uint dwMemoryLoad;             // A number between 0 and 100 that specifies the approximate percentage of physical memory that is in use.
-                internal ulong ullTotalPhys;            // The amount of actual physical memory, in bytes.
-                internal ulong ullAvailPhys;            // The amount of physical memory currently available, in bytes.
-                internal ulong ullTotalPageFile;        // The current committed memory limit for the system or the current process, whichever is smaller, in bytes.
-                internal ulong ullAvailPageFile;        // The maximum amount of memory the current process can commit, in bytes.
-                internal ulong ullTotalVirtual;         // The size of the user-mode portion of the virtual address space of the calling process, in bytes.
-                internal ulong ullAvailVirtual;         // The amount of unreserved and uncommitted memory currently in the user-mode portion of the virtual address space of the calling process, in bytes.
-                internal ulong ullAvailExtendedVirtual; // Reserved. This value is always 0.
+                public readonly uint Length;          // The size of the structure, in bytes.
+                public uint MemoryLoad;               // A number between 0 and 100 that specifies the approximate percentage of physical memory that is in use.
+                public ulong TotalPhys;               // The amount of actual physical memory, in bytes.
+                public ulong AvailPhys;               // The amount of physical memory currently available, in bytes.
+                public ulong TotalPageFile;           // The current committed memory limit for the system or the current process, whichever is smaller, in bytes.
+                public ulong AvailPageFile;           // The maximum amount of memory the current process can commit, in bytes.
+                public ulong TotalVirtual;            // The size of the user-mode portion of the virtual address space of the calling process, in bytes.
+                public ulong AvailVirtual;            // The amount of unreserved and uncommitted memory currently in the user-mode portion of the virtual address space of the calling process, in bytes.
+                public ulong AvailExtendedVirtual;    // Reserved. This value is always 0.
 
                 /// <summary>
                 /// Initializes a new instance of the <see cref="MemoryStatusEx" /> class.
                 /// </summary>
-                internal MemoryStatusEx()
+                public MemoryStatusEx()
                 {
-                    dwLength = (uint)Marshal.SizeOf(typeof(MemoryStatusEx));
-                    dwMemoryLoad = 0;
-                    ullTotalPhys = 0;
-                    ullAvailPhys = 0;
-                    ullTotalPageFile = 0;
-                    ullAvailPageFile = 0;
-                    ullTotalVirtual = 0;
-                    ullAvailVirtual = 0;
-                    ullAvailExtendedVirtual = 0;
+                    Length = (uint)Marshal.SizeOf(typeof(MemoryStatusEx));
+                    MemoryLoad = 0;
+                    TotalPhys = 0;
+                    AvailPhys = 0;
+                    TotalPageFile = 0;
+                    AvailPageFile = 0;
+                    TotalVirtual = 0;
+                    AvailVirtual = 0;
+                    AvailExtendedVirtual = 0;
                 }
             }
 
@@ -55,46 +60,48 @@ namespace WinMemoryCleaner
             /// System Cache Information structure for x86 working set
             /// </summary>
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            internal struct SystemCacheInformation32
+            public struct SystemCacheInformation32
             {
-                internal uint CurrentSize;
-                internal uint PeakSize;
-                internal uint PageFaultCount;
-                internal uint MinimumWorkingSet;
-                internal uint MaximumWorkingSet;
-                internal uint Unused1;
-                internal uint Unused2;
-                internal uint Unused3;
-                internal uint Unused4;
+                public uint CurrentSize;
+                public uint PeakSize;
+                public uint PageFaultCount;
+                public uint MinimumWorkingSet;
+                public uint MaximumWorkingSet;
+                public uint Unused1;
+                public uint Unused2;
+                public uint Unused3;
+                public uint Unused4;
             }
 
             /// <summary>
             /// System Cache Information structure for x64 working set
             /// </summary>
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            internal struct SystemCacheInformation64
+            public struct SystemCacheInformation64
             {
-                internal long CurrentSize;
-                internal long PeakSize;
-                internal long PageFaultCount;
-                internal long MinimumWorkingSet;
-                internal long MaximumWorkingSet;
-                internal long Unused1;
-                internal long Unused2;
-                internal long Unused3;
-                internal long Unused4;
+                public long CurrentSize;
+                public long PeakSize;
+                public long PageFaultCount;
+                public long MinimumWorkingSet;
+                public long MaximumWorkingSet;
+                public long Unused1;
+                public long Unused2;
+                public long Unused3;
+                public long Unused4;
             }
 
             /// <summary>
             /// Token Privileges structure, used for adjusting token privileges
             /// </summary>
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            internal struct TokenPrivileges
+            public struct TokenPrivileges
             {
-                internal int Count;
-                internal long Luid;
-                internal int Attr;
+                public int Count;
+                public long Luid;
+                public int Attr;
             }
         }
     }
 }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

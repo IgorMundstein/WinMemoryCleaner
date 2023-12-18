@@ -1,16 +1,18 @@
 ﻿using System;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace WinMemoryCleaner
 {
     /// <summary>
     /// Enumerators
     /// </summary>
-    internal static class Enums
+    public static class Enums
     {
-        internal static class Log
+        public static class Log
         {
             [Flags]
-            internal enum Level
+            public enum Levels
             {
                 Debug = 1,
                 Information = 2,
@@ -19,10 +21,10 @@ namespace WinMemoryCleaner
             }
         }
 
-        internal static class Memory
+        public static class Memory
         {
             [Flags]
-            internal enum Area
+            public enum Areas
             {
                 None = 0,
                 CombinedPageList = 1,
@@ -32,17 +34,28 @@ namespace WinMemoryCleaner
                 StandbyListLowPriority = 16,
                 SystemWorkingSet = 32
             }
+
+            public enum Unit { B, KB, MB, GB, TB, PB, EB, ZB, YB }
         }
 
-        internal enum NotificationIcon
+        public static class Icon
         {
-            None,
-            Information,
-            Warning,
-            Error
+            public enum Notification
+            {
+                None,
+                Information,
+                Warning,
+                Error
+            }
+
+            public enum Tray
+            {
+                Image,
+                MemoryUsage
+            }
         }
 
-        internal enum Priority
+        public enum Priority
         {
             Low,
             Normal,
@@ -50,3 +63,5 @@ namespace WinMemoryCleaner
         }
     }
 }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

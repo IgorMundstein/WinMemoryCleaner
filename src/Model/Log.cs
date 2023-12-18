@@ -5,7 +5,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Log Item
     /// </summary>
-    internal class Log
+    public class Log
     {
         /// <summary>
         /// Gets or sets the date time.
@@ -13,7 +13,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The date time.
         /// </value>
-        internal DateTime DateTime { get; set; }
+        public DateTime DateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the level.
@@ -21,7 +21,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The level.
         /// </value>
-        internal Enums.Log.Level Level { get; set; }
+        public Enums.Log.Levels Level { get; set; }
 
         /// <summary>
         /// Gets or sets the method.
@@ -29,7 +29,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The method.
         /// </value>
-        internal string Method { get; set; }
+        public string Method { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
@@ -37,7 +37,7 @@ namespace WinMemoryCleaner
         /// <value>
         /// The message.
         /// </value>
-        internal string Message { get; set; }
+        public string Message { get; set; }
 
         /// <summary>
         /// Converts to string.

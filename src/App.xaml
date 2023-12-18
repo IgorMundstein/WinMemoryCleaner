@@ -9,6 +9,7 @@
             <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <local:StringFormatConverter x:Key="StringFormatConverter" />
             <local:ViewModelLocator x:Key="ViewModelLocator" />
             <!-- Colors -->
             <SolidColorBrush x:Key="DarkBackground" Color="#2C2C2C" />
@@ -19,10 +20,9 @@
             <SolidColorBrush x:Key="DarkMemoryBarTrackBackground" Color="#00AA41" />
             <SolidColorBrush x:Key="DarkOver" Color="#00AEF7" />
             <SolidColorBrush x:Key="DarkWindowBackground" Color="#202020" />
-            <SolidColorBrush x:Key="DarkWindowBorderBrush" Color="#707070" />
+            <SolidColorBrush x:Key="DarkWindowBorderBrush" Color="#303030" />
             <!-- Styles (Base) -->
-            <Style x:Key="FrameworkElementBase" 
-                   TargetType="{x:Type FrameworkElement}">
+            <Style x:Key="FrameworkElementBase" TargetType="{x:Type FrameworkElement}">
                 <Style.Triggers>
                     <Trigger Property="IsFocused" Value="True">
                         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -30,6 +30,14 @@
                 </Style.Triggers>
             </Style>
             <Style x:Key="ControlBase" TargetType="{x:Type Control}" BasedOn="{StaticResource FrameworkElementBase}">
+                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Style.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="3" />
+                    </Style>
+                </Style.Resources>
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
@@ -44,10 +52,7 @@
             </Style>
             <!-- Styles -->
             <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ControlBase}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
                 <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="FontWeight" Value="Normal" />
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="Padding" Value="3, 0, 3, 0" />
@@ -68,9 +73,6 @@
                 </Setter>
             </Style>
             <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource ControlBase}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
@@ -90,8 +92,8 @@
                                           Visibility="Collapsed" 
                                           Width="15" />
                                 </Border>
-                                <ContentPresenter Margin="5, -1, 0, 0"
-                                                  HorizontalAlignment="Left"
+                                <ContentPresenter HorizontalAlignment="Left"
+                                                  Margin="5, -1, 0, 0"
                                                   RecognizesAccessKey="True"
                                                   VerticalAlignment="Center" />
                             </StackPanel>
@@ -132,7 +134,6 @@
             </ControlTemplate>
             <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ControlBase}">
                 <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ComboBox}">
@@ -142,8 +143,7 @@
                                               IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
                                               Foreground="{StaticResource DarkForeground}"
                                               Name="ToggleButton" 
-                                              Template="{StaticResource ComboBoxToggleButton}">
-                                </ToggleButton>
+                                              Template="{StaticResource ComboBoxToggleButton}" />
                                 <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
                                                   ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                                   ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
@@ -286,22 +286,73 @@
                 </Style.Triggers>
             </Style>
             <Style TargetType="{x:Type Image}" BasedOn="{StaticResource FrameworkElementBase}" />
-            <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource ControlBase}">
-                <Style.Resources>
-                    <Style TargetType="{x:Type Border}">
-                        <Setter Property="CornerRadius" Value="3" />
-                    </Style>
-                </Style.Resources>
-            </Style>
+            <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource ControlBase}" />
             <Style TargetType="{x:Type Label}" BasedOn="{StaticResource FrameworkElementBase}">
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="Margin" Value="0" />
                 <Setter Property="Padding" Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Label">
+                            <Border>
+                                <ContentPresenter RecognizesAccessKey="False" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
                     </Trigger>
                 </Style.Triggers>
+            </Style>
+            <Style x:Key="{x:Type RadioButton}" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource ControlBase}">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type RadioButton}">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Grid Height="13" 
+                                          Width="13">
+                                        <Ellipse x:Name="Border"
+                                                 Fill="{StaticResource DarkBackground}"
+                                                 Stroke="{StaticResource DarkBorderBrush}"
+                                                 StrokeThickness="1" />
+                                        <Ellipse x:Name="CheckMark"
+                                                 Fill="{StaticResource DarkForeground}"
+                                                 Margin="4" />
+                                    </Grid>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                                  Margin="5, -1, 0, 0"
+                                                  RecognizesAccessKey="True"
+                                                  VerticalAlignment="{TemplateBinding VerticalAlignment}" />
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="Border" Property="Fill" Value="{StaticResource DarkBackground}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="Border" Property="Fill" Value="{StaticResource DarkBackground}" />
+                                    <Setter TargetName="Border" Property="Stroke" Value="{StaticResource DarkBorderBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                                    <Setter TargetName="Border" Property="Fill" Value="{StaticResource DarkBackground}" />
+                                    <Setter TargetName="Border" Property="Stroke" Value="{StaticResource DarkBorderBrush}" />
+                                    <Setter TargetName="CheckMark" Property="Fill" Value="{StaticResource DarkDisabled}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
             <!-- ScrollBar (BEGIN) -->
             <Style x:Key="ScrollThumbs" TargetType="{x:Type Thumb}" BasedOn="{StaticResource FrameworkElementBase}">
@@ -470,10 +521,7 @@
                 </Style.Triggers>
             </Style>
             <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource ControlBase}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
                 <Setter Property="Content" Value="" />
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="FontWeight" Value="Normal" />
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="Padding" Value="3, 0, 3, 0" />
@@ -502,15 +550,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource ControlBase}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
-                <Style.Resources>
-                    <Style TargetType="{x:Type Border}">
-                        <Setter Property="CornerRadius" Value="3" />
-                    </Style>
-                </Style.Resources>
-            </Style>
+            <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource ControlBase}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -5,10 +5,14 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace WinMemoryCleaner
 {
-    internal static class Settings
+    public static class Settings
     {
+        private static readonly CultureInfo _culture = new CultureInfo(Constants.Windows.Locale.Name.English);
+
         #region Constructors
 
         static Settings()
@@ -22,13 +26,16 @@ namespace WinMemoryCleaner
             CloseToTheNotificationArea = false;
             CompactMode = false;
             Language = Constants.Windows.Locale.Name.English;
-            MemoryAreas = Enums.Memory.Area.ModifiedPageList | Enums.Memory.Area.ProcessesWorkingSet | Enums.Memory.Area.StandbyList | Enums.Memory.Area.SystemWorkingSet;
+            MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.ProcessesWorkingSet | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemWorkingSet;
             OptimizationKey = Key.M;
             OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Alt;
             ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+            RunOnPriority = Enums.Priority.Low;
             RunOnStartup = false;
             ShowOptimizationNotifications = true;
+            ShowVirtualMemory = false;
             StartMinimized = false;
+            TrayIcon = Enums.Icon.Tray.Image;
 
             // User values
             try
@@ -39,7 +46,7 @@ namespace WinMemoryCleaner
                     if (key != null)
                     {
                         foreach (var name in key.GetValueNames())
-                            ProcessExclusionList.Add(name.RemoveWhitespaces().Replace(".exe", string.Empty).ToLower(Localizer.Culture));
+                            ProcessExclusionList.Add(name.RemoveWhitespaces().Replace(".exe", string.Empty).ToLower(_culture));
                     }
                 }
 
@@ -48,38 +55,49 @@ namespace WinMemoryCleaner
                 {
                     if (key != null)
                     {
-                        AlwaysOnTop = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AlwaysOnTop, AlwaysOnTop), Localizer.Culture);
-                        AutoOptimizationInterval = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval), Localizer.Culture);
-                        AutoOptimizationMemoryUsage = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage), Localizer.Culture);
-                        AutoUpdate = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate), Localizer.Culture);
-                        CloseAfterOptimization = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseAfterOptimization, CloseAfterOptimization), Localizer.Culture);
-                        CloseToTheNotificationArea = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseToTheNotificationArea, CloseToTheNotificationArea), Localizer.Culture);
-                        CompactMode = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CompactMode, CompactMode), Localizer.Culture);
-                        Language = Convert.ToString(key.GetValue(Constants.App.Registry.Name.Language, Language), Localizer.Culture);
+                        AlwaysOnTop = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AlwaysOnTop, AlwaysOnTop), _culture);
+                        AutoOptimizationInterval = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval), _culture);
+                        AutoOptimizationMemoryUsage = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage), _culture);
+                        AutoUpdate = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate), _culture);
+                        CloseAfterOptimization = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseAfterOptimization, CloseAfterOptimization), _culture);
+                        CloseToTheNotificationArea = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseToTheNotificationArea, CloseToTheNotificationArea), _culture);
+                        CompactMode = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CompactMode, CompactMode), _culture);
+                        Language = Convert.ToString(key.GetValue(Constants.App.Registry.Name.Language, Language), _culture);
 
-                        Enums.Memory.Area memoryAreas;
+                        Enums.Memory.Areas memoryAreas;
 
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.MemoryAreas, MemoryAreas), Localizer.Culture), out memoryAreas) && memoryAreas.IsValid())
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.MemoryAreas, MemoryAreas), _culture), out memoryAreas) && memoryAreas.IsValid())
                         {
-                            if ((memoryAreas & Enums.Memory.Area.StandbyList) != 0 && (memoryAreas & Enums.Memory.Area.StandbyListLowPriority) != 0)
-                                memoryAreas &= ~Enums.Memory.Area.StandbyListLowPriority;
+                            if ((memoryAreas & Enums.Memory.Areas.StandbyList) != 0 && (memoryAreas & Enums.Memory.Areas.StandbyListLowPriority) != 0)
+                                memoryAreas &= ~Enums.Memory.Areas.StandbyListLowPriority;
 
                             MemoryAreas = memoryAreas;
                         }
 
                         Key optimizationKey;
 
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.OptimizationKey, OptimizationKey), Localizer.Culture), out optimizationKey))
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.OptimizationKey, OptimizationKey), _culture), out optimizationKey) && optimizationKey.IsValid())
                             OptimizationKey = optimizationKey;
 
                         ModifierKeys optimizationModifiers;
 
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.OptimizationModifiers, OptimizationModifiers), Localizer.Culture), out optimizationModifiers))
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.OptimizationModifiers, OptimizationModifiers), _culture), out optimizationModifiers) && optimizationModifiers.IsValid())
                             OptimizationModifiers = optimizationModifiers;
 
-                        RunOnStartup = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup), Localizer.Culture);
-                        ShowOptimizationNotifications = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications), Localizer.Culture);
-                        StartMinimized = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized), Localizer.Culture);
+                        Enums.Priority runOnPriority;
+
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.RunOnPriority, RunOnPriority), _culture), out runOnPriority) && runOnPriority.IsValid())
+                            RunOnPriority = runOnPriority;
+
+                        RunOnStartup = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup), _culture);
+                        ShowOptimizationNotifications = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications), _culture);
+                        ShowVirtualMemory = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowVirtualMemory, ShowVirtualMemory), _culture);
+                        StartMinimized = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized), _culture);
+
+                        Enums.Icon.Tray trayIcon;
+
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.TrayIcon, TrayIcon), _culture), out trayIcon) && trayIcon.IsValid())
+                            TrayIcon = trayIcon;
                     }
                     else
                     {
@@ -116,41 +134,47 @@ namespace WinMemoryCleaner
 
         #region Properties
 
-        internal static bool AlwaysOnTop { get; set; }
+        public static bool AlwaysOnTop { get; set; }
 
-        internal static int AutoOptimizationInterval { get; set; }
+        public static int AutoOptimizationInterval { get; set; }
 
-        internal static int AutoOptimizationMemoryUsage { get; set; }
+        public static int AutoOptimizationMemoryUsage { get; set; }
 
-        internal static bool AutoUpdate { get; set; }
+        public static bool AutoUpdate { get; set; }
 
-        internal static bool CloseAfterOptimization { get; set; }
+        public static bool CloseAfterOptimization { get; set; }
 
-        internal static bool CloseToTheNotificationArea { get; set; }
+        public static bool CloseToTheNotificationArea { get; set; }
 
-        internal static bool CompactMode { get; set; }
+        public static bool CompactMode { get; set; }
 
-        internal static string Language { get; set; }
+        public static string Language { get; set; }
 
-        internal static Enums.Memory.Area MemoryAreas { get; set; }
+        public static Enums.Memory.Areas MemoryAreas { get; set; }
 
-        internal static Key OptimizationKey { get; set; }
+        public static Key OptimizationKey { get; set; }
 
-        internal static ModifierKeys OptimizationModifiers { get; set; }
+        public static ModifierKeys OptimizationModifiers { get; set; }
 
-        internal static SortedSet<string> ProcessExclusionList { get; set; }
+        public static SortedSet<string> ProcessExclusionList { get; private set; }
 
-        internal static bool RunOnStartup { get; set; }
+        public static Enums.Priority RunOnPriority { get; set; }
 
-        internal static bool ShowOptimizationNotifications { get; set; }
+        public static bool RunOnStartup { get; set; }
 
-        internal static bool StartMinimized { get; set; }
+        public static bool ShowOptimizationNotifications { get; set; }
+
+        public static bool ShowVirtualMemory { get; set; }
+
+        public static bool StartMinimized { get; set; }
+
+        public static Enums.Icon.Tray TrayIcon { get; set; }
 
         #endregion
 
         #region Methods
 
-        internal static void Save()
+        public static void Save()
         {
             try
             {
@@ -164,7 +188,7 @@ namespace WinMemoryCleaner
                         if (key != null)
                         {
                             foreach (var process in ProcessExclusionList)
-                                key.SetValue(process.RemoveWhitespaces().Replace(".exe", string.Empty).ToLower(Localizer.Culture), string.Empty, RegistryValueKind.String);
+                                key.SetValue(process.RemoveWhitespaces().Replace(".exe", string.Empty).ToLower(_culture), string.Empty, RegistryValueKind.String);
                         }
                     }
                 }
@@ -185,9 +209,12 @@ namespace WinMemoryCleaner
                         key.SetValue(Constants.App.Registry.Name.MemoryAreas, (int)MemoryAreas);
                         key.SetValue(Constants.App.Registry.Name.OptimizationKey, (int)OptimizationKey);
                         key.SetValue(Constants.App.Registry.Name.OptimizationModifiers, (int)OptimizationModifiers);
+                        key.SetValue(Constants.App.Registry.Name.RunOnPriority, (int)RunOnPriority);
                         key.SetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.ShowVirtualMemory, ShowVirtualMemory ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized ? 1 : 0);
+                        key.SetValue(Constants.App.Registry.Name.TrayIcon, (int)TrayIcon);
                     }
                 }
             }
@@ -200,3 +227,5 @@ namespace WinMemoryCleaner
         #endregion
     }
 }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

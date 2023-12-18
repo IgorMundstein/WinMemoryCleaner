@@ -9,7 +9,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Represents the converter that converts Boolean values to and from &lt;see cref="T:System.Windows.Visibility" /&gt; enumeration values.
     /// </summary>
-    /// <seealso cref="System.Windows.Data.IValueConverter" />
+    /// <seealso cref="IValueConverter" />
     [ValueConversion(typeof(bool), typeof(Visibility))]
     public sealed class InverseBooleanToVisibilityConverter : IValueConverter
     {

@@ -7,8 +7,8 @@ namespace WinMemoryCleaner
     /// Relay Command
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <seealso cref="System.Windows.Input.ICommand" />
-    internal class RelayCommand<T> : ICommand
+    /// <seealso cref="ICommand" />
+    public class RelayCommand<T> : ICommand
     {
         #region Fields
 
@@ -23,7 +23,7 @@ namespace WinMemoryCleaner
         /// Initializes a new instance of the <see cref="RelayCommand{T}" /> class.
         /// </summary>
         /// <param name="execute">The execution logic.</param>
-        internal RelayCommand(Action<T> execute)
+        public RelayCommand(Action<T> execute)
             : this(execute, null)
         {
         }
@@ -33,7 +33,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="execute">The execution logic.</param>
         /// <param name="canExecute">The execution status logic.</param>
-        internal RelayCommand(Action<T> execute, Func<bool> canExecute)
+        public RelayCommand(Action<T> execute, Func<bool> canExecute)
         {
             _canExecute = canExecute;
             _execute = execute;
@@ -79,12 +79,17 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Relay Command
     /// </summary>
-    /// <seealso cref="System.Windows.Input.ICommand" />
-    internal class RelayCommand : RelayCommand<object>
+    /// <seealso cref="ICommand" />
+    public class RelayCommand : RelayCommand<object>
     {
         #region Constructors
 
-        internal RelayCommand(Action execute, Func<bool> canExecute = null)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RelayCommand"/> class.
+        /// </summary>
+        /// <param name="execute">The execute.</param>
+        /// <param name="canExecute">The can execute.</param>
+        public RelayCommand(Action execute, Func<bool> canExecute = null)
             : base(_ => execute(), canExecute)
         {
         }

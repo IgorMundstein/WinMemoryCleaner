@@ -11,59 +11,69 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Computer Service
     /// </summary>
-    internal class ComputerService : IComputerService
+    public class ComputerService : IComputerService
     {
         #region Fields
 
-        private readonly Memory _memory = new Memory();
-        private readonly Structs.Windows.MemoryStatusEx _memoryStatusEx = new Structs.Windows.MemoryStatusEx();
+        private Memory _memory = new Memory(new Structs.Windows.MemoryStatusEx());
         private OperatingSystem _operatingSystem;
 
         #endregion
 
-        #region Methods (Computer)
+        #region Properties
 
         /// <summary>
-        /// Gets the memory info
+        /// Gets the memory info (RAM)
         /// </summary>
-        /// <returns></returns>
-        public Memory GetMemory()
+        public Memory Memory
         {
-            try
+            get
             {
-                if (!NativeMethods.GlobalMemoryStatusEx(_memoryStatusEx))
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                try
+                {
+                    var memoryStatusEx = new Structs.Windows.MemoryStatusEx();
 
-                _memory.Free = _memoryStatusEx.ullAvailPhys.ByteSizeToString();
-                _memory.FreePercentage = 100 - _memoryStatusEx.dwMemoryLoad;
-                _memory.Total = _memoryStatusEx.ullTotalPhys.ByteSizeToString();
-                _memory.Used = (_memoryStatusEx.ullTotalPhys - _memoryStatusEx.ullAvailPhys).ByteSizeToString();
-                _memory.UsedPercentage = _memoryStatusEx.dwMemoryLoad;
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e.Message);
-            }
+                    if (!NativeMethods.GlobalMemoryStatusEx(memoryStatusEx))
+                        Logger.Error(new Win32Exception(Marshal.GetLastWin32Error()));
 
-            return _memory;
+                    _memory = new Memory(memoryStatusEx);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e.Message);
+                }
+
+                return _memory;
+            }
         }
 
         /// <summary>
         /// Gets the operating system info
         /// </summary>
-        /// <returns></returns>
-        public OperatingSystem GetOperatingSystem()
+        public OperatingSystem OperatingSystem
         {
-            var operatingSystem = Environment.OSVersion;
-
-            return _operatingSystem ?? (_operatingSystem = new OperatingSystem
+            get
             {
-                Is64Bit = Environment.Is64BitOperatingSystem,
-                IsWindows8OrGreater = operatingSystem.Version.Major >= 6.2,
-                IsWindowsVistaOrGreater = operatingSystem.Version.Major >= 6,
-                IsWindowsXpOrGreater = operatingSystem.Version.Major >= 5.1
-            });
+                if (_operatingSystem == null)
+                {
+                    var operatingSystem = Environment.OSVersion;
+
+                    _operatingSystem = new OperatingSystem
+                    {
+                        Is64Bit = Environment.Is64BitOperatingSystem,
+                        IsWindows8OrGreater = operatingSystem.Version.Major >= 6.2,
+                        IsWindowsVistaOrGreater = operatingSystem.Version.Major >= 6,
+                        IsWindowsXpOrGreater = operatingSystem.Version.Major >= 5.1
+                    };
+                }
+
+                return _operatingSystem;
+            }
         }
+
+        #endregion
+
+        #region Methods (Computer)
 
         /// <summary>
         /// Increase the Privilege using a privilege name
@@ -100,12 +110,12 @@ namespace WinMemoryCleaner
         #region Methods (Memory)
 
         /// <summary>
-        /// Cleans the computer memory
+        /// Optimize the computer
         /// </summary>
-        /// <param name="areas">The areas.</param>
-        public void CleanMemory(Enums.Memory.Area areas)
+        /// <param name="areas">Memory areas</param>
+        public void Optimize(Enums.Memory.Areas areas)
         {
-            if (areas == Enums.Memory.Area.None)
+            if (areas == Enums.Memory.Areas.None)
                 return;
 
             var errorLog = new StringBuilder();
@@ -115,14 +125,14 @@ namespace WinMemoryCleaner
             var runtime = new TimeSpan();
             var stopwatch = new Stopwatch();
 
-            // Clean Processes Working Set
-            if ((areas & Enums.Memory.Area.ProcessesWorkingSet) != 0)
+            // Optimize Processes Working Set
+            if ((areas & Enums.Memory.Areas.ProcessesWorkingSet) != 0)
             {
                 try
                 {
                     stopwatch.Restart();
 
-                    MemoryCleanProcessesWorkingSet();
+                    OptimizeProcessesWorkingSet();
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
@@ -134,14 +144,14 @@ namespace WinMemoryCleaner
                 }
             }
 
-            // Clean System Working Set
-            if ((areas & Enums.Memory.Area.SystemWorkingSet) != 0)
+            // Optimize System Working Set
+            if ((areas & Enums.Memory.Areas.SystemWorkingSet) != 0)
             {
                 try
                 {
                     stopwatch.Restart();
 
-                    MemoryCleanSystemWorkingSet();
+                    OptimizeSystemWorkingSet();
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
@@ -153,14 +163,14 @@ namespace WinMemoryCleaner
                 }
             }
 
-            // Clean Modified Page List
-            if ((areas & Enums.Memory.Area.ModifiedPageList) != 0)
+            // Optimize Modified Page List
+            if ((areas & Enums.Memory.Areas.ModifiedPageList) != 0)
             {
                 try
                 {
                     stopwatch.Restart();
 
-                    MemoryCleanModifiedPageList();
+                    OptimizeModifiedPageList();
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
@@ -172,16 +182,16 @@ namespace WinMemoryCleaner
                 }
             }
 
-            // Clean Standby List
-            if ((areas & (Enums.Memory.Area.StandbyList | Enums.Memory.Area.StandbyListLowPriority)) != 0)
+            // Optimize Standby List
+            if ((areas & (Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.StandbyListLowPriority)) != 0)
             {
-                var lowPriority = (areas & Enums.Memory.Area.StandbyListLowPriority) != 0;
+                var lowPriority = (areas & Enums.Memory.Areas.StandbyListLowPriority) != 0;
 
                 try
                 {
                     stopwatch.Restart();
 
-                    MemoryCleanStandbyList(lowPriority);
+                    OptimizeStandbyList(lowPriority);
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
@@ -193,14 +203,14 @@ namespace WinMemoryCleaner
                 }
             }
 
-            // Clean Combined Page List
-            if ((areas & Enums.Memory.Area.CombinedPageList) != 0)
+            // Optimize Combined Page List
+            if ((areas & Enums.Memory.Areas.CombinedPageList) != 0)
             {
                 try
                 {
                     stopwatch.Restart();
 
-                    MemoryCleanCombinedPageList();
+                    OptimizeCombinedPageList();
 
                     runtime = runtime.Add(stopwatch.Elapsed);
 
@@ -245,14 +255,14 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Cleans the combined page list.
+        /// Optimize the combined page list.
         /// </summary>
-        /// <exception cref="System.ComponentModel.Win32Exception"></exception>
-        private void MemoryCleanCombinedPageList()
+        /// <exception cref="Win32Exception"></exception>
+        private void OptimizeCombinedPageList()
         {
             // Windows minimum version
-            if (!GetOperatingSystem().HasCombinedPageList)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryCombinedPageList));
+            if (!OperatingSystem.HasCombinedPageList)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemoryCombinedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
@@ -286,15 +296,15 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Clean the modified page list.
+        /// Optimize the modified page list.
         /// </summary>
         /// <exception cref="Win32Exception">
         /// </exception>
-        private void MemoryCleanModifiedPageList()
+        private void OptimizeModifiedPageList()
         {
             // Windows minimum version
-            if (!GetOperatingSystem().HasModifiedPageList)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryModifiedPageList));
+            if (!OperatingSystem.HasModifiedPageList)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemoryModifiedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
@@ -323,14 +333,14 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Cleans the processes working set.
+        /// Optimize the processes working set.
         /// </summary>
-        /// <exception cref="System.ComponentModel.Win32Exception"></exception>
-        private void MemoryCleanProcessesWorkingSet()
+        /// <exception cref="Win32Exception"></exception>
+        private void OptimizeProcessesWorkingSet()
         {
             // Windows minimum version
-            if (!GetOperatingSystem().HasProcessesWorkingSet)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryProcessesWorkingSet));
+            if (!OperatingSystem.HasProcessesWorkingSet)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemoryProcessesWorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeDebugName))
@@ -368,16 +378,16 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Cleans the standby list.
+        /// Optimize the standby list.
         /// </summary>
         /// <param name="lowPriority">if set to <c>true</c> [low priority].</param>
-        /// <exception cref="System.ComponentModel.Win32Exception"></exception>
         /// <exception cref="Win32Exception"></exception>
-        private void MemoryCleanStandbyList(bool lowPriority = false)
+        /// <exception cref="Win32Exception"></exception>
+        private void OptimizeStandbyList(bool lowPriority = false)
         {
             // Windows minimum version
-            if (!GetOperatingSystem().HasStandbyList)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemoryStandbyList));
+            if (!OperatingSystem.HasStandbyList)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemoryStandbyList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
@@ -406,16 +416,16 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Cleans the system working set.
+        /// Optimize the system working set.
         /// </summary>
-        /// <exception cref="System.ComponentModel.Win32Exception">
+        /// <exception cref="Win32Exception">
         /// </exception>
         /// <exception cref="Win32Exception"></exception>
-        private void MemoryCleanSystemWorkingSet()
+        private void OptimizeSystemWorkingSet()
         {
             // Windows minimum version
-            if (!GetOperatingSystem().HasSystemWorkingSet)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorFeatureIsNotSupported, Localizer.String.MemorySystemWorkingSet));
+            if (!OperatingSystem.HasSystemWorkingSet)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemorySystemWorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
@@ -427,7 +437,7 @@ namespace WinMemoryCleaner
             {
                 object systemCacheInformation;
 
-                if (GetOperatingSystem().Is64Bit)
+                if (OperatingSystem.Is64Bit)
                     systemCacheInformation = new Structs.Windows.SystemCacheInformation64 { MinimumWorkingSet = -1L, MaximumWorkingSet = -1L };
                 else
                     systemCacheInformation = new Structs.Windows.SystemCacheInformation32 { MinimumWorkingSet = uint.MaxValue, MaximumWorkingSet = uint.MaxValue };

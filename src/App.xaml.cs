@@ -23,6 +23,7 @@ namespace WinMemoryCleaner
         private static DateTimeOffset _lastAutoUpdate;
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
+        private static readonly object _showHidelock = new object();
         private static ProcessStartInfo _updateProcess;
         private static Version _version;
 
@@ -33,14 +34,10 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Initializes a new instance of the <see cref="App" /> class.
         /// </summary>
-        internal App()
+        public App()
         {
             // Log
-#if DEBUG
-            Logger.Level = Enums.Log.Level.Debug;
-#else
-            Logger.Level = Enums.Log.Level.Information;
-#endif
+            Logger.Level = Debugger.IsAttached ? Enums.Log.Levels.Debug : Enums.Log.Levels.Information;
 
             // Events
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
@@ -49,12 +46,22 @@ namespace WinMemoryCleaner
 
             // DI/IOC
             DependencyInjection.Container.Register<IComputerService, ComputerService>();
+            DependencyInjection.Container.Register<IHotKeyService, HotKeyService>();
             DependencyInjection.Container.Register<INotificationService, NotificationService>();
         }
 
         #endregion
 
         #region IDisposable
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
@@ -101,15 +108,6 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
         #endregion
 
         #region Methods
@@ -154,28 +152,37 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void OnNotifyIconClick(object sender, EventArgs e)
         {
-            var mouseEventArgs = e as MouseEventArgs;
-
-            // Show/Hide
-            if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
+            lock (_showHidelock)
             {
-                switch (MainWindow.Visibility)
+                var mouseEventArgs = e as MouseEventArgs;
+
+                // Show/Hide
+                if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
                 {
-                    case Visibility.Collapsed:
-                    case Visibility.Hidden:
-                        MainWindow.ShowInTaskbar = true;
-                        MainWindow.WindowState = WindowState.Normal;
+                    switch (MainWindow.Visibility)
+                    {
+                        case Visibility.Collapsed:
+                        case Visibility.Hidden:
+                            MainWindow.Show();
 
-                        MainWindow.Show();
-                        MainWindow.Activate();
-                        break;
+                            MainWindow.WindowState = WindowState.Normal;
 
-                    case Visibility.Visible:
-                        MainWindow.ShowInTaskbar = false;
-                        MainWindow.WindowState = WindowState.Normal;
+                            MainWindow.Activate();
+                            MainWindow.Focus();
 
-                        MainWindow.Hide();
-                        break;
+                            MainWindow.Topmost = true;
+                            MainWindow.Topmost = Settings.AlwaysOnTop;
+                            MainWindow.ShowInTaskbar = true;
+                            break;
+
+                        case Visibility.Visible:
+                            MainWindow.Hide();
+
+                            MainWindow.ShowInTaskbar = false;
+                            break;
+                    }
+
+                    ReleaseMemory();
                 }
             }
         }
@@ -191,7 +198,7 @@ namespace WinMemoryCleaner
                 // Check if app is already running
                 bool createdNew;
 
-                _mutex = new Mutex(true, Constants.App.Guid, out createdNew);
+                _mutex = new Mutex(true, Constants.App.Id, out createdNew);
 
                 if (!createdNew)
                 {
@@ -201,6 +208,11 @@ namespace WinMemoryCleaner
 
                         if (appHandle != IntPtr.Zero && NativeMethods.IsWindowVisible(appHandle))
                         {
+                            int appId;
+
+                            if (NativeMethods.GetWindowThreadProcessId(appHandle, out appId) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                                NativeMethods.AllowSetForegroundWindow(appId);
+
                             NativeMethods.ShowWindowAsync(appHandle, Constants.Windows.ShowWindow.Restore);
                             NativeMethods.SetForegroundWindow(appHandle);
                         }
@@ -214,12 +226,12 @@ namespace WinMemoryCleaner
                 }
 
                 // App priority
-                SetPriority(Enums.Priority.Low);
+                SetPriority(Settings.RunOnPriority);
 
                 // App Version
                 _version = Assembly.GetExecutingAssembly().GetName().Version;
 
-                var memoryAreas = Enums.Memory.Area.None;
+                var memoryAreas = Enums.Memory.Areas.None;
                 string updateNotification = null;
 
                 if (e != null)
@@ -233,8 +245,8 @@ namespace WinMemoryCleaner
                     {
                         var value = arg.Replace("/", string.Empty).Replace("-", string.Empty);
 
-                        // Memory areas to clean
-                        Enums.Memory.Area area;
+                        // Memory areas to optimize
+                        Enums.Memory.Areas area;
 
                         if (Enum.TryParse(value, out area))
                             memoryAreas |= area;
@@ -250,15 +262,16 @@ namespace WinMemoryCleaner
                 }
 
                 // GUI
-                if (memoryAreas == Enums.Memory.Area.None)
+                if (memoryAreas == Enums.Memory.Areas.None)
                 {
+                    NativeMethods.AllowSetForegroundWindow(Process.GetCurrentProcess().Id);
+
                     // Run On Startup
                     RunOnStartup(Settings.RunOnStartup);
 
-                    // Notification Area
+                    // Notification Areas
                     _notifyIcon = new NotifyIcon();
                     _notifyIcon.Click += OnNotifyIconClick;
-                    _notifyIcon.DoubleClick += OnNotifyIconClick;
 
                     // DI/IOC
                     DependencyInjection.Container.Register(_notifyIcon);
@@ -269,20 +282,14 @@ namespace WinMemoryCleaner
 
                     var mainWindow = new MainWindow();
 
-                    if (Settings.StartMinimized)
-                    {
-                        mainWindow.ShowInTaskbar = false;
-                        mainWindow.Hide();
-                    }
-                    else
+                    if (!Settings.StartMinimized)
                         mainWindow.Show();
 
-                    // Reduce app memory usage
-                    NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle);
+                    ReleaseMemory();
                 }
                 else // NO GUI
                 {
-                    DependencyInjection.Container.Resolve<IComputerService>().CleanMemory(memoryAreas);
+                    DependencyInjection.Container.Resolve<IComputerService>().Optimize(memoryAreas);
 
                     Shutdown();
                 }
@@ -309,10 +316,38 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Releases the app memory
+        /// </summary>
+        public static void ReleaseMemory()
+        {
+            // Optimize App Working Set
+            try
+            {
+                NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            // Garbage Collector
+            try
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        /// <summary>
         /// Runs the app on startup
         /// </summary>
         /// <param name="enable">if set to <c>true</c> [enable].</param>
-        internal static void RunOnStartup(bool enable)
+        public static void RunOnStartup(bool enable)
         {
             try
             {
@@ -370,7 +405,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Sets the app priority for the Windows
         /// </summary>
-        internal static void SetPriority(Enums.Priority priority)
+        public static void SetPriority(Enums.Priority priority)
         {
             bool priorityBoostEnabled;
             ProcessPriorityClass processPriorityClass;
@@ -481,7 +516,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Update to the latest version
         /// </summary>
-        internal static void Update(params string[] args)
+        public static void Update(params string[] args)
         {
             try
             {
@@ -494,9 +529,7 @@ namespace WinMemoryCleaner
                 {
                     ServicePointManager.DefaultConnectionLimit = 10;
                     ServicePointManager.Expect100Continue = true;
-
-                    if (ServicePointManager.SecurityProtocol != 0)
-                        ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072 | (SecurityProtocolType)12288;
+                    ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072 | (SecurityProtocolType)12288; // TLS 1.2 | TLS 1.3
 
                     var assemblyInfo = client.DownloadString(Constants.App.Repository.AssemblyInfoUri);
 

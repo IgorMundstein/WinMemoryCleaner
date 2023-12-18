@@ -3,12 +3,12 @@
     /// <summary>
     /// Computer
     /// </summary>
-    internal class Computer
+    public class Computer
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Computer" /> class.
         /// </summary>
-        internal Computer()
+        public Computer()
         {
             Memory = new Memory();
             OperatingSystem = new OperatingSystem();
@@ -23,5 +23,6 @@
         /// Operating System
         /// </summary>
         public OperatingSystem OperatingSystem { get; set; }
+
     }
 }

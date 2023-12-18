@@ -1,9 +1,19 @@
 ﻿namespace WinMemoryCleaner
 {
-    internal interface IMemoryService
+    /// <summary>
+    /// IMemoryService
+    /// </summary>
+    public interface IMemoryService
     {
-        void CleanMemory(Enums.Memory.Area areas);
+        /// <summary>
+        /// Gets the memory info (RAM)
+        /// </summary>
+        Memory Memory { get; }
 
-        Memory GetMemory();
+        /// <summary>
+        /// Optimize the computer
+        /// </summary>
+        /// <param name="areas">Memory areas</param>
+        void Optimize(Enums.Memory.Areas areas);
     }
 }

@@ -27,7 +27,7 @@ namespace WinMemoryCleaner
         /// Called when [property changed].
         /// </summary>
         /// <param name="propertyName">Name of the property.</param>
-        internal void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             if (PropertyChanged != null)
                 PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -40,11 +40,11 @@ namespace WinMemoryCleaner
         /// changed.</typeparam>
         /// <param name="propertyExpression">An expression identifying the property
         /// that changed.</param>
-        internal void RaisePropertyChanged<T>(Expression<Func<T>> propertyExpression)
+        public void RaisePropertyChanged<T>(Expression<Func<T>> propertyExpression)
         {
             var handler = PropertyChanged;
 
-            if (handler != null)
+            if (handler != null && propertyExpression != null)
             {
                 var body = propertyExpression.Body as MemberExpression;
 

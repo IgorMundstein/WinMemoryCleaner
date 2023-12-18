@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -11,10 +13,11 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Notification Service
     /// </summary>
-    internal class NotificationService : IDisposable, INotificationService
+    public class NotificationService : INotificationService
     {
         #region Fields
 
+        private readonly Icon _imageIcon;
         private readonly NotifyIcon _notifyIcon;
 
         #endregion
@@ -27,6 +30,7 @@ namespace WinMemoryCleaner
         /// <param name="notifyIcon">Notify Icon</param>
         public NotificationService(NotifyIcon notifyIcon)
         {
+            _imageIcon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             _notifyIcon = notifyIcon;
 
             Initialize();
@@ -36,18 +40,46 @@ namespace WinMemoryCleaner
 
         #region IDisposable
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
-            try
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                if (_notifyIcon != null)
+                try
                 {
-                    _notifyIcon.Dispose();
+                    if (_imageIcon != null)
+                    {
+                        _imageIcon.Dispose();
+                    }
                 }
-            }
-            catch
-            {
-                // ignored
+                catch
+                {
+                    // ignored
+                }
+
+                try
+                {
+                    if (_notifyIcon != null)
+                    {
+                        _notifyIcon.Dispose();
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
             }
         }
 
@@ -63,7 +95,7 @@ namespace WinMemoryCleaner
             if (_notifyIcon == null)
                 return;
 
-            // Notification Area (Menu)
+            // Notification Areas (Menu)
             _notifyIcon.ContextMenuStrip = new ContextMenuStripControl();
 
             // Optimize
@@ -83,7 +115,8 @@ namespace WinMemoryCleaner
                 Application.Current.Shutdown();
             });
 
-            _notifyIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+            Update(new Memory());
+
             _notifyIcon.Visible = true;
         }
 
@@ -110,7 +143,7 @@ namespace WinMemoryCleaner
         /// <param name="title">The title</param>
         /// <param name="timeout">The time period, in seconds</param>
         /// <param name="icon">The icon</param>
-        public void Notify(string message, string title = null, int timeout = 5, Enums.NotificationIcon icon = Enums.NotificationIcon.None)
+        public void Notify(string message, string title = null, int timeout = 5, Enums.Icon.Notification icon = Enums.Icon.Notification.None)
         {
             try
             {
@@ -129,18 +162,69 @@ namespace WinMemoryCleaner
         /// Update Info
         /// </summary>
         /// <param name="memory">The memory.</param>
-        public void UpdateInfo(Memory memory)
+        public void Update(Memory memory)
         {
+            if (_notifyIcon == null)
+                return;
+
+            // String
             try
             {
-                if (_notifyIcon == null)
-                    return;
+                if (memory == null)
+                    throw new ArgumentNullException("memory");
 
-                _notifyIcon.Text = string.Format(Localizer.Culture, "{0} {1}{2}%", Localizer.String.MemoryUsage, Environment.NewLine, memory.UsedPercentage);
+                _notifyIcon.Text = Settings.ShowVirtualMemory
+                    ? string.Format(Localizer.Culture, "{1}{0}{2}: {3}%{0}{4}: {5}%", Environment.NewLine, Localizer.String.MemoryUsage.ToUpper(Localizer.Culture), Localizer.String.Physical, memory.Physical.Used.Percentage, Localizer.String.Virtual, memory.Virtual.Used.Percentage)
+                    : string.Format(Localizer.Culture, "{1}{0}{2}: {3}%", Environment.NewLine, Localizer.String.MemoryUsage.ToUpper(Localizer.Culture), Localizer.String.Physical, memory.Physical.Used.Percentage);
             }
             catch
             {
-                // ignored
+                if (_notifyIcon != null)
+                    _notifyIcon.Text = string.Empty;
+            }
+
+            // Icon
+            try
+            {
+                switch (Settings.TrayIcon)
+                {
+                    case Enums.Icon.Tray.Image:
+                        _notifyIcon.Icon = _imageIcon;
+                        break;
+
+                    case Enums.Icon.Tray.MemoryUsage:
+                        if (memory == null)
+                            throw new ArgumentNullException("memory");
+
+                        using (var image = new Bitmap(16, 14))
+                        {
+                            using (var graphics = Graphics.FromImage(image))
+                            {
+                                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                                graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
+
+                                graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, image.Width, image.Height);
+
+                                using (var font = new Font("Arial", 10, FontStyle.Regular, GraphicsUnit.Point))
+                                    graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, -1, -1);
+                            }
+
+                            using (var icon = Icon.FromHandle(image.GetHicon()))
+                            {
+                                _notifyIcon.Icon = icon;
+
+                                NativeMethods.DestroyIcon(icon.Handle);
+                            }
+                        }
+                        break;
+                }
+            }
+            catch
+            {
+                if (_notifyIcon != null)
+                    _notifyIcon.Icon = _imageIcon;
             }
         }
 

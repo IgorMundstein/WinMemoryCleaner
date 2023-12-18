@@ -9,10 +9,16 @@ using System.Runtime.Serialization.Json;
 
 namespace WinMemoryCleaner
 {
-    internal static class Localizer
+    /// <summary>
+    /// Localizer
+    /// </summary>
+    public static class Localizer
     {
         #region Events
 
+        /// <summary>
+        /// Occurs when [static property changed].
+        /// </summary>
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
         #endregion
@@ -46,10 +52,16 @@ namespace WinMemoryCleaner
 
         #region Properties
 
-        internal static CultureInfo Culture
+        /// <summary>
+        /// Gets the culture.
+        /// </summary>
+        /// <value>
+        /// The culture.
+        /// </value>
+        public static CultureInfo Culture
         {
             get { return _culture; }
-            set
+            private set
             {
                 _culture = value;
 
@@ -57,6 +69,12 @@ namespace WinMemoryCleaner
             }
         }
 
+        /// <summary>
+        /// Gets or sets the language.
+        /// </summary>
+        /// <value>
+        /// The language.
+        /// </value>
         public static Language Language
         {
             get { return _language; }
@@ -67,6 +85,9 @@ namespace WinMemoryCleaner
 
                 try
                 {
+                    if (value == null)
+                        throw new ArgumentNullException("Language");
+
                     Load(value);
 
                     Settings.Language = value.Name;
@@ -84,9 +105,17 @@ namespace WinMemoryCleaner
 
                 RaiseStaticPropertyChanged("Language");
                 RaiseStaticPropertyChanged("String");
+
+                App.ReleaseMemory();
             }
         }
 
+        /// <summary>
+        /// Gets the languages.
+        /// </summary>
+        /// <value>
+        /// The languages.
+        /// </value>
         public static List<Language> Languages
         {
             get
@@ -101,7 +130,7 @@ namespace WinMemoryCleaner
 
                     try
                     {
-                        var localResources = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, string.Format(Localizer.Culture, "*{0}", Constants.App.LocalizationResourceExtension), SearchOption.TopDirectoryOnly)
+                        var localResources = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, string.Format(Culture, "*{0}", Constants.App.LocalizationResourceExtension), SearchOption.TopDirectoryOnly)
                             .Select(Path.GetFileNameWithoutExtension)
                             .ToList();
 
@@ -128,6 +157,9 @@ namespace WinMemoryCleaner
             }
         }
 
+        /// <summary>
+        /// Gets the string
+        /// </summary>
         public static Localization String { get; private set; }
 
         #endregion
@@ -138,8 +170,8 @@ namespace WinMemoryCleaner
         {
             Localization localization;
 
-            var localResource = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(Localizer.Culture, "{0}{1}", language.EnglishName, Constants.App.LocalizationResourceExtension));
-            var resource = string.Format(Localizer.Culture, "{0}{1}{2}", Constants.App.LocalizationResourcePath, language.EnglishName, Constants.App.LocalizationResourceExtension);
+            var localResource = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(Culture, "{0}{1}", language.EnglishName, Constants.App.LocalizationResourceExtension));
+            var resource = string.Format(Culture, "{0}{1}{2}", Constants.App.LocalizationResourcePath, language.EnglishName, Constants.App.LocalizationResourceExtension);
 
             using (var stream = File.Exists(localResource) ? File.OpenRead(localResource) : Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
             {
@@ -154,7 +186,7 @@ namespace WinMemoryCleaner
                 }
                 catch
                 {
-                    throw new Exception(string.Format(Localizer.Culture, "The {0} language file is missing or invalid.", language.EnglishName));
+                    throw new Exception(string.Format(Culture, "The {0} language file is missing or invalid.", language.EnglishName));
                 }
             }
 
@@ -166,7 +198,7 @@ namespace WinMemoryCleaner
                 .ToList();
 
             if (nullOrEmptyStrings.Any())
-                throw new Exception(string.Format(Localizer.Culture, "The {0} language file is invalid. Missing Values: {1}", language.EnglishName, string.Join(", ", nullOrEmptyStrings)));
+                throw new Exception(string.Format(Culture, "The {0} language file is invalid. Missing Values: {1}", language.EnglishName, string.Join(", ", nullOrEmptyStrings)));
 
             Culture = new CultureInfo(language.Name);
             String = localization;

@@ -1,6 +1,11 @@
 ﻿namespace WinMemoryCleaner
 {
-    internal interface IComputerService : IMemoryService, IOperatingSystem
+    /// <summary>
+    /// IComputerService
+    /// </summary>
+    /// <seealso cref="IMemoryService" />
+    /// <seealso cref="IOperatingSystem" />
+    public interface IComputerService : IMemoryService, IOperatingSystem
     {
     }
 }

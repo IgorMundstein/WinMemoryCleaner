@@ -7,7 +7,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Value converter that applies NOT operator to a <see cref="bool" /> value.
     /// </summary>
-    /// <seealso cref="System.Windows.Data.IValueConverter" />
+    /// <seealso cref="IValueConverter" />
     [ValueConversion(typeof(bool), typeof(bool))]
     public sealed class InverseBooleanConverter : IValueConverter
     {

@@ -12,7 +12,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Main Window
     /// </summary>
-    /// <seealso cref="System.Windows.Window" />
+    /// <seealso cref="Window" />
     /// <seealso cref="System.Windows.Markup.IComponentConnector" />
     public partial class MainWindow
     {
@@ -21,13 +21,13 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow" /> class.
         /// </summary>
-        internal MainWindow()
+        public MainWindow()
         {
             InitializeComponent();
 
             _viewModel = (MainViewModel)DataContext;
             _viewModel.OptimizeCommandCompleted += OnOptimizeCommandCompleted;
-            _viewModel.RemoveProcessFromExclusionListCommandCompleted += SetFocusToOptimizationButton;
+            _viewModel.RemoveProcessFromExclusionListCommandCompleted += SetFocusToProcessExclusionList;
 
             // Slider
             var sliderPreviewMouseLeftButtonDownEvent = new MouseButtonEventHandler((sender, e) =>
@@ -51,6 +51,18 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Closes to the notification area.
+        /// </summary>
+        private void CloseToTheNotificationArea()
+        {
+            if (Visibility == Visibility.Visible)
+            {
+                Hide();
+                ShowInTaskbar = false;
+            }
+        }
+
+        /// <summary>
         /// Called when [close button click].
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -61,8 +73,9 @@ namespace WinMemoryCleaner
             {
                 SetFocusToOptimizationButton();
 
-                ShowInTaskbar = false;
-                Hide();
+                CloseToTheNotificationArea();
+
+                App.ReleaseMemory();
             }
             else
                 Application.Current.Shutdown();
@@ -125,8 +138,7 @@ namespace WinMemoryCleaner
                 {
                     SetFocusToOptimizationButton();
 
-                    ShowInTaskbar = false;
-                    Hide();
+                    CloseToTheNotificationArea();
                 }
                 else
                 {
@@ -146,7 +158,7 @@ namespace WinMemoryCleaner
         /// Called when [processes drop down opened].
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void OnProcessesDropDownOpened(object sender, EventArgs e)
         {
             _viewModel.RaisePropertyChanged(() => _viewModel.Processes);
@@ -195,6 +207,15 @@ namespace WinMemoryCleaner
             Keyboard.ClearFocus();
             FocusManager.SetFocusedElement(this, Optimize);
             Optimize.Focus();
+        }
+
+        /// <summary>
+        /// Sets the focus to process exclusion list.
+        /// </summary>
+        private void SetFocusToProcessExclusionList()
+        {
+            FocusManager.SetFocusedElement(this, ProcessExclusionList);
+            ProcessExclusionList.Focus();
         }
     }
 }
