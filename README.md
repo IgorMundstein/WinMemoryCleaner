@@ -81,7 +81,7 @@
 
 - `Image` - Show app icon
 - `Memory usage` - Show physical memory usage with a background color based on the value
-  - [![](/.github/images/memory-usage.png)](#tray-icon) `(0% - 79%)` White
+  - [![](/.github/images/memory-usage.png)](#tray-icon) `(0% - 79%)` Black
   - [![](/.github/images/memory-usage-warning.png)](#tray-icon) `(80% - 89%)` Orange
   - [![](/.github/images/memory-usage-danger.png)](#tray-icon) `(90% - 100%)` Red
 
