@@ -10,7 +10,7 @@
   [![](/.github/images/main-window.png)](#windows-memory-cleaner)
 
   <p align="justify">
-    This free RAM cleaner uses native Windows features to clear memory areas. Sometimes, programs do not release the allocated memory, making the computer slow. That is when you use Windows Memory Cleaner to optimize the memory, so you can keep working without wasting time restarting your system. 
+    This free RAM cleaner uses native Windows features to clear memory areas. Sometimes, programs do not release the allocated memory, making the computer slow. That is when you use Windows Memory Cleaner to optimize the memory so you can keep working without wasting time restarting your system. 
   </p>
 
   <p align="justify">
@@ -62,7 +62,7 @@
 - `Close after optimization` - Closes the app after optimization
 - `Close to the notification area` - Minimize the app to the system tray when clicking the close (X) button
 - `Run on low priority` - It limits the app resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
-- `Run on startup` - Runs the app after the system boots up. It creates an entry on Windows **Task Scheduler** and Windows Registry at **Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner**
+- `Run on startup` - Runs the app after the system boots up. It creates an entry on Windows **Task Scheduler** and Windows Registry path **SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run**
 - `Show optimization notifications` - Sends a message to the notification area after optimization. It includes the approximate memory released
 - `Show virtual memory` - It also monitors the virtual memory usage
 - `Start minimized` - The app will start minimized to the system tray. Single-click on the icon to restore
@@ -170,7 +170,7 @@ If you are a native speaker of any language other than English, you can contribu
 
 ### Where does the app save the user configuration?
 
-Each user setting is saved in the Windows registry path: `Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner`
+Each user setting is saved in the Windows registry path **Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner**
 
 ### Why has the app been flagged as a Virus/Trojan and blocked by Windows Defender or Antivirus?
 
