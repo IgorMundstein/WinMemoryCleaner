@@ -165,3 +165,18 @@ If you are a native speaker of any language other than English, you can contribu
 - `Spanish (Español)` [Ajneb Al Revés](https://github.com/AjnebAlReves) | [Nekrodamus](https://github.com/FrannDzs)
 - `Turkish (Türkçe)` [Viollje](https://github.com/Viollje)
 - `Ukrainian (Українська)` [RieBi](https://github.com/RieBi) | [Oleksander](https://github.com/Mariachi1231)
+
+## ❔ Frequently Asked Questions (FAQ)
+
+### Where does the app save the user configuration?
+
+Each user setting is saved in the Windows registry path: `Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner`
+
+### Why has the app been flagged as a Virus/Trojan and blocked by Windows Defender or Antivirus?
+
+One of the reasons for this **false alarm** is that the application adds entries to the registry and task scheduler to run the application at startup. Windows doesn't “like” applications with administrator privileges running at startup. I understand that, but this is the way to do it. I apologize, but the application cannot deep clean memory without administrator privileges.
+
+That's a common issue that persists every time a new app version is released. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
+It helps if more users [submit the app for malware analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
+
+Meanwhile, as a workaround, you can [add an exclusion to Windows Security](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
