@@ -26,18 +26,18 @@ namespace WinMemoryCleaner
         /// <returns></returns>
         public static string GetMessage(this Exception value)
         {
-            Exception innerException;
+            var exception = value;
             var messages = new List<string>();
 
             do
             {
-                messages.Add(value.Message.Trim());
+                messages.Add(exception.Message.Trim());
 
-                innerException = value.InnerException;
+                exception = exception.InnerException;
             }
-            while (innerException != null);
+            while (exception != null);
 
-            return string.Join(" ", messages.Distinct());
+            return string.Join(". ", messages.Distinct());
         }
 
         /// <summary>
