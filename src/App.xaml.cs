@@ -569,7 +569,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                Logger.Warning(string.Format(Localizer.Culture, "({0}) {1}: {2}", Localizer.String.AutoUpdate, Localizer.String.Error, e.GetMessage()));
+                Logger.Warning(string.Format(Localizer.Culture, "({0}) {1}", Localizer.String.AutoUpdate.ToUpper(Localizer.Culture), e.GetMessage()));
             }
         }
 
