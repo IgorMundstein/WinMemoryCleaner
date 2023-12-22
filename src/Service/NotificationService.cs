@@ -209,11 +209,8 @@ namespace WinMemoryCleaner
                             graphics.SmoothingMode = SmoothingMode.AntiAlias;
                             graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
-                            //graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, image.Width, image.Height);
-                            //graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, 8, 8, format);
-
-                            graphics.FillRectangle(Brushes.Red, 0, 0, image.Width, image.Height);
-                            graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", 90), font, Brushes.WhiteSmoke, 8, 8, format);
+                            graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, image.Width, image.Height);
+                            graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, 8, 8, format);
 
                             using (var icon = Icon.FromHandle(image.GetHicon()))
                             {
