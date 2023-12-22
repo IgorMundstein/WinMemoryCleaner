@@ -58,7 +58,7 @@
 ### Settings
 
 - `Always on top` - Pins the window to the top of all your windows
-- `Auto update` - Keeps the app up to date
+- `Auto update` - Keeps the app up to date. It checks for updates every 24 hours
 - `Close after optimization` - Closes the app after optimization
 - `Close to the notification area` - Minimize the app to the system tray when clicking the close (X) button
 - `Run on low priority` - It limits the app resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
