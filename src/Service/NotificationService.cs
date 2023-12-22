@@ -196,20 +196,24 @@ namespace WinMemoryCleaner
                         if (memory == null)
                             throw new ArgumentNullException("memory");
 
-                        using (var image = new Bitmap(16, 14))
+                        using (var image = new Bitmap(16, 15))
+                        using (var graphics = Graphics.FromImage(image))
+                        using (var font = new Font("Arial", 9F))
+                        using (var format = new StringFormat())
                         {
-                            using (var graphics = Graphics.FromImage(image))
-                            {
-                                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                                graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
+                            format.Alignment = StringAlignment.Center;
+                            format.LineAlignment = StringAlignment.Center;
 
-                                graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, image.Width, image.Height);
+                            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                            graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                            graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
-                                using (var font = new Font("Arial", 10, FontStyle.Regular, GraphicsUnit.Point))
-                                    graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, -1, -1);
-                            }
+                            //graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, image.Width, image.Height);
+                            //graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, 8, 8, format);
+
+                            graphics.FillRectangle(Brushes.Red, 0, 0, image.Width, image.Height);
+                            graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", 90), font, Brushes.WhiteSmoke, 8, 8, format);
 
                             using (var icon = Icon.FromHandle(image.GetHicon()))
                             {

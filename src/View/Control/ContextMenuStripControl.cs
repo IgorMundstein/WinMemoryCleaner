@@ -58,9 +58,6 @@ namespace WinMemoryCleaner
             {
                 base.OnRenderItemText(e);
 
-                if (e == null)
-                    return;
-
                 e.Item.ForeColor = e.Item.Selected ? _darkOver : _darkForeground;
             }
 
@@ -76,9 +73,6 @@ namespace WinMemoryCleaner
             /// <param name="e">A <see cref="T:System.Windows.Forms.ToolStripSeparatorRenderEventArgs" /> that contains the event data.</param>
             protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
             {
-                if (e == null)
-                    return;
-
                 var toolStripSeparator = e.Item as ToolStripSeparator;
 
                 if (toolStripSeparator == null)
