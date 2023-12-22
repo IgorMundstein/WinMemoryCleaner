@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Design", "CA1030:Use events where appropriate", Justification = "Ignored", Scope = "type", Target = "~T:WinMemoryCleaner.ObservableObject")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Ignored")]
 [assembly: SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Ignored")]
+[assembly: SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Ignored", Scope = "type", Target = "~T:WinMemoryCleaner.ContextMenuStripControl.ToolStripRenderer")]
 [assembly: SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Ignored", Scope = "type", Target = "~T:WinMemoryCleaner.ExtensionMethods")]
 [assembly: SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "Ignored")]
 [assembly: SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "Ignored", Scope = "type", Target = "~T:WinMemoryCleaner.Localizer")]

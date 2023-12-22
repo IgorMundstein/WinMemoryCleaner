@@ -86,7 +86,7 @@ namespace WinMemoryCleaner
                 try
                 {
                     if (value == null)
-                        throw new ArgumentNullException("Language");
+                        throw new ArgumentNullException("value");
 
                     Load(value);
 
