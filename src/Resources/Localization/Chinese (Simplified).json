@@ -33,7 +33,7 @@
   "OptimizationHotkey": "优化热键",
   "Optimize": "优化",
   "Optimized": "已优化",
-  "Physical": "物理的",
+  "Physical": "实体内存",
   "ProcessExclusionList": "排除的进程",
   "Remove": "移除",
   "RepositoryInfo": "文档，问题和建议。",
@@ -47,6 +47,6 @@
   "TrayIcon": "任务栏图标",
   "UpdatedToVersion": "已更新到版本{0}",
   "Used": "使用中",
-  "Virtual": "虚拟的",
+  "Virtual": "虚拟内存",
   "WhenFreeMemoryIsBelow": "当可用内存低于 {0}%"
 }
