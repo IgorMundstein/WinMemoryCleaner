@@ -5,6 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+[assembly: SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "Ignored", Scope = "namespace", Target = "~N:WinMemoryCleaner")]
 [assembly: SuppressMessage("Design", "CA1030:Use events where appropriate", Justification = "Ignored", Scope = "type", Target = "~T:WinMemoryCleaner.ObservableObject")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Ignored")]
 [assembly: SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Ignored")]

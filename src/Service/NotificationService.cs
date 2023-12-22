@@ -196,6 +196,9 @@ namespace WinMemoryCleaner
                         if (memory == null)
                             throw new ArgumentNullException("memory");
 
+                        if (memory.Physical.Used.Percentage == 0)
+                            return;
+
                         using (var image = new Bitmap(16, 15))
                         using (var graphics = Graphics.FromImage(image))
                         using (var font = new Font("Arial", 9F))
