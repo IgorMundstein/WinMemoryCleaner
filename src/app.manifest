@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="2.7.0.0" name="WinMemoryCleaner" />
+  <assemblyIdentity version="2.8.0.0" name="WinMemoryCleaner" />
   <description>Windows Memory Cleaner</description>
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <!-- Application manifests: https://learn.microsoft.com/en-us/windows/win32/sbscs/application-manifests#supportedos -->

@@ -276,14 +276,14 @@ namespace WinMemoryCleaner
                     // DI/IOC
                     DependencyInjection.Container.Register(_notifyIcon);
 
-                    // Update notification
-                    if (!string.IsNullOrWhiteSpace(updateNotification))
-                        DependencyInjection.Container.Resolve<INotificationService>().Notify(updateNotification);
-
                     var mainWindow = new MainWindow();
 
                     if (!Settings.StartMinimized)
                         mainWindow.Show();
+
+                    // Update notification
+                    if (!string.IsNullOrWhiteSpace(updateNotification))
+                        DependencyInjection.Container.Resolve<INotificationService>().Notify(updateNotification);
 
                     ReleaseMemory();
                 }
