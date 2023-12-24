@@ -1,13 +1,27 @@
 <div align="center">
   <h1>Windows Memory Cleaner</h1>
+  
+  <p align="center">
+    <picture>
+      <img src="https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge">
+    </picture>    
+    <picture>
+      <img src="https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge">
+    </picture>
+  </p>
 
-  [![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#windows-memory-cleaner)
-  [![](https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#windows-memory-cleaner)
+  <p align="center">
+    <picture>
+      <img src="https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge">
+    </picture>    
+    <picture>
+      <img src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge">
+    </picture>
+  </p>
 
-  [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE)
-  [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
-
-  [![](/.github/images/main-window.png)](#windows-memory-cleaner)
+  <picture>
+    <img src="/.github/images/main-window.png">
+  </picture>
 
   <p align="justify">
     This free RAM cleaner uses native Windows features to clear memory areas. Sometimes, programs do not release the allocated memory, making the computer slow. That is when you use Windows Memory Cleaner to optimize the memory so you can keep working without wasting time restarting your system. 
@@ -32,7 +46,9 @@
 
 - Arrow (Up/Down) next to the minimize button to collapse and extend the window
 
-[![](/.github/images/main-window-compact.png)](#compact-mode)
+<picture>
+  <img src="/.github/images/main-window-compact.png">
+</picture>
 
 ### Memory Areas
 
@@ -58,7 +74,7 @@
 ### Settings
 
 - `Always on top` - Pins the window to the top of all your windows
-- `Auto update` - Keeps the app up to date
+- `Auto update` - Keeps the app up to date. It checks for updates every 24 hours
 - `Close after optimization` - Closes the app after optimization
 - `Close to the notification area` - Minimize the app to the system tray when clicking the close (X) button
 - `Run on low priority` - It limits the app resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
@@ -71,19 +87,23 @@
 
 - Menu
 
-[![](/.github/images/system-tray.png)](#system-tray)
+<picture>
+  <img src="/.github/images/system-tray.png">
+</picture>
 
 - Notification
 
-[![](/.github/images/notification.png)](#notifications)
+<picture>
+  <img src="/.github/images/notification.png">
+</picture>
 
 ### Tray icon
 
 - `Image` - Show app icon
 - `Memory usage` - Show physical memory usage with a background color based on the value
-  - [![](/.github/images/memory-usage.png)](#tray-icon) `(0% - 79%)` Black
-  - [![](/.github/images/memory-usage-warning.png)](#tray-icon) `(80% - 89%)` Orange
-  - [![](/.github/images/memory-usage-danger.png)](#tray-icon) `(90% - 100%)` Red
+  - `(0% - 79%)` <picture><img src="/.github/images/memory-usage.png"></picture>
+  - `(80% - 89%)` <picture><img src="/.github/images/memory-usage-warning.png"></picture>
+  - `(90% - 100%)` <picture><img src="/.github/images/memory-usage-danger.png"></picture>
 
 ## 🖥️ Command arguments (NO GUI)
 
@@ -106,7 +126,9 @@ The app generates logs in the Windows event
 1. Press **Win + R** to open the Run command dialog box
 2. Type **eventvwr** and press **Enter** to open the Event Viewer
 
-[![](/.github/images/windows-event-log.png)](#-logs)
+<picture>
+  <img src="/.github/images/windows-event-log.png">
+</picture>
 
 ## 📝 Project notes
 
@@ -140,7 +162,7 @@ If you are a native speaker of any language other than English, you can contribu
 
 💡 When a new version requires translated text changes, Google Translate will be used for translation by the developer. The contributor's efforts to submit updates will always be appreciated.
 
-❤️ Contributors
+💙 Contributors
 
 - `Albanian (Shqip)` [Omer Rustemi](https://github.com/omerrustemicode)
 - `Arabic (اللغة العربية)` [Abdulmajeed-Alrajhi](https://github.com/Abdulmajeed-Alrajhi)
@@ -166,7 +188,7 @@ If you are a native speaker of any language other than English, you can contribu
 - `Turkish (Türkçe)` [Viollje](https://github.com/Viollje)
 - `Ukrainian (Українська)` [RieBi](https://github.com/RieBi) | [Oleksander](https://github.com/Mariachi1231)
 
-## ❔ Frequently Asked Questions (FAQ)
+## ❓ Frequently Asked Questions (FAQ)
 
 ### Where does the app save the user configuration?
 
