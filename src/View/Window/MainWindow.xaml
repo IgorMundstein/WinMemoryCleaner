@@ -406,7 +406,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ProgressBar Grid.Column="0" 
+                        <ProgressBar BorderThickness="0"
+                                     Grid.Column="0" 
                                      Grid.ColumnSpan="5"
                                      Grid.Row="0"
                                      Height="5" 
@@ -418,11 +419,11 @@
                                 <ControlTemplate>
                                     <Grid>
                                         <Border Background="{StaticResource DarkMemoryBarTrackBackground}"
-                                                BorderThickness="0"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="3"
                                                 Name="PART_Track" />
                                         <Border Background="{StaticResource DarkMemoryBarIndicatorBackground}" 
-                                                BorderThickness="0" 
+                                                BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="3"
                                                 HorizontalAlignment="Left"
                                                 Name="PART_Indicator" />
@@ -492,7 +493,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ProgressBar Grid.Column="0" 
+                        <ProgressBar BorderThickness="0"
+                                     Grid.Column="0" 
                                      Grid.ColumnSpan="5"
                                      Grid.Row="0"
                                      Height="5" 
@@ -504,11 +506,11 @@
                                 <ControlTemplate>
                                     <Grid>
                                         <Border Background="{StaticResource DarkMemoryBarTrackBackground}"
-                                                BorderThickness="0"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="3"
                                                 Name="PART_Track" />
                                         <Border Background="{StaticResource DarkMemoryBarIndicatorBackground}" 
-                                                BorderThickness="0" 
+                                                BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="3"
                                                 HorizontalAlignment="Left"
                                                 Name="PART_Indicator" />
@@ -601,6 +603,55 @@
                         Name="Optimize"
                         Padding="10, 5, 10, 5"
                         TabIndex="0" />
+                <Grid Grid.Column="1"
+                      Grid.Row="2"
+                      Height="Auto"
+                      Margin="0, 10, 0, 0"
+                      Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Hidden}}">
+                    <ProgressBar BorderBrush="{StaticResource DarkBorderBrush}"
+                                 BorderThickness="1"
+                                 FontWeight="Normal"
+                                 HorizontalContentAlignment="Center"
+                                 Maximum="{Binding OptimizationProgressTotal}"
+                                 Minimum="0"
+                                 Value="{Binding OptimizationProgressValue}"
+                                 VerticalContentAlignment="Center">
+                        <ProgressBar.Template>
+                            <ControlTemplate>
+                                <Grid>
+                                    <Border Background="{StaticResource DarkBackground}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="3"
+                                            Name="PART_Track" />
+                                    <Border Background="{StaticResource DarkOver}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="3"
+                                            HorizontalAlignment="Left"
+                                            Name="PART_Indicator" />
+                                </Grid>
+                            </ControlTemplate>
+                        </ProgressBar.Template>
+                    </ProgressBar>
+                    <TextBlock FontWeight="Normal"
+                               Foreground="{StaticResource DarkForeground}"
+                               HorizontalAlignment="Left"
+                               Margin="10, 0, 5, 0"
+                               Text="{Binding OptimizationProgressStep}"
+                               VerticalAlignment="Center" />
+                    <StackPanel HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Margin="5, 0, 10, 0"
+                                VerticalAlignment="Center">
+                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text="{Binding OptimizationProgressValue}" />
+                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text=" / " />
+                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text="{Binding OptimizationProgressTotal}" />
+                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text=" (" />
+                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text="{Binding OptimizationProgressPercentage}" />
+                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text="%)" />
+                    </StackPanel>
+                </Grid>
             </Grid>
         </StackPanel>
     </Border>

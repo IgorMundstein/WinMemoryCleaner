@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -25,6 +26,10 @@ namespace WinMemoryCleaner
         private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
         private BackgroundWorker _monitorAppWorker;
         private BackgroundWorker _monitorComputerWorker;
+        private byte _optimizationProgressPercentage;
+        private string _optimizationProgressStep = Localizer.String.Optimize;
+        private byte _optimizationProgressTotal = byte.MaxValue;
+        private byte _optimizationProgressValue = byte.MinValue;
         private string _selectedProcess;
 
         #endregion
@@ -55,12 +60,14 @@ namespace WinMemoryCleaner
             {
                 Computer.OperatingSystem.IsWindowsVistaOrGreater = true;
                 Computer.OperatingSystem.IsWindowsXpOrGreater = true;
-                IsOptimizationKeyValid = false;
+                IsOptimizationKeyValid = true;
 
                 _hotKeyService = new HotKeyService();
             }
             else
             {
+                _computerService.OnOptimizeProgressUpdate += OnOptimizeProgressUpdate;
+
                 Computer.OperatingSystem = _computerService.OperatingSystem;
 
                 RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
@@ -507,6 +514,70 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets or sets the optimization progress percentage.
+        /// </summary>
+        /// <value>
+        /// The optimization progress percentage.
+        /// </value>
+        public byte OptimizationProgressPercentage
+        {
+            get { return _optimizationProgressPercentage; }
+            set
+            {
+                _optimizationProgressPercentage = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the optimization progress step.
+        /// </summary>
+        /// <value>
+        /// The optimization progress step.
+        /// </value>
+        public string OptimizationProgressStep
+        {
+            get { return _optimizationProgressStep; }
+            set
+            {
+                _optimizationProgressStep = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the optimization progress total.
+        /// </summary>
+        /// <value>
+        /// The optimization progress total.
+        /// </value>
+        public byte OptimizationProgressTotal
+        {
+            get { return _optimizationProgressTotal; }
+            set
+            {
+                _optimizationProgressTotal = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the optimization progress value.
+        /// </summary>
+        /// <value>
+        /// The optimization progress value.
+        /// </value>
+        public byte OptimizationProgressValue
+        {
+            get { return _optimizationProgressValue; }
+            set
+            {
+                _optimizationProgressValue = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
         /// Physical Memory Header
         /// </summary>
         public string PhysicalMemoryHeader
@@ -856,7 +927,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Occurs when [optimize command is completed].
         /// </summary>
-        public event Action OptimizeCommandCompleted;
+        public event Action OnOptimizeCommandCompleted;
 
         /// <summary>
         /// Gets the remove process from exclusion list command.
@@ -869,7 +940,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Occurs when [remove process from exclusion list command is completed].
         /// </summary>
-        public event Action RemoveProcessFromExclusionListCommandCompleted;
+        public event Action OnRemoveProcessFromExclusionListCommandCompleted;
 
         #endregion
 
@@ -1032,22 +1103,15 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Optimize
+        /// Called when [optimize progress is update].
         /// </summary>
-        private void OptimizeAsync()
+        /// <param name="value">The value.</param>
+        /// <param name="step">The step.</param>
+        private void OnOptimizeProgressUpdate(byte value, string step)
         {
-            try
-            {
-                using (var worker = new BackgroundWorker())
-                {
-                    worker.DoWork += Optimize;
-                    worker.RunWorkerAsync();
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e);
-            }
+            OptimizationProgressPercentage = (byte)(value * 100 / OptimizationProgressTotal);
+            OptimizationProgressStep = step;
+            OptimizationProgressValue = value;
         }
 
         /// <summary>
@@ -1087,17 +1151,40 @@ namespace WinMemoryCleaner
                     Notify(message);
                 }
 
-                if (OptimizeCommandCompleted != null)
+                if (OnOptimizeCommandCompleted != null)
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
                     {
-                        OptimizeCommandCompleted();
+                        OnOptimizeCommandCompleted();
                     });
                 }
             }
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// Optimize
+        /// </summary>
+        private void OptimizeAsync()
+        {
+            try
+            {
+                OptimizationProgressStep = Localizer.String.Optimize;
+                OptimizationProgressValue = 0;
+                OptimizationProgressTotal = (byte)(new BitArray(new[] { (int)Settings.MemoryAreas }).OfType<bool>().Count(x => x) + 1);
+
+                using (var worker = new BackgroundWorker())
+                {
+                    worker.DoWork += Optimize;
+                    worker.RunWorkerAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
             }
         }
 
@@ -1157,11 +1244,11 @@ namespace WinMemoryCleaner
                 RaisePropertyChanged(() => Processes);
                 RaisePropertyChanged(() => ProcessExclusionList);
 
-                if (RemoveProcessFromExclusionListCommandCompleted != null)
+                if (OnRemoveProcessFromExclusionListCommandCompleted != null)
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
                     {
-                        RemoveProcessFromExclusionListCommandCompleted();
+                        OnRemoveProcessFromExclusionListCommandCompleted();
                     });
                 }
             }
