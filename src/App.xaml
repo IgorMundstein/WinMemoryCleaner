@@ -316,14 +316,14 @@
                         <ControlTemplate TargetType="{x:Type RadioButton}">
                             <BulletDecorator Background="Transparent">
                                 <BulletDecorator.Bullet>
-                                    <Grid Height="13" 
-                                          Width="13">
+                                    <Grid Height="15" 
+                                          Width="15">
                                         <Ellipse x:Name="Border"
-                                                 Fill="{StaticResource DarkBackground}"
+                                                 Fill="{TemplateBinding Background}"
                                                  Stroke="{StaticResource DarkBorderBrush}"
                                                  StrokeThickness="1" />
                                         <Ellipse x:Name="CheckMark"
-                                                 Fill="{StaticResource DarkForeground}"
+                                                 Fill="{TemplateBinding Foreground}"
                                                  Margin="4" />
                                     </Grid>
                                 </BulletDecorator.Bullet>
