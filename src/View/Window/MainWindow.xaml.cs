@@ -26,8 +26,8 @@ namespace WinMemoryCleaner
             InitializeComponent();
 
             _viewModel = (MainViewModel)DataContext;
-            _viewModel.OptimizeCommandCompleted += OnOptimizeCommandCompleted;
-            _viewModel.RemoveProcessFromExclusionListCommandCompleted += SetFocusToProcessExclusionList;
+            _viewModel.OnOptimizeCommandCompleted += OnOptimizeCommandCompleted;
+            _viewModel.OnRemoveProcessFromExclusionListCommandCompleted += SetFocusToProcessExclusionList;
 
             // Slider
             var sliderPreviewMouseLeftButtonDownEvent = new MouseButtonEventHandler((sender, e) =>

@@ -73,6 +73,15 @@ namespace WinMemoryCleaner
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Occurs when [optimize progress is update].
+        /// </summary>
+        public event Action<byte, string> OnOptimizeProgressUpdate;
+
+        #endregion
+
         #region Methods (Computer)
 
         /// <summary>
@@ -124,12 +133,19 @@ namespace WinMemoryCleaner
             var infoLogFormat = "{0} ({1}) ({2:0.0} {3})";
             var runtime = new TimeSpan();
             var stopwatch = new Stopwatch();
+            var value = (byte)0;
 
             // Optimize Processes Working Set
             if ((areas & Enums.Memory.Areas.ProcessesWorkingSet) != 0)
             {
                 try
                 {
+                    if (OnOptimizeProgressUpdate != null)
+                    {
+                        value++;
+                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryProcessesWorkingSet);
+                    }
+
                     stopwatch.Restart();
 
                     OptimizeProcessesWorkingSet();
@@ -149,6 +165,12 @@ namespace WinMemoryCleaner
             {
                 try
                 {
+                    if (OnOptimizeProgressUpdate != null)
+                    {
+                        value++;
+                        OnOptimizeProgressUpdate(value, Localizer.String.MemorySystemWorkingSet);
+                    }
+
                     stopwatch.Restart();
 
                     OptimizeSystemWorkingSet();
@@ -168,6 +190,12 @@ namespace WinMemoryCleaner
             {
                 try
                 {
+                    if (OnOptimizeProgressUpdate != null)
+                    {
+                        value++;
+                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryModifiedPageList);
+                    }
+
                     stopwatch.Restart();
 
                     OptimizeModifiedPageList();
@@ -189,6 +217,12 @@ namespace WinMemoryCleaner
 
                 try
                 {
+                    if (OnOptimizeProgressUpdate != null)
+                    {
+                        value++;
+                        OnOptimizeProgressUpdate(value, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList);
+                    }
+
                     stopwatch.Restart();
 
                     OptimizeStandbyList(lowPriority);
@@ -208,6 +242,12 @@ namespace WinMemoryCleaner
             {
                 try
                 {
+                    if (OnOptimizeProgressUpdate != null)
+                    {
+                        value++;
+                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryCombinedPageList);
+                    }
+
                     stopwatch.Restart();
 
                     OptimizeCombinedPageList();
@@ -251,6 +291,14 @@ namespace WinMemoryCleaner
             catch
             {
                 // ignored
+            }
+            finally
+            {
+                if (OnOptimizeProgressUpdate != null)
+                {
+                    value++;
+                    OnOptimizeProgressUpdate(value, Localizer.String.Optimized);
+                }
             }
         }
 
