@@ -142,7 +142,7 @@ The app generates logs in the Windows event
 
 Each user setting is saved in the Windows registry path **Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner**
 
-### Why has the app been flagged as a Virus/Trojan and blocked by Windows Defender or Antivirus?
+### Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
 
 One of the reasons for this **false alarm** is that the application adds entries to the registry and task scheduler to run the application at startup. Windows doesn't “like” applications with administrator privileges running at startup. I understand that, but this is the way to do it. I apologize, but the application cannot deep clean memory without administrator privileges.
 
