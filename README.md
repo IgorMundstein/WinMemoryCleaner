@@ -169,7 +169,7 @@ If you are a native speaker of any language other than English, you can contribu
 
 💡 Google Translate tool will be used when a new version requires translated text changes. The contributor's efforts to submit updates will always be appreciated.
 
-❤️ Contributors
+♥️ Contributors
 
 - `Albanian (Shqip)` [Omer Rustemi](https://github.com/omerrustemicode)
 - `Arabic (اللغة العربية)` [Abdulmajeed-Alrajhi](https://github.com/Abdulmajeed-Alrajhi)
