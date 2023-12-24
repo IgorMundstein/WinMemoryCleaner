@@ -215,12 +215,12 @@ namespace WinMemoryCleaner
                             graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, 16, 15);
                             graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, 8, 8, format);
 
-                            using (var icon = Icon.FromHandle(image.GetHicon()))
-                            {
-                                _notifyIcon.Icon = icon;
+                            var handle = image.GetHicon();
 
-                                NativeMethods.DestroyIcon(icon.Handle);
-                            }
+                            using (var icon = Icon.FromHandle(handle))
+                                _notifyIcon.Icon = (Icon)icon.Clone();
+
+                            NativeMethods.DestroyIcon(handle);
                         }
                         break;
                 }
