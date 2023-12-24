@@ -199,7 +199,7 @@ namespace WinMemoryCleaner
                         if (memory.Physical.Used.Percentage == 0)
                             return;
 
-                        using (var image = new Bitmap(16, 15))
+                        using (var image = new Bitmap(16, 16))
                         using (var graphics = Graphics.FromImage(image))
                         using (var font = new Font("Arial", 9F))
                         using (var format = new StringFormat())
@@ -212,7 +212,7 @@ namespace WinMemoryCleaner
                             graphics.SmoothingMode = SmoothingMode.AntiAlias;
                             graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
-                            graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, image.Width, image.Height);
+                            graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, 16, 15);
                             graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, 8, 8, format);
 
                             using (var icon = Icon.FromHandle(image.GetHicon()))
