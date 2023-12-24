@@ -7,7 +7,7 @@
     public class MemorySize
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MemorySize"/> class.
+        /// Initializes a new instance of the <see cref="MemorySize" /> class.
         /// </summary>
         /// <param name="bytes">The amount of memory, in bytes</param>
         public MemorySize(ulong bytes)

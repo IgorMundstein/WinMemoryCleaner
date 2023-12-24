@@ -10,7 +10,7 @@ namespace WinMemoryCleaner
     public class Language
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Language"/> class.
+        /// Initializes a new instance of the <see cref="Language" /> class.
         /// </summary>
         /// <param name="culture">The culture.</param>
         /// <exception cref="ArgumentNullException">culture</exception>

@@ -24,7 +24,7 @@ namespace WinMemoryCleaner
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HotKeyService"/> class.
+        /// Initializes a new instance of the <see cref="HotKeyService" /> class.
         /// </summary>
         public HotKeyService()
         {
