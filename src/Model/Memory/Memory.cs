@@ -8,7 +8,7 @@ namespace WinMemoryCleaner
     public class Memory
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Memory"/> class.
+        /// Initializes a new instance of the <see cref="Memory" /> class.
         /// </summary>
         public Memory()
         {
@@ -17,7 +17,7 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Memory"/> class.
+        /// Initializes a new instance of the <see cref="Memory" /> class.
         /// </summary>
         /// <param name="memoryStatusEx">The memory status ex.</param>
         public Memory(Structs.Windows.MemoryStatusEx memoryStatusEx)

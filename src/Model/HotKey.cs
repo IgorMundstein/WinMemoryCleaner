@@ -8,7 +8,7 @@ namespace WinMemoryCleaner
     public class HotKey
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HotKey"/> class.
+        /// Initializes a new instance of the <see cref="HotKey" /> class.
         /// </summary>
         /// <param name="modifiers">The modifiers.</param>
         /// <param name="key">The key.</param>

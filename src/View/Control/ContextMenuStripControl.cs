@@ -17,7 +17,7 @@ namespace WinMemoryCleaner
         private static readonly Color _darkOver = ((SolidColorBrush)Application.Current.FindResource("DarkOver")).ToColor();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContextMenuStripControl"/> class.
+        /// Initializes a new instance of the <see cref="ContextMenuStripControl" /> class.
         /// </summary>
         public ContextMenuStripControl()
         {
@@ -43,7 +43,7 @@ namespace WinMemoryCleaner
         public class ToolStripRenderer : ToolStripProfessionalRenderer
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="ToolStripRenderer"/> class.
+            /// Initializes a new instance of the <see cref="ToolStripRenderer" /> class.
             /// </summary>
             public ToolStripRenderer()
                 : base(new ToolStripColorTable())
