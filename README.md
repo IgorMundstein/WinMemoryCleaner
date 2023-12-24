@@ -1,13 +1,12 @@
 <div align="center">
   <h1>Windows Memory Cleaner</h1>
 
-  [![](https://img.shields.io/badge/Windows-XP%20%7C%20Vista%20%7C%207%20%7C%208%20%7C%2010%20%7C%2011-blue?style=for-the-badge)](#windows-memory-cleaner)
-  [![](https://img.shields.io/badge/Server-2003%20%7C%202008%20%7C%202012%20%7C%202016%20%7C%202019%20%7C%202022-blue?style=for-the-badge)](#windows-memory-cleaner)
-
   [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE)
   [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
-  [![](/.github/images/main-window.png)](#windows-memory-cleaner)
+  <picture>
+    <img src="/.github/images/main-window.png">
+  </picture>
 
   <p align="justify">
     This free RAM cleaner uses native Windows features to clear memory areas. Sometimes, programs do not release the allocated memory, making the computer slow. That is when you use Windows Memory Cleaner to optimize the memory so you can keep working without wasting time restarting your system. 
@@ -17,9 +16,15 @@
     The app has a minimalistic interface and smart features. It's portable, and you do not need to install it, but it requires administrator privileges to run. Click on the download button below and run the executable to get started.
   </p>
 
-  [![Download)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
+  [![DOWNLOAD)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
 </div>
+
+## 🖥️ Computer requirements
+
+- Microsoft .NET Framework 4
+- Windows `XP` `Vista` `7` `8` `10` `11`
+- Windows Server `2003` `2008` `2012` `2016` `2019` `2022`
 
 ## 🚀 Features
 
@@ -32,7 +37,9 @@
 
 - Arrow (Up/Down) next to the minimize button to collapse and extend the window
 
-[![](/.github/images/main-window-compact.png)](#compact-mode)
+<picture>
+  <img src="/.github/images/main-window-compact.png">
+</picture>
 
 ### Memory Areas
 
@@ -71,21 +78,25 @@
 
 - Menu
 
-[![](/.github/images/system-tray.png)](#system-tray)
+<picture>
+  <img src="/.github/images/system-tray.png">
+</picture>
 
 - Notification
 
-[![](/.github/images/notification.png)](#notifications)
+<picture>
+  <img src="/.github/images/notification.png">
+</picture>
 
 ### Tray icon
 
 - `Image` - Show app icon
 - `Memory usage` - Show physical memory usage with a background color based on the value
-  - [![](/.github/images/memory-usage.png)](#tray-icon) `(0% - 79%)` Black
-  - [![](/.github/images/memory-usage-warning.png)](#tray-icon) `(80% - 89%)` Orange
-  - [![](/.github/images/memory-usage-danger.png)](#tray-icon) `(90% - 100%)` Red
+  - `(0% - 79%)` <picture><img src="/.github/images/memory-usage.png"></picture>
+  - `(80% - 89%)` <picture><img src="/.github/images/memory-usage-warning.png"></picture>
+  - `(90% - 100%)` <picture><img src="/.github/images/memory-usage-danger.png"></picture>
 
-## 🖥️ Command arguments (NO GUI)
+## 🔳 Command arguments (NO GUI)
 
 You can use the following arguments to run the app silently.
 
@@ -95,9 +106,9 @@ You can use the following arguments to run the app silently.
 - `/StandbyList` OR `/StandbyListLowPriority`
 - `/SystemWorkingSet`
 
-Example
+Shortcut target example
 
-`WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet`
+`C:\WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet`
 
 ## 📖 Logs
 
@@ -106,11 +117,14 @@ The app generates logs in the Windows event
 1. Press **Win + R** to open the Run command dialog box
 2. Type **eventvwr** and press **Enter** to open the Event Viewer
 
-[![](/.github/images/windows-event-log.png)](#-logs)
+<picture>
+  <img src="/.github/images/windows-event-log.png">
+</picture>
 
-## 📝 Project notes
+## ❓ Frequently Asked Questions (FAQ)
 
-- Microsoft.NET 4 framework version for Windows retro compatibility
+### What are the project requirements?
+
 - Minimalistic user interface
 - Model-View-ViewModel (MVVM) design pattern
 - No third library or DLL dependencies
@@ -121,6 +135,19 @@ The app generates logs in the Windows event
 - Windows Event to save logs
 - Windows Presentation Foundation (WPF) for user interface
 - Windows Registry to save user config
+
+### Where does the app save the user configuration?
+
+Each user setting is saved in the Windows registry path **Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner**
+
+### Why has the app been flagged as a Virus/Trojan and blocked by Windows Defender or Antivirus?
+
+One of the reasons for this **false alarm** is that the application adds entries to the registry and task scheduler to run the application at startup. Windows doesn't “like” applications with administrator privileges running at startup. I understand that, but this is the way to do it. I apologize, but the application cannot deep clean memory without administrator privileges.
+
+That's a common issue that persists every time a new app version is released. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
+It helps if more users [submit the app for malware analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
+
+Meanwhile, as a workaround, you can [add an exclusion to Windows Security](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
 
 ## 🌐 Translation
 
@@ -138,7 +165,7 @@ If you are a native speaker of any language other than English, you can contribu
 2. Change the file build action property to Embedded Resource
 3. Rebuild and run the WinMemoryCleaner project
 
-💡 When a new version requires translated text changes, Google Translate will be used for translation by the developer. The contributor's efforts to submit updates will always be appreciated.
+💡 Google Translate tool will be used when a new version requires translated text changes. The contributor's efforts to submit updates will always be appreciated.
 
 ❤️ Contributors
 
@@ -165,18 +192,3 @@ If you are a native speaker of any language other than English, you can contribu
 - `Spanish (Español)` [Ajneb Al Revés](https://github.com/AjnebAlReves) | [Nekrodamus](https://github.com/FrannDzs)
 - `Turkish (Türkçe)` [Viollje](https://github.com/Viollje)
 - `Ukrainian (Українська)` [RieBi](https://github.com/RieBi) | [Oleksander](https://github.com/Mariachi1231)
-
-## ❔ Frequently Asked Questions (FAQ)
-
-### Where does the app save the user configuration?
-
-Each user setting is saved in the Windows registry path **Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner**
-
-### Why has the app been flagged as a Virus/Trojan and blocked by Windows Defender or Antivirus?
-
-One of the reasons for this **false alarm** is that the application adds entries to the registry and task scheduler to run the application at startup. Windows doesn't “like” applications with administrator privileges running at startup. I understand that, but this is the way to do it. I apologize, but the application cannot deep clean memory without administrator privileges.
-
-That's a common issue that persists every time a new app version is released. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
-It helps if more users [submit the app for malware analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
-
-Meanwhile, as a workaround, you can [add an exclusion to Windows Security](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
