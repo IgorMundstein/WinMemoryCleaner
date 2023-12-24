@@ -16,6 +16,8 @@
     The app has a minimalistic interface and smart features. It's portable, and you do not need to install it, but it requires administrator privileges to run. Click on the download button below and run the executable to get started.
   </p>
 
+  <br />
+
   [![DOWNLOAD)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
 </div>
