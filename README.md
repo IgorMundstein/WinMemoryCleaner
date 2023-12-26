@@ -16,10 +16,11 @@
     The app has a minimalistic interface and smart features. It's portable, and you do not need to install it, but it requires administrator privileges to run. Click on the download button below and run the executable to get started.
   </p>
 
-  <br />
-
-  [![DOWNLOAD)](/.github/images/download-button.png)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
-
+  <p align="center">
+    <a href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
+      <img alt="DOWNLOAD" src="/.github/images/download-button.png">
+    </a>
+  </p>
 </div>
 
 ## 🖥️ Computer requirements
@@ -32,8 +33,8 @@
 
 ### Auto optimization
 
-- `Every X hours` - The optimization will run by period
-- `When free memory is below X percent` - The optimization will run if free memory is below the specified percentage
+- `Every X hours` The optimization will run by period
+- `When free memory is below X percent` The optimization will run if free memory is below the specified percentage
 
 ### Compact Mode
 
@@ -45,12 +46,12 @@
 
 ### Memory Areas
 
-- `Combined Page List` - Flushes the blocks from the combined page list effectively only when page combining is enabled
-- `Modified Page List` - Flushes memory from the modified page list, writing unsaved data to disk and moving the pages to the standby list
-- `Processes Working Set` - Removes memory from all user-mode and system working sets and moves it to the standby or modified page lists. Note that by the time processes run, any code will necessarily populate their working sets to do so
-- `Standby List` - Flushes pages from all standby lists to the free list
-- `Standby List (Low Priority)` - Flushes pages from the lowest-priority standby list to the free list
-- `System Working Set` - Removes memory from the system cache working set
+- `Combined Page List` Flushes the blocks from the combined page list effectively only when page combining is enabled
+- `Modified Page List` Flushes memory from the modified page list, writing unsaved data to disk and moving the pages to the standby list
+- `Processes Working Set` Removes memory from all user-mode and system working sets and moves it to the standby or modified page lists
+- `Standby List` Flushes pages from all standby lists to the free list
+- `Standby List (Low Priority)` Flushes pages from the lowest-priority standby list to the free list
+- `System Working Set` Removes memory from the system cache working set
 
 ### Multi-Language
 
@@ -60,21 +61,21 @@
 
 - You can build a list of processes to ignore when memory is optimized
 
-### Optimization hotkey (Global)
+### Optimization hotkey
 
-- `CTRL + ALT + M (Customizable)` - Optimize
+- Set a keyboard global hotkey to run the optimization. `CTRL + ALT + M` is the default and customizable value
 
 ### Settings
 
-- `Always on top` - Pins the window to the top of all your windows
-- `Auto update` - Keeps the app up to date. It checks for updates every 24 hours
-- `Close after optimization` - Closes the app after optimization
-- `Close to the notification area` - Minimize the app to the system tray when clicking the close (X) button
-- `Run on low priority` - It limits the app resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
-- `Run on startup` - Runs the app after the system boots up. It creates an entry on Windows **Task Scheduler** and Windows Registry path **SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run**
-- `Show optimization notifications` - Sends a message to the notification area after optimization. It includes the approximate memory released
-- `Show virtual memory` - It also monitors the virtual memory usage
-- `Start minimized` - The app will start minimized to the system tray. Single-click on the icon to restore
+- `Always on top` Pins the window to the top of all your windows
+- `Auto update` Keeps the app up to date. It checks for updates every 24 hours
+- `Close after optimization` Closes the app after optimization
+- `Close to the notification area` Minimize the app to the system tray when clicking the close (X) button
+- `Run on low priority` It limits the app resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
+- `Run on startup` Runs the app after the system boots up. It creates an entry on Windows **Task Scheduler** and Windows Registry path **SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run**
+- `Show optimization notifications` Sends a message to the notification area after optimization. It includes the approximate memory released
+- `Show virtual memory` It also monitors the virtual memory usage
+- `Start minimized` The app will start minimized to the system tray. Single-click on the icon to restore
 
 ### System tray (Notification area)
 
@@ -92,8 +93,8 @@
 
 ### Tray icon
 
-- `Image` - Show app icon
-- `Memory usage` - Show physical memory usage with a background color based on the value
+- `Image` Show app icon
+- `Memory usage` Show physical memory usage with a background color based on the value
   - `(0% - 79%)` <picture><img src="/.github/images/memory-usage.png"></picture>
   - `(80% - 89%)` <picture><img src="/.github/images/memory-usage-warning.png"></picture>
   - `(90% - 100%)` <picture><img src="/.github/images/memory-usage-danger.png"></picture>
@@ -140,7 +141,7 @@ The app generates logs in the Windows event
 
 ### Where does the app save the user configuration?
 
-Each user setting is saved in the Windows registry path **Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner**
+Each user setting is saved in the Windows registry path `Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner`
 
 ### Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
 
