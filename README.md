@@ -1,7 +1,7 @@
 <div align="center">
   <h1>Windows Memory Cleaner</h1>
 
-  [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE)
+[![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE)
   [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
   <picture>
@@ -168,9 +168,9 @@ If you are a native speaker of any language other than English, you can contribu
 2. Change the file build action property to Embedded Resource
 3. Rebuild and run the WinMemoryCleaner project
 
-💡 Google Translate tool will be used when a new version requires translated text changes. The contributor's efforts to submit updates will always be appreciated.
+💡 Google Translate tool will be used when a new version requires translated text changes. The contributor's efforts to submit updates are always appreciated.
 
-♥️ Contributors
+⭐ Contributors
 
 - `Albanian (Shqip)` [Omer Rustemi](https://github.com/omerrustemicode)
 - `Arabic (اللغة العربية)` [Abdulmajeed-Alrajhi](https://github.com/Abdulmajeed-Alrajhi)
