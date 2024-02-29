@@ -3,12 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinMemoryCleaner", "WinMemoryCleaner.csproj", "{D1FE3A0A-FD12-42A0-AD98-16B9D3F4E14E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinMemoryCleaner", ".\WinMemoryCleaner\WinMemoryCleaner.csproj", "{D1FE3A0A-FD12-42A0-AD98-16B9D3F4E14E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7298ECB1-BFCC-465B-93AA-7A2705A874DA}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinMemoryCleaner2", ".\WinMemoryCleaner2\WinMemoryCleaner2.csproj", "{5CB7A9ED-EF45-4DDC-A4A5-6F7E68980B8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +22,10 @@ Global
 		{D1FE3A0A-FD12-42A0-AD98-16B9D3F4E14E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1FE3A0A-FD12-42A0-AD98-16B9D3F4E14E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1FE3A0A-FD12-42A0-AD98-16B9D3F4E14E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CB7A9ED-EF45-4DDC-A4A5-6F7E68980B8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CB7A9ED-EF45-4DDC-A4A5-6F7E68980B8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CB7A9ED-EF45-4DDC-A4A5-6F7E68980B8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CB7A9ED-EF45-4DDC-A4A5-6F7E68980B8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Resources\Images\win-memory-cleaner.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="View\Window\github.png" />
+    <None Remove="View\Window\win-memory-cleaner.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Images\win-memory-cleaner.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Localization\Albanian.json" />
+    <EmbeddedResource Include="Resources\Localization\Arabic.json" />
+    <EmbeddedResource Include="Resources\Localization\Bulgarian.json" />
+    <EmbeddedResource Include="Resources\Localization\Chinese (Simplified).json" />
+    <EmbeddedResource Include="Resources\Localization\Chinese (Traditional).json" />
+    <EmbeddedResource Include="Resources\Localization\Dutch.json" />
+    <EmbeddedResource Include="Resources\Localization\English.json" />
+    <EmbeddedResource Include="Resources\Localization\French.json" />
+    <EmbeddedResource Include="Resources\Localization\German.json" />
+    <EmbeddedResource Include="Resources\Localization\Greek.json" />
+    <EmbeddedResource Include="Resources\Localization\Indonesian.json" />
+    <EmbeddedResource Include="Resources\Localization\Irish.json" />
+    <EmbeddedResource Include="Resources\Localization\Italian.json" />
+    <EmbeddedResource Include="Resources\Localization\Japanese.json" />
+    <EmbeddedResource Include="Resources\Localization\Korean.json" />
+    <EmbeddedResource Include="Resources\Localization\Macedonian.json" />
+    <EmbeddedResource Include="Resources\Localization\Persian.json" />
+    <EmbeddedResource Include="Resources\Localization\Polish.json" />
+    <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
+    <EmbeddedResource Include="Resources\Localization\Russian.json" />
+    <EmbeddedResource Include="Resources\Localization\Serbian.json" />
+    <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
+    <EmbeddedResource Include="Resources\Localization\Spanish.json" />
+    <EmbeddedResource Include="Resources\Localization\Turkish.json" />
+    <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="View\Window\github.png" />
+    <Resource Include="View\Window\win-memory-cleaner.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+  </ItemGroup>
+</Project>
