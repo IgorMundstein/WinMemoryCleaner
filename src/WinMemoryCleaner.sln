@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinMemoryCleaner2", ".\WinMemoryCleaner2\WinMemoryCleaner2.csproj", "{5CB7A9ED-EF45-4DDC-A4A5-6F7E68980B8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinMemoryCleaner3", ".\WinMemoryCleaner3\WinMemoryCleaner3.csproj", "{5CB7A9ED-EF45-4DDC-A4A5-6F7E68980B8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
