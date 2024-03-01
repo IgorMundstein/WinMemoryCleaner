@@ -190,7 +190,6 @@ namespace WinMemoryCleaner
                         string content = reader.ReadToEnd();
                         localization = JsonSerializer.Deserialize<Localization>(content);
                     }
-                    
                 }
                 catch
                 {
