@@ -1,165 +1,59 @@
-﻿using System.Runtime.Serialization;
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-
-namespace WinMemoryCleaner
+﻿namespace WinMemoryCleaner
 {
     /// <summary>
     /// Localization (L10N)
     /// </summary>
-    [DataContract]
     public class Localization
     {
-        [DataMember]
-        public string Add { get; private set; }
-
-        [DataMember]
-        public string AlwaysOnTop { get; private set; }
-
-        [DataMember]
-        public string AutoOptimization { get; private set; }
-
-        [DataMember]
-        public string AutoOptimizationInterval { get; private set; }
-
-        [DataMember]
-        public string AutoUpdate { get; private set; }
-
-        [DataMember]
-        public string Close { get; private set; }
-
-        [DataMember]
-        public string CloseAfterOptimization { get; private set; }
-
-        [DataMember]
-        public string CloseToTheNotificationArea { get; private set; }
-
-        [DataMember]
-        public string Collapse { get; private set; }
-
-        [DataMember]
-        public string DevelopedBy { get; private set; }
-
-        [DataMember]
-        public string Error { get; private set; }
-
-        [DataMember]
-        public string ErrorAdminPrivilegeRequired { get; private set; }
-
-        [DataMember]
-        public string ErrorCanNotSaveLog { get; private set; }
-
-        [DataMember]
-        public string ErrorMemoryAreaOptimizationNotSupported { get; private set; }
-
-        [DataMember]
-        public string Every { get; private set; }
-
-        [DataMember]
-        public string Exit { get; private set; }
-
-        [DataMember]
-        public string Expand { get; private set; }
-
-        [DataMember]
-        public string Free { get; private set; }
-
-        [DataMember]
-        public string HotkeyIsInUseByWindows { get; private set; }
-
-        [DataMember]
-        public string Image { get; private set; }
-
-        [DataMember]
-        public string Invalid { get; private set; }
-
-        [DataMember]
-        public string MemoryAreas { get; private set; }
-
-        [DataMember]
-        public string MemoryCombinedPageList { get; private set; }
-
-        [DataMember]
-        public string MemoryModifiedPageList { get; private set; }
-
-        [DataMember]
-        public string MemoryOptimized { get; private set; }
-
-        [DataMember]
-        public string MemoryProcessesWorkingSet { get; private set; }
-
-        [DataMember]
-        public string MemoryStandbyList { get; private set; }
-
-        [DataMember]
-        public string MemoryStandbyListLowPriority { get; private set; }
-
-        [DataMember]
-        public string MemorySystemWorkingSet { get; private set; }
-
-        [DataMember]
-        public string MemoryUsage { get; private set; }
-
-        [DataMember]
-        public string Minimize { get; private set; }
-
-        [DataMember]
-        public string OptimizationHotkey { get; private set; }
-
-        [DataMember]
-        public string Optimize { get; private set; }
-
-        [DataMember]
-        public string Optimized { get; private set; }
-
-        [DataMember]
-        public string Physical { get; private set; }
-
-        [DataMember]
-        public string ProcessExclusionList { get; private set; }
-
-        [DataMember]
-        public string Remove { get; private set; }
-
-        [DataMember]
-        public string RepositoryInfo { get; private set; }
-
-        [DataMember]
-        public string RunOnLowPriority { get; private set; }
-
-        [DataMember]
-        public string RunOnStartup { get; private set; }
-
-        [DataMember]
-        public string Seconds { get; private set; }
-
-        [DataMember]
-        public string Settings { get; private set; }
-
-        [DataMember]
-        public string ShowOptimizationNotifications { get; private set; }
-
-        [DataMember]
-        public string ShowVirtualMemory { get; private set; }
-
-        [DataMember]
-        public string StartMinimized { get; private set; }
-
-        [DataMember]
-        public string TrayIcon { get; private set; }
-
-        [DataMember]
-        public string UpdatedToVersion { get; private set; }
-
-        [DataMember]
-        public string Used { get; private set; }
-
-        [DataMember]
-        public string Virtual { get; private set; }
-
-        [DataMember]
-        public string WhenFreeMemoryIsBelow { get; private set; }
+        public string Add { get; set; }
+        public string AlwaysOnTop { get; set; }
+        public string AutoOptimization { get; set; }
+        public string AutoOptimizationInterval { get; set; }
+        public string AutoUpdate { get; set; }
+        public string Close { get; set; }
+        public string CloseAfterOptimization { get; set; }
+        public string CloseToTheNotificationArea { get; set; }
+        public string Collapse { get; set; }
+        public string DevelopedBy { get; set; }
+        public string Error { get; set; }
+        public string ErrorAdminPrivilegeRequired { get; set; }
+        public string ErrorCanNotSaveLog { get; set; }
+        public string ErrorMemoryAreaOptimizationNotSupported { get; set; }
+        public string Every { get; set; }
+        public string Exit { get; set; }
+        public string Expand { get; set; }
+        public string Free { get; set; }
+        public string HotkeyIsInUseByWindows { get; set; }
+        public string Image { get; set; }
+        public string Invalid { get; set; }
+        public string MemoryAreas { get; set; }
+        public string MemoryCombinedPageList { get; set; }
+        public string MemoryModifiedPageList { get; set; }
+        public string MemoryOptimized { get; set; }
+        public string MemoryProcessesWorkingSet { get; set; }
+        public string MemoryStandbyList { get; set; }
+        public string MemoryStandbyListLowPriority { get; set; }
+        public string MemorySystemWorkingSet { get; set; }
+        public string MemoryUsage { get; set; }
+        public string Minimize { get; set; }
+        public string OptimizationHotkey { get; set; }
+        public string Optimize { get; set; }
+        public string Optimized { get; set; }
+        public string Physical { get; set; }
+        public string ProcessExclusionList { get; set; }
+        public string Remove { get; set; }
+        public string RepositoryInfo { get; set; }
+        public string RunOnLowPriority { get; set; }
+        public string RunOnStartup { get; set; }
+        public string Seconds { get; set; }
+        public string Settings { get; set; }
+        public string ShowOptimizationNotifications { get; set; }
+        public string ShowVirtualMemory { get; set; }
+        public string StartMinimized { get; set; }
+        public string TrayIcon { get; set; }
+        public string UpdatedToVersion { get; set; }
+        public string Used { get; set; }
+        public string Virtual { get; set; }
+        public string WhenFreeMemoryIsBelow { get; set; }
     }
 }
-
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

@@ -90,7 +90,8 @@ namespace WinMemoryCleaner
         /// </returns>
         public override string ToString()
         {
-            return string.Format(Localizer.Culture, "{0}, {1}", Modifiers, Key);
+            return $"{Modifiers}, {Key}";
+
         }
     }
 }

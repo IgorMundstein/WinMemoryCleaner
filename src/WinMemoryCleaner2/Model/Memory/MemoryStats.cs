@@ -56,7 +56,7 @@
         /// </returns>
         public override string ToString()
         {
-            return string.Format(Localizer.Culture, "({0:0.#} {1}) {2} | {3} - {4} | {5}", Total.Value, Total.Unit, Localizer.String.Used, Used, Localizer.String.Free, Free);
+            return $"{Total.Value:0.#} {Total.Unit} | {Localizer.String.Used} - {Used} | {Localizer.String.Free} - {Free}";
         }
     }
 }

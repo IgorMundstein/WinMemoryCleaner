@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Json;
+using System.Text;
+using System.Text.Json;
 
 namespace WinMemoryCleaner
 {
@@ -182,7 +184,13 @@ namespace WinMemoryCleaner
 
                     var serializer = new DataContractJsonSerializer(typeof(Localization));
 
-                    localization = (Localization)serializer.ReadObject(stream);
+                    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        // 将文本数据读取到字符串中
+                        string content = reader.ReadToEnd();
+                        localization = JsonSerializer.Deserialize<Localization>(content);
+                    }
+                    
                 }
                 catch
                 {

@@ -110,7 +110,7 @@ namespace WinMemoryCleaner
         /// </returns>
         public override string ToString()
         {
-            return EnglishName == NativeName ? EnglishName : string.Format(Localizer.Culture, "{0} ({1})", EnglishName, NativeName);
+            return EnglishName == NativeName ? EnglishName : $"{EnglishName} ({NativeName})";
         }
     }
 }

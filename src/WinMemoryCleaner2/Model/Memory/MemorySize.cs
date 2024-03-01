@@ -60,7 +60,7 @@
         /// </returns>
         public override string ToString()
         {
-            return string.Format(Localizer.Culture, "{0:0.#} {1} ({2}%)", Value, Unit, Percentage);
+            return $"{Value:0.#} {Unit} ({Percentage}%)";
         }
     }
 }
