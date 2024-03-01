@@ -17,7 +17,7 @@ namespace WinMemoryCleaner
             public const string KeyFile = "WinMemoryCleaner.snk";
             public const string License = "GPL-3.0";
             public const string LocalizationResourceExtension = ".json";
-            public const string LocalizationResourcePath = "WinMemoryCleaner2.Resources.Localization.";
+            public const string LocalizationResourcePath = "WinMemoryCleaner3.Resources.Localization.";
             public const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
 
