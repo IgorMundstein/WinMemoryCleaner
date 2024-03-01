@@ -23,7 +23,6 @@ namespace WinMemoryCleaner
 
         private static DateTimeOffset _lastAutoUpdate;
         private static Mutex _mutex;
-        private static NotifyIcon _notifyIcon;
         private static readonly object _showHidelock = new object();
         private static ProcessStartInfo _updateProcess;
         private static Version _version;
@@ -100,10 +99,7 @@ namespace WinMemoryCleaner
 
                 try
                 {
-                    if (_notifyIcon != null)
-                    {
-                        _notifyIcon.Dispose();
-                    }
+  
                 }
                 catch
                 {
@@ -118,17 +114,11 @@ namespace WinMemoryCleaner
 
         public void ConfigureServices()
         {
-            // Notification Areas
-            _notifyIcon = new NotifyIcon();
-            _notifyIcon.Click += OnNotifyIconClick;
-
             var _serviceProvider = new ServiceCollection();
 
             _serviceProvider
-                .AddSingleton(_notifyIcon)
                 .AddSingleton<IComputerService, ComputerService>()
                 .AddSingleton<IHotKeyService, HotKeyService>()
-                .AddSingleton<INotificationService, NotificationService>()
                 .AddSingleton<MainViewModel>()
                 .AddSingleton<MainWindow>();
             services = _serviceProvider.BuildServiceProvider();
@@ -297,10 +287,10 @@ namespace WinMemoryCleaner
                     if (!Settings.StartMinimized)
                         mainWindow.Show();
 
-                    // Update notification
-                    if (!string.IsNullOrWhiteSpace(updateNotification))
-                        services.GetRequiredService<INotificationService>().Notify(updateNotification);
-                        //DependencyInjection.Container.Resolve<INotificationService>().Notify(updateNotification);
+                    //// Update notification
+                    //if (!string.IsNullOrWhiteSpace(updateNotification))
+                    //    services.GetRequiredService<INotificationService>().Notify(updateNotification);
+                    //    //DependencyInjection.Container.Resolve<INotificationService>().Notify(updateNotification);
 
                     ReleaseMemory();
                 }

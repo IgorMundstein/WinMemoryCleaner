@@ -29,7 +29,9 @@ namespace WinMemoryCleaner
             _viewModel = (App.Current as App).services.GetRequiredService<MainViewModel>();
             _viewModel.OnOptimizeCommandCompleted += OnOptimizeCommandCompleted;
             _viewModel.OnRemoveProcessFromExclusionListCommandCompleted += SetFocusToProcessExclusionList;
+            _viewModel.taskbarIcon = myNotifyIcon;
             this.DataContext = _viewModel;
+
             // Slider
             var sliderPreviewMouseLeftButtonDownEvent = new MouseButtonEventHandler((sender, e) =>
             {
@@ -162,7 +164,7 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void OnProcessesDropDownOpened(object sender, EventArgs e)
         {
-            _viewModel.RaisePropertyChanged(() => _viewModel.Processes);
+            
         }
 
         /// <summary>

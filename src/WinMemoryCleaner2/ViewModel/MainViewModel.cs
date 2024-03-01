@@ -13,17 +13,24 @@ using CommunityToolkit.Mvvm;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Drawing;
-using System.Windows.Forms;
+using System.Windows.Media;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
+using System.Windows;
+using System.Windows.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Hardcodet.Wpf.TaskbarNotification;
 
 namespace WinMemoryCleaner
 {
     /// <summary>
     /// Main View Model
     /// </summary>
-    public partial class MainViewModel : ViewModel, IDisposable
+    public partial class MainViewModel : ObservableObject,IDisposable
     {
         #region Fields
-
+        private bool _isBusy;
+        private bool _canOptimize;
         private Computer _computer;
         private readonly IComputerService _computerService;
         private readonly IHotKeyService _hotKeyService;
@@ -37,7 +44,9 @@ namespace WinMemoryCleaner
         private byte _optimizationProgressTotal = byte.MaxValue;
         private byte _optimizationProgressValue = byte.MinValue;
         private string _selectedProcess;
-        private Icon _imageIcon ;
+        private ImageSource _staticTrayIcon;
+        private ImageSource _dynamicTrayIcon;
+        public TaskbarIcon taskbarIcon;
         #endregion
 
         #region Constructors
@@ -48,13 +57,12 @@ namespace WinMemoryCleaner
         /// <param name="computerService">Computer service</param>
         /// <param name="hotKeyService">Hotkey service.</param>
         /// <param name="notificationService">Notification service</param>
-        public MainViewModel(IComputerService computerService, IHotKeyService hotKeyService, INotificationService notificationService)
-            : base(notificationService)
+        public MainViewModel(IComputerService computerService, IHotKeyService hotKeyService)
         {
-            _imageIcon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+
+            StaticTrayIcon = (App.Current as App).MainWindow.Icon;
             _computerService = computerService;
             _hotKeyService = hotKeyService;
-
             // Commands
             AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList, (x) => CanAddProcessToExclusionList);
             OptimizeCommand = new RelayCommand(OptimizeAsync, () => CanOptimize);
@@ -86,7 +94,48 @@ namespace WinMemoryCleaner
         #endregion
 
         #region Properties
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is busy.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is busy; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsBusy
+        {
+            get
+            {
+                return _isBusy;
+            }
+            set
+            {
+                try
+                {
+                    //NotificationService.Loading(value);
+                }
+                catch
+                {
+                    // ignored
+                }
 
+                SetProperty(ref _isBusy, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is in design mode.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is in design mode; otherwise, <c>false</c>.
+        /// </value>
+        protected bool IsInDesignMode
+        {
+            get
+            {
+                return DesignerProperties.GetIsInDesignMode(new DependencyObject());
+            }
+        }
+
+        private bool _alwaysOnTop = Settings.AlwaysOnTop;
         /// <summary>
         /// Gets or sets a value indicating whether [always on top].
         /// </summary>
@@ -95,18 +144,15 @@ namespace WinMemoryCleaner
         /// </value>
         public bool AlwaysOnTop
         {
-            get { return Settings.AlwaysOnTop; }
+            get { return _alwaysOnTop; }
             set
             {
                 try
                 {
                     IsBusy = true;
-
                     Settings.AlwaysOnTop = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
-                    
+                    SetProperty(ref _alwaysOnTop, value);
                 }
                 finally
                 {
@@ -115,6 +161,7 @@ namespace WinMemoryCleaner
             }
         }
 
+        private int _autoOptimizationInterval = Settings.AutoOptimizationInterval;
         /// <summary>
         /// Gets or sets the automatic optimization interval.
         /// </summary>
@@ -123,7 +170,7 @@ namespace WinMemoryCleaner
         /// </value>
         public int AutoOptimizationInterval
         {
-            get { return Settings.AutoOptimizationInterval; }
+            get {return _autoOptimizationInterval; }
             set
             {
                 try
@@ -134,8 +181,7 @@ namespace WinMemoryCleaner
 
                     Settings.AutoOptimizationInterval = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
+                    SetProperty(ref _autoOptimizationInterval, value);
                 }
                 finally
                 {
@@ -143,6 +189,9 @@ namespace WinMemoryCleaner
                 }
             }
         }
+
+        private int _autoOptimizationMemoryUsage = Settings.AutoOptimizationMemoryUsage;
+
 
         /// <summary>
         /// Gets or sets the automatic optimization memory usage.
@@ -152,7 +201,7 @@ namespace WinMemoryCleaner
         /// </value>
         public int AutoOptimizationMemoryUsage
         {
-            get { return Settings.AutoOptimizationMemoryUsage; }
+            get { return _autoOptimizationMemoryUsage; }
             set
             {
                 try
@@ -163,9 +212,8 @@ namespace WinMemoryCleaner
 
                     Settings.AutoOptimizationMemoryUsage = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
-                  
+                    SetProperty(ref _autoOptimizationMemoryUsage, value);
+                    AutoOptimizationMemoryUsageDescription = string.Format(Localizer.Culture, Localizer.String.WhenFreeMemoryIsBelow, AutoOptimizationMemoryUsage);
                 }
                 finally
                 {
@@ -174,6 +222,8 @@ namespace WinMemoryCleaner
             }
         }
 
+
+        private string _autoOptimizationMemoryUsageDescription = string.Format(Localizer.Culture, Localizer.String.WhenFreeMemoryIsBelow, Settings.AutoOptimizationMemoryUsage);
         /// <summary>
         /// Gets the automatic optimization memory usage description.
         /// </summary>
@@ -182,7 +232,11 @@ namespace WinMemoryCleaner
         /// </value>
         public string AutoOptimizationMemoryUsageDescription
         {
-            get { return string.Format(Localizer.Culture, Localizer.String.WhenFreeMemoryIsBelow, AutoOptimizationMemoryUsage); }
+            get { return _autoOptimizationMemoryUsageDescription; }
+            set
+            {
+                SetProperty(ref _autoOptimizationMemoryUsageDescription, value);
+            }
         }
 
         /// <summary>
@@ -213,8 +267,6 @@ namespace WinMemoryCleaner
 
                     Settings.AutoUpdate = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
                 }
                 finally
                 {
@@ -242,7 +294,15 @@ namespace WinMemoryCleaner
         /// </value>
         public bool CanOptimize
         {
-            get { return MemoryAreas != Enums.Memory.Areas.None; }
+            get 
+            {
+                return _canOptimize;
+                //return MemoryAreas != Enums.Memory.Areas.None;
+            }
+            set
+            {
+                SetProperty(ref _canOptimize, value);
+            }
         }
 
         /// <summary>
@@ -262,8 +322,6 @@ namespace WinMemoryCleaner
 
                     Settings.CloseAfterOptimization = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
                 }
                 finally
                 {
@@ -289,8 +347,6 @@ namespace WinMemoryCleaner
 
                     Settings.CloseToTheNotificationArea = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
                 }
                 finally
                 {
@@ -299,6 +355,8 @@ namespace WinMemoryCleaner
             }
         }
 
+
+        private bool _compactMode = Settings.CompactMode;
         /// <summary>
         /// Gets or sets a value indicating whether [compact mode].
         /// </summary>
@@ -307,7 +365,7 @@ namespace WinMemoryCleaner
         /// </value>
         public bool CompactMode
         {
-            get { return Settings.CompactMode; }
+            get { return _compactMode; }
             set
             {
                 try
@@ -316,8 +374,7 @@ namespace WinMemoryCleaner
 
                     Settings.CompactMode = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
+                    SetProperty(ref _compactMode, value);
                 }
                 finally
                 {
@@ -337,8 +394,7 @@ namespace WinMemoryCleaner
             get { return _computer; }
             private set
             {
-                _computer = value;
-                RaisePropertyChanged();
+                SetProperty(ref _computer, value);
             }
         }
 
@@ -353,8 +409,7 @@ namespace WinMemoryCleaner
             get { return _isOptimizationKeyValid; }
             set
             {
-                _isOptimizationKeyValid = value;
-                RaisePropertyChanged();
+                SetProperty(ref _isOptimizationKeyValid, value);
             }
         }
 
@@ -412,17 +467,13 @@ namespace WinMemoryCleaner
                     if (!IsInDesignMode)
                     {
                         Computer.Memory = _computerService.Memory;
-                        RaisePropertyChanged(() => Computer);
-
-                        NotificationService.Initialize();
-                        NotificationService.Update(Computer.Memory);
                     }
 
-                    RaisePropertyChanged(string.Empty);
+                    AutoOptimizationMemoryUsageDescription = string.Format(Localizer.Culture, Localizer.String.WhenFreeMemoryIsBelow, Settings.AutoOptimizationMemoryUsage);
                 }
                 catch (Exception e)
                 {
-                    NotificationService.Notify(e.Message);
+                    taskbarIcon.ShowBalloonTip("title", e.Message, BalloonIcon.Warning);
                     Logger.Error(e);
                 }
                 finally
@@ -487,9 +538,7 @@ namespace WinMemoryCleaner
                     }
 
                     Settings.Save();
-
-                    RaisePropertyChanged();
-                    RaisePropertyChanged(() => CanOptimize);
+                    CanOptimize =( MemoryAreas != Enums.Memory.Areas.None);
                 }
                 finally
                 {
@@ -507,7 +556,9 @@ namespace WinMemoryCleaner
         public Key OptimizationKey
         {
             get { return Settings.OptimizationKey; }
-            set { RegisterOptimizationHotKey(Settings.OptimizationModifiers, value); }
+            set {
+                RegisterOptimizationHotKey(Settings.OptimizationModifiers, value);
+            }
         }
 
         /// <summary>
@@ -533,8 +584,7 @@ namespace WinMemoryCleaner
             get { return _optimizationProgressPercentage; }
             set
             {
-                _optimizationProgressPercentage = value;
-                RaisePropertyChanged();
+                SetProperty(ref _optimizationProgressPercentage, value);
             }
         }
 
@@ -549,8 +599,7 @@ namespace WinMemoryCleaner
             get { return _optimizationProgressStep; }
             set
             {
-                _optimizationProgressStep = value;
-                RaisePropertyChanged();
+                SetProperty(ref _optimizationProgressStep, value);
             }
         }
 
@@ -565,8 +614,7 @@ namespace WinMemoryCleaner
             get { return _optimizationProgressTotal; }
             set
             {
-                _optimizationProgressTotal = value;
-                RaisePropertyChanged();
+                SetProperty(ref _optimizationProgressTotal, value);
             }
         }
 
@@ -581,8 +629,7 @@ namespace WinMemoryCleaner
             get { return _optimizationProgressValue; }
             set
             {
-                _optimizationProgressValue = value;
-                RaisePropertyChanged();
+                SetProperty(ref _optimizationProgressValue, value);
             }
         }
 
@@ -620,6 +667,7 @@ namespace WinMemoryCleaner
             }
         }
 
+        private ObservableCollection<string> _processExclusionList;
         /// <summary>
         /// Gets or sets the process exclusion list.
         /// </summary>
@@ -629,6 +677,7 @@ namespace WinMemoryCleaner
         public ObservableCollection<string> ProcessExclusionList
         {
             get { return new ObservableCollection<string>(Settings.ProcessExclusionList); }
+            set { SetProperty(ref _processExclusionList, value); }
         }
 
         /// <summary>
@@ -652,8 +701,6 @@ namespace WinMemoryCleaner
 
                     Settings.RunOnPriority = priority;
                     Settings.Save();
-
-                    RaisePropertyChanged();
                 }
                 finally
                 {
@@ -681,8 +728,6 @@ namespace WinMemoryCleaner
 
                     Settings.RunOnStartup = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
                 }
                 finally
                 {
@@ -702,8 +747,7 @@ namespace WinMemoryCleaner
             get { return _selectedProcess; }
             set
             {
-                _selectedProcess = value;
-                RaisePropertyChanged();
+                SetProperty(ref _selectedProcess, value);
             }
         }
 
@@ -724,8 +768,6 @@ namespace WinMemoryCleaner
 
                     Settings.ShowOptimizationNotifications = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
                 }
                 finally
                 {
@@ -734,6 +776,8 @@ namespace WinMemoryCleaner
             }
         }
 
+
+        private bool _showVirtualMemory = Settings.ShowVirtualMemory;
         /// <summary>
         /// Gets or sets a value indicating whether [show virtual memory].
         /// </summary>
@@ -742,19 +786,15 @@ namespace WinMemoryCleaner
         /// </value>
         public bool ShowVirtualMemory
         {
-            get { return Settings.ShowVirtualMemory; }
+            get { return _showVirtualMemory; }
             set
             {
                 try
                 {
                     IsBusy = true;
-
                     Settings.ShowVirtualMemory = value;
                     Settings.Save();
-
-                    NotificationService.Update(Computer.Memory);
-
-                    RaisePropertyChanged();
+                    SetProperty(ref _showVirtualMemory, value);
                 }
                 finally
                 {
@@ -780,8 +820,6 @@ namespace WinMemoryCleaner
 
                     Settings.StartMinimized = value;
                     Settings.Save();
-
-                    RaisePropertyChanged();
                 }
                 finally
                 {
@@ -821,9 +859,6 @@ namespace WinMemoryCleaner
                     Settings.TrayIcon = value;
                     Settings.Save();
 
-                    NotificationService.Update(Computer.Memory);
-
-                    RaisePropertyChanged();
                 }
                 finally
                 {
@@ -841,6 +876,18 @@ namespace WinMemoryCleaner
             {
                 return string.Format(Localizer.Culture, "{0} ({1:0.#} {2})", Localizer.String.Virtual, Computer.Memory.Virtual.Total.Value, Computer.Memory.Virtual.Total.Unit);
             }
+        }
+
+        public ImageSource StaticTrayIcon 
+        { 
+            get => _staticTrayIcon; 
+            set => _staticTrayIcon = value; 
+        }
+
+        public ImageSource DynamicTrayIcon
+        {
+            get => _dynamicTrayIcon;
+            set => _dynamicTrayIcon = value;
         }
 
         #endregion
@@ -947,6 +994,7 @@ namespace WinMemoryCleaner
         /// The remove process from exclusion list command.
         /// </value>
         public RelayCommand<string> RemoveProcessFromExclusionListCommand { get; private set; }
+        
 
         /// <summary>
         /// Occurs when [remove process from exclusion list command is completed].
@@ -971,10 +1019,8 @@ namespace WinMemoryCleaner
                 {
                     if (Settings.ProcessExclusionList.Add(process))
                     {
+                        ProcessExclusionList = new ObservableCollection<string>(Settings.ProcessExclusionList);
                         Settings.Save();
-
-                        RaisePropertyChanged(() => Processes);
-                        RaisePropertyChanged(() => ProcessExclusionList);
                     }
                 }
             }
@@ -1097,12 +1143,7 @@ namespace WinMemoryCleaner
 
                     // Update memory info
                     Computer.Memory = _computerService.Memory;
-
-                    RaisePropertyChanged(() => Computer);
-                    RaisePropertyChanged(() => VirtualMemoryHeader);
-
-                    NotificationService.Update(Computer.Memory);
-
+                    CanOptimize = (MemoryAreas != Enums.Memory.Areas.None);
                     // Delay
                     Thread.Sleep(5000);
                 }
@@ -1147,7 +1188,6 @@ namespace WinMemoryCleaner
 
                 // Update memory info
                 Computer.Memory = _computerService.Memory;
-                RaisePropertyChanged(() => Computer);
 
                 // Notification
                 if (Settings.ShowOptimizationNotifications)
@@ -1223,15 +1263,11 @@ namespace WinMemoryCleaner
                     var message = string.Format(Localizer.Culture, Localizer.String.HotkeyIsInUseByWindows, hotKey);
 
                     Logger.Warning(message);
-                    NotificationService.Notify(message);
-
+                    taskbarIcon?.ShowBalloonTip("", message,BalloonIcon.Info);
                     return;
                 }
 
                 Settings.Save();
-
-                RaisePropertyChanged(() => OptimizationKey);
-                RaisePropertyChanged(() => OptimizationModifiers);
             }
             finally
             {
@@ -1250,10 +1286,11 @@ namespace WinMemoryCleaner
                 IsBusy = true;
 
                 if (Settings.ProcessExclusionList.Remove(process))
+                {
+                    ProcessExclusionList = new ObservableCollection<string>(Settings.ProcessExclusionList);
                     Settings.Save();
-
-                RaisePropertyChanged(() => Processes);
-                RaisePropertyChanged(() => ProcessExclusionList);
+                }
+                    
 
                 if (OnRemoveProcessFromExclusionListCommandCompleted != null)
                 {
@@ -1269,7 +1306,8 @@ namespace WinMemoryCleaner
             }
         }
 
-        private Icon UpdateTrayIcon(Memory memory)
+
+        private void UpdateTrayIcon(Memory memory)
         {
             Icon Result;
             using (var image = new Bitmap(16, 16))
@@ -1285,20 +1323,36 @@ namespace WinMemoryCleaner
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
-                graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.Red : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkOrange : Brushes.Black, 0, 0, 16, 15);
-                graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, 8, 8, format);
-                var handle = image.GetHicon();
+                graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? System.Drawing.Brushes.Red : memory.Physical.Used.Percentage >= 80 ? System.Drawing.Brushes.DarkOrange : System.Drawing.Brushes.Black, 0, 0, 16, 15);
+                graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, System.Drawing.Brushes.WhiteSmoke, 8, 8, format);
+                IntPtr hBitmap = image.GetHbitmap();
+                ImageSource imageSource = Imaging.CreateBitmapSourceFromHBitmap(
+                    hBitmap,
+                    IntPtr.Zero,
+                    Int32Rect.Empty,
+                    BitmapSizeOptions.FromEmptyOptions());
 
-                using (var icon = Icon.FromHandle(handle))
-                {
-                    Result = (Icon)icon.Clone();
-                }
-                NativeMethods.DestroyIcon(handle);
+                // Release Bitmap Resource
+                DeleteObject(hBitmap);
 
-                return Result;
+                _dynamicTrayIcon = imageSource;
             }
         }
-
+        // DeleteObject external method from GDI32
+        [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+        public static extern bool DeleteObject(IntPtr hObject);
         #endregion
+
+        /// <summary>
+        /// Displays a Notification
+        /// </summary>
+        /// <param name="message">The text</param>
+        /// <param name="title">The title</param>
+        /// <param name="timeout">The time period, in seconds</param>
+        /// <param name="icon">The icon</param>
+        protected void Notify(string message, string title = null, int timeout = 5, Enums.Icon.Notification icon = Enums.Icon.Notification.None)
+        {
+            taskbarIcon.ShowBalloonTip(title, message, BalloonIcon.Info);
+        }
     }
 }

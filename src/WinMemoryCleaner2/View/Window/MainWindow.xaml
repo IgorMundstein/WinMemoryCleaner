@@ -45,8 +45,8 @@
                 ContextMenu="{StaticResource TrayMenu}"
                 MenuActivation="LeftOrRightClick"
                 TrayLeftMouseUp="TaskbarIcon_TrayLeftMouseUp"
-                IconSource="/View/Window/win-memory-cleaner.ico"
-  />
+                IconSource="{Binding StaticTrayIcon}"
+            />
             <!-- Header -->
             <Grid Margin="10, 10, 0, 0">
                 <Grid.ColumnDefinitions>
@@ -248,6 +248,7 @@
                                      GroupName="TrayIcon" 
                                      IsChecked="{Binding TrayIcon, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Icon+Tray.Image}}" />
                         <RadioButton Content="{Binding Path=(local:Localizer.String).MemoryUsage}" 
+                                     IsEnabled="False"
                                      GroupName="TrayIcon" 
                                      IsChecked="{Binding TrayIcon, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Icon+Tray.MemoryUsage}}"
                                      Margin="10, 0, 0, 0" />
@@ -257,7 +258,8 @@
                 <GroupBox Grid.Column="1"
                           Grid.Row="0"
                           Header="{Binding Path=(local:Localizer.String).ProcessExclusionList}"
-                          Margin="5, 5, 0, 0">
+                          Margin="5, 5, 0, 0"
+                          IsEnabled="False">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -288,7 +290,7 @@
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <Button Content="-"
-                                                    Command="{Binding MainViewModel.RemoveProcessFromExclusionListCommand, Source={StaticResource ViewModelLocator}}"
+                                                    Command="{Binding Path=DataContext.RemoveProcessFromExclusionListCommand}"
                                                     CommandParameter="{Binding}"
                                                     Grid.Column="0"
                                                     Padding="5, -3, 5, 0"
