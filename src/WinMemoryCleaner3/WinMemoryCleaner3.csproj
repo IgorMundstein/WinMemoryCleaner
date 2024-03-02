@@ -10,6 +10,7 @@
     <ApplicationIcon>Resources\Images\win-memory-cleaner.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\Images\github.png" />
     <None Remove="View\Window\github.png" />
     <None Remove="View\Window\win-memory-cleaner.ico" />
   </ItemGroup>
@@ -44,12 +45,16 @@
     <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\Images\github.png" />
     <Resource Include="View\Window\github.png" />
     <Resource Include="View\Window\win-memory-cleaner.ico" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="Mekumiao.WPF-UI.Tray" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Notification.Wpf" Version="8.0.0" />
+    <PackageReference Include="WPF-UI" Version="3.0.0" />
   </ItemGroup>
 </Project>

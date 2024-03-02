@@ -11,7 +11,8 @@
         /// <value>
         ///   <c>true</c> if it has combined page list; otherwise, <c>false</c>.
         /// </value>
-        public bool HasCombinedPageList { get { return IsWindows8OrGreater; } }
+        public bool HasCombinedPageList
+        { get { return IsWindows8OrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has a hotkey manager.
@@ -19,7 +20,8 @@
         /// <value>
         ///   <c>true</c> if it has a hotkey manager; otherwise, <c>false</c>.
         /// </value>
-        public bool HasHotKeyManager { get { return IsWindowsVistaOrGreater; } }
+        public bool HasHotKeyManager
+        { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has modified page list.
@@ -27,7 +29,8 @@
         /// <value>
         ///   <c>true</c> if it has modified page list; otherwise, <c>false</c>.
         /// </value>
-        public bool HasModifiedPageList { get { return IsWindowsVistaOrGreater; } }
+        public bool HasModifiedPageList
+        { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has processes working set.
@@ -35,7 +38,8 @@
         /// <value>
         ///   <c>true</c> if it has processes working set; otherwise, <c>false</c>.
         /// </value>
-        public bool HasProcessesWorkingSet { get { return IsWindowsXpOrGreater; } }
+        public bool HasProcessesWorkingSet
+        { get { return IsWindowsXpOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has standby list.
@@ -43,7 +47,8 @@
         /// <value>
         ///   <c>true</c> if it has standby list; otherwise, <c>false</c>.
         /// </value>
-        public bool HasStandbyList { get { return IsWindowsVistaOrGreater; } }
+        public bool HasStandbyList
+        { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has system working set.
@@ -51,7 +56,8 @@
         /// <value>
         ///   <c>true</c> if it has system working set; otherwise, <c>false</c>.
         /// </value>
-        public bool HasSystemWorkingSet { get { return IsWindowsXpOrGreater; } }
+        public bool HasSystemWorkingSet
+        { get { return IsWindowsXpOrGreater; } }
 
         /// <summary>
         /// Determines whether the current operating system is a 64-bit operating system

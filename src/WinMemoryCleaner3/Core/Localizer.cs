@@ -23,14 +23,14 @@ namespace WinMemoryCleaner
         /// </summary>
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
-        #endregion
+        #endregion Events
 
         #region Fields
 
         private static CultureInfo _culture;
         private static Language _language;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
 
@@ -50,7 +50,7 @@ namespace WinMemoryCleaner
             Language = new Language(Culture);
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Properties
 
@@ -164,7 +164,7 @@ namespace WinMemoryCleaner
         /// </summary>
         public static Localization String { get; private set; }
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -217,6 +217,6 @@ namespace WinMemoryCleaner
                 StaticPropertyChanged.Invoke(null, new PropertyChangedEventArgs(propertyName));
         }
 
-        #endregion
+        #endregion Methods
     }
 }

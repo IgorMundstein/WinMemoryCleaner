@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using Notification.Wpf;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -8,8 +9,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Threading;
+using WinMemoryCleaner3.View;
+using WinMemoryCleaner3.ViewModel;
 
 [assembly: CLSCompliant(true)]
 namespace WinMemoryCleaner
@@ -23,7 +25,6 @@ namespace WinMemoryCleaner
 
         private static DateTimeOffset _lastAutoUpdate;
         private static Mutex _mutex;
-        private static readonly object _showHidelock = new object();
         private static ProcessStartInfo _updateProcess;
         private static Version _version;
         public IServiceProvider services;
@@ -39,17 +40,10 @@ namespace WinMemoryCleaner
         {
             // Log
             Logger.Level = Debugger.IsAttached ? Enums.Log.Levels.Debug : Enums.Log.Levels.Information;
-
             // Events
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             Dispatcher.UnhandledException += OnDispatcherUnhandledException;
-
-            // DI/IOC
-            //DependencyInjection.Container.Register<IComputerService, ComputerService>();
-            //DependencyInjection.Container.Register<IHotKeyService, HotKeyService>();
-            //DependencyInjection.Container.Register<INotificationService, NotificationService>();
-
             ConfigureServices();
         }
 
@@ -117,9 +111,10 @@ namespace WinMemoryCleaner
             var _serviceProvider = new ServiceCollection();
 
             _serviceProvider
+                .AddSingleton<INotificationManager,NotificationManager>()
                 .AddSingleton<IComputerService, ComputerService>()
                 .AddSingleton<IHotKeyService, HotKeyService>()
-                .AddSingleton<MainViewModel>()
+                .AddSingleton<MainWindowViewModel>()
                 .AddSingleton<MainWindow>();
             services = _serviceProvider.BuildServiceProvider();
         }
@@ -158,48 +153,7 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Called when [notify icon click].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnNotifyIconClick(object sender, EventArgs e)
-        {
-            lock (_showHidelock)
-            {
-                var mouseEventArgs = e as MouseEventArgs;
-
-                // Show/Hide
-                if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
-                {
-                    switch (MainWindow.Visibility)
-                    {
-                        case Visibility.Collapsed:
-                        case Visibility.Hidden:
-                            MainWindow.Show();
-
-                            MainWindow.WindowState = WindowState.Normal;
-
-                            MainWindow.Activate();
-                            MainWindow.Focus();
-
-                            MainWindow.Topmost = true;
-                            MainWindow.Topmost = Settings.AlwaysOnTop;
-                            MainWindow.ShowInTaskbar = true;
-                            break;
-
-                        case Visibility.Visible:
-                            MainWindow.Hide();
-
-                            MainWindow.ShowInTaskbar = false;
-                            break;
-                    }
-
-                    ReleaseMemory();
-                }
-            }
-        }
-
+       
         /// <summary>
         /// Raises the <see cref="E:System.Windows.Application.Startup" /> event.
         /// </summary>
@@ -282,11 +236,12 @@ namespace WinMemoryCleaner
                     // Run On Startup
                     RunOnStartup(Settings.RunOnStartup);
 
-                    var mainWindow = services.GetRequiredService<MainWindow>();
-
+                   // var mainWindow = services.GetRequiredService<MainWindow>();
+                    var newMainWindow = services.GetRequiredService<MainWindow>();
+                    App.Current.MainWindow = newMainWindow;
                     if (!Settings.StartMinimized)
-                        mainWindow.Show();
-
+                        //mainWindow.Show();
+                        newMainWindow.Show();
                     //// Update notification
                     //if (!string.IsNullOrWhiteSpace(updateNotification))
                     //    services.GetRequiredService<INotificationService>().Notify(updateNotification);

@@ -5,7 +5,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Memory (RAM)
     /// </summary>
-    public class Memory 
+    public class Memory
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Memory" /> class.

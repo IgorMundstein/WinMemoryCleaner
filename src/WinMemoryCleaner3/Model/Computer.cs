@@ -15,7 +15,6 @@ namespace WinMemoryCleaner
         /// </summary>
         public Computer()
         {
-
         }
 
         /// <summary>
@@ -24,8 +23,7 @@ namespace WinMemoryCleaner
         public Memory Memory
         {
             get => memory;
-            set{ SetProperty(ref memory, value);}
-            
+            set { SetProperty(ref memory, value); }
         }
 
         /// <summary>
@@ -36,6 +34,5 @@ namespace WinMemoryCleaner
             get => operatingSystem;
             set => SetProperty(ref operatingSystem, value);
         }
-
     }
 }

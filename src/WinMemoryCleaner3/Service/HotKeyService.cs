@@ -19,7 +19,7 @@ namespace WinMemoryCleaner
         private readonly bool _isSupported = Environment.OSVersion.Version.Major >= 6; // Minimum supported Windows Vista / Server 2003
         private readonly Dictionary<HotKey, Action> _registered = new Dictionary<HotKey, Action>();
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
 
@@ -49,7 +49,7 @@ namespace WinMemoryCleaner
             ComponentDispatcher.ThreadPreprocessMessage += OnThreadPreprocessMessage;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region IDisposable
 
@@ -102,7 +102,7 @@ namespace WinMemoryCleaner
             }
         }
 
-        #endregion
+        #endregion IDisposable
 
         #region Properties
 
@@ -122,7 +122,7 @@ namespace WinMemoryCleaner
         /// </value>
         public Dictionary<ModifierKeys, string> Modifiers { get; private set; }
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -153,7 +153,9 @@ namespace WinMemoryCleaner
             }
 
             if (hotKey != null && _registered.TryGetValue(hotKey, out action))
+            {
                 action();
+            }
         }
 
         /// <summary>
@@ -218,6 +220,6 @@ namespace WinMemoryCleaner
             return result;
         }
 
-        #endregion
+        #endregion Methods
     }
 }

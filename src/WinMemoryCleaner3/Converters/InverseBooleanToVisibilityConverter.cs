@@ -16,7 +16,7 @@ namespace WinMemoryCleaner
         private readonly BooleanToVisibilityConverter _converter = new BooleanToVisibilityConverter();
 
         /// <summary>
-        /// Converts a negation Boolean value to a <see cref="T:System.Windows.Visibility" /> enumeration value 
+        /// Converts a negation Boolean value to a <see cref="T:System.Windows.Visibility" /> enumeration value
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>

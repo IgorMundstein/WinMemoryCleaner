@@ -30,7 +30,6 @@ namespace WinMemoryCleaner
             OptimizationKey = Key.M;
             OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Alt;
             ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
-            RunOnPriority = Enums.Priority.Low;
             RunOnStartup = false;
             ShowOptimizationNotifications = true;
             ShowVirtualMemory = false;

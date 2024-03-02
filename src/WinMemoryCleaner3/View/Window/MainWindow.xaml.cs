@@ -1,215 +1,55 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Diagnostics;
-using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Navigation;
-
-namespace WinMemoryCleaner
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+using WinMemoryCleaner;
+using WinMemoryCleaner3.ViewModel;
+using Wpf.Ui.Controls;
+namespace WinMemoryCleaner3.View
 {
     /// <summary>
-    /// Main Window
+    /// NewMainWindow.xaml 的交互逻辑
     /// </summary>
-    /// <seealso cref="Window" />
-    /// <seealso cref="System.Windows.Markup.IComponentConnector" />
-    public partial class MainWindow
+    public partial class MainWindow : FluentWindow
     {
-        private readonly MainViewModel _viewModel;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MainWindow" /> class.
-        /// </summary>
-        public MainWindow()
+        MainWindowViewModel VM { get; set; }
+        DispatcherTimer dispatcherTimer;
+        public MainWindow( MainWindowViewModel vm)
         {
+            VM = vm;
+            this.DataContext = vm;
+            vm.OnRemoveProcessFromExclusionListCommandCompleted += SetFocusToProcessExclusionList;
             InitializeComponent();
-
-            _viewModel = (App.Current as App).services.GetRequiredService<MainViewModel>();
-            _viewModel.OnOptimizeCommandCompleted += OnOptimizeCommandCompleted;
-            _viewModel.OnRemoveProcessFromExclusionListCommandCompleted += SetFocusToProcessExclusionList;
-            _viewModel.taskbarIcon = myNotifyIcon;
-            this.DataContext = _viewModel;
-
-            // Slider
-            var sliderPreviewMouseLeftButtonDownEvent = new MouseButtonEventHandler((sender, e) =>
-            {
-                var slider = (Slider)sender;
-                var track = slider.Template.FindName("PART_Track", slider) as Track;
-
-                if (!slider.IsMoveToPointEnabled || track == null || track.Thumb == null || track.Thumb.IsMouseOver)
-                    return;
-
-                track.Thumb.UpdateLayout();
-                track.Thumb.RaiseEvent(new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, MouseButton.Left)
-                {
-                    RoutedEvent = MouseLeftButtonDownEvent,
-                    Source = track.Thumb
-                });
-            });
-
-            AutoOptimizationInterval.AddHandler(PreviewMouseLeftButtonDownEvent, sliderPreviewMouseLeftButtonDownEvent, true);
-            AutoOptimizationMemoryUsage.AddHandler(PreviewMouseLeftButtonDownEvent, sliderPreviewMouseLeftButtonDownEvent, true);
+            dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            dispatcherTimer.Interval = TimeSpan.FromSeconds(5);
+            dispatcherTimer.Start();
+        }
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            VM.MonitorComputer();
+            VM.MonitorApp();
+            // Forcing the CommandManager to raise the RequerySuggested event
+            CommandManager.InvalidateRequerySuggested();
+        }
+        private void MenuItemOptimize_Click(object sender, RoutedEventArgs e)
+        {
+            return;
         }
 
-        /// <summary>
-        /// Closes to the notification area.
-        /// </summary>
-        private void CloseToTheNotificationArea()
+        private void MenuItemExit_Click(object sender, RoutedEventArgs e)
         {
-            if (Visibility == Visibility.Visible)
-            {
-                Hide();
-                ShowInTaskbar = false;
-            }
-        }
-
-        /// <summary>
-        /// Called when [close button click].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
-        private void OnCloseButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (Settings.CloseToTheNotificationArea)
-            {
-                SetFocusToOptimizationButton();
-
-                CloseToTheNotificationArea();
-
-                App.ReleaseMemory();
-            }
-            else
-                Application.Current.Shutdown();
-        }
-
-        /// <summary>
-        /// Called when [compact mode button click].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
-        private void OnCompactModeButtonClick(object sender, RoutedEventArgs e)
-        {
-            SetFocusToOptimizationButton();
-        }
-
-        /// <summary>
-        /// Handles the RequestNavigate event of the Hyperlink control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RequestNavigateEventArgs" /> instance containing the event data.</param>
-        private void OnHyperlinkRequestNavigate(object sender, RequestNavigateEventArgs e)
-        {
-            SetFocusToOptimizationButton();
-
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Called when [minimize button click].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
-        private void OnMinimizeButtonClick(object sender, RoutedEventArgs e)
-        {
-            SetFocusToOptimizationButton();
-
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Invoked when an unhandled <see cref="E:System.Windows.UIElement.MouseLeftButtonDown" /> routed event is raised on this element. Implement this method to add class handling for this event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.Windows.Input.MouseButtonEventArgs" /> that contains the event data. The event data reports that the left mouse button was pressed.</param>
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-
-            DragMove();
-        }
-
-        /// <summary>
-        /// Called when [optimize command is completed].
-        /// </summary>
-        private void OnOptimizeCommandCompleted()
-        {
-            if (Settings.CloseAfterOptimization)
-            {
-                if (Settings.CloseToTheNotificationArea)
-                {
-                    SetFocusToOptimizationButton();
-
-                    CloseToTheNotificationArea();
-                }
-                else
-                {
-                    Thread.Sleep(1000);
-                    Application.Current.Shutdown();
-                }
-            }
-            else
-            {
-                _viewModel.IsBusy = false;
-
-                SetFocusToOptimizationButton();
-            }
-        }
-
-        /// <summary>
-        /// Called when [processes drop down opened].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnProcessesDropDownOpened(object sender, EventArgs e)
-        {
-            
-        }
-
-        /// <summary>
-        /// Called when [slider preview key down].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="KeyEventArgs" /> instance containing the event data.</param>
-        private void OnSliderPreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            var slider = (Slider)sender;
-
-            switch (e.Key)
-            {
-                case Key.Left:
-                case Key.Down:
-                    if (slider.Value > slider.Minimum)
-                        slider.Value -= 1;
-                    break;
-
-                case Key.Right:
-                case Key.Up:
-                    if (slider.Value < slider.Maximum)
-                        slider.Value += 1;
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Called when [window mouse down].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
-        private void OnWindowMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            SetFocusToOptimizationButton();
-        }
-
-        /// <summary>
-        /// Sets the focus to optimization button.
-        /// </summary>
-        private void SetFocusToOptimizationButton()
-        {
-            Keyboard.ClearFocus();
-            FocusManager.SetFocusedElement(this, Optimize);
-            Optimize.Focus();
+            App.Current.Shutdown();
         }
 
         /// <summary>
@@ -217,68 +57,30 @@ namespace WinMemoryCleaner
         /// </summary>
         private void SetFocusToProcessExclusionList()
         {
-            FocusManager.SetFocusedElement(this, ProcessExclusionList);
-            ProcessExclusionList.Focus();
+            FocusManager.SetFocusedElement(this, SettingPanel.ProcessExclusionList);
+            SettingPanel.ProcessExclusionList.Focus();
         }
 
-        private void TaskbarIcon_TrayLeftMouseUp(object sender, RoutedEventArgs e)
+        private void NotifyIcon_LeftDoubleClick(Wpf.Ui.Tray.Controls.NotifyIcon sender, RoutedEventArgs e)
         {
-
-            var mouseEventArgs = e;
-
-
-            switch (Visibility)
+            if (Visibility == Visibility.Hidden|| Visibility == Visibility.Collapsed)
             {
-                case Visibility.Collapsed:
-                case Visibility.Hidden:
-                    Show();
-
-                    WindowState = WindowState.Normal;
-
-                    Activate();
-                    Focus();
-
-                    Topmost = true;
-                    Topmost = Settings.AlwaysOnTop;
-                    ShowInTaskbar = true;
-                    break;
-
-                case Visibility.Visible:
-                    Hide();
-
-                    ShowInTaskbar = false;
-                    break;
+                Visibility = Visibility.Visible;
             }
-            ReleaseMemory();
+            else
+            {
+                Visibility = Visibility.Collapsed;
+            }
         }
 
-        /// <summary>
-        /// Releases the app memory
-        /// </summary>
-        public static void ReleaseMemory()
+        private void FluentWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            // Optimize App Working Set
-            try
+            if (Settings.CloseToTheNotificationArea)
             {
-                NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle);
+                e.Cancel = true;
+                Visibility = Visibility.Collapsed;
             }
-            catch (Exception)
-            {
-                // ignored
-            }
-
-            // Garbage Collector
-            try
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            }
-            catch
-            {
-                // ignored
-            }
+            
         }
-
     }
 }

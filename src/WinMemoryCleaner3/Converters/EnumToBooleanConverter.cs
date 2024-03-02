@@ -12,7 +12,7 @@ namespace WinMemoryCleaner
     public sealed class EnumToBooleanConverter : IValueConverter
     {
         /// <summary>
-        /// Converts an enumeration value to Boolean value 
+        /// Converts an enumeration value to Boolean value
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>

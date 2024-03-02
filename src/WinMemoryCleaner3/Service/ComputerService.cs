@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace WinMemoryCleaner
 {
@@ -18,7 +19,7 @@ namespace WinMemoryCleaner
         private Memory _memory = new Memory(new Structs.Windows.MemoryStatusEx());
         private OperatingSystem _operatingSystem;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -71,7 +72,7 @@ namespace WinMemoryCleaner
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Events
 
@@ -80,7 +81,7 @@ namespace WinMemoryCleaner
         /// </summary>
         public event Action<byte, string> OnOptimizeProgressUpdate;
 
-        #endregion
+        #endregion Events
 
         #region Methods (Computer)
 
@@ -114,7 +115,7 @@ namespace WinMemoryCleaner
             return result;
         }
 
-        #endregion
+        #endregion Methods (Computer)
 
         #region Methods (Memory)
 
@@ -122,184 +123,18 @@ namespace WinMemoryCleaner
         /// Optimize the computer
         /// </summary>
         /// <param name="areas">Memory areas</param>
-        public void Optimize(Enums.Memory.Areas areas)
+        public async Task Optimize(Enums.Memory.Areas areas)
         {
-            if (areas == Enums.Memory.Areas.None)
-                return;
-
-            var errorLog = new StringBuilder();
-            var errorLogFormat = "{0} ({1}: {2})";
-            var infoLog = new StringBuilder();
-            var infoLogFormat = "{0} ({1}) ({2:0.0} {3})";
-            var runtime = new TimeSpan();
-            var stopwatch = new Stopwatch();
-            var value = (byte)0;
-
-            // Optimize Processes Working Set
-            if ((areas & Enums.Memory.Areas.ProcessesWorkingSet) != 0)
-            {
-                try
-                {
-                    if (OnOptimizeProgressUpdate != null)
-                    {
-                        value++;
-                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryProcessesWorkingSet);
-                    }
-
-                    stopwatch.Restart();
-
-                    OptimizeProcessesWorkingSet();
-
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
-                }
-                catch (Exception e)
-                {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Error, e.GetMessage()));
-                }
-            }
-
-            // Optimize System Working Set
-            if ((areas & Enums.Memory.Areas.SystemWorkingSet) != 0)
-            {
-                try
-                {
-                    if (OnOptimizeProgressUpdate != null)
-                    {
-                        value++;
-                        OnOptimizeProgressUpdate(value, Localizer.String.MemorySystemWorkingSet);
-                    }
-
-                    stopwatch.Restart();
-
-                    OptimizeSystemWorkingSet();
-
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
-                }
-                catch (Exception e)
-                {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Error, e.GetMessage()));
-                }
-            }
-
-            // Optimize Modified Page List
-            if ((areas & Enums.Memory.Areas.ModifiedPageList) != 0)
-            {
-                try
-                {
-                    if (OnOptimizeProgressUpdate != null)
-                    {
-                        value++;
-                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryModifiedPageList);
-                    }
-
-                    stopwatch.Restart();
-
-                    OptimizeModifiedPageList();
-
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
-                }
-                catch (Exception e)
-                {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Error, e.GetMessage()));
-                }
-            }
-
-            // Optimize Standby List
-            if ((areas & (Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.StandbyListLowPriority)) != 0)
-            {
-                var lowPriority = (areas & Enums.Memory.Areas.StandbyListLowPriority) != 0;
-
-                try
-                {
-                    if (OnOptimizeProgressUpdate != null)
-                    {
-                        value++;
-                        OnOptimizeProgressUpdate(value, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList);
-                    }
-
-                    stopwatch.Restart();
-
-                    OptimizeStandbyList(lowPriority);
-
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
-                }
-                catch (Exception e)
-                {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Error, e.GetMessage()));
-                }
-            }
-
-            // Optimize Combined Page List
-            if ((areas & Enums.Memory.Areas.CombinedPageList) != 0)
-            {
-                try
-                {
-                    if (OnOptimizeProgressUpdate != null)
-                    {
-                        value++;
-                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryCombinedPageList);
-                    }
-
-                    stopwatch.Restart();
-
-                    OptimizeCombinedPageList();
-
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
-                }
-                catch (Exception e)
-                {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Error, e.GetMessage()));
-                }
-            }
-
-            // Log
-            if (infoLog.Length > 0)
-            {
-                infoLog.Insert(0, string.Format(Localizer.Culture, "{0} ({1:0.0} {2}){3}{3}", Localizer.String.MemoryAreas.ToUpper(Localizer.Culture), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), Environment.NewLine));
-
-                Logger.Information(infoLog.ToString());
-
-                infoLog.Clear();
-            }
-
-            if (errorLog.Length > 0)
-            {
-                errorLog.Insert(0, string.Format(Localizer.Culture, "{0}{1}{1}", Localizer.String.MemoryAreas.ToUpper(Localizer.Culture), Environment.NewLine));
-
-                Logger.Error(errorLog.ToString());
-
-                errorLog.Clear();
-            }
-
-            // Garbage Collector
-            try
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            }
-            catch
-            {
-                // ignored
-            }
-            finally
-            {
-                if (OnOptimizeProgressUpdate != null)
-                {
-                    value++;
-                    OnOptimizeProgressUpdate(value, Localizer.String.Optimized);
-                }
-            }
+            //await Task.Run(() => OptimizeCombinedPageList());
+            //await Task.Run(() => OptimizeModifiedPageList());
+            //await Task.Run(() => OptimizeProcessesWorkingSet());
+            //await Task.Run(() => OptimizeStandbyList());
+            //await Task.Run(() => OptimizeSystemWorkingSet());
+            var task1 = Task.Factory.StartNew(() => OptimizeCombinedPageList());
+            var task2 = Task.Factory.StartNew(() => OptimizeModifiedPageList());
+            var task3 = Task.Factory.StartNew(() => OptimizeProcessesWorkingSet());
+            var task4 = Task.Factory.StartNew(() => OptimizeStandbyList());
+            var task5 = Task.Factory.StartNew(() => OptimizeSystemWorkingSet());
         }
 
         /// <summary>
@@ -357,7 +192,6 @@ namespace WinMemoryCleaner
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
-
 
             var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList, GCHandleType.Pinned);
 
@@ -516,6 +350,6 @@ namespace WinMemoryCleaner
                 throw new Win32Exception(Marshal.GetLastWin32Error());
         }
 
-        #endregion
+        #endregion Methods (Memory)
     }
 }

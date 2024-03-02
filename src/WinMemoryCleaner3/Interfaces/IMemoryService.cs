@@ -1,4 +1,6 @@
-﻿namespace WinMemoryCleaner
+﻿using System.Threading.Tasks;
+
+namespace WinMemoryCleaner
 {
     /// <summary>
     /// IMemoryService
@@ -14,6 +16,6 @@
         /// Optimize the computer
         /// </summary>
         /// <param name="areas">Memory areas</param>
-        void Optimize(Enums.Memory.Areas areas);
+        Task Optimize(Enums.Memory.Areas areas);
     }
 }
