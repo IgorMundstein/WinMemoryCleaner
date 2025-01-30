@@ -144,6 +144,9 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string StartMinimized { get; private set; }
+        
+        [DataMember]
+        public string UseHotKey { get; private set; }
 
         [DataMember]
         public string TrayIcon { get; private set; }

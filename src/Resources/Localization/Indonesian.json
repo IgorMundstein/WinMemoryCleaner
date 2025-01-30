@@ -48,5 +48,6 @@
   "UpdatedToVersion": "Diperbarui ke versi {0}",
   "Used": "Digunakan",
   "Virtual": "Maya",
-  "WhenFreeMemoryIsBelow": "Ketika sisa memori dibawah {0}%"
+  "WhenFreeMemoryIsBelow": "Ketika sisa memori dibawah {0}%",
+  "UseHotKey": "Gunakan tombol pintas"
 }

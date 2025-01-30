@@ -48,5 +48,6 @@
   "UpdatedToVersion": "Sürüm {0} güncellendi",
   "Used": "Kullanılan",
   "Virtual": "Sanal",
-  "WhenFreeMemoryIsBelow": "Boş bellek şundan az olduğunda {0}%"
+  "WhenFreeMemoryIsBelow": "Boş bellek şundan az olduğunda {0}%",
+  "UseHotKey": "Kısayol tuşunu kullan"
 }

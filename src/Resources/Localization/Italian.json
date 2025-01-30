@@ -48,5 +48,6 @@
   "UpdatedToVersion": "Aggiornato alla versione {0}",
   "Used": "Utilizzata",
   "Virtual": "Virtuale",
-  "WhenFreeMemoryIsBelow": "Quando la memoria libera è inferiore a {0}%"
+  "WhenFreeMemoryIsBelow": "Quando la memoria libera è inferiore a {0}%",
+  "UseHotKey": "Usa tasto di scelta rapida"
 }

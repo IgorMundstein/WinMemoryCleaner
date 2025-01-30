@@ -48,5 +48,6 @@
   "UpdatedToVersion": "Bijgewerkt naar versie {0}",
   "Used": "Gebruikt",
   "Virtual": "Virtueel",
-  "WhenFreeMemoryIsBelow": "Wanneer het vrije geheugen lager is {0}%"
+  "WhenFreeMemoryIsBelow": "Wanneer het vrije geheugen lager is {0}%",
+  "UseHotKey": "Brug genvejstast"
 }

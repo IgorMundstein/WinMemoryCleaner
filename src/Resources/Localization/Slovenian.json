@@ -48,5 +48,6 @@
   "UpdatedToVersion": "Posodobljen na različico {0}",
   "Used": "Uporabljen",
   "Virtual": "Virtualno",
-  "WhenFreeMemoryIsBelow": "Ko je prosti pomnilnik pod {0}%"
+  "WhenFreeMemoryIsBelow": "Ko je prosti pomnilnik pod {0}%",
+  "UseHotKey": "Uporabi bližnjično tipko"
 }
