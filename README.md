@@ -193,6 +193,6 @@ If you are a native speaker of any language other than English, you can contribu
 - `Serbian (Srpski)` [DragorMilos](https://github.com/DragorMilos)
 - `Slovenian (Slovenščina)` [Jadran Rudec](https://github.com/JadranR)
 - `Spanish (Español)` [Ajneb Al Revés](https://github.com/AjnebAlReves) | [Nekrodamus](https://github.com/FrannDzs)
-- `Thai (ภาษาไทย)` [nongice](https://github.com/21icepril)
+- `Thai (ไทย)` [nongice](https://github.com/21icepril)
 - `Turkish (Türkçe)` [Rıza Emet](https://github.com/rizaemet) | [Viollje](https://github.com/Viollje)
 - `Ukrainian (Українська)` [RieBi](https://github.com/RieBi) | [Oleksander](https://github.com/Mariachi1231)

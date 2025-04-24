@@ -171,6 +171,7 @@
     <EmbeddedResource Include="Resources\Localization\Serbian.json" />
     <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
     <EmbeddedResource Include="Resources\Localization\Spanish.json" />
+    <EmbeddedResource Include="Resources\Localization\Thai.json" />
     <EmbeddedResource Include="Resources\Localization\Turkish.json" />
     <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
     <None Include="app.manifest" />
