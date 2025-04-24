@@ -28,7 +28,7 @@ namespace WinMemoryCleaner
             Language = Constants.Windows.Locale.Name.English;
             MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.ProcessesWorkingSet | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemWorkingSet;
             OptimizationKey = Key.M;
-            OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Alt;
+            OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Shift;
             ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             RunOnPriority = Enums.Priority.Low;
             RunOnStartup = false;
