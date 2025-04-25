@@ -289,7 +289,7 @@ namespace WinMemoryCleaner
                 }
                 else // NO GUI
                 {
-                    DependencyInjection.Container.Resolve<IComputerService>().Optimize(memoryAreas);
+                    DependencyInjection.Container.Resolve<IComputerService>().Optimize(Enums.Memory.Optimization.Reason.Manual, memoryAreas);
 
                     Shutdown();
                 }

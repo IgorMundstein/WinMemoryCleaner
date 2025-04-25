@@ -50,7 +50,7 @@ namespace WinMemoryCleaner
 
             // Commands
             AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList, () => CanAddProcessToExclusionList);
-            OptimizeCommand = new RelayCommand(OptimizeAsync, () => CanOptimize);
+            OptimizeCommand = new RelayCommand(() => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual), () => CanOptimize);
             RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
 
             // Models
@@ -1014,7 +1014,7 @@ namespace WinMemoryCleaner
                         if (Settings.AutoOptimizationInterval > 0 &&
                             DateTimeOffset.Now.Subtract(_lastAutoOptimizationByInterval).TotalHours >= Settings.AutoOptimizationInterval)
                         {
-                            OptimizeAsync();
+                            OptimizeAsync(Enums.Memory.Optimization.Reason.Schedule);
 
                             _lastAutoOptimizationByInterval = DateTimeOffset.Now;
                         }
@@ -1025,7 +1025,7 @@ namespace WinMemoryCleaner
                                 Computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
                                 DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
                             {
-                                OptimizeAsync();
+                                OptimizeAsync(Enums.Memory.Optimization.Reason.LowMemory);
 
                                 _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
                             }
@@ -1129,9 +1129,8 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Optimize
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
-        private void Optimize(object sender, DoWorkEventArgs e)
+        /// <param name="reason">Optimization reason</param>
+        private void Optimize(Enums.Memory.Optimization.Reason reason)
         {
             try
             {
@@ -1144,7 +1143,7 @@ namespace WinMemoryCleaner
                 var tempPhysicalAvailable = Computer.Memory.Physical.Free.Bytes;
                 var tempVirtualAvailable = Computer.Memory.Virtual.Free.Bytes;
 
-                _computerService.Optimize(Settings.MemoryAreas);
+                _computerService.Optimize(reason, Settings.MemoryAreas);
 
                 // Update memory info
                 Computer.Memory = _computerService.Memory;
@@ -1180,7 +1179,8 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Optimize
         /// </summary>
-        private void OptimizeAsync()
+        /// <param name="reason">Optimization reason</param>
+        private void OptimizeAsync(Enums.Memory.Optimization.Reason reason)
         {
             try
             {
@@ -1190,7 +1190,7 @@ namespace WinMemoryCleaner
 
                 using (var worker = new BackgroundWorker())
                 {
-                    worker.DoWork += Optimize;
+                    worker.DoWork += (sender, e) => Optimize(reason);
                     worker.RunWorkerAsync();
                 }
             }
@@ -1217,7 +1217,7 @@ namespace WinMemoryCleaner
                 Settings.OptimizationModifiers = modifiers;
 
                 var hotKey = new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
-                IsOptimizationKeyValid = _hotKeyService.Register(hotKey, OptimizeAsync);
+                IsOptimizationKeyValid = _hotKeyService.Register(hotKey, () => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual));
 
                 if (!IsOptimizationKeyValid)
                 {

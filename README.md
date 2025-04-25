@@ -5,7 +5,7 @@
   [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
   <picture>
-    <img src="/.github/images/main-window.png">
+    <img src="./.github/images/main-window.png">
   </picture>
 
   <p align="justify">
@@ -18,7 +18,7 @@
 
   <p align="center">
     <a href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
-      <img alt="DOWNLOAD" src="/.github/images/download-button.png">
+      <img alt="DOWNLOAD" src="./.github/images/download-button.png">
     </a>
   </p>
 </div>
@@ -41,7 +41,7 @@
 - Arrow (Up/Down) next to the minimize button to collapse and extend the window
 
 <picture>
-  <img src="/.github/images/main-window-compact.png">
+  <img src="./.github/images/main-window-compact.png">
 </picture>
 
 ### Memory Areas
@@ -82,22 +82,22 @@
 - Menu
 
 <picture>
-  <img src="/.github/images/system-tray.png">
+  <img src="./.github/images/system-tray.png">
 </picture>
 
 - Notification
 
 <picture>
-  <img src="/.github/images/notification.png">
+  <img src="./.github/images/notification.png">
 </picture>
 
 ### Tray icon
 
 - `Image` Show app icon
 - `Memory usage` Show physical memory usage with a background color based on the value
-  - `(0% - 79%)` <picture><img src="/.github/images/memory-usage.png"></picture>
-  - `(80% - 89%)` <picture><img src="/.github/images/memory-usage-warning.png"></picture>
-  - `(90% - 100%)` <picture><img src="/.github/images/memory-usage-danger.png"></picture>
+  - `(0% - 79%)` <picture><img src="./.github/images/memory-usage.png"></picture>
+  - `(80% - 89%)` <picture><img src="./.github/images/memory-usage-warning.png"></picture>
+  - `(90% - 100%)` <picture><img src="./.github/images/memory-usage-danger.png"></picture>
 
 ## 🔳 Command arguments (NO GUI)
 
@@ -121,7 +121,7 @@ The app generates logs in the Windows event
 2. Type **eventvwr** and press **Enter** to open the Event Viewer
 
 <picture>
-  <img src="/.github/images/windows-event-log.png">
+  <img src="./.github/images/windows-event-log.png">
 </picture>
 
 ## ❓ Frequently Asked Questions (FAQ)

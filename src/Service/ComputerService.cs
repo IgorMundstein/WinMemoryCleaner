@@ -121,8 +121,9 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Optimize the computer
         /// </summary>
+        /// <param name="reason">Optimization reason</param>
         /// <param name="areas">Memory areas</param>
-        public void Optimize(Enums.Memory.Areas areas)
+        public void Optimize(Enums.Memory.Optimization.Reason reason, Enums.Memory.Areas areas)
         {
             if (areas == Enums.Memory.Areas.None)
                 return;
@@ -131,9 +132,27 @@ namespace WinMemoryCleaner
             var errorLogFormat = "{0} ({1}: {2})";
             var infoLog = new StringBuilder();
             var infoLogFormat = "{0} ({1}) ({2:0.0} {3})";
+            var optimizationReason = string.Empty;
             var runtime = new TimeSpan();
+            var reasonLogFormat = "{0}: {1}";
             var stopwatch = new Stopwatch();
-            var value = (byte)0;
+            var value = (byte)0;            
+
+            // Reason
+            switch (reason)
+            { 
+                case Enums.Memory.Optimization.Reason.LowMemory:
+                    optimizationReason = string.Format(Localizer.Culture, reasonLogFormat, Localizer.String.OptimizationReason.ToUpper(Localizer.Culture), Localizer.String.LowMemory);
+                    break;
+
+                case Enums.Memory.Optimization.Reason.Manual:
+                    optimizationReason = string.Format(Localizer.Culture, reasonLogFormat, Localizer.String.OptimizationReason.ToUpper(Localizer.Culture), Localizer.String.Manual);
+                    break;
+
+                case Enums.Memory.Optimization.Reason.Schedule:
+                    optimizationReason = string.Format(Localizer.Culture, reasonLogFormat, Localizer.String.OptimizationReason.ToUpper(Localizer.Culture), Localizer.String.Schedule);
+                    break;
+            }
 
             // Optimize Processes Working Set
             if ((areas & Enums.Memory.Areas.ProcessesWorkingSet) != 0)
@@ -265,7 +284,7 @@ namespace WinMemoryCleaner
             // Log
             if (infoLog.Length > 0)
             {
-                infoLog.Insert(0, string.Format(Localizer.Culture, "{0} ({1:0.0} {2}){3}{3}", Localizer.String.MemoryAreas.ToUpper(Localizer.Culture), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), Environment.NewLine));
+                infoLog.Insert(0, string.Format(Localizer.Culture, "{1}{0}{0}{2} ({3:0.0} {4}){0}{0}", Environment.NewLine, optimizationReason, Localizer.String.MemoryAreas.ToUpper(Localizer.Culture), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
 
                 Logger.Information(infoLog.ToString());
 
@@ -274,7 +293,7 @@ namespace WinMemoryCleaner
 
             if (errorLog.Length > 0)
             {
-                errorLog.Insert(0, string.Format(Localizer.Culture, "{0}{1}{1}", Localizer.String.MemoryAreas.ToUpper(Localizer.Culture), Environment.NewLine));
+                errorLog.Insert(0, string.Format(Localizer.Culture, "{1}{0}{0}{2}{0}{0}", Environment.NewLine, optimizationReason, Localizer.String.MemoryAreas.ToUpper(Localizer.Culture)));
 
                 Logger.Error(errorLog.ToString());
 
