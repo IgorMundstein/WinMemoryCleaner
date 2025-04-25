@@ -64,15 +64,16 @@
                                   Padding="0, -3, 0, 0"
                                   VerticalAlignment="Center">
                         <Grid Background="Transparent"
-                              Margin="0, 4, 0, 0"
-                              VerticalAlignment="Center"
-                              Width="30">
+                              Margin="10, 3, 10, 0"
+                              VerticalAlignment="Center">
                             <Path Data="{Binding Tag, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}, Mode=FindAncestor}}"
+                                  Height="12"
                                   HorizontalAlignment="Center"
                                   Stretch="Uniform"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}, Mode=FindAncestor}}"
                                   StrokeThickness="2"
-                                  VerticalAlignment="Center" />
+                                  VerticalAlignment="Center"
+                                  Width="15" />
                         </Grid>
                         <ToggleButton.Resources>
                             <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
@@ -98,16 +99,15 @@
                             ToolTip="{Binding Path=(local:Localizer.String).Minimize}"
                             VerticalAlignment="Center">
                         <Grid Background="Transparent"
-                              Margin="0, 3, 0, 0"
-                              VerticalAlignment="Center"
-                              Width="30">
+                              Margin="10, 3, 10, 0"
+                              VerticalAlignment="Center">
                             <Path Data="M9,0 L8,1 8,1 8,1 0,1 0,1 z"
                                   HorizontalAlignment="Center"
                                   Stretch="None"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}, Mode=FindAncestor}}"
-                                  StrokeThickness="2"
+                                  StrokeThickness="3"
                                   VerticalAlignment="Center"
-                                  Width="8" />
+                                  Width="9" />
                         </Grid>
                     </Button>
                     <Button Background="Transparent" 
@@ -119,17 +119,16 @@
                             ToolTip="{Binding Path=(local:Localizer.String).Close}"
                             VerticalAlignment="Center">
                         <Grid Background="Transparent"
-                              Margin="0, 3, 0, 0"
-                              VerticalAlignment="Center"
-                              Width="30">
+                              Margin="10, 3, 10, 0"
+                              VerticalAlignment="Center">
                             <Path Data="M0,0 L1,1 M0,1 L1,0"
-                                  Height="8"
+                                  Height="10"
                                   HorizontalAlignment="Center"
                                   Stretch="Uniform"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}, Mode=FindAncestor}}"
                                   StrokeThickness="2"
                                   VerticalAlignment="Center"
-                                  Width="8" />
+                                  Width="10" />
                         </Grid>
                     </Button>
                 </StackPanel>
