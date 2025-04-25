@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "Ця операція потребує прав адміністратора ({0})",
   "ErrorCanNotSaveLog": "Не вдається зберегти до журналу {0} (Виключення: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "Оптимізація {0} не підтримується цією версією операційної системи",
-  "Every": "Кожні",
+  "EveryHour": "Кожні {0}h",
   "Exit": "Вийти",
   "Expand": "Розгорнути",
   "Free": "Вільно",

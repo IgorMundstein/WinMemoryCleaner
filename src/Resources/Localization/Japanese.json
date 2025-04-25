@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "この操作を行うには管理者権限が必要です ({0})",
   "ErrorCanNotSaveLog": "ログを保存できません: {0} (除外: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "{0} の最適化は、このオペレーティング システムのバージョンではサポートされていません",
-  "Every": "毎",
+  "EveryHour": "毎 {0}h",
   "Exit": "終了",
   "Expand": "展開",
   "Free": "フリー",

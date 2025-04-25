@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "Teastaíonn pribhléidí riarthóra don oibríocht seo ({0})",
   "ErrorCanNotSaveLog": "Ní féidir an LOG a shábháil: {0} (Eisceacht: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "Ní thacaítear le barrfheabhsú {0} ar an leagan córais oibriúcháin seo",
-  "Every": "Gach",
+  "EveryHour": "Gach {0}h",
   "Exit": "Scoir",
   "Expand": "Leathnaigh",
   "Free": "Saor",

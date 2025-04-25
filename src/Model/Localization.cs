@@ -53,7 +53,7 @@ namespace WinMemoryCleaner
         public string ErrorMemoryAreaOptimizationNotSupported { get; private set; }
 
         [DataMember]
-        public string Every { get; private set; }
+        public string EveryHour { get; private set; }
 
         [DataMember]
         public string Exit { get; private set; }

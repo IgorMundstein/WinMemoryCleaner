@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "此作業需要系統管理員權限({0})",
   "ErrorCanNotSaveLog": "無法儲存記錄: {0} (例外狀況: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "此作業系統版本不支援 {0} 最佳化",
-  "Every": "每隔",
+  "EveryHour": "每隔 {0}h",
   "Exit": "結束",
   "Expand": "展開",
   "Free": "可用",

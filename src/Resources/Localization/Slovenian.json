@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "Ta operacija zahteva skrbniške pravice ({0})",
   "ErrorCanNotSaveLog": "DNEVNIKA ni mogoče shraniti: {0} (Izjema: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "Optimizacija {0} ni podprta v tej različici operacijskega sistema",
-  "Every": "Vsakih",
+  "EveryHour": "Vsakih {0}h",
   "Exit": "Izhod",
   "Expand": "Razširi",
   "Free": "Brezplačno",

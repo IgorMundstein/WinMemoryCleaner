@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "هذه العملية تتطلب امتيازات المسؤول ({0})",
   "ErrorCanNotSaveLog": "لا يمكن حفظ السجل: {0} (استثناء: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "تحسين {0} غير مدعوم في إصدار نظام التشغيل هذا",
-  "Every": "كل",
+  "EveryHour": "كل {0} ساعة",
   "Exit": "خروج",
   "Expand": "الانهيار",
   "Free": "تفريغ",

@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "Ky operacion kërkon privilegje administratori ({0})",
   "ErrorCanNotSaveLog": "Nuk mund të ruhet LOG: {0} (Përjashtim: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "Optimizimi i {0} nuk mbështetet në këtë version të sistemit operativ",
-  "Every": "Every",
+  "EveryHour": "Every {0}h",
   "Exit": "Dil",
   "Expand": "Zgjero",
   "Free": "Falas",

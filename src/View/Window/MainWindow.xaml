@@ -321,12 +321,7 @@
                             <RowDefinition Height="45*" />
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Path=(local:Localizer.String).Every}" />
-                                <TextBlock Text=" " />
-                                <TextBlock Text="{Binding AutoOptimizationInterval}" />
-                                <TextBlock Text="h" />
-                            </StackPanel>
+                            <TextBlock Text="{Binding AutoOptimizationMemoryIntervalDescription}" />
                             <Slider Margin="0, 9, 0, 0"
                                     Maximum="168"
                                     Minimum="0"

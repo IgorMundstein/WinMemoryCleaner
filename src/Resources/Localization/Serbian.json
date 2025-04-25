@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "Ова операција захтева администраторске привилегије ({0})",
   "ErrorCanNotSaveLog": "Не може се сачувати LOG: {0} (Изузетак: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "Оптимизација {0} није подржана на овој верзији оперативног система",
-  "Every": "Сваких",
+  "EveryHour": "Сваких {0}h",
   "Exit": "Излаз",
   "Expand": "Проширити",
   "Free": "Слободно",

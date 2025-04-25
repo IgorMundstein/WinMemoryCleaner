@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "Dieser Vorgang erfordert Administratorrechte ({0})",
   "ErrorCanNotSaveLog": "Das Protokoll kann nicht gespeichert werden: {0} (Ausnahme: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "Die {0}-Optimierung wird auf dieser Betriebssystemversion nicht unterstützt",
-  "Every": "Alle",
+  "EveryHour": "Alle {0}h",
   "Exit": "Beenden",
   "Expand": "Ausklappen",
   "Free": "Frei",

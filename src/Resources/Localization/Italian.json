@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "Questa operazione richiede privilegi di amministratore ({0})",
   "ErrorCanNotSaveLog": "Impossibile salvare il LOG: {0} (Eccezione: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "L'ottimizzazione {0} non è supportata su questa versione del sistema operativo",
-  "Every": "Ogni",
+  "EveryHour": "Ogni {0}h",
   "Exit": "Esci",
   "Expand": "Espandi",
   "Free": "Libera",

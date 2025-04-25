@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "ต้องการสิทธิ์ผู้ดูแลระบบ ({0})",
   "ErrorCanNotSaveLog": "ไม่สามารถบันทึกได้ {0} (ข้อยกเว้น: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "ไม่รองรับระบบปฏิบัติการเวอร์ชัน {0}",
-  "Every": "ทุกๆ",
+  "EveryHour": "ทุกๆ {0}h",
   "Exit": "ออก",
   "Expand": "ขยาย",
   "Free": "ที่ใช้ได้",

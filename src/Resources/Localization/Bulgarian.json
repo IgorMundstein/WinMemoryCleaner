@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "Това действие изисква администраторски права ({0})",
   "ErrorCanNotSaveLog": "Неуспешно запазване на LOG: {0} (Exception: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "Оптимизацията на {0} не се поддържа от тази версия на операционната система",
-  "Every": "Всички",
+  "EveryHour": "Всички {0}h",
   "Exit": "Изход",
   "Expand": "Разшири",
   "Free": "Свободна",

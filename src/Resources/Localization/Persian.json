@@ -13,7 +13,7 @@
   "ErrorAdminPrivilegeRequired": "این عملیات به مجوز مدیر نیاز دارد ({0})",
   "ErrorCanNotSaveLog": "نمی توان LOG را ذخیره کرد: {0} (استثنا: {1})",
   "ErrorMemoryAreaOptimizationNotSupported": "بهینه سازی {0} در این نسخه سیستم عامل پشتیبانی نمی شود",
-  "Every": "در هر",
+  "EveryHour": "هر {0} ساعت",
   "Exit": "خروج",
   "Expand": "گشودن",
   "Free": "آزاد",

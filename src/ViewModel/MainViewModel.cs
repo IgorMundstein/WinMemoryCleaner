@@ -127,6 +127,7 @@ namespace WinMemoryCleaner
                     Settings.Save();
 
                     RaisePropertyChanged();
+                    RaisePropertyChanged(() => AutoOptimizationMemoryIntervalDescription);
                 }
                 finally
                 {
@@ -163,6 +164,17 @@ namespace WinMemoryCleaner
                     IsBusy = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the automatic optimization memory interval description.
+        /// </summary>
+        /// <value>
+        /// The automatic optimization memory interval description.
+        /// </value>
+        public string AutoOptimizationMemoryIntervalDescription
+        {
+            get { return string.Format(Localizer.Culture, Localizer.String.EveryHour, AutoOptimizationInterval); }
         }
 
         /// <summary>
