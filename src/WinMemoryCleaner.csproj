@@ -99,6 +99,12 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AppService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="AppServiceInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Attribute\CallerMemberNameAttribute.cs" />
     <Compile Include="Command\RelayCommand.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
@@ -179,15 +185,17 @@
     <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
     <None Include="app.manifest" />
     <None Include="nuget.config" />
-    <None Include="packages.config" />    
+    <None Include="packages.config" />
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />

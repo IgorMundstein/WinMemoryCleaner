@@ -71,6 +71,15 @@ namespace WinMemoryCleaner
             Normal,
             High
         }
+
+        public enum StartupType
+        {
+            App,
+            Installation,
+            Service,
+            Silent,
+            Uninstallation
+        }
     }
 }
 

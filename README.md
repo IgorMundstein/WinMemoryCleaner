@@ -63,7 +63,7 @@
 
 ### Optimization hotkey
 
-- Set a keyboard global hotkey to run the optimization. `CTRL + ALT + M` is the default and customizable value
+- Set a keyboard global hotkey to run the optimization. `CTRL + SHIFT + M` is the default and customizable value
 
 ### Settings
 
@@ -113,6 +113,24 @@ Shortcut target example
 
 `C:\WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet`
 
+## 🔧 Windows Service
+
+You can install and run the app as a service.
+
+To install or uninstall the service, run the app using the `/Install` or `/Uninstall` parameters in a command prompt with administrator privileges.
+
+Example 
+
+`C:\WinMemoryCleaner.exe /Install`
+
+`C:\WinMemoryCleaner.exe /Uninstall`
+
+The installation will close some processes to install or uninstall the service without requiring a system restart, and log files will be generated along with the .exe file. Some application settings will be modified based on recommendations. You can still open the application (GUI) and configure it as desired. The service will utilize these settings.
+
+<picture>
+  <img src="./.github/images/windows-service.png">
+</picture>
+
 ## 📖 Logs
 
 The app generates logs in the Windows event
@@ -139,9 +157,9 @@ The app generates logs in the Windows event
 - Windows Presentation Foundation (WPF) for user interface
 - Windows Registry to save user config
 
-### Where does the app save the user configuration?
+### Where does the app save the settings?
 
-Each user setting is saved in the Windows registry path `Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner`
+They are saved in the Windows registry path `Computer\HKEY_LOCAL_MACHINE\Software\WinMemoryCleaner`
 
 ### Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
 

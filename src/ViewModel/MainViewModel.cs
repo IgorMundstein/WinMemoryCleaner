@@ -611,12 +611,12 @@ namespace WinMemoryCleaner
             get
             {
                 var processes = new ObservableCollection<string>(Process.GetProcesses()
-                    .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName))
+                    .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase))
                     .Select(process => process.ProcessName.ToLower(Localizer.Culture).Replace(".exe", string.Empty))
                     .Distinct()
                     .OrderBy(name => name));
 
-                if (!processes.Contains(SelectedProcess))
+                if (!processes.Contains(SelectedProcess, StringComparer.OrdinalIgnoreCase))
                     SelectedProcess = processes.FirstOrDefault();
 
                 return processes;
@@ -968,7 +968,7 @@ namespace WinMemoryCleaner
             {
                 IsBusy = true;
 
-                if (!Settings.ProcessExclusionList.Contains(process) && !string.IsNullOrWhiteSpace(process))
+                if (!Settings.ProcessExclusionList.Contains(process, StringComparer.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(process))
                 {
                     if (Settings.ProcessExclusionList.Add(process))
                     {
@@ -992,9 +992,6 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
         private void MonitorApp(object sender, DoWorkEventArgs e)
         {
-            // App priority
-            App.SetPriority(Settings.RunOnPriority);
-
             while (!_monitorAppWorker.CancellationPending)
             {
                 try
@@ -1003,9 +1000,15 @@ namespace WinMemoryCleaner
                     if (IsBusy)
                         continue;
 
+                    // Delay
+                    Thread.Sleep(60000);
+
                     // Update app
                     if (Settings.AutoUpdate)
                         App.Update();
+
+                    // App priority
+                    App.SetPriority(Settings.RunOnPriority);
 
                     // Auto Optimization
                     if (CanOptimize)
@@ -1017,23 +1020,20 @@ namespace WinMemoryCleaner
                             OptimizeAsync(Enums.Memory.Optimization.Reason.Schedule);
 
                             _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+                            continue;
                         }
-                        else
-                        {
-                            // Memory usage
-                            if (Settings.AutoOptimizationMemoryUsage > 0 &&
-                                Computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
-                                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
-                            {
-                                OptimizeAsync(Enums.Memory.Optimization.Reason.LowMemory);
 
-                                _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
-                            }
+                        // Memory usage
+                        if (Settings.AutoOptimizationMemoryUsage > 0 &&
+                            Computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
+                            DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
+                        {
+                            OptimizeAsync(Enums.Memory.Optimization.Reason.LowMemory);
+
+                            _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
+                            continue;
                         }
                     }
-
-                    // Delay
-                    Thread.Sleep(60000);
                 }
                 catch (Exception ex)
                 {
