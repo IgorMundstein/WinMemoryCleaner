@@ -389,20 +389,15 @@ namespace WinMemoryCleaner
         {
             try
             {
-                var startupPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+                var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
 
-                // Registry
+                // Registry (Disabled to avoid UAC warnings)
                 try
                 {
                     using (var key = Registry.LocalMachine.CreateSubKey(Constants.App.Registry.Key.Startup))
                     {
                         if (key != null)
-                        {
-                            if (enable)
-                                key.SetValue(Constants.App.Title, string.Format(Localizer.Culture, @"""{0}""", startupPath));
-                            else
-                                key.DeleteValue(Constants.App.Title, false);
-                        }
+                            key.DeleteValue(Constants.App.Title, false);
                     }
                 }
                 catch (Exception e)
@@ -413,13 +408,9 @@ namespace WinMemoryCleaner
                 // Scheduled Task
                 try
                 {
-                    var arguments = enable
-                        ? string.Format(Localizer.Culture, @"/CREATE /F /RL HIGHEST /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, startupPath)
-                        : string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title);
-
                     using (Process.Start(new ProcessStartInfo
                     {
-                        Arguments = arguments,
+                        Arguments = string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title),
                         CreateNoWindow = true,
                         FileName = "schtasks",
                         RedirectStandardError = false,
@@ -428,6 +419,21 @@ namespace WinMemoryCleaner
                         UseShellExecute = false,
                         WindowStyle = ProcessWindowStyle.Hidden
                     })) { }
+
+                    if (enable)
+                    {
+                        using (Process.Start(new ProcessStartInfo
+                        {
+                            Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT /RL HIGHEST /RU ADMINISTRATORS /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, filePath),
+                            CreateNoWindow = true,
+                            FileName = "schtasks",
+                            RedirectStandardError = false,
+                            RedirectStandardInput = false,
+                            RedirectStandardOutput = false,
+                            UseShellExecute = false,
+                            WindowStyle = ProcessWindowStyle.Hidden
+                        })) { }
+                    }
                 }
                 catch (Exception e)
                 {
