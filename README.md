@@ -55,7 +55,7 @@
 
 ### Multi-Language
 
-- `Albanian` `Arabic` `Bulgarian` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Irish` `Italian` `Japanese` `Korean` `Macedonian` `Persian` `Polish` `Portuguese` `Russian` `Serbian` `Slovenian` `Spanish` `Turkish` `Ukrainian`
+- `Albanian` `Arabic` `Bulgarian` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Hebrew` `Hungarian` `Indonesian` `Irish` `Italian` `Japanese` `Korean` `Macedonian` `Norwegian` `Persian` `Polish` `Portuguese` `Russian` `Serbian` `Slovenian` `Spanish` `Thai` `Turkish` `Ukrainian`
 
 ### Processes excluded from optimization
 

@@ -213,7 +213,7 @@ namespace WinMemoryCleaner
                             graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
                             graphics.FillRectangle(memory.Physical.Used.Percentage >= 90 ? Brushes.DarkRed : memory.Physical.Used.Percentage >= 80 ? Brushes.DarkGoldenrod : Brushes.Black, 0, 0, 16, 16);
-                            graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.WhiteSmoke, 9, 9, format);
+                            graphics.DrawString(string.Format(Localizer.Culture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 0 : memory.Physical.Used.Percentage), font, Brushes.White, 9, 9, format);
 
                             var handle = image.GetHicon();
 
