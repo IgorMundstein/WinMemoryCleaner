@@ -50,7 +50,7 @@ namespace WinMemoryCleaner
 
             // Commands
             AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList, () => CanAddProcessToExclusionList);
-            OptimizeCommand = new RelayCommand(OptimizeAsync, () => CanOptimize);
+            OptimizeCommand = new RelayCommand(() => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual), () => CanOptimize);
             RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
 
             // Models
@@ -130,6 +130,7 @@ namespace WinMemoryCleaner
                     Settings.Save();
 
                     RaisePropertyChanged();
+                    RaisePropertyChanged(() => AutoOptimizationMemoryIntervalDescription);
                 }
                 finally
                 {
@@ -166,6 +167,17 @@ namespace WinMemoryCleaner
                     IsBusy = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the automatic optimization memory interval description.
+        /// </summary>
+        /// <value>
+        /// The automatic optimization memory interval description.
+        /// </value>
+        public string AutoOptimizationMemoryIntervalDescription
+        {
+            get { return string.Format(Localizer.Culture, Localizer.String.EveryHour, AutoOptimizationInterval); }
         }
 
         /// <summary>
@@ -237,6 +249,17 @@ namespace WinMemoryCleaner
         public bool CanOptimize
         {
             get { return MemoryAreas != Enums.Memory.Areas.None; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can run on startup.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can run on startup; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanRunOnStartup
+        {
+            get { return !AppService.IsInstalled; }
         }
 
         /// <summary>
@@ -602,12 +625,12 @@ namespace WinMemoryCleaner
             get
             {
                 var processes = new ObservableCollection<string>(Process.GetProcesses()
-                    .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName))
+                    .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase))
                     .Select(process => process.ProcessName.ToLower(Localizer.Culture).Replace(".exe", string.Empty))
                     .Distinct()
                     .OrderBy(name => name));
 
-                if (!processes.Contains(SelectedProcess))
+                if (!processes.Contains(SelectedProcess, StringComparer.OrdinalIgnoreCase))
                     SelectedProcess = processes.FirstOrDefault();
 
                 return processes;
@@ -995,7 +1018,7 @@ namespace WinMemoryCleaner
             {
                 IsBusy = true;
 
-                if (!Settings.ProcessExclusionList.Contains(process) && !string.IsNullOrWhiteSpace(process))
+                if (!Settings.ProcessExclusionList.Contains(process, StringComparer.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(process))
                 {
                     if (Settings.ProcessExclusionList.Add(process))
                     {
@@ -1019,9 +1042,6 @@ namespace WinMemoryCleaner
         /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
         private void MonitorApp(object sender, DoWorkEventArgs e)
         {
-            // App priority
-            App.SetPriority(Settings.RunOnPriority);
-
             while (!_monitorAppWorker.CancellationPending)
             {
                 try
@@ -1030,9 +1050,15 @@ namespace WinMemoryCleaner
                     if (IsBusy)
                         continue;
 
+                    // Delay
+                    Thread.Sleep(60000);
+
                     // Update app
                     if (Settings.AutoUpdate)
                         App.Update();
+
+                    // App priority
+                    App.SetPriority(Settings.RunOnPriority);
 
                     // Auto Optimization
                     if (CanOptimize)
@@ -1041,26 +1067,23 @@ namespace WinMemoryCleaner
                         if (Settings.AutoOptimizationInterval > 0 &&
                             DateTimeOffset.Now.Subtract(_lastAutoOptimizationByInterval).TotalHours >= Settings.AutoOptimizationInterval)
                         {
-                            OptimizeAsync();
+                            OptimizeAsync(Enums.Memory.Optimization.Reason.Schedule);
 
                             _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+                            continue;
                         }
-                        else
-                        {
-                            // Memory usage
-                            if (Settings.AutoOptimizationMemoryUsage > 0 &&
-                                Computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
-                                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
-                            {
-                                OptimizeAsync();
 
-                                _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
-                            }
+                        // Memory usage
+                        if (Settings.AutoOptimizationMemoryUsage > 0 &&
+                            Computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
+                            DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
+                        {
+                            OptimizeAsync(Enums.Memory.Optimization.Reason.LowMemory);
+
+                            _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
+                            continue;
                         }
                     }
-
-                    // Delay
-                    Thread.Sleep(60000);
                 }
                 catch (Exception ex)
                 {
@@ -1156,9 +1179,8 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Optimize
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
-        private void Optimize(object sender, DoWorkEventArgs e)
+        /// <param name="reason">Optimization reason</param>
+        private void Optimize(Enums.Memory.Optimization.Reason reason)
         {
             try
             {
@@ -1171,7 +1193,7 @@ namespace WinMemoryCleaner
                 var tempPhysicalAvailable = Computer.Memory.Physical.Free.Bytes;
                 var tempVirtualAvailable = Computer.Memory.Virtual.Free.Bytes;
 
-                _computerService.Optimize(Settings.MemoryAreas);
+                _computerService.Optimize(reason, Settings.MemoryAreas);
 
                 // Update memory info
                 Computer.Memory = _computerService.Memory;
@@ -1207,7 +1229,8 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Optimize
         /// </summary>
-        private void OptimizeAsync()
+        /// <param name="reason">Optimization reason</param>
+        private void OptimizeAsync(Enums.Memory.Optimization.Reason reason)
         {
             try
             {
@@ -1217,7 +1240,7 @@ namespace WinMemoryCleaner
 
                 using (var worker = new BackgroundWorker())
                 {
-                    worker.DoWork += Optimize;
+                    worker.DoWork += (sender, e) => Optimize(reason);
                     worker.RunWorkerAsync();
                 }
             }
@@ -1244,7 +1267,7 @@ namespace WinMemoryCleaner
                 Settings.OptimizationModifiers = modifiers;
 
                 var hotKey = new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
-                IsOptimizationKeyValid = _hotKeyService.Register(hotKey, OptimizeAsync);
+                IsOptimizationKeyValid = _hotKeyService.Register(hotKey, () => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual));
 
                 if (!IsOptimizationKeyValid)
                 {

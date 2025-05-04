@@ -5,7 +5,7 @@
   [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
   <picture>
-    <img src="/.github/images/main-window.png">
+    <img src="./.github/images/main-window.png">
   </picture>
 
   <p align="justify">
@@ -18,7 +18,7 @@
 
   <p align="center">
     <a href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
-      <img alt="DOWNLOAD" src="/.github/images/download-button.png">
+      <img alt="DOWNLOAD" src="./.github/images/download-button.png">
     </a>
   </p>
 </div>
@@ -41,7 +41,7 @@
 - Arrow (Up/Down) next to the minimize button to collapse and extend the window
 
 <picture>
-  <img src="/.github/images/main-window-compact.png">
+  <img src="./.github/images/main-window-compact.png">
 </picture>
 
 ### Memory Areas
@@ -55,7 +55,7 @@
 
 ### Multi-Language
 
-- `Albanian` `Arabic` `Bulgarian` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Irish` `Italian` `Japanese` `Korean` `Macedonian` `Persian` `Polish` `Portuguese` `Russian` `Serbian` `Slovenian` `Spanish` `Turkish` `Ukrainian`
+- `Albanian` `Arabic` `Bulgarian` `Chinese` `Dutch` `English` `French` `German` `Greek` `Indonesian` `Hebrew` `Hungarian` `Indonesian` `Irish` `Italian` `Japanese` `Korean` `Macedonian` `Norwegian` `Persian` `Polish` `Portuguese` `Russian` `Serbian` `Slovenian` `Spanish` `Thai` `Turkish` `Ukrainian`
 
 ### Processes excluded from optimization
 
@@ -63,7 +63,7 @@
 
 ### Optimization hotkey
 
-- Set a keyboard global hotkey to run the optimization. `CTRL + ALT + M` is the default and customizable value
+- Set a keyboard global hotkey to run the optimization. `CTRL + SHIFT + M` is the default and customizable value
 
 ### Settings
 
@@ -82,22 +82,22 @@
 - Menu
 
 <picture>
-  <img src="/.github/images/system-tray.png">
+  <img src="./.github/images/system-tray.png">
 </picture>
 
 - Notification
 
 <picture>
-  <img src="/.github/images/notification.png">
+  <img src="./.github/images/notification.png">
 </picture>
 
 ### Tray icon
 
 - `Image` Show app icon
 - `Memory usage` Show physical memory usage with a background color based on the value
-  - `(0% - 79%)` <picture><img src="/.github/images/memory-usage.png"></picture>
-  - `(80% - 89%)` <picture><img src="/.github/images/memory-usage-warning.png"></picture>
-  - `(90% - 100%)` <picture><img src="/.github/images/memory-usage-danger.png"></picture>
+  - `(0% - 79%)` <picture><img src="./.github/images/memory-usage.png"></picture>
+  - `(80% - 89%)` <picture><img src="./.github/images/memory-usage-warning.png"></picture>
+  - `(90% - 100%)` <picture><img src="./.github/images/memory-usage-danger.png"></picture>
 
 ## 🔳 Command arguments (NO GUI)
 
@@ -113,6 +113,24 @@ Shortcut target example
 
 `C:\WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet`
 
+## 🔧 Windows Service
+
+You can install and run the app as a service.
+
+To install or uninstall the service, run the app using the `/Install` or `/Uninstall` parameters in a command prompt with administrator privileges.
+
+Example 
+
+`C:\WinMemoryCleaner.exe /Install`
+
+`C:\WinMemoryCleaner.exe /Uninstall`
+
+The installation will close some processes to install or uninstall the service without requiring a system restart, and log files will be generated along with the .exe file. Some application settings will be modified based on recommendations. You can still open the application (GUI) and configure it as desired. The service will utilize these settings.
+
+<picture>
+  <img src="./.github/images/windows-service.png">
+</picture>
+
 ## 📖 Logs
 
 The app generates logs in the Windows event
@@ -121,7 +139,7 @@ The app generates logs in the Windows event
 2. Type **eventvwr** and press **Enter** to open the Event Viewer
 
 <picture>
-  <img src="/.github/images/windows-event-log.png">
+  <img src="./.github/images/windows-event-log.png">
 </picture>
 
 ## ❓ Frequently Asked Questions (FAQ)
@@ -139,9 +157,9 @@ The app generates logs in the Windows event
 - Windows Presentation Foundation (WPF) for user interface
 - Windows Registry to save user config
 
-### Where does the app save the user configuration?
+### Where does the app save the settings?
 
-Each user setting is saved in the Windows registry path `Computer\HKEY_CURRENT_USER\Software\WinMemoryCleaner`
+They are saved in the Windows registry path `Computer\HKEY_LOCAL_MACHINE\Software\WinMemoryCleaner`
 
 ### Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
 
@@ -177,21 +195,25 @@ If you are a native speaker of any language other than English, you can contribu
 - `Bulgarian (български)` [Konstantin](https://github.com/constantinejc)
 - `Chinese (Simplified) (中文(简体))` [KaiHuaDou](https://github.com/KaiHuaDou) | [Kun Zhao](https://github.com/kzhdev) | [raydenake22](https://github.com/raydenake22)
 - `Chinese (Traditional) (中文(繁體))` [raydenake22](https://github.com/raydenake22) | [rtyrtyrtyqw](https://github.com/rtyrtyrtyqw)
-- `Dutch (Nederlands)` [hax4dazy](https://github.com/hax4dazy)
+- `Dutch (Nederlands)` [dragonhuntermc](https://github.com/dragonhuntermc) | [hax4dazy](https://github.com/hax4dazy)
 - `French (Français)` [William VINCENT](https://github.com/wixaw)
-- `German (Deutsch)` [Calvin](https://github.com/Slluxx)
+- `German (Deutsch)` [Calvin](https://github.com/Slluxx) | [Niklas Englmeier](https://github.com/iamniklas) | [Steve](https://github.com/uDEV2019)
 - `Greek (Ελληνικά)` [tkatsageorgis](https://github.com/tkatsageorgis)
-- `Indonesian (Indonesia)` [Eskey](https://github.com/Eskeyz)
+- `Hebrew (עברית)` [eliezerbloy](https://github.com/eliezerbloy)
+- `Hungarian (Magyar)` [gycsisz](https://github.com/gycsisz)
+- `Indonesian (Indonesia)` [Eskey](https://github.com/Eskeyz) | [Pufminids](https://github.com/tdnphantom)
 - `Irish (Gaeilge)` [Happygolucky254](https://github.com/Happygolucky254)
 - `Italian (Italiano)` [wintrymichi](https://github.com/wintrymichi)
 - `Japanese (日本語)` [dai](https://github.com/dai)
 - `Korean (한국어)` [VenusGirl](https://github.com/VenusGirl)
 - `Macedonian (Македонски)` [Dimitrij Gjorgji](https://github.com/Cathadox)
+- `Norwegian (Norsk)` [danorse](https://github.com/danorse)
 - `Persian (فارسی)` [KavianK](https://github.com/KavianK)
 - `Polish (Polski)` [Fresta56](https://github.com/Fresta56)
 - `Russian (Русский)` [ruslooob](https://github.com/ruslooob)
 - `Serbian (Srpski)` [DragorMilos](https://github.com/DragorMilos)
 - `Slovenian (Slovenščina)` [Jadran Rudec](https://github.com/JadranR)
 - `Spanish (Español)` [Ajneb Al Revés](https://github.com/AjnebAlReves) | [Nekrodamus](https://github.com/FrannDzs)
-- `Turkish (Türkçe)` [Viollje](https://github.com/Viollje)
+- `Thai (ไทย)` [nongice](https://github.com/21icepril)
+- `Turkish (Türkçe)` [Rıza Emet](https://github.com/rizaemet) | [Viollje](https://github.com/Viollje)
 - `Ukrainian (Українська)` [RieBi](https://github.com/RieBi) | [Oleksander](https://github.com/Mariachi1231)

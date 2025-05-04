@@ -53,7 +53,7 @@ namespace WinMemoryCleaner
         public string ErrorMemoryAreaOptimizationNotSupported { get; private set; }
 
         [DataMember]
-        public string Every { get; private set; }
+        public string EveryHour { get; private set; }
 
         [DataMember]
         public string Exit { get; private set; }
@@ -72,6 +72,12 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string Invalid { get; private set; }
+
+        [DataMember]
+        public string LowMemory { get; private set; }
+
+        [DataMember]
+        public string Manual { get; private set; }
 
         [DataMember]
         public string MemoryAreas { get; private set; }
@@ -107,6 +113,9 @@ namespace WinMemoryCleaner
         public string OptimizationHotkey { get; private set; }
 
         [DataMember]
+        public string OptimizationReason { get; private set; }        
+
+        [DataMember]
         public string Optimize { get; private set; }
 
         [DataMember]
@@ -129,6 +138,9 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string RunOnStartup { get; private set; }
+
+        [DataMember]
+        public string Schedule { get; private set; }
 
         [DataMember]
         public string Seconds { get; private set; }

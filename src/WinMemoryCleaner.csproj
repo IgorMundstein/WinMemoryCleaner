@@ -99,6 +99,12 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AppService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="AppServiceInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Attribute\CallerMemberNameAttribute.cs" />
     <Compile Include="Command\RelayCommand.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
@@ -158,12 +164,15 @@
     <EmbeddedResource Include="Resources\Localization\French.json" />
     <EmbeddedResource Include="Resources\Localization\German.json" />
     <EmbeddedResource Include="Resources\Localization\Greek.json" />
+    <EmbeddedResource Include="Resources\Localization\Hebrew.json" />
+    <EmbeddedResource Include="Resources\Localization\Hungarian.json" />
     <EmbeddedResource Include="Resources\Localization\Indonesian.json" />
     <EmbeddedResource Include="Resources\Localization\Irish.json" />
     <EmbeddedResource Include="Resources\Localization\Italian.json" />
     <EmbeddedResource Include="Resources\Localization\Japanese.json" />
     <EmbeddedResource Include="Resources\Localization\Korean.json" />
     <EmbeddedResource Include="Resources\Localization\Macedonian.json" />
+    <EmbeddedResource Include="Resources\Localization\Norwegian.json" />
     <EmbeddedResource Include="Resources\Localization\Persian.json" />
     <EmbeddedResource Include="Resources\Localization\Polish.json" />
     <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
@@ -171,6 +180,7 @@
     <EmbeddedResource Include="Resources\Localization\Serbian.json" />
     <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
     <EmbeddedResource Include="Resources\Localization\Spanish.json" />
+    <EmbeddedResource Include="Resources\Localization\Thai.json" />
     <EmbeddedResource Include="Resources\Localization\Turkish.json" />
     <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
     <None Include="app.manifest" />
@@ -182,8 +192,10 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />

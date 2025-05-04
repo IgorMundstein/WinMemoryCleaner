@@ -9,6 +9,23 @@ namespace WinMemoryCleaner
     /// </summary>
     public static class Enums
     {
+        public static class Icon
+        {
+            public enum Notification
+            {
+                None,
+                Information,
+                Warning,
+                Error
+            }
+
+            public enum Tray
+            {
+                Image,
+                MemoryUsage
+            }
+        }
+
         public static class Log
         {
             [Flags]
@@ -35,24 +52,17 @@ namespace WinMemoryCleaner
                 SystemWorkingSet = 32
             }
 
+            public static class Optimization
+            {
+                public enum Reason
+                {
+                    LowMemory,
+                    Manual,
+                    Schedule
+                }
+            }
+
             public enum Unit { B, KB, MB, GB, TB, PB, EB, ZB, YB }
-        }
-
-        public static class Icon
-        {
-            public enum Notification
-            {
-                None,
-                Information,
-                Warning,
-                Error
-            }
-
-            public enum Tray
-            {
-                Image,
-                MemoryUsage
-            }
         }
 
         public enum Priority
@@ -60,6 +70,15 @@ namespace WinMemoryCleaner
             Low,
             Normal,
             High
+        }
+
+        public enum StartupType
+        {
+            App,
+            Installation,
+            Service,
+            Silent,
+            Uninstallation
         }
     }
 }

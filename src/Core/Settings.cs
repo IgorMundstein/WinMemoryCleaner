@@ -28,7 +28,7 @@ namespace WinMemoryCleaner
             Language = Constants.Windows.Locale.Name.English;
             MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.ProcessesWorkingSet | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemWorkingSet;
             OptimizationKey = Key.M;
-            OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Alt;
+            OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Shift;
             ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             RunOnPriority = Enums.Priority.Low;
             RunOnStartup = false;
@@ -41,7 +41,7 @@ namespace WinMemoryCleaner
             try
             {
                 // Process Exclusion List
-                using (var key = Registry.CurrentUser.OpenSubKey(Constants.App.Registry.Key.ProcessExclusionList))
+                using (var key = Registry.LocalMachine.OpenSubKey(Constants.App.Registry.Key.ProcessExclusionList))
                 {
                     if (key != null)
                     {
@@ -51,7 +51,7 @@ namespace WinMemoryCleaner
                 }
 
                 // Settings
-                using (var key = Registry.CurrentUser.OpenSubKey(Constants.App.Registry.Key.Settings))
+                using (var key = Registry.LocalMachine.OpenSubKey(Constants.App.Registry.Key.Settings))
                 {
                     if (key != null)
                     {
@@ -108,7 +108,7 @@ namespace WinMemoryCleaner
 
                         do
                         {
-                            if (languages.Contains(culture.Name))
+                            if (languages.Contains(culture.Name, StringComparer.OrdinalIgnoreCase))
                             {
                                 Localizer.Language = new Language(culture);
                                 Language = culture.Name;
@@ -181,11 +181,11 @@ namespace WinMemoryCleaner
             try
             {
                 // Process Exclusion List
-                Registry.CurrentUser.DeleteSubKey(Constants.App.Registry.Key.ProcessExclusionList, false);
+                Registry.LocalMachine.DeleteSubKey(Constants.App.Registry.Key.ProcessExclusionList, false);
 
                 if (ProcessExclusionList.Any())
                 {
-                    using (var key = Registry.CurrentUser.CreateSubKey(Constants.App.Registry.Key.ProcessExclusionList))
+                    using (var key = Registry.LocalMachine.CreateSubKey(Constants.App.Registry.Key.ProcessExclusionList))
                     {
                         if (key != null)
                         {
@@ -196,7 +196,7 @@ namespace WinMemoryCleaner
                 }
 
                 // Settings
-                using (var key = Registry.CurrentUser.CreateSubKey(Constants.App.Registry.Key.Settings))
+                using (var key = Registry.LocalMachine.CreateSubKey(Constants.App.Registry.Key.Settings))
                 {
                     if (key != null)
                     {
