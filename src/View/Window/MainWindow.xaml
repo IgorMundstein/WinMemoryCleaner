@@ -177,6 +177,7 @@
                                   IsChecked="{Binding RunOnLowPriority}"
                                   Margin="0, 0, 0, 3" />
                         <CheckBox Content="{Binding Path=(local:Localizer.String).RunOnStartup}"
+                                  IsEnabled="{Binding CanRunOnStartup}"
                                   IsChecked="{Binding RunOnStartup}" 
                                   Margin="0, 0, 0, 3" />
                         <CheckBox Content="{Binding Path=(local:Localizer.String).ShowOptimizationNotifications}"

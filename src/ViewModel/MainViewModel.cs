@@ -249,6 +249,17 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance can run on startup.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can run on startup; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanRunOnStartup
+        {
+            get { return !AppService.IsInstalled; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [close after optimization].
         /// </summary>
         /// <value>
