@@ -51,7 +51,7 @@
   "TrayIcon": "Ikona pladnja",
   "UpdatedToVersion": "Posodobljen na različico {0}",
   "Used": "Uporabljen",
+  "UseHotkey": "Uporabi bližnjično tipko",
   "Virtual": "Virtualno",
-  "WhenFreeMemoryIsBelow": "Ko je prosti pomnilnik pod {0}%",
-  "UseHotKey": "Uporabi bližnjično tipko"
+  "WhenFreeMemoryIsBelow": "Ko je prosti pomnilnik pod {0}%"
 }

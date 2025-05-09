@@ -47,7 +47,7 @@ namespace WinMemoryCleaner
 
             // DI/IOC
             DependencyInjection.Container.Register<IComputerService, ComputerService>();
-            DependencyInjection.Container.Register<IHotKeyService, HotKeyService>();
+            DependencyInjection.Container.Register<IHotkeyService, HotkeyService>();
             DependencyInjection.Container.Register<INotificationService, NotificationService>();
         }
 

@@ -115,8 +115,8 @@
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
-    <Compile Include="Interfaces\IHotKeyService.cs" />
-    <Compile Include="Service\HotKeyService.cs" />
+    <Compile Include="Interfaces\IHotkeyService.cs" />
+    <Compile Include="Service\HotkeyService.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\NativeMethods.cs" />
@@ -128,7 +128,7 @@
     <Compile Include="Interfaces\INotificationService.cs" />
     <Compile Include="Interfaces\IOperatingSystem.cs" />
     <Compile Include="Model\Computer.cs" />
-    <Compile Include="Model\HotKey.cs" />
+    <Compile Include="Model\Hotkey.cs" />
     <Compile Include="Model\Language.cs" />
     <Compile Include="Model\Localization.cs" />
     <Compile Include="Model\Log.cs" />

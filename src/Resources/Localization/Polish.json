@@ -51,7 +51,7 @@
   "TrayIcon": "Ikona Zasobnika",
   "UpdatedToVersion": "Zaktualizowano do wersji {0}",
   "Used": "Użyta",
-  "UseHotKey": "Użyj skrótu"
+  "UseHotkey": "Użyj skrótu",
   "Virtual": "Wirtualna",
   "WhenFreeMemoryIsBelow": "Gdy wolnej pamięci jest mniej niż {0}%"
 }

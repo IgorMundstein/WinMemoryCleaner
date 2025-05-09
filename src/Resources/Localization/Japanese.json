@@ -51,7 +51,7 @@
   "TrayIcon": "トレイのアイコン",
   "UpdatedToVersion": "バージョン {0} に更新しました",
   "Used": "使用済み",
+  "UseHotkey": "ホットキーを使う",
   "Virtual": "バーチャル",
-  "WhenFreeMemoryIsBelow": "フリーメモリが {0}% 以下になったら",
-  "UseHotKey": "ホットキーを使う"
+  "WhenFreeMemoryIsBelow": "フリーメモリが {0}% 以下になったら"
 }

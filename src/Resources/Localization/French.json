@@ -51,7 +51,7 @@
   "TrayIcon": "Icône de la barre",
   "UpdatedToVersion": "Mise à jour vers la version {0}",
   "Used": "Utilisé",
+  "UseHotkey": "Utiliser le raccourci clavier",
   "Virtual": "Virtuel",
-  "WhenFreeMemoryIsBelow": "Lorsque la mémoire libre est inférieure à {0}%",
-  "UseHotKey": "Utiliser le raccourci clavier"
+  "WhenFreeMemoryIsBelow": "Lorsque la mémoire libre est inférieure à {0}%"
 }

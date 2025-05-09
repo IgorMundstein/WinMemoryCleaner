@@ -3,16 +3,16 @@
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// HotKey
+    /// Hotkey
     /// </summary>
-    public class HotKey
+    public class Hotkey
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HotKey" /> class.
+        /// Initializes a new instance of the <see cref="Hotkey" /> class.
         /// </summary>
         /// <param name="modifiers">The modifiers.</param>
         /// <param name="key">The key.</param>
-        public HotKey(ModifierKeys modifiers, Key key)
+        public Hotkey(ModifierKeys modifiers, Key key)
         {
             Key = key;
             Modifiers = modifiers;
@@ -39,7 +39,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="hotKey">The hotkey.</param>
         /// <returns></returns>
-        public bool Equals(HotKey hotKey)
+        public bool Equals(Hotkey hotKey)
         {
             if (ReferenceEquals(null, hotKey))
                 return false;
@@ -65,7 +65,7 @@ namespace WinMemoryCleaner
             if (ReferenceEquals(this, obj))
                 return true;
 
-            return obj.GetType() == typeof(HotKey) && Equals((HotKey)obj);
+            return obj.GetType() == typeof(Hotkey) && Equals((Hotkey)obj);
         }
 
         /// <summary>

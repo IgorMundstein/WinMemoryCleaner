@@ -51,6 +51,7 @@
   "TrayIcon": "Tálca ikon",
   "UpdatedToVersion": "Verzióra frissítve {0}",
   "Used": "Foglalt memória",
+  "UseHotkey": "Gyorsbillentyű használata",
   "Virtual": "Virtuális",
   "WhenFreeMemoryIsBelow": "Amikor a szabad memória alacsony {0}%"
 }

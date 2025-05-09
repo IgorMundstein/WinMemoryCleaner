@@ -17,13 +17,13 @@ namespace WinMemoryCleaner
         public ViewModelLocator()
         {
             IComputerService computerService = null;
-            IHotKeyService hotKeyService = null;
+            IHotkeyService hotKeyService = null;
             INotificationService notificationService = null;
 
             if (!IsInDesignMode)
             {
                 computerService = DependencyInjection.Container.Resolve<IComputerService>();
-                hotKeyService = DependencyInjection.Container.Resolve<IHotKeyService>();
+                hotKeyService = DependencyInjection.Container.Resolve<IHotkeyService>();
                 notificationService = DependencyInjection.Container.Resolve<INotificationService>();
             }
 

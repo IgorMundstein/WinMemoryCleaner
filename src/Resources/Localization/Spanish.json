@@ -51,7 +51,7 @@
   "TrayIcon": "Icono de la bandeja",
   "UpdatedToVersion": "Actualizado a la versión {0}",
   "Used": "Utilizado",
+  "UseHotkey": "Usar tecla de acceso rápido",
   "Virtual": "Virtual",
-  "WhenFreeMemoryIsBelow": "Cuando la memoria libre esté por debajo de {0}%",
-  "UseHotKey": "Usar tecla de acceso rápido"
+  "WhenFreeMemoryIsBelow": "Cuando la memoria libre esté por debajo de {0}%"
 }

@@ -36,6 +36,7 @@ namespace WinMemoryCleaner
             ShowVirtualMemory = false;
             StartMinimized = false;
             TrayIcon = Enums.Icon.Tray.Image;
+            UseHotkey = true;
 
             // User values
             try
@@ -93,12 +94,13 @@ namespace WinMemoryCleaner
                         ShowOptimizationNotifications = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications), _culture);
                         ShowVirtualMemory = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowVirtualMemory, ShowVirtualMemory), _culture);
                         StartMinimized = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized), _culture);
-                        UseHotKey = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.UseHotKey, UseHotKey), _culture);
 
                         Enums.Icon.Tray trayIcon;
 
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.TrayIcon, TrayIcon), _culture), out trayIcon) && trayIcon.IsValid())
                             TrayIcon = trayIcon;
+
+                        UseHotkey = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.UseHotkey, UseHotkey), _culture);
                     }
                     else
                     {
@@ -168,9 +170,10 @@ namespace WinMemoryCleaner
         public static bool ShowVirtualMemory { get; set; }
 
         public static bool StartMinimized { get; set; }
-        public static bool UseHotKey { get; set; }
-
+        
         public static Enums.Icon.Tray TrayIcon { get; set; }
+
+        public static bool UseHotkey { get; set; }
 
         #endregion
 
@@ -216,8 +219,8 @@ namespace WinMemoryCleaner
                         key.SetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.ShowVirtualMemory, ShowVirtualMemory ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.UseHotKey, UseHotKey ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.TrayIcon, (int)TrayIcon);
+                        key.SetValue(Constants.App.Registry.Name.UseHotkey, UseHotkey ? 1 : 0);
                     }
                 }
             }

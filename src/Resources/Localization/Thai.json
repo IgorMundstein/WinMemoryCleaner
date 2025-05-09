@@ -51,6 +51,7 @@
   "TrayIcon": "ไอคอนถาด",
   "UpdatedToVersion": "อัปเดตเป็นเวอร์ชัน {0}",
   "Used": "ถูกใช้ไป",
+  "UseHotkey": "ใช้ปุ่มลัด",
   "Virtual": "แคชระบบ",
   "WhenFreeMemoryIsBelow": "เมื่อแคชมากกว่า {0}%"
 }

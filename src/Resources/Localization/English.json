@@ -51,7 +51,7 @@
   "TrayIcon": "Tray icon",
   "UpdatedToVersion": "Updated to version {0}",
   "Used": "Used",
+  "UseHotkey": "Use hotkey",
   "Virtual": "Virtual",
-  "WhenFreeMemoryIsBelow": "When free memory is below {0}%",
-  "UseHotKey": "Use hotkey"
+  "WhenFreeMemoryIsBelow": "When free memory is below {0}%"
 }

@@ -51,6 +51,7 @@
   "TrayIcon": "סמל מגש",
   "UpdatedToVersion": "עודכן לגרסה {0}",
   "Used": "בשימוש",
+  "UseHotkey": "השתמש במקש קיצור",
   "Virtual": "וירטואלי",
   "WhenFreeMemoryIsBelow": "כאשר הזיכרון הפנוי נמוך מ- {0}%"
 }

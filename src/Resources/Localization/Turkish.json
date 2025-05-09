@@ -51,7 +51,7 @@
   "TrayIcon": "Tepsi ikonu",
   "UpdatedToVersion": "Sürüm {0} güncellendi",
   "Used": "Kullanılan",
+  "UseHotkey": "Kısayol tuşunu kullan",
   "Virtual": "Sanal",
-  "WhenFreeMemoryIsBelow": "Boş bellek şundan az olduğunda {0}%",
-  "UseHotKey": "Kısayol tuşunu kullan"
+  "WhenFreeMemoryIsBelow": "Boş bellek şundan az olduğunda {0}%"
 }

@@ -51,7 +51,7 @@
   "TrayIcon": "Икона за фиока",
   "UpdatedToVersion": "Ажурирано на верзија {0}",
   "Used": "Искористено",
+  "UseHotkey": "Користете копче",
   "Virtual": "Виртуелна",
-  "WhenFreeMemoryIsBelow": "Кога слободната меморија е под {0}%",
-  "UseHotKey": "Користете копче"
+  "WhenFreeMemoryIsBelow": "Кога слободната меморија е под {0}%"
 }

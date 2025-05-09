@@ -51,7 +51,7 @@
   "TrayIcon": "Ikon Tray",
   "UpdatedToVersion": "Diupdate ke Versi{0}",
   "Used": "Digunakan",
-  "UseHotKey": "Gunakan tombol pintas"
+  "UseHotkey": "Gunakan tombol pintas",
   "Virtual": "Virtual",
   "WhenFreeMemoryIsBelow": "Ketika sisa memori dibawah {0}%"
 }

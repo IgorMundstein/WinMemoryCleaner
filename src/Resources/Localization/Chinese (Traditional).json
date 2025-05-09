@@ -51,7 +51,7 @@
   "TrayIcon": "工作列圖示",
   "UpdatedToVersion": "已更新至版本{0}",
   "Used": "使用中",
+  "UseHotkey": "使用熱鍵",
   "Virtual": "虛擬記憶體",
-  "WhenFreeMemoryIsBelow": "當可用記憶體低於 {0}%",
-  "UseHotKey": "使用熱鍵"
+  "WhenFreeMemoryIsBelow": "當可用記憶體低於 {0}%"
 }

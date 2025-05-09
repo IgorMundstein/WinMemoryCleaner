@@ -51,7 +51,7 @@
   "TrayIcon": "Icona del vassoio",
   "UpdatedToVersion": "Aggiornato alla versione {0}",
   "Used": "Utilizzata",
+  "UseHotkey": "Usa tasto di scelta rapida",
   "Virtual": "Virtuale",
-  "WhenFreeMemoryIsBelow": "Quando la memoria libera è inferiore a {0}%",
-  "UseHotKey": "Usa tasto di scelta rapida"
+  "WhenFreeMemoryIsBelow": "Quando la memoria libera è inferiore a {0}%"
 }

@@ -51,7 +51,7 @@
   "TrayIcon": "أيقونة صينية",
   "UpdatedToVersion": "تم التحديث إلى الإصدار {0}",
   "Used": "مستخدمة",
+  "UseHotkey": "استخدام هوتكي",
   "Virtual": "افتراضي",
-  "WhenFreeMemoryIsBelow": "عندما تكون الذاكرة الحرة أقل من {0}%",
-  "UseHotKey": "استخدام هوتكي"
+  "WhenFreeMemoryIsBelow": "عندما تكون الذاكرة الحرة أقل من {0}%"
 }

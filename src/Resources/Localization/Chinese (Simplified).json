@@ -51,7 +51,7 @@
   "TrayIcon": "任务栏图标",
   "UpdatedToVersion": "已更新到版本{0}",
   "Used": "使用中",
+  "UseHotkey": "使用热键",
   "Virtual": "虚拟的",
-  "WhenFreeMemoryIsBelow": "当可用内存低于 {0}%",
-  "UseHotKey": "使用热键"
+  "WhenFreeMemoryIsBelow": "当可用内存低于 {0}%"
 }

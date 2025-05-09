@@ -158,9 +158,6 @@ namespace WinMemoryCleaner
         public string StartMinimized { get; private set; }
         
         [DataMember]
-        public string UseHotKey { get; private set; }
-
-        [DataMember]
         public string TrayIcon { get; private set; }
 
         [DataMember]
@@ -168,6 +165,9 @@ namespace WinMemoryCleaner
 
         [DataMember]
         public string Used { get; private set; }
+
+        [DataMember]
+        public string UseHotkey { get; private set; }
 
         [DataMember]
         public string Virtual { get; private set; }

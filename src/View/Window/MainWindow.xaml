@@ -141,7 +141,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="286" />
+                    <RowDefinition Height="271" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -188,9 +188,6 @@
                                   Margin="0, 0, 0, 3" />
                         <CheckBox Content="{Binding Path=(local:Localizer.String).StartMinimized}"
                                   IsChecked="{Binding StartMinimized}"
-                                  Margin="0, 0, 0, 0" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).UseHotKey}"
-                                  IsChecked="{Binding UseHotKey}"
                                   Margin="0, 0, 0, 0" />
                     </StackPanel>
                 </GroupBox>
@@ -349,23 +346,29 @@
                           Grid.Row="2"
                           Header="{Binding Path=(local:Localizer.String).OptimizationHotkey}"
                           Margin="5, 5, 0, 0"
-                          IsEnabled="{Binding UseHotKey}"
-                          Visibility="{Binding Computer.OperatingSystem.HasHotKeyManager, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}">
+                          Visibility="{Binding Computer.OperatingSystem.HasHotkeyManager, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}">
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center">
-                        <ComboBox DisplayMemberPath="Value" 
+                        <CheckBox IsChecked="{Binding UseHotkey}"
+                                  Margin="0, 0, 5, 0"
+                                  ToolTip="{Binding Path=(local:Localizer.String).UseHotkey}" />
+                        <ComboBox DisplayMemberPath="Value"
+                                  IsEnabled="{Binding UseHotkey}"
                                   ItemsSource="{Binding KeyboardModifiers}"
                                   SelectedValue="{Binding OptimizationModifiers}"
                                   SelectedValuePath="Key"
                                   VerticalContentAlignment="Center" />
-                        <TextBlock IsHitTestVisible="False" 
+                        <TextBlock IsEnabled="{Binding UseHotkey}"
+                                   IsHitTestVisible="False" 
                                    Margin="5, 0, 5, 0"
                                    Text="+" 
                                    VerticalAlignment="Center" />
-                        <ComboBox ItemsSource="{Binding KeyboardKeys}"
+                        <ComboBox IsEnabled="{Binding UseHotkey}"
+                                  ItemsSource="{Binding KeyboardKeys}"
                                   SelectedValue="{Binding OptimizationKey}"
                                   VerticalContentAlignment="Center" />
                         <TextBlock Foreground="{StaticResource DarkDisabled}"
+                                   IsEnabled="{Binding UseHotkey}"
                                    KeyboardNavigation.TabNavigation="None"
                                    Margin="5, 0, 0, 0"
                                    Text="{Binding Path=(local:Localizer.String).Invalid}" 

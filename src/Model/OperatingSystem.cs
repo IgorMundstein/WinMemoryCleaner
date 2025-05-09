@@ -19,7 +19,7 @@
         /// <value>
         ///   <c>true</c> if it has a hotkey manager; otherwise, <c>false</c>.
         /// </value>
-        public bool HasHotKeyManager { get { return IsWindowsVistaOrGreater; } }
+        public bool HasHotkeyManager { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has modified page list.

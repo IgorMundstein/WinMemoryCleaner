@@ -51,7 +51,7 @@
   "TrayIcon": "Ikona e tabakasë",
   "UpdatedToVersion": "Përditësuar në versionin {0}",
   "Used": "I perdorur",
+  "UseHotkey": "Përdorni hotkey",
   "Virtual": "Virtual",
-  "WhenFreeMemoryIsBelow": "Kur memoria e lirë është nën {0}%",
-  "UseHotKey": "Përdorni hotkey"
+  "WhenFreeMemoryIsBelow": "Kur memoria e lirë është nën {0}%"
 }

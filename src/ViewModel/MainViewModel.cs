@@ -20,7 +20,7 @@ namespace WinMemoryCleaner
 
         private Computer _computer;
         private readonly IComputerService _computerService;
-        private readonly IHotKeyService _hotKeyService;
+        private readonly IHotkeyService _hotKeyService;
         private bool _isOptimizationKeyValid;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
         private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
@@ -42,7 +42,7 @@ namespace WinMemoryCleaner
         /// <param name="computerService">Computer service</param>
         /// <param name="hotKeyService">Hotkey service.</param>
         /// <param name="notificationService">Notification service</param>
-        public MainViewModel(IComputerService computerService, IHotKeyService hotKeyService, INotificationService notificationService)
+        public MainViewModel(IComputerService computerService, IHotkeyService hotKeyService, INotificationService notificationService)
             : base(notificationService)
         {
             _computerService = computerService;
@@ -62,18 +62,15 @@ namespace WinMemoryCleaner
                 Computer.OperatingSystem.IsWindowsXpOrGreater = true;
                 IsOptimizationKeyValid = true;
 
-                _hotKeyService = new HotKeyService();
+                _hotKeyService = new HotkeyService();
             }
             else
             {
                 _computerService.OnOptimizeProgressUpdate += OnOptimizeProgressUpdate;
 
                 Computer.OperatingSystem = _computerService.OperatingSystem;
+                UseHotkey = Settings.UseHotkey;
 
-                if (Settings.UseHotKey)
-                {
-                    RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
-                }
                 MonitorAsync();
             }
         }
@@ -524,7 +521,19 @@ namespace WinMemoryCleaner
         public Key OptimizationKey
         {
             get { return Settings.OptimizationKey; }
-            set { RegisterOptimizationHotKey(Settings.OptimizationModifiers, value); }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    RegisterOptimizationHotkey(Settings.OptimizationModifiers, value);
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
         }
 
         /// <summary>
@@ -536,7 +545,19 @@ namespace WinMemoryCleaner
         public ModifierKeys OptimizationModifiers
         {
             get { return Settings.OptimizationModifiers; }
-            set { RegisterOptimizationHotKey(value, Settings.OptimizationKey); }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    RegisterOptimizationHotkey(value, Settings.OptimizationKey);
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
         }
 
         /// <summary>
@@ -806,34 +827,30 @@ namespace WinMemoryCleaner
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets a value indicating can [use hotkey].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [use hotkey]; otherwise, <c>false</c>.
         /// </value>
-        public bool UseHotKey
+        public bool UseHotkey
         {
-            get { return Settings.UseHotKey; }
+            get { return Settings.UseHotkey; }
             set
             {
                 try
                 {
                     IsBusy = true;
-                    
-                    Settings.UseHotKey = value;
+
+                    Settings.UseHotkey = value;
                     Settings.Save();
 
                     if (value)
-                    {
-                        RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
-                    }
+                        RegisterOptimizationHotkey(Settings.OptimizationModifiers, Settings.OptimizationKey);
                     else
-                    {
-                        _hotKeyService.Unregister(new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey));
-                    }
-                    
+                        UnregisterOptimizationHotkey();
+
                     RaisePropertyChanged();
                 }
                 finally
@@ -1255,39 +1272,30 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="modifiers">The modifiers.</param>
         /// <param name="key">The key.</param>
-        private void RegisterOptimizationHotKey(ModifierKeys modifiers, Key key)
+        private void RegisterOptimizationHotkey(ModifierKeys modifiers, Key key)
         {
-            try
+            UnregisterOptimizationHotkey();
+
+            Settings.OptimizationKey = key;
+            Settings.OptimizationModifiers = modifiers;
+
+            var hotKey = new Hotkey(Settings.OptimizationModifiers, Settings.OptimizationKey);
+            IsOptimizationKeyValid = _hotKeyService.Register(hotKey, () => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual));
+
+            if (!IsOptimizationKeyValid)
             {
-                IsBusy = true;
+                var message = string.Format(Localizer.Culture, Localizer.String.HotkeyIsInUseByWindows, hotKey);
 
-                _hotKeyService.Unregister(new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey));
+                Logger.Warning(message);
+                NotificationService.Notify(message);
 
-                Settings.OptimizationKey = key;
-                Settings.OptimizationModifiers = modifiers;
-
-                var hotKey = new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
-                IsOptimizationKeyValid = _hotKeyService.Register(hotKey, () => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual));
-
-                if (!IsOptimizationKeyValid)
-                {
-                    var message = string.Format(Localizer.Culture, Localizer.String.HotkeyIsInUseByWindows, hotKey);
-
-                    Logger.Warning(message);
-                    NotificationService.Notify(message);
-
-                    return;
-                }
-
-                Settings.Save();
-
-                RaisePropertyChanged(() => OptimizationKey);
-                RaisePropertyChanged(() => OptimizationModifiers);
+                return;
             }
-            finally
-            {
-                IsBusy = false;
-            }
+
+            Settings.Save();
+
+            RaisePropertyChanged(() => OptimizationKey);
+            RaisePropertyChanged(() => OptimizationModifiers);
         }
 
         /// <summary>
@@ -1318,6 +1326,16 @@ namespace WinMemoryCleaner
             {
                 IsBusy = false;
             }
+        }
+
+        /// <summary>
+        /// Unregisters the optimization hotkey.
+        /// </summary>
+        private void UnregisterOptimizationHotkey()
+        {
+            _hotKeyService.Unregister(new Hotkey(Settings.OptimizationModifiers, Settings.OptimizationKey));
+
+            IsOptimizationKeyValid = true;
         }
 
         #endregion

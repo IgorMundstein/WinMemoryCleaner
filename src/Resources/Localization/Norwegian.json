@@ -51,6 +51,7 @@
   "TrayIcon": "Systemikon",
   "UpdatedToVersion": "Oppdatert versjon {0}",
   "Used": "Brukt",
+  "UseHotkey": "Bruk hurtigtast",
   "Virtual": "Virtuelt",
   "WhenFreeMemoryIsBelow": "Når ledig minne er under {0}%"
 }

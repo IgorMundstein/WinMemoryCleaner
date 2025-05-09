@@ -136,11 +136,11 @@ namespace WinMemoryCleaner
             var runtime = new TimeSpan();
             var reasonLogFormat = "{0}: {1}";
             var stopwatch = new Stopwatch();
-            var value = (byte)0;            
+            var value = (byte)0;
 
             // Reason
             switch (reason)
-            { 
+            {
                 case Enums.Memory.Optimization.Reason.LowMemory:
                     optimizationReason = string.Format(Localizer.Culture, reasonLogFormat, Localizer.String.OptimizationReason.ToUpper(Localizer.Culture), Localizer.String.LowMemory);
                     break;
