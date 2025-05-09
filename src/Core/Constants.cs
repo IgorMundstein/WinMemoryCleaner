@@ -58,6 +58,7 @@ namespace WinMemoryCleaner
                     public const string ShowOptimizationNotifications = "ShowOptimizationNotifications";
                     public const string ShowVirtualMemory = "ShowVirtualMemory";
                     public const string StartMinimized = "StartMinimized";
+                    public const string UseHotKey = "UseHotKey";
                     public const string TrayIcon = "TrayIcon";
                 }
             }

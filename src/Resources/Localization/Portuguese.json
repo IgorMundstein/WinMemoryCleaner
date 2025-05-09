@@ -52,5 +52,6 @@
   "UpdatedToVersion": "Atualizado para versão {0}",
   "Used": "Usada",
   "Virtual": "Virtual",
-  "WhenFreeMemoryIsBelow": "Quando a memória livre estiver abaixo de {0}%"
+  "WhenFreeMemoryIsBelow": "Quando a memória livre estiver abaixo de {0}%",
+  "UseHotKey": "Utilizar a tecla de atalho"
 }

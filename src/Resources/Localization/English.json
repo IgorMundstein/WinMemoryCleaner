@@ -52,5 +52,6 @@
   "UpdatedToVersion": "Updated to version {0}",
   "Used": "Used",
   "Virtual": "Virtual",
-  "WhenFreeMemoryIsBelow": "When free memory is below {0}%"
+  "WhenFreeMemoryIsBelow": "When free memory is below {0}%",
+  "UseHotKey": "Use hotkey"
 }

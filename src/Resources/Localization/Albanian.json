@@ -52,5 +52,6 @@
   "UpdatedToVersion": "Përditësuar në versionin {0}",
   "Used": "I perdorur",
   "Virtual": "Virtual",
-  "WhenFreeMemoryIsBelow": "Kur memoria e lirë është nën {0}%"
+  "WhenFreeMemoryIsBelow": "Kur memoria e lirë është nën {0}%",
+  "UseHotKey": "Përdorni hotkey"
 }

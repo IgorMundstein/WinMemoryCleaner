@@ -52,5 +52,6 @@
   "UpdatedToVersion": "تم التحديث إلى الإصدار {0}",
   "Used": "مستخدمة",
   "Virtual": "افتراضي",
-  "WhenFreeMemoryIsBelow": "عندما تكون الذاكرة الحرة أقل من {0}%"
+  "WhenFreeMemoryIsBelow": "عندما تكون الذاكرة الحرة أقل من {0}%",
+  "UseHotKey": "استخدام هوتكي"
 }

@@ -70,7 +70,10 @@ namespace WinMemoryCleaner
 
                 Computer.OperatingSystem = _computerService.OperatingSystem;
 
-                RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
+                if (Settings.UseHotKey)
+                {
+                    RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
+                }
                 MonitorAsync();
             }
         }
@@ -795,6 +798,42 @@ namespace WinMemoryCleaner
                     Settings.StartMinimized = value;
                     Settings.Save();
 
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets a value indicating can [use hotkey].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use hotkey]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UseHotKey
+        {
+            get { return Settings.UseHotKey; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+                    
+                    Settings.UseHotKey = value;
+                    Settings.Save();
+
+                    if (value)
+                    {
+                        RegisterOptimizationHotKey(Settings.OptimizationModifiers, Settings.OptimizationKey);
+                    }
+                    else
+                    {
+                        _hotKeyService.Unregister(new HotKey(Settings.OptimizationModifiers, Settings.OptimizationKey));
+                    }
+                    
                     RaisePropertyChanged();
                 }
                 finally

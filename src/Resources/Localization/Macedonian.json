@@ -52,5 +52,6 @@
   "UpdatedToVersion": "Ажурирано на верзија {0}",
   "Used": "Искористено",
   "Virtual": "Виртуелна",
-  "WhenFreeMemoryIsBelow": "Кога слободната меморија е под {0}%"
+  "WhenFreeMemoryIsBelow": "Кога слободната меморија е под {0}%",
+  "UseHotKey": "Користете копче"
 }

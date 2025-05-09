@@ -52,5 +52,6 @@
   "UpdatedToVersion": "{0} 버전으로 업데이트됨",
   "Used": "사용",
   "Virtual": "가상",
-  "WhenFreeMemoryIsBelow": "사용 가능한 메모리가 {0}% 미만인 경우"
+  "WhenFreeMemoryIsBelow": "사용 가능한 메모리가 {0}% 미만인 경우",
+  "UseHotKey": "단축키 사용"
 }

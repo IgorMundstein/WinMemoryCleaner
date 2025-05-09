@@ -52,5 +52,6 @@
   "UpdatedToVersion": "بروزرسانی به نگارش {0}",
   "Used": "اشغال شده",
   "Virtual": "مجازی",
-  "WhenFreeMemoryIsBelow": "وقتی حافظه آزاد کمتر از {0}٪ است"
+  "WhenFreeMemoryIsBelow": "وقتی حافظه آزاد کمتر از {0}٪ است",
+  "UseHotKey": "از کلید میانبر استفاده کنید"
 }

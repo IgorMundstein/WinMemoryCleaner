@@ -52,5 +52,6 @@
   "UpdatedToVersion": "已更新到版本{0}",
   "Used": "使用中",
   "Virtual": "虚拟的",
-  "WhenFreeMemoryIsBelow": "当可用内存低于 {0}%"
+  "WhenFreeMemoryIsBelow": "当可用内存低于 {0}%",
+  "UseHotKey": "使用热键"
 }

@@ -52,5 +52,6 @@
   "UpdatedToVersion": "Mise à jour vers la version {0}",
   "Used": "Utilisé",
   "Virtual": "Virtuel",
-  "WhenFreeMemoryIsBelow": "Lorsque la mémoire libre est inférieure à {0}%"
+  "WhenFreeMemoryIsBelow": "Lorsque la mémoire libre est inférieure à {0}%",
+  "UseHotKey": "Utiliser le raccourci clavier"
 }

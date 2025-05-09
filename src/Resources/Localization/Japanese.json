@@ -52,5 +52,6 @@
   "UpdatedToVersion": "バージョン {0} に更新しました",
   "Used": "使用済み",
   "Virtual": "バーチャル",
-  "WhenFreeMemoryIsBelow": "フリーメモリが {0}% 以下になったら"
+  "WhenFreeMemoryIsBelow": "フリーメモリが {0}% 以下になったら",
+  "UseHotKey": "ホットキーを使う"
 }
