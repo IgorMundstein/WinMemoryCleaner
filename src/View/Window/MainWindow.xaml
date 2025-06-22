@@ -64,6 +64,7 @@
                                   Padding="0, -3, 0, 0"
                                   VerticalAlignment="Center">
                         <Grid Background="Transparent"
+                              
                               Margin="10, 3, 10, 0"
                               VerticalAlignment="Center">
                             <Path Data="{Binding Tag, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}, Mode=FindAncestor}}"
@@ -73,7 +74,7 @@
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}, Mode=FindAncestor}}"
                                   StrokeThickness="2"
                                   VerticalAlignment="Center"
-                                  Width="15" />
+                                  Width="14" />
                         </Grid>
                         <ToggleButton.Resources>
                             <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
@@ -99,7 +100,8 @@
                             ToolTip="{Binding Path=(local:Localizer.String).Minimize}"
                             VerticalAlignment="Center">
                         <Grid Background="Transparent"
-                              Margin="10, 3, 10, 0"
+                              Height="12"
+                              Margin="10, 3, 10, 0"                              
                               VerticalAlignment="Center">
                             <Path Data="M9,0 L8,1 8,1 8,1 0,1 0,1 z"
                                   HorizontalAlignment="Center"
@@ -119,6 +121,7 @@
                             ToolTip="{Binding Path=(local:Localizer.String).Close}"
                             VerticalAlignment="Center">
                         <Grid Background="Transparent"
+                              Height="12"
                               Margin="10, 3, 10, 0"
                               VerticalAlignment="Center">
                             <Path Data="M0,0 L1,1 M0,1 L1,0"
@@ -138,10 +141,9 @@
                   Visibility="{Binding CompactMode, Converter={StaticResource InverseBooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Visible}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="271" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -149,7 +151,8 @@
                 <GroupBox Grid.Column="0"
                           Grid.Row="0"
                           Header="{Binding Path=(local:Localizer.String).Settings}"
-                          Margin="0, 5, 5, 0">
+                          Margin="0, 5, 5, 0"
+                          x:Name="SettingsGroupBox">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     Margin="0, 0, 0, 6">
@@ -161,221 +164,207 @@
                                       SelectedValue="{Binding Language}"
                                       VerticalContentAlignment="Center" />
                         </StackPanel>
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).AlwaysOnTop}"
-                                  IsChecked="{Binding AlwaysOnTop}"
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).AutoUpdate}"
-                                  IsChecked="{Binding AutoUpdate}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).CloseAfterOptimization}"
-                                  IsChecked="{Binding CloseAfterOptimization}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).CloseToTheNotificationArea}"
-                                  IsChecked="{Binding CloseToTheNotificationArea}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).RunOnLowPriority}"
-                                  IsChecked="{Binding RunOnLowPriority}"
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).RunOnStartup}"
-                                  IsEnabled="{Binding CanRunOnStartup}"
-                                  IsChecked="{Binding RunOnStartup}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).ShowOptimizationNotifications}"
-                                  IsChecked="{Binding ShowOptimizationNotifications}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).ShowVirtualMemory}"
-                                  IsChecked="{Binding ShowVirtualMemory}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).StartMinimized}"
-                                  IsChecked="{Binding StartMinimized}"
-                                  Margin="0, 0, 0, 0" />
+                        <ItemsControl ItemsSource="{Binding SettingItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}"
+                                              IsChecked="{Binding Value, Mode=TwoWay}"
+                                              IsEnabled="{Binding IsEnabled}"
+                                              Margin="0, 0, 0, 3" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </GroupBox>
                 <!-- Memory Areas -->
                 <GroupBox Grid.Column="0" 
                           Grid.Row="1"
                           Header="{Binding Path=(local:Localizer.String).MemoryAreas}"
-                          Margin="0, 5, 5, 0">
-                    <StackPanel>
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryCombinedPageList}"
-                                  IsEnabled="{Binding Computer.OperatingSystem.HasCombinedPageList}"
-                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Areas.CombinedPageList}}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryModifiedPageList}"
-                                  IsEnabled="{Binding Computer.OperatingSystem.HasModifiedPageList}"
-                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Areas.ModifiedPageList}}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryProcessesWorkingSet}"
-                                  IsEnabled="{Binding Computer.OperatingSystem.HasProcessesWorkingSet}"
-                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Areas.ProcessesWorkingSet}}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryStandbyList}"
-                                  IsEnabled="{Binding Computer.OperatingSystem.HasStandbyList}"
-                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Areas.StandbyList}}"
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).MemoryStandbyListLowPriority}"
-                                  IsEnabled="{Binding Computer.OperatingSystem.HasStandbyList}"
-                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Areas.StandbyListLowPriority}}" 
-                                  Margin="0, 0, 0, 3" />
-                        <CheckBox Content="{Binding Path=(local:Localizer.String).MemorySystemWorkingSet}"
-                                  IsEnabled="{Binding Computer.OperatingSystem.HasSystemWorkingSet}"
-                                  IsChecked="{Binding MemoryAreas, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Memory+Areas.SystemWorkingSet}}"
-                                  Margin="0, 0, 0, 0" />
-                    </StackPanel>
+                          Margin="0, 5, 5, 0"
+                          x:Name="MemoryAreasGroupBox">
+                    <ItemsControl ItemsSource="{Binding MemoryAreaItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Name}"
+                                          IsChecked="{Binding Value, Mode=TwoWay}"
+                                          IsEnabled="{Binding IsEnabled}"
+                                          Margin="0, 0, 0, 3" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </GroupBox>
-                <!-- Tray Icon -->
-                <GroupBox Grid.Column="0"
-                          Grid.Row="2"
-                          Header="{Binding Path=(local:Localizer.String).TrayIcon}"
-                          Margin="0, 5, 5, 0">
-                    <StackPanel Orientation="Horizontal"
-                                VerticalAlignment="Center">
-                        <RadioButton Content="{Binding Path=(local:Localizer.String).Image}" 
+                <!-- Process Exclusion List | Auto Optimization | Optimization Hotkey | Tray Icon -->
+                <Grid Grid.Column="1"
+                      Grid.Row="0"
+                      Grid.RowSpan="2">
+                    <Grid.MaxHeight>
+                        <MultiBinding Converter="{StaticResource SumNumericConverter}">
+                            <Binding ElementName="SettingsGroupBox" Path="ActualHeight" />
+                            <Binding ElementName="MemoryAreasGroupBox" Path="ActualHeight" />
+                        </MultiBinding>
+                    </Grid.MaxHeight>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <!-- Process Exclusion List -->
+                    <GroupBox Grid.Column="0"
+                              Grid.Row="0"
+                              Header="{Binding Path=(local:Localizer.String).ProcessExclusionList}"
+                              Margin="5, 5, 0, 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ScrollViewer Focusable="False"
+                                          Grid.Column="0"
+                                          Grid.ColumnSpan="2"
+                                          Grid.Row="0"
+                                          Margin="0"
+                                          VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding ProcessExclusionList}"
+                                              IsTabStop="False"
+                                              Name="ProcessExclusionList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid HorizontalAlignment="Stretch" 
+                                                  Margin="0, 0, 5, 0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Button Content="-"
+                                                        Command="{Binding MainViewModel.RemoveProcessFromExclusionListCommand, Source={StaticResource ViewModelLocator}}"
+                                                        CommandParameter="{Binding}"
+                                                        Grid.Column="0"
+                                                        Padding="5, -3, 5, 0"
+                                                        Margin="0, 2.5, 0, 2.5"
+                                                        ToolTip="{Binding Path=(local:Localizer.String).Remove}" />
+                                                <Label Content="{Binding}"
+                                                       Grid.Column="1" 
+                                                       Margin="5, 0, 0, 0" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                            <ComboBox DropDownOpened="OnProcessesDropDownOpened"
+                                      Grid.Column="0"
+                                      Grid.Row="1"
+                                      ItemsSource="{Binding Processes}" 
+                                      Margin="0, 5, 0, 0"
+                                      Name="Processes"
+                                      SelectedValue="{Binding SelectedProcess}"
+                                      VerticalContentAlignment="Center" />
+                            <Button Content="+"
+                                    Command="{Binding AddProcessToExclusionListCommand}"
+                                    CommandParameter="{Binding ElementName=Processes, Path=Text}"
+                                    Grid.Column="1"
+                                    Grid.Row="1"
+                                    Margin="5, 5, 0, 0"
+                                    Padding="7, 0, 7, 0"
+                                    ToolTip="{Binding Path=(local:Localizer.String).Add}" />
+                        </Grid>
+                    </GroupBox>
+                    <!-- Auto Optimization -->
+                    <GroupBox Grid.Column="0"
+                              Grid.Row="1"
+                              Header="{Binding Path=(local:Localizer.String).AutoOptimization}"
+                              Margin="5, 5, 0, 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0">
+                                <TextBlock Text="{Binding AutoOptimizationMemoryIntervalDescription}" />
+                                <Slider Margin="0, 10, 0, 9"
+                                        Maximum="168"
+                                        Minimum="0"
+                                        Name="AutoOptimizationInterval" 
+                                        PreviewKeyDown="OnSliderPreviewKeyDown"
+                                        Value="{Binding AutoOptimizationInterval}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <TextBlock Text="{Binding AutoOptimizationMemoryUsageDescription}" />
+                                <Slider Margin="0, 10, 0, 0"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Name="AutoOptimizationMemoryUsage"
+                                        PreviewKeyDown="OnSliderPreviewKeyDown"
+                                        ToolTip="{Binding AutoOptimizationMemoryUsageWarning}"
+                                        Value="{Binding AutoOptimizationMemoryUsage}" />
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+                    <!-- Optimization Hotkey -->
+                    <GroupBox Grid.Column="0"
+                              Grid.Row="2"
+                              Header="{Binding Path=(local:Localizer.String).OptimizationHotkey}"
+                              Margin="5, 5, 0, 0"
+                              Visibility="{Binding Computer.OperatingSystem.HasHotkeyManager, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}">
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <CheckBox IsChecked="{Binding UseHotkey}"
+                                      Margin="0, 0, 5, 0"
+                                      ToolTip="{Binding Path=(local:Localizer.String).UseHotkey}" />
+                            <ComboBox DisplayMemberPath="Value"
+                                      IsEnabled="{Binding UseHotkey}"
+                                      ItemsSource="{Binding KeyboardModifiers}"
+                                      SelectedValue="{Binding OptimizationModifiers}"
+                                      SelectedValuePath="Key"
+                                      VerticalContentAlignment="Center" />
+                            <TextBlock IsEnabled="{Binding UseHotkey}"
+                                       IsHitTestVisible="False" 
+                                       Margin="5, 0, 5, 0"
+                                       Text="+" 
+                                       VerticalAlignment="Center" />
+                            <ComboBox IsEnabled="{Binding UseHotkey}"
+                                      ItemsSource="{Binding KeyboardKeys}"
+                                      SelectedValue="{Binding OptimizationKey}"
+                                      VerticalContentAlignment="Center" />
+                            <TextBlock Foreground="{StaticResource DarkDisabled}"
+                                       IsEnabled="{Binding UseHotkey}"
+                                       KeyboardNavigation.TabNavigation="None"
+                                       Margin="5, 0, 0, 0"
+                                       Text="{Binding Path=(local:Localizer.String).Invalid}" 
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding IsOptimizationKeyValid, Converter={StaticResource InverseBooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}" />
+                        </StackPanel>
+                    </GroupBox>
+                    <!-- Tray Icon -->
+                    <GroupBox Grid.Column="0"
+                              Grid.Row="3"
+                              Header="{Binding Path=(local:Localizer.String).TrayIcon}"
+                              Margin="5, 5, 0, 0">
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <RadioButton Content="{Binding Path=(local:Localizer.String).Image}" 
                                      GroupName="TrayIcon" 
                                      IsChecked="{Binding TrayIcon, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Icon+Tray.Image}}" />
-                        <RadioButton Content="{Binding Path=(local:Localizer.String).MemoryUsage}" 
+                            <RadioButton Content="{Binding Path=(local:Localizer.String).MemoryUsage}" 
                                      GroupName="TrayIcon" 
                                      IsChecked="{Binding TrayIcon, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static local:Enums+Icon+Tray.MemoryUsage}}"
                                      Margin="10, 0, 0, 0" />
-                    </StackPanel>
-                </GroupBox>
-                <!-- Process Exclusion List -->
-                <GroupBox Grid.Column="1"
-                          Grid.Row="0"
-                          Header="{Binding Path=(local:Localizer.String).ProcessExclusionList}"
-                          Margin="5, 5, 0, 0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <ScrollViewer Focusable="False"
-                                      Grid.Column="0"
-                                      Grid.ColumnSpan="2"
-                                      Grid.Row="0"
-                                      Margin="0"
-                                      VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding ProcessExclusionList}"
-                                          IsTabStop="False"
-                                          Name="ProcessExclusionList">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid HorizontalAlignment="Stretch" 
-                                              Margin="0, 0, 5, 0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <Button Content="-"
-                                                    Command="{Binding MainViewModel.RemoveProcessFromExclusionListCommand, Source={StaticResource ViewModelLocator}}"
-                                                    CommandParameter="{Binding}"
-                                                    Grid.Column="0"
-                                                    Padding="5, -3, 5, 0"
-                                                    Margin="0, 2.5, 0, 2.5"
-                                                    ToolTip="{Binding Path=(local:Localizer.String).Remove}" />
-                                            <Label Content="{Binding}"
-                                                   Grid.Column="1" 
-                                                   Margin="5, 0, 0, 0" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                        <ComboBox DropDownOpened="OnProcessesDropDownOpened"
-                                  Grid.Column="0"
-                                  Grid.Row="1"
-                                  ItemsSource="{Binding Processes}" 
-                                  Margin="0, 5, 0, 0"
-                                  Name="Processes"
-                                  SelectedValue="{Binding SelectedProcess}"
-                                  VerticalContentAlignment="Center" />
-                        <Button Content="+"
-                                Command="{Binding AddProcessToExclusionListCommand}"
-                                CommandParameter="{Binding ElementName=Processes, Path=Text}"
-                                Grid.Column="1"
-                                Grid.Row="1"
-                                Margin="5, 5, 0, 0"
-                                Padding="7, 0, 7, 0"
-                                ToolTip="{Binding Path=(local:Localizer.String).Add}" />
-                    </Grid>
-                </GroupBox>
-                <!-- Auto Optimization -->
-                <GroupBox Grid.Column="1"
-                          Grid.Row="1"
-                          Header="{Binding Path=(local:Localizer.String).AutoOptimization}"
-                          Margin="5, 5, 0, 0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="45*" />
-                            <RowDefinition Height="10*" />
-                            <RowDefinition Height="45*" />
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0">
-                            <TextBlock Text="{Binding AutoOptimizationMemoryIntervalDescription}" />
-                            <Slider Margin="0, 9, 0, 0"
-                                    Maximum="168"
-                                    Minimum="0"
-                                    Name="AutoOptimizationInterval" 
-                                    PreviewKeyDown="OnSliderPreviewKeyDown"
-                                    Value="{Binding AutoOptimizationInterval}" />
                         </StackPanel>
-                        <StackPanel Grid.Row="2">
-                            <TextBlock Text="{Binding AutoOptimizationMemoryUsageDescription}" />
-                            <Slider Margin="0, 9, 0, 0"
-                                    Maximum="100"
-                                    Minimum="0"
-                                    Name="AutoOptimizationMemoryUsage"
-                                    PreviewKeyDown="OnSliderPreviewKeyDown"
-                                    ToolTip="{Binding AutoOptimizationMemoryUsageWarning}"
-                                    Value="{Binding AutoOptimizationMemoryUsage}" />
-                        </StackPanel>
-                    </Grid>
-                </GroupBox>
-                <!-- Optimization Hotkey -->
-                <GroupBox Grid.Column="1"
-                          Grid.Row="2"
-                          Header="{Binding Path=(local:Localizer.String).OptimizationHotkey}"
-                          Margin="5, 5, 0, 0"
-                          Visibility="{Binding Computer.OperatingSystem.HasHotkeyManager, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}">
-                    <StackPanel Orientation="Horizontal"
-                                VerticalAlignment="Center">
-                        <CheckBox IsChecked="{Binding UseHotkey}"
-                                  Margin="0, 0, 5, 0"
-                                  ToolTip="{Binding Path=(local:Localizer.String).UseHotkey}" />
-                        <ComboBox DisplayMemberPath="Value"
-                                  IsEnabled="{Binding UseHotkey}"
-                                  ItemsSource="{Binding KeyboardModifiers}"
-                                  SelectedValue="{Binding OptimizationModifiers}"
-                                  SelectedValuePath="Key"
-                                  VerticalContentAlignment="Center" />
-                        <TextBlock IsEnabled="{Binding UseHotkey}"
-                                   IsHitTestVisible="False" 
-                                   Margin="5, 0, 5, 0"
-                                   Text="+" 
-                                   VerticalAlignment="Center" />
-                        <ComboBox IsEnabled="{Binding UseHotkey}"
-                                  ItemsSource="{Binding KeyboardKeys}"
-                                  SelectedValue="{Binding OptimizationKey}"
-                                  VerticalContentAlignment="Center" />
-                        <TextBlock Foreground="{StaticResource DarkDisabled}"
-                                   IsEnabled="{Binding UseHotkey}"
-                                   KeyboardNavigation.TabNavigation="None"
-                                   Margin="5, 0, 0, 0"
-                                   Text="{Binding Path=(local:Localizer.String).Invalid}" 
-                                   VerticalAlignment="Center"
-                                   Visibility="{Binding IsOptimizationKeyValid, Converter={StaticResource InverseBooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}" />
-                    </StackPanel>
-                </GroupBox>
+                    </GroupBox>
+                </Grid>
             </Grid>
             <!-- Footer -->
             <Grid Margin="10, 0, 10, 10">

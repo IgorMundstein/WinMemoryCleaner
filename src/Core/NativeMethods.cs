@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace WinMemoryCleaner
 {
@@ -16,18 +19,34 @@ namespace WinMemoryCleaner
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AllowSetForegroundWindow(int dwProcessId);
 
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        internal static extern SafeFileHandle CreateFile([MarshalAs(UnmanagedType.LPWStr)] string lpFileName, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, int dwFlagsAndAttributes, IntPtr hTemplateFile);
+
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DestroyIcon(IntPtr hIcon);
 
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeviceIoControl(SafeFileHandle hDevice, int dwIoControlCode, IntPtr lpInBuffer, int nInBufferSize, IntPtr lpOutBuffer, int nOutBufferSize, out int lpBytesReturned, IntPtr lpOverlapped);
+
         [DllImport("dwmapi.dll", SetLastError = true)]
         internal static extern void DwmSetWindowAttribute(IntPtr hWnd, int attribute, ref int value, int size);
 
+        [SuppressUnmanagedCodeSecurity]
         [DllImport("psapi.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool EmptyWorkingSet(IntPtr hProcess);
 
         [DllImport("user32", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool FlushFileBuffers(SafeFileHandle hFile);
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
@@ -44,8 +63,9 @@ namespace WinMemoryCleaner
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool LookupPrivilegeValue(string lpSystemName, string lpName, ref long lpLuid);
 
+        [SuppressUnmanagedCodeSecurity]
         [DllImport("ntdll.dll", SetLastError = true)]
-        internal static extern uint NtSetSystemInformation(int infoClass, IntPtr info, int length);
+        internal static extern int NtSetSystemInformation(int SystemInformationClass, IntPtr SystemInformation, uint SystemInformationLength);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

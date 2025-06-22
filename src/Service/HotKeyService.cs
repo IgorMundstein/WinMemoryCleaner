@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
@@ -41,9 +40,9 @@ namespace WinMemoryCleaner
 
             Modifiers = new Dictionary<ModifierKeys, string>
             {
-                { ModifierKeys.Alt | ModifierKeys.Shift, "ALT + SHIFT" },
                 { ModifierKeys.Control | ModifierKeys.Alt, "CTRL + ALT" },
-                { ModifierKeys.Control | ModifierKeys.Shift, "CTRL + SHIFT" }
+                { ModifierKeys.Control | ModifierKeys.Shift, "CTRL + SHIFT" },
+                { ModifierKeys.Alt | ModifierKeys.Shift, "SHIFT + ALT" }
             };
 
             ComponentDispatcher.ThreadPreprocessMessage += OnThreadPreprocessMessage;
@@ -173,10 +172,7 @@ namespace WinMemoryCleaner
 
                 Unregister(hotkey);
 
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    result = NativeMethods.RegisterHotKey(IntPtr.Zero, hotkey.GetHashCode(), (uint)hotkey.Modifiers, (uint)KeyInterop.VirtualKeyFromKey(hotkey.Key));
-                }));
+                result = NativeMethods.RegisterHotKey(IntPtr.Zero, hotkey.GetHashCode(), (uint)hotkey.Modifiers, (uint)KeyInterop.VirtualKeyFromKey(hotkey.Key));
 
                 if (!_registered.ContainsKey(hotkey))
                     _registered.Add(hotkey, action);
@@ -203,10 +199,7 @@ namespace WinMemoryCleaner
                 if (!_isSupported || hotkey == null)
                     return false;
 
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    result = NativeMethods.UnregisterHotKey(IntPtr.Zero, hotkey.GetHashCode());
-                }));
+                result = NativeMethods.UnregisterHotKey(IntPtr.Zero, hotkey.GetHashCode());
 
                 _registered.Remove(hotkey);
             }

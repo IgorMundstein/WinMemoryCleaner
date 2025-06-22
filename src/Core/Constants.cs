@@ -86,6 +86,17 @@ namespace WinMemoryCleaner
                 }
             }
 
+            public static class Drive
+            {
+                public const int FsctlDiscardVolumeCache = 589828; // 0x00090054 - FSCTL_DISCARD_VOLUME_CACHE
+                public const int IoControlResetWriteOrder = 589832; // 0x000900F8 - FSCTL_RESET_WRITE_ORDER
+            }
+
+            public static class File
+            {
+                public const int FlagsNoBuffering = 536870912; // 0x20000000 - FILE_FLAG_NO_BUFFERING
+            }
+
             public static class Keyboard
             {
                 public const int WmHotkey = 786; // 0x312
@@ -127,10 +138,12 @@ namespace WinMemoryCleaner
                 public const int SystemCombinePhysicalMemoryInformation = 130; // 0x82
                 public const int SystemFileCacheInformation = 21; // 0x15
                 public const int SystemMemoryListInformation = 80; // 0x50
+                public const int SystemRegistryReconciliationInformation = 155; // 0x9B
             }
 
             public static class SystemMemoryListCommand
             {
+                public const int MemoryEmptyWorkingSets = 2;
                 public const int MemoryFlushModifiedList = 3;
                 public const int MemoryPurgeLowPriorityStandbyList = 5;
                 public const int MemoryPurgeStandbyList = 4;

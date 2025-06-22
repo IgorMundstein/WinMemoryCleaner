@@ -358,24 +358,24 @@ namespace WinMemoryCleaner
         /// </summary>
         public static void ReleaseMemory()
         {
+            // Garbage Collector
+            try
+            {
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+                GC.WaitForPendingFinalizers();
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+            }
+            catch
+            {
+                // ignored
+            }
+
             // Optimize App Working Set
             try
             {
                 NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle);
             }
             catch (Exception)
-            {
-                // ignored
-            }
-
-            // Garbage Collector
-            try
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            }
-            catch
             {
                 // ignored
             }

@@ -45,11 +45,13 @@ namespace WinMemoryCleaner
             {
                 None = 0,
                 CombinedPageList = 1,
-                ModifiedPageList = 2,
-                ProcessesWorkingSet = 4,
-                StandbyList = 8,
-                StandbyListLowPriority = 16,
-                SystemWorkingSet = 32
+                ModifiedFileCache = 2,
+                ModifiedPageList = 4,
+                RegistryCache = 8,
+                StandbyList = 16,
+                StandbyListLowPriority = 32,
+                SystemFileCache = 64,
+                WorkingSet = 128,
             }
 
             public static class Optimization
@@ -70,6 +72,17 @@ namespace WinMemoryCleaner
             Low,
             Normal,
             High
+        }
+        public enum ServiceStatus
+        {
+            ContinuePending = 5,
+            NotInstalled = 0,
+            Paused = 7,
+            PausePending = 6,
+            Running = 4,
+            StartPending = 2,
+            Stopped = 1,
+            StopPending = 3
         }
 
         public enum StartupType

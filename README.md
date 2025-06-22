@@ -27,7 +27,7 @@
 
 - Microsoft .NET Framework 4
 - Windows `XP` `Vista` `7` `8` `10` `11`
-- Windows Server `2003` `2008` `2012` `2016` `2019` `2022`
+- Windows Server `2003` `2008` `2012` `2016` `2019` `2022` `2026`
 
 ## 🚀 Features
 
@@ -46,12 +46,14 @@
 
 ### Memory Areas
 
-- `Combined Page List` Flushes the blocks from the combined page list effectively only when page combining is enabled
-- `Modified Page List` Flushes memory from the modified page list, writing unsaved data to disk and moving the pages to the standby list
-- `Processes Working Set` Removes memory from all user-mode and system working sets and moves it to the standby or modified page lists
-- `Standby List` Flushes pages from all standby lists to the free list
-- `Standby List (Low Priority)` Flushes pages from the lowest-priority standby list to the free list
-- `System Working Set` Removes memory from the system cache working set
+- `Combined page list` Flushes the blocks from the combined page list effectively only when page combining is enabled
+- `Modified file cache` Flushes volume file cache to disk
+- `Modified page list` Flushes memory from the modified page list, writing unsaved data to disk and moving the pages to the standby list
+- `Registry cache` Flushes registry hives. A hive is a logical group of keys, subkeys, and values in the registry that has a set of supporting files loaded into memory when the operating system is started or a user logs in
+- `Standby list` Flushes pages from all standby lists to the free list
+- `Standby list (low priority)` Flushes pages from the lowest-priority standby list to the free list
+- `System file cache` Flushes memory from the system file cache
+- `Working set` Removes memory from all user-mode and system working sets and moves it to the standby or modified page lists
 
 ### Multi-Language
 
@@ -104,14 +106,16 @@
 You can use the following arguments to run the app silently.
 
 - `/CombinedPageList`
+- `/ModifiedFileCache`
 - `/ModifiedPageList`
-- `/ProcessesWorkingSet`
+- `/RegistryCache`
 - `/StandbyList` OR `/StandbyListLowPriority`
-- `/SystemWorkingSet`
+- `/SystemFileCache`
+- `/WorkingSet`
 
 Shortcut target example
 
-`C:\WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet`
+`C:\WinMemoryCleaner.exe /CombinedPageList /ModifiedFileCache /ModifiedPageList /RegistryCache /StandbyList /SystemFileCache /WorkingSet`
 
 ## 🔧 Windows Service
 
@@ -143,6 +147,16 @@ The app generates logs in the Windows event
 </picture>
 
 ## ❓ Frequently Asked Questions (FAQ)
+
+### How to build the app on Visual Studio 2022 or later?
+
+Visual Studio 2022 and newer do not support targeting .NET Framework 4.0. To compile and run the app, follow these steps as a workaround.
+
+1. Download the .NET Framework 4.0 from https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/.github/NET-Framework-4.zip
+2. Once the download is complete, extract the files to the `C:\`
+3. It must replace files in the directory: `C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0`
+4. Open Visual Studio, and you should now see .NET Framework 4.0 as an available target. You will be able to compile and run the app
+
 
 ### What are the project requirements?
 

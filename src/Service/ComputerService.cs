@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -61,7 +64,9 @@ namespace WinMemoryCleaner
                     _operatingSystem = new OperatingSystem
                     {
                         Is64Bit = Environment.Is64BitOperatingSystem,
+                        IsWindows7OrGreater = (operatingSystem.Version.Major > 6) || (operatingSystem.Version.Major == 6 && operatingSystem.Version.Minor >= 1),
                         IsWindows8OrGreater = operatingSystem.Version.Major >= 6.2,
+                        IsWindows81OrGreater = operatingSystem.Version.Major >= 6.3,
                         IsWindowsVistaOrGreater = operatingSystem.Version.Major >= 6,
                         IsWindowsXpOrGreater = operatingSystem.Version.Major >= 5.1
                     };
@@ -83,6 +88,23 @@ namespace WinMemoryCleaner
         #endregion
 
         #region Methods (Computer)
+
+        private static SafeFileHandle OpenVolumeHandle(string driveLetter)
+        {
+            if (string.IsNullOrWhiteSpace(driveLetter))
+                return null;
+
+            return NativeMethods.CreateFile
+            (
+                @"\\.\" + driveLetter.TrimEnd(':', '\\') + ":",
+                FileAccess.ReadWrite,
+                FileShare.Read | FileShare.Write,
+                IntPtr.Zero,
+                FileMode.Open,
+                (int)FileAttributes.Normal | Constants.Windows.File.FlagsNoBuffering,
+                IntPtr.Zero
+            );
+        }
 
         /// <summary>
         /// Increase the Privilege using a privilege name
@@ -128,79 +150,80 @@ namespace WinMemoryCleaner
             if (areas == Enums.Memory.Areas.None)
                 return;
 
-            var errorLog = new StringBuilder();
-            var errorLogFormat = "{0} ({1}: {2})";
-            var infoLog = new StringBuilder();
-            var infoLogFormat = "{0} ({1}) ({2:0.0} {3})";
-            var optimizationReason = string.Empty;
+            var errors = new SortedSet<string>();
+            var errorLogFormat = "{0} ({1:0.0} {2}) ({3})";
+            var infos = new SortedSet<string>();
+            var infoLogFormat = "{0} ({1:0.0} {2})";
+            var log = new StringBuilder();
             var runtime = new TimeSpan();
-            var reasonLogFormat = "{0}: {1}";
             var stopwatch = new Stopwatch();
             var value = (byte)0;
 
-            // Reason
-            switch (reason)
-            {
-                case Enums.Memory.Optimization.Reason.LowMemory:
-                    optimizationReason = string.Format(Localizer.Culture, reasonLogFormat, Localizer.String.OptimizationReason.ToUpper(Localizer.Culture), Localizer.String.LowMemory);
-                    break;
-
-                case Enums.Memory.Optimization.Reason.Manual:
-                    optimizationReason = string.Format(Localizer.Culture, reasonLogFormat, Localizer.String.OptimizationReason.ToUpper(Localizer.Culture), Localizer.String.Manual);
-                    break;
-
-                case Enums.Memory.Optimization.Reason.Schedule:
-                    optimizationReason = string.Format(Localizer.Culture, reasonLogFormat, Localizer.String.OptimizationReason.ToUpper(Localizer.Culture), Localizer.String.Schedule);
-                    break;
-            }
-
-            // Optimize Processes Working Set
-            if ((areas & Enums.Memory.Areas.ProcessesWorkingSet) != 0)
+            // Optimize Working Set
+            if ((areas & Enums.Memory.Areas.WorkingSet) != 0)
             {
                 try
                 {
                     if (OnOptimizeProgressUpdate != null)
                     {
                         value++;
-                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryProcessesWorkingSet);
+                        OnOptimizeProgressUpdate(value, Localizer.String.WorkingSet);
                     }
 
                     stopwatch.Restart();
 
-                    OptimizeProcessesWorkingSet();
+                    OptimizeWorkingSet();
 
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
+                    infos.Add(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.WorkingSet, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryProcessesWorkingSet, Localizer.String.Error, e.GetMessage()));
+                    errors.Add(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.WorkingSet, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), e.GetMessage()));
+                }
+                finally
+                {
+                    try
+                    {
+                        runtime = runtime.Add(stopwatch.Elapsed);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 }
             }
 
-            // Optimize System Working Set
-            if ((areas & Enums.Memory.Areas.SystemWorkingSet) != 0)
+            // Optimize System File Cache
+            if ((areas & Enums.Memory.Areas.SystemFileCache) != 0)
             {
                 try
                 {
                     if (OnOptimizeProgressUpdate != null)
                     {
                         value++;
-                        OnOptimizeProgressUpdate(value, Localizer.String.MemorySystemWorkingSet);
+                        OnOptimizeProgressUpdate(value, Localizer.String.SystemFileCache);
                     }
 
                     stopwatch.Restart();
 
-                    OptimizeSystemWorkingSet();
+                    OptimizeSystemFileCache();
 
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
+                    infos.Add(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.SystemFileCache, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemorySystemWorkingSet, Localizer.String.Error, e.GetMessage()));
+                    errors.Add(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.SystemFileCache, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), e.GetMessage()));
+                }
+                finally
+                {
+                    try
+                    {
+                        runtime = runtime.Add(stopwatch.Elapsed);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 }
             }
 
@@ -212,20 +235,29 @@ namespace WinMemoryCleaner
                     if (OnOptimizeProgressUpdate != null)
                     {
                         value++;
-                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryModifiedPageList);
+                        OnOptimizeProgressUpdate(value, Localizer.String.ModifiedPageList);
                     }
 
                     stopwatch.Restart();
 
                     OptimizeModifiedPageList();
 
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
+                    infos.Add(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.ModifiedPageList, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryModifiedPageList, Localizer.String.Error, e.GetMessage()));
+                    errors.Add(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.ModifiedPageList, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), e.GetMessage()));
+                }
+                finally
+                {
+                    try
+                    {
+                        runtime = runtime.Add(stopwatch.Elapsed);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 }
             }
 
@@ -233,26 +265,36 @@ namespace WinMemoryCleaner
             if ((areas & (Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.StandbyListLowPriority)) != 0)
             {
                 var lowPriority = (areas & Enums.Memory.Areas.StandbyListLowPriority) != 0;
+                var standbyList = lowPriority ? Localizer.String.StandbyListLowPriority : Localizer.String.StandbyList;
 
                 try
                 {
                     if (OnOptimizeProgressUpdate != null)
                     {
                         value++;
-                        OnOptimizeProgressUpdate(value, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList);
+                        OnOptimizeProgressUpdate(value, standbyList);
                     }
 
                     stopwatch.Restart();
 
                     OptimizeStandbyList(lowPriority);
 
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
+                    infos.Add(string.Format(Localizer.Culture, infoLogFormat, standbyList, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, lowPriority ? Localizer.String.MemoryStandbyListLowPriority : Localizer.String.MemoryStandbyList, Localizer.String.Error, e.GetMessage()));
+                    errors.Add(string.Format(Localizer.Culture, errorLogFormat, standbyList, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), e.GetMessage()));
+                }
+                finally
+                {
+                    try
+                    {
+                        runtime = runtime.Add(stopwatch.Elapsed);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 }
             }
 
@@ -264,48 +306,138 @@ namespace WinMemoryCleaner
                     if (OnOptimizeProgressUpdate != null)
                     {
                         value++;
-                        OnOptimizeProgressUpdate(value, Localizer.String.MemoryCombinedPageList);
+                        OnOptimizeProgressUpdate(value, Localizer.String.CombinedPageList);
                     }
 
                     stopwatch.Restart();
 
                     OptimizeCombinedPageList();
 
-                    runtime = runtime.Add(stopwatch.Elapsed);
-
-                    infoLog.AppendLine(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Optimized, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
+                    infos.Add(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.CombinedPageList, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
                 }
                 catch (Exception e)
                 {
-                    errorLog.AppendLine(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.MemoryCombinedPageList, Localizer.String.Error, e.GetMessage()));
+                    errors.Add(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.CombinedPageList, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), e.GetMessage()));
+                }
+                finally
+                {
+                    try
+                    {
+                        runtime = runtime.Add(stopwatch.Elapsed);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+            // Optimize Registry Cache
+            if ((areas & Enums.Memory.Areas.RegistryCache) != 0)
+            {
+                try
+                {
+                    if (OnOptimizeProgressUpdate != null)
+                    {
+                        value++;
+                        OnOptimizeProgressUpdate(value, Localizer.String.RegistryCache);
+                    }
+
+                    stopwatch.Restart();
+
+                    OptimizeRegistryCache();
+
+                    infos.Add(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.RegistryCache, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
+                }
+                catch (Exception e)
+                {
+                    errors.Add(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.RegistryCache, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), e.GetMessage()));
+                }
+                finally
+                {
+                    try
+                    {
+                        runtime = runtime.Add(stopwatch.Elapsed);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+            // Optimize Modified File Cache
+            if ((areas & Enums.Memory.Areas.ModifiedFileCache) != 0)
+            {
+                try
+                {
+                    if (OnOptimizeProgressUpdate != null)
+                    {
+                        value++;
+                        OnOptimizeProgressUpdate(value, Localizer.String.ModifiedFileCache);
+                    }
+
+                    stopwatch.Restart();
+
+                    OptimizeModifiedFileCache();
+
+                    infos.Add(string.Format(Localizer.Culture, infoLogFormat, Localizer.String.ModifiedFileCache, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
+                }
+                catch (Exception e)
+                {
+                    errors.Add(string.Format(Localizer.Culture, errorLogFormat, Localizer.String.ModifiedFileCache, stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), e.GetMessage()));
+                }
+                finally
+                {
+                    try
+                    {
+                        runtime = runtime.Add(stopwatch.Elapsed);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 }
             }
 
             // Log
-            if (infoLog.Length > 0)
-            {
-                infoLog.Insert(0, string.Format(Localizer.Culture, "{1}{0}{0}{2} ({3:0.0} {4}){0}{0}", Environment.NewLine, optimizationReason, Localizer.String.MemoryAreas.ToUpper(Localizer.Culture), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)));
-
-                Logger.Information(infoLog.ToString());
-
-                infoLog.Clear();
-            }
-
-            if (errorLog.Length > 0)
-            {
-                errorLog.Insert(0, string.Format(Localizer.Culture, "{1}{0}{0}{2}{0}{0}", Environment.NewLine, optimizationReason, Localizer.String.MemoryAreas.ToUpper(Localizer.Culture)));
-
-                Logger.Error(errorLog.ToString());
-
-                errorLog.Clear();
-            }
-
-            // Garbage Collector
             try
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
+                if (infos.Any())
+                {
+                    log.AppendLine(string.Format(Localizer.Culture, "{0} ({1:0.0} {2}) | {3} ({4})", Localizer.String.MemoryOptimized.ToUpper(Localizer.Culture), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), Localizer.String.Reason.ToUpper(Localizer.Culture), reason.GetString()));
+                    log.AppendLine();
+                    log.Append(string.Join(Environment.NewLine, infos));
+                }
+
+                if (errors.Any())
+                {
+                    if (infos.Any())
+                    {
+                        log.AppendLine();
+                        log.AppendLine();
+                        log.AppendLine(Localizer.String.Error.ToUpper(Localizer.Culture));
+                    }
+                    else
+                        log.AppendLine(string.Format(Localizer.Culture, "{0} ({1:0.0} {2}) | {3} ({4})", Localizer.String.Error.ToUpper(Localizer.Culture), runtime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture), Localizer.String.Reason.ToUpper(Localizer.Culture), reason.GetString()));
+
+                    log.AppendLine();
+                    log.Append(string.Join(Environment.NewLine, errors));
+
+                    Logger.Warning(log.ToString());
+                }
+                else
+                    Logger.Information(log.ToString());
+            }
+            catch
+            {
+                // ignored
+            }
+
+            // App
+            try
+            {
+                App.ReleaseMemory();
             }
             catch
             {
@@ -324,12 +456,11 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Optimize the combined page list.
         /// </summary>
-        /// <exception cref="Win32Exception"></exception>
         private void OptimizeCombinedPageList()
         {
             // Windows minimum version
             if (!OperatingSystem.HasCombinedPageList)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemoryCombinedPageList));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.CombinedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
@@ -343,9 +474,7 @@ namespace WinMemoryCleaner
 
                 handle = GCHandle.Alloc(memoryCombineInformationEx, GCHandleType.Pinned);
 
-                var length = Marshal.SizeOf(memoryCombineInformationEx);
-
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), length) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryCombineInformationEx)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
@@ -358,6 +487,88 @@ namespace WinMemoryCleaner
                 catch (InvalidOperationException)
                 {
                     // ignored
+                }
+            }
+        }
+
+        /// <summary>
+        /// Optimize the modified file cache.
+        /// </summary>
+        private void OptimizeModifiedFileCache()
+        {
+            // Windows minimum version
+            if (!OperatingSystem.HasModifiedFileCache)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.ModifiedFileCache));
+
+            foreach (var drive in DriveInfo.GetDrives())
+            {
+                if (drive == null || drive.DriveType != DriveType.Fixed || string.IsNullOrWhiteSpace(drive.Name))
+                    continue;
+
+                using (var handle = OpenVolumeHandle(drive.Name))
+                {
+                    if (handle == null || handle.IsInvalid)
+                        continue;
+
+                    int bytesReturned;
+
+                    if (OperatingSystem.IsWindows7OrGreater)
+                    {
+                        try
+                        {
+                            var buffer = Marshal.AllocHGlobal(1);
+
+                            try
+                            {
+                                if (!NativeMethods.DeviceIoControl(
+                                    handle,
+                                    Constants.Windows.Drive.IoControlResetWriteOrder,
+                                    buffer,
+                                    1,
+                                    IntPtr.Zero,
+                                    0,
+                                    out bytesReturned,
+                                    IntPtr.Zero))
+                                {
+                                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                                }
+                            }
+                            finally
+                            {
+                                Marshal.FreeHGlobal(buffer);
+                            }
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+
+                        if (OperatingSystem.IsWindows8OrGreater)
+                        {
+                            try
+                            {
+                                if (!NativeMethods.DeviceIoControl(
+                                    handle,
+                                    Constants.Windows.Drive.FsctlDiscardVolumeCache,
+                                    IntPtr.Zero,
+                                    0,
+                                    IntPtr.Zero,
+                                    0,
+                                    out bytesReturned,
+                                    IntPtr.Zero))
+                                {
+                                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                                }
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
+                        }
+                    }
+
+                    if (!NativeMethods.FlushFileBuffers(handle))
+                        throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
             }
         }
@@ -365,24 +576,21 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Optimize the modified page list.
         /// </summary>
-        /// <exception cref="Win32Exception">
-        /// </exception>
         private void OptimizeModifiedPageList()
         {
             // Windows minimum version
             if (!OperatingSystem.HasModifiedPageList)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemoryModifiedPageList));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.ModifiedPageList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
-
             var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList, GCHandleType.Pinned);
 
             try
             {
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
@@ -400,14 +608,110 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Optimize the processes working set.
+        /// Optimize the registry cache.
         /// </summary>
-        /// <exception cref="Win32Exception"></exception>
-        private void OptimizeProcessesWorkingSet()
+        private void OptimizeRegistryCache()
         {
             // Windows minimum version
-            if (!OperatingSystem.HasProcessesWorkingSet)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemoryProcessesWorkingSet));
+            if (!OperatingSystem.HasRegistryHive)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.RegistryCache));
+
+            if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemRegistryReconciliationInformation, IntPtr.Zero, 0) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        /// <summary>
+        /// Optimize the standby list.
+        /// </summary>
+        /// <param name="lowPriority">if set to <c>true</c> [low priority].</param>
+        private void OptimizeStandbyList(bool lowPriority = false)
+        {
+            // Windows minimum version
+            if (!OperatingSystem.HasStandbyList)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.StandbyList));
+
+            // Check privilege
+            if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+
+            object memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
+            var handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
+
+            try
+            {
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryPurgeStandbyList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            finally
+            {
+                try
+                {
+                    if (handle.IsAllocated)
+                        handle.Free();
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignored
+                }
+            }
+        }
+
+        /// <summary>
+        /// Optimize the system file cache.
+        /// </summary>
+        private void OptimizeSystemFileCache()
+        {
+            // Windows minimum version
+            if (!OperatingSystem.HasSystemFileCache)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.SystemFileCache));
+
+            // Check privilege
+            if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
+
+            var handle = GCHandle.Alloc(0);
+
+            try
+            {
+                object systemFileCacheInformation;
+
+                if (OperatingSystem.Is64Bit)
+                    systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation64 { MinimumWorkingSet = -1L, MaximumWorkingSet = -1L };
+                else
+                    systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation32 { MinimumWorkingSet = uint.MaxValue, MaximumWorkingSet = uint.MaxValue };
+
+                handle = GCHandle.Alloc(systemFileCacheInformation, GCHandleType.Pinned);
+
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemFileCacheInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(systemFileCacheInformation)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            finally
+            {
+                try
+                {
+                    if (handle.IsAllocated)
+                        handle.Free();
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignored
+                }
+            }
+
+            var fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
+
+            if (!NativeMethods.SetSystemFileCacheSize(fileCacheSize, fileCacheSize, 0))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        /// <summary>
+        /// Optimize the working set.
+        /// </summary>
+        private void OptimizeWorkingSet()
+        {
+            // Windows minimum version
+            if (!OperatingSystem.HasWorkingSet)
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.WorkingSet));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeDebugName))
@@ -442,30 +746,16 @@ namespace WinMemoryCleaner
                 errors.Remove(errors.Length - 3, 3);
                 throw new Exception(errors.ToString());
             }
-        }
-
-        /// <summary>
-        /// Optimize the standby list.
-        /// </summary>
-        /// <param name="lowPriority">if set to <c>true</c> [low priority].</param>
-        /// <exception cref="Win32Exception"></exception>
-        /// <exception cref="Win32Exception"></exception>
-        private void OptimizeStandbyList(bool lowPriority = false)
-        {
-            // Windows minimum version
-            if (!OperatingSystem.HasStandbyList)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemoryStandbyList));
 
             // Check privilege
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
+                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
 
-            object memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
-            var handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets, GCHandleType.Pinned);
 
             try
             {
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), Marshal.SizeOf(memoryPurgeStandbyList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
@@ -480,59 +770,6 @@ namespace WinMemoryCleaner
                     // ignored
                 }
             }
-        }
-
-        /// <summary>
-        /// Optimize the system working set.
-        /// </summary>
-        /// <exception cref="Win32Exception">
-        /// </exception>
-        /// <exception cref="Win32Exception"></exception>
-        private void OptimizeSystemWorkingSet()
-        {
-            // Windows minimum version
-            if (!OperatingSystem.HasSystemWorkingSet)
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.MemorySystemWorkingSet));
-
-            // Check privilege
-            if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
-
-            var handle = GCHandle.Alloc(0);
-
-            try
-            {
-                object systemCacheInformation;
-
-                if (OperatingSystem.Is64Bit)
-                    systemCacheInformation = new Structs.Windows.SystemCacheInformation64 { MinimumWorkingSet = -1L, MaximumWorkingSet = -1L };
-                else
-                    systemCacheInformation = new Structs.Windows.SystemCacheInformation32 { MinimumWorkingSet = uint.MaxValue, MaximumWorkingSet = uint.MaxValue };
-
-                handle = GCHandle.Alloc(systemCacheInformation, GCHandleType.Pinned);
-
-                var length = Marshal.SizeOf(systemCacheInformation);
-
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemFileCacheInformation, handle.AddrOfPinnedObject(), length) != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-            finally
-            {
-                try
-                {
-                    if (handle.IsAllocated)
-                        handle.Free();
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored
-                }
-            }
-
-            var fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
-
-            if (!NativeMethods.SetSystemFileCacheSize(fileCacheSize, fileCacheSize, 0))
-                throw new Win32Exception(Marshal.GetLastWin32Error());
         }
 
         #endregion

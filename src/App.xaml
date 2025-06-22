@@ -10,6 +10,7 @@
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
             <local:StringFormatConverter x:Key="StringFormatConverter" />
+            <local:SumNumericConverter x:Key="SumNumericConverter" />
             <local:ViewModelLocator x:Key="ViewModelLocator" />
             <!-- Colors -->
             <SolidColorBrush x:Key="DarkBackground" Color="#2C2C2C" />

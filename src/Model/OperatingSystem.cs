@@ -22,6 +22,14 @@
         public bool HasHotkeyManager { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
+        /// Gets a value indicating whether current operating system has modified file cache.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if it has modified file cache; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasModifiedFileCache { get { return IsWindowsXpOrGreater; } }
+
+        /// <summary>
         /// Gets a value indicating whether current operating system has modified page list.
         /// </summary>
         /// <value>
@@ -30,12 +38,12 @@
         public bool HasModifiedPageList { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
-        /// Gets a value indicating whether current operating system has processes working set.
+        /// Gets a value indicating whether current operating system has registry hive.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if it has processes working set; otherwise, <c>false</c>.
+        ///   <c>true</c> if it has registry hive; otherwise, <c>false</c>.
         /// </value>
-        public bool HasProcessesWorkingSet { get { return IsWindowsXpOrGreater; } }
+        public bool HasRegistryHive { get { return IsWindows81OrGreater; } }
 
         /// <summary>
         /// Gets a value indicating whether current operating system has standby list.
@@ -46,12 +54,20 @@
         public bool HasStandbyList { get { return IsWindowsVistaOrGreater; } }
 
         /// <summary>
-        /// Gets a value indicating whether current operating system has system working set.
+        /// Gets a value indicating whether current operating system has system file cache.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if it has system working set; otherwise, <c>false</c>.
+        ///   <c>true</c> if it has system file cache; otherwise, <c>false</c>.
         /// </value>
-        public bool HasSystemWorkingSet { get { return IsWindowsXpOrGreater; } }
+        public bool HasSystemFileCache { get { return IsWindowsXpOrGreater; } }
+
+        /// <summary>
+        /// Gets a value indicating whether current operating system has working set.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if it has working set; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasWorkingSet { get { return IsWindowsXpOrGreater; } }
 
         /// <summary>
         /// Determines whether the current operating system is a 64-bit operating system
@@ -60,6 +76,22 @@
         ///   <c>true</c> if it is 64-bit; otherwise, <c>false</c>.
         /// </value>
         public bool Is64Bit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current operating system is Windows 7 or greater.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if it is Windows 7 or greater; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsWindows7OrGreater { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current operating system is Windows 8.1 or greater.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if it is Windows 8.1 or greater; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsWindows81OrGreater { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the current operating system is Windows 8 or greater.

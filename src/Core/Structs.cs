@@ -57,37 +57,37 @@ namespace WinMemoryCleaner
             }
 
             /// <summary>
-            /// System Cache Information structure for x86 working set
+            /// System File Cache Information structure for x86 working set
             /// </summary>
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            public struct SystemCacheInformation32
+            public struct SystemFileCacheInformation32
             {
                 public uint CurrentSize;
                 public uint PeakSize;
                 public uint PageFaultCount;
                 public uint MinimumWorkingSet;
                 public uint MaximumWorkingSet;
-                public uint Unused1;
-                public uint Unused2;
-                public uint Unused3;
-                public uint Unused4;
+                public uint CurrentSizeIncludingTransitionInPages;
+                public uint PeakSizeIncludingTransitionInPages;
+                public uint TransitionRePurposeCount;
+                public uint Flags;
             }
 
             /// <summary>
-            /// System Cache Information structure for x64 working set
+            /// System File Cache Information structure for x64 working set
             /// </summary>
             [StructLayout(LayoutKind.Sequential, Pack = 1)]
-            public struct SystemCacheInformation64
+            public struct SystemFileCacheInformation64
             {
                 public long CurrentSize;
                 public long PeakSize;
                 public long PageFaultCount;
                 public long MinimumWorkingSet;
                 public long MaximumWorkingSet;
-                public long Unused1;
-                public long Unused2;
-                public long Unused3;
-                public long Unused4;
+                public long CurrentSizeIncludingTransitionInPages;
+                public long PeakSizeIncludingTransitionInPages;
+                public long TransitionRePurposeCount;
+                public long Flags;
             }
 
             /// <summary>

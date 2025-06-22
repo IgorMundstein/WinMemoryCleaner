@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -18,14 +17,13 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Computer _computer;
         private readonly IComputerService _computerService;
         private readonly IHotkeyService _hotKeyService;
         private bool _isOptimizationKeyValid;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
         private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
-        private BackgroundWorker _monitorAppWorker;
-        private BackgroundWorker _monitorComputerWorker;
         private byte _optimizationProgressPercentage;
         private string _optimizationProgressStep = Localizer.String.Optimize;
         private byte _optimizationProgressTotal = byte.MaxValue;
@@ -58,6 +56,10 @@ namespace WinMemoryCleaner
 
             if (IsInDesignMode)
             {
+                Settings.AutoUpdate = true;
+
+                Computer.OperatingSystem.IsWindows81OrGreater = false;
+                Computer.OperatingSystem.IsWindows8OrGreater = true;
                 Computer.OperatingSystem.IsWindowsVistaOrGreater = true;
                 Computer.OperatingSystem.IsWindowsXpOrGreater = true;
                 IsOptimizationKeyValid = true;
@@ -447,6 +449,43 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets the memory area items.
+        /// </summary>
+        /// <value>
+        /// The memory area items.
+        /// </value>
+        public ObservableCollection<ObservableItem<bool>> MemoryAreaItems
+        {
+            get
+            {
+                var items = new List<ObservableItem<bool>>();
+
+                Action<string, Enums.Memory.Areas, bool> Add = (name, area, isEnabled) =>
+                {
+
+                    items.Add(new ObservableItem<bool>
+                    (
+                        name,
+                        () => (MemoryAreas & area) == area,
+                        (value) => { MemoryAreas = area; },
+                        isEnabled
+                    ));
+                };
+
+                Add(Localizer.String.CombinedPageList, Enums.Memory.Areas.CombinedPageList, Computer.OperatingSystem.HasCombinedPageList);
+                Add(Localizer.String.ModifiedFileCache, Enums.Memory.Areas.ModifiedFileCache, Computer.OperatingSystem.HasModifiedFileCache);
+                Add(Localizer.String.ModifiedPageList, Enums.Memory.Areas.ModifiedPageList, Computer.OperatingSystem.HasModifiedPageList);
+                Add(Localizer.String.RegistryCache, Enums.Memory.Areas.RegistryCache, Computer.OperatingSystem.HasRegistryHive);
+                Add(Localizer.String.StandbyList, Enums.Memory.Areas.StandbyList, Computer.OperatingSystem.HasStandbyList);
+                Add(Localizer.String.StandbyListLowPriority, Enums.Memory.Areas.StandbyListLowPriority, Computer.OperatingSystem.HasStandbyList);
+                Add(Localizer.String.SystemFileCache, Enums.Memory.Areas.SystemFileCache, Computer.OperatingSystem.HasSystemFileCache);
+                Add(Localizer.String.WorkingSet, Enums.Memory.Areas.WorkingSet, Computer.OperatingSystem.HasWorkingSet);
+                    
+                return new ObservableCollection<ObservableItem<bool>>(items.OrderBy(item => item.Name));
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the memory areas.
         /// </summary>
         /// <value>
@@ -462,8 +501,8 @@ namespace WinMemoryCleaner
                 if (!Computer.OperatingSystem.HasModifiedPageList)
                     Settings.MemoryAreas &= ~Enums.Memory.Areas.ModifiedPageList;
 
-                if (!Computer.OperatingSystem.HasProcessesWorkingSet)
-                    Settings.MemoryAreas &= ~Enums.Memory.Areas.ProcessesWorkingSet;
+                if (!Computer.OperatingSystem.HasRegistryHive)
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.RegistryCache;
 
                 if (!Computer.OperatingSystem.HasStandbyList)
                 {
@@ -471,8 +510,11 @@ namespace WinMemoryCleaner
                     Settings.MemoryAreas &= ~Enums.Memory.Areas.StandbyListLowPriority;
                 }
 
-                if (!Computer.OperatingSystem.HasSystemWorkingSet)
-                    Settings.MemoryAreas &= ~Enums.Memory.Areas.SystemWorkingSet;
+                if (!Computer.OperatingSystem.HasSystemFileCache)
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.SystemFileCache;
+
+                if (!Computer.OperatingSystem.HasWorkingSet)
+                    Settings.MemoryAreas &= ~Enums.Memory.Areas.WorkingSet;
 
                 return Settings.MemoryAreas;
             }
@@ -504,6 +546,7 @@ namespace WinMemoryCleaner
 
                     RaisePropertyChanged();
                     RaisePropertyChanged(() => CanOptimize);
+                    RaisePropertyChanged(() => MemoryAreaItems);
                 }
                 finally
                 {
@@ -631,7 +674,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return string.Format(Localizer.Culture, "{0} ({1:0.#} {2})", Localizer.String.Physical, Computer.Memory.Physical.Total.Value, Computer.Memory.Physical.Total.Unit);
+                return string.Format(Localizer.Culture, "{0} ({1:0.#} {2})", Localizer.String.PhysicalMemory, Computer.Memory.Physical.Total.Value, Computer.Memory.Physical.Total.Unit);
             }
         }
 
@@ -742,6 +785,35 @@ namespace WinMemoryCleaner
             {
                 _selectedProcess = value;
                 RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets the setting items.
+        /// </summary>
+        /// <value>
+        /// The setting items.
+        /// </value>
+        public ObservableCollection<ObservableItem<bool>> SettingItems
+        {
+            get
+            {
+                return new ObservableCollection<ObservableItem<bool>>
+                (
+                    new List<ObservableItem<bool>>
+                    {
+                       new ObservableItem<bool>(Localizer.String.AlwaysOnTop, () => AlwaysOnTop, value => AlwaysOnTop = value),
+                       new ObservableItem<bool>(Localizer.String.AutoUpdate, () => AutoUpdate, value => AutoUpdate = value),
+                       new ObservableItem<bool>(Localizer.String.CloseAfterOptimization, () => CloseAfterOptimization, value => CloseAfterOptimization = value),
+                       new ObservableItem<bool>(Localizer.String.CloseToTheNotificationArea, () => CloseToTheNotificationArea, value => CloseToTheNotificationArea = value),
+                       new ObservableItem<bool>(Localizer.String.RunOnLowPriority, () => RunOnLowPriority, value => RunOnLowPriority = value),
+                       new ObservableItem<bool>(Localizer.String.RunOnStartup, () => RunOnStartup, value => RunOnStartup = value),
+                       new ObservableItem<bool>(Localizer.String.ShowOptimizationNotifications, () => ShowOptimizationNotifications, value => ShowOptimizationNotifications = value),
+                       new ObservableItem<bool>(Localizer.String.ShowVirtualMemory, () => ShowVirtualMemory, value => ShowVirtualMemory = value),
+                       new ObservableItem<bool>(Localizer.String.StartMinimized, () => StartMinimized, value => StartMinimized = value)
+                    }
+                    .OrderBy(item => item.Name)
+                );
             }
         }
 
@@ -909,7 +981,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return string.Format(Localizer.Culture, "{0} ({1:0.#} {2})", Localizer.String.Virtual, Computer.Memory.Virtual.Total.Value, Computer.Memory.Virtual.Total.Unit);
+                return string.Format(Localizer.Culture, "{0} ({1:0.#} {2})", Localizer.String.VirtualMemory, Computer.Memory.Virtual.Total.Value, Computer.Memory.Virtual.Total.Unit);
             }
         }
 
@@ -935,23 +1007,10 @@ namespace WinMemoryCleaner
             if (disposing)
             {
                 if (_hotKeyService != null)
-                    _hotKeyService.Dispose();
-
-                if (_monitorAppWorker != null)
                 {
-
                     try
                     {
-                        _monitorAppWorker.CancelAsync();
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-
-                    try
-                    {
-                        _monitorAppWorker.Dispose();
+                        _hotKeyService.Dispose();
                     }
                     catch
                     {
@@ -959,12 +1018,12 @@ namespace WinMemoryCleaner
                     }
                 }
 
-                if (_monitorComputerWorker != null)
+                if (_cancellationTokenSource != null)
                 {
 
                     try
                     {
-                        _monitorComputerWorker.CancelAsync();
+                        _cancellationTokenSource.Cancel();
                     }
                     catch
                     {
@@ -973,7 +1032,7 @@ namespace WinMemoryCleaner
 
                     try
                     {
-                        _monitorComputerWorker.Dispose();
+                        _cancellationTokenSource.Dispose();
                     }
                     catch
                     {
@@ -1055,11 +1114,9 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Monitor App Resources
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
-        private void MonitorApp(object sender, DoWorkEventArgs e)
+        private void MonitorApp()
         {
-            while (!_monitorAppWorker.CancellationPending)
+            while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
                 try
                 {
@@ -1068,7 +1125,8 @@ namespace WinMemoryCleaner
                         continue;
 
                     // Delay
-                    Thread.Sleep(60000);
+                    if (_cancellationTokenSource.Token.WaitHandle.WaitOne(60000))
+                        break;
 
                     // Update app
                     if (Settings.AutoUpdate)
@@ -1117,12 +1175,7 @@ namespace WinMemoryCleaner
             // Monitor App Resources
             try
             {
-                using (_monitorAppWorker = new BackgroundWorker())
-                {
-                    _monitorAppWorker.DoWork += MonitorApp;
-                    _monitorAppWorker.WorkerSupportsCancellation = true;
-                    _monitorAppWorker.RunWorkerAsync();
-                }
+                ThreadPool.QueueUserWorkItem(_ => MonitorApp());
             }
             catch (Exception e)
             {
@@ -1132,12 +1185,7 @@ namespace WinMemoryCleaner
             // Monitor Computer Resources
             try
             {
-                using (_monitorComputerWorker = new BackgroundWorker())
-                {
-                    _monitorComputerWorker.DoWork += MonitorComputer;
-                    _monitorComputerWorker.WorkerSupportsCancellation = true;
-                    _monitorComputerWorker.RunWorkerAsync();
-                }
+                ThreadPool.QueueUserWorkItem(_ => MonitorComputer());
             }
             catch (Exception e)
             {
@@ -1148,14 +1196,12 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Monitor Computer Resources
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
-        private void MonitorComputer(object sender, DoWorkEventArgs e)
+        private void MonitorComputer()
         {
             // App priority
             App.SetPriority(Settings.RunOnPriority);
 
-            while (!_monitorComputerWorker.CancellationPending)
+            while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
                 try
                 {
@@ -1172,7 +1218,8 @@ namespace WinMemoryCleaner
                     NotificationService.Update(Computer.Memory);
 
                     // Delay
-                    Thread.Sleep(5000);
+                    if (_cancellationTokenSource.Token.WaitHandle.WaitOne(5000))
+                        break;
                 }
                 catch (Exception ex)
                 {
@@ -1223,8 +1270,8 @@ namespace WinMemoryCleaner
                     var virtualReleased = (Computer.Memory.Virtual.Free.Bytes > tempVirtualAvailable ? Computer.Memory.Virtual.Free.Bytes - tempVirtualAvailable : tempVirtualAvailable - Computer.Memory.Virtual.Free.Bytes).ToMemoryUnit();
 
                     var message = Settings.ShowVirtualMemory
-                        ? string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3:0.#} {4} | {5}: {6:0.#} {7}", Environment.NewLine, Localizer.String.MemoryOptimized, Localizer.String.Physical, physicalReleased.Key, physicalReleased.Value, Localizer.String.Virtual, virtualReleased.Key, virtualReleased.Value)
-                        : string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3:0.#} {4}", Environment.NewLine, Localizer.String.MemoryOptimized, Localizer.String.Physical, physicalReleased.Key, physicalReleased.Value);
+                        ? string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3}{0}{4}: {5:0.#} {6}{0}{7}: {8:0.#} {9}", Environment.NewLine, Localizer.String.MemoryOptimized.ToUpper(Localizer.Culture), Localizer.String.Reason, reason.GetString(), Localizer.String.PhysicalMemory, physicalReleased.Key, physicalReleased.Value, Localizer.String.VirtualMemory, virtualReleased.Key, virtualReleased.Value)
+                        : string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3}{0}{4}: {5:0.#} {6}", Environment.NewLine, Localizer.String.MemoryOptimized.ToUpper(Localizer.Culture), Localizer.String.Reason, reason.GetString(), Localizer.String.PhysicalMemory, physicalReleased.Key, physicalReleased.Value);
 
                     Notify(message);
                 }
@@ -1255,11 +1302,7 @@ namespace WinMemoryCleaner
                 OptimizationProgressValue = 0;
                 OptimizationProgressTotal = (byte)(new BitArray(new[] { (int)Settings.MemoryAreas }).OfType<bool>().Count(x => x) + 1);
 
-                using (var worker = new BackgroundWorker())
-                {
-                    worker.DoWork += (sender, e) => Optimize(reason);
-                    worker.RunWorkerAsync();
-                }
+                ThreadPool.QueueUserWorkItem(_ => Optimize(reason));
             }
             catch (Exception e)
             {
@@ -1284,7 +1327,7 @@ namespace WinMemoryCleaner
 
             if (!IsOptimizationKeyValid)
             {
-                var message = string.Format(Localizer.Culture, Localizer.String.HotkeyIsInUseByWindows, hotKey);
+                var message = string.Format(Localizer.Culture, Localizer.String.HotkeyIsInUseByOperatingSystem, hotKey);
 
                 Logger.Warning(message);
                 NotificationService.Notify(message);

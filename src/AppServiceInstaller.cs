@@ -19,7 +19,7 @@ namespace WinMemoryCleaner
         private readonly ServiceProcessInstaller _processInstaller;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AppServiceInstaller"/> class.
+        /// Initializes a new instance of the <see cref="AppServiceInstaller" /> class.
         /// </summary>
         public AppServiceInstaller()
         {
@@ -44,7 +44,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Installs the service
         /// </summary>
-        internal static void Install()
+        public static void Install()
         {
             Uninstall();
 
@@ -67,7 +67,7 @@ namespace WinMemoryCleaner
             // Service recommended settings
             Settings.AutoOptimizationInterval = Settings.AutoOptimizationInterval == 0 ? 24 : Settings.AutoOptimizationInterval;
             Settings.AutoOptimizationMemoryUsage = Settings.AutoOptimizationMemoryUsage == 0 ? 10 : Settings.AutoOptimizationMemoryUsage;
-            Settings.MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.ProcessesWorkingSet | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemWorkingSet;
+            Settings.MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedFileCache | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.RegistryCache | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemFileCache | Enums.Memory.Areas.WorkingSet;
             Settings.RunOnPriority = Enums.Priority.Low;
             Settings.RunOnStartup = false;
             Settings.ShowOptimizationNotifications = false;
@@ -103,11 +103,11 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Uninstalls the service
         /// </summary>
-        internal static void Uninstall()
+        public static void Uninstall()
         {
             if (AppService.IsInstalled)
             {
-                // Processess that blocks uninstallation
+                // Processess that blocks service refresh/uninstallation
                 var processesToKill = new[] { "mmc", "procexp", "procexp64", "taskmgr" };
                 var processes = Process.GetProcesses().Where(process => process != null && processesToKill.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase));
 

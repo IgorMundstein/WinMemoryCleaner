@@ -26,7 +26,7 @@ namespace WinMemoryCleaner
             CloseToTheNotificationArea = false;
             CompactMode = false;
             Language = Constants.Windows.Locale.Name.English;
-            MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.ProcessesWorkingSet | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemWorkingSet;
+            MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedFileCache | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.RegistryCache | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemFileCache | Enums.Memory.Areas.WorkingSet;
             OptimizationKey = Key.M;
             OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Shift;
             ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);

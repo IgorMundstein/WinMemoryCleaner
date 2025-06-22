@@ -10,6 +10,19 @@ namespace WinMemoryCleaner
     public static class ExtensionMethods
     {
         /// <summary>
+        /// Capitalizes the first letter and converts the rest of the characters to lowercase.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string Capitalize(this string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return value;
+            
+            return Localizer.Culture.TextInfo.ToUpper(value[0]) + Localizer.Culture.TextInfo.ToLower(value.Substring(1));
+        }
+
+        /// <summary>
         /// Gets the default value.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -38,6 +51,62 @@ namespace WinMemoryCleaner
             while (exception != null);
 
             return string.Join(". ", messages.Distinct());
+        }
+
+        /// <summary>
+        /// Gets the reason string.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static string GetString(this Enums.Memory.Optimization.Reason value)
+        {
+            switch (value)
+            {
+                case Enums.Memory.Optimization.Reason.LowMemory:
+                    return Localizer.String.LowMemory;
+
+                case Enums.Memory.Optimization.Reason.Manual:
+                    return Localizer.String.Manual;
+
+                case Enums.Memory.Optimization.Reason.Schedule:
+                    return Localizer.String.Schedule;
+
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified value is a number.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is a number; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsNumber(this object value)
+        {
+            if (value == null)
+                return false;
+
+            switch (Type.GetTypeCode(value.GetType()))
+            {
+                case TypeCode.Byte:
+                case TypeCode.Decimal:
+                case TypeCode.Double:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.SByte:
+                case TypeCode.Single:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                    return true;
+
+                default:
+                    return false;
+            }
         }
 
         /// <summary>

@@ -174,8 +174,8 @@ namespace WinMemoryCleaner
                     throw new ArgumentNullException("memory");
 
                 _notifyIcon.Text = Settings.ShowVirtualMemory
-                    ? string.Format(Localizer.Culture, "{1}{0}{2}: {3}%{0}{4}: {5}%", Environment.NewLine, Localizer.String.MemoryUsage.ToUpper(Localizer.Culture), Localizer.String.Physical, memory.Physical.Used.Percentage, Localizer.String.Virtual, memory.Virtual.Used.Percentage)
-                    : string.Format(Localizer.Culture, "{1}{0}{2}: {3}%", Environment.NewLine, Localizer.String.MemoryUsage.ToUpper(Localizer.Culture), Localizer.String.Physical, memory.Physical.Used.Percentage);
+                    ? string.Format(Localizer.Culture, "{1}{0}{2}: {3}%{0}{4}: {5}%", Environment.NewLine, Localizer.String.MemoryUsage.ToUpper(Localizer.Culture), Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage, Localizer.String.VirtualMemory, memory.Virtual.Used.Percentage)
+                    : string.Format(Localizer.Culture, "{1}{0}{2}: {3}%", Environment.NewLine, Localizer.String.MemoryUsage.ToUpper(Localizer.Culture), Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage);
             }
             catch
             {

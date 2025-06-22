@@ -17,7 +17,7 @@ namespace WinMemoryCleaner
         private readonly Timer _timer = new Timer(60000);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AppService"/> class.
+        /// Initializes a new instance of the <see cref="AppService" /> class.
         /// </summary>
         public AppService()
         {
@@ -40,7 +40,7 @@ namespace WinMemoryCleaner
         /// <value>
         ///   <c>true</c> if the service is installed; otherwise, <c>false</c>.
         /// </value>
-        internal static bool IsInstalled
+        public static bool IsInstalled
         {
             get
             {
@@ -49,10 +49,36 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public static Enums.ServiceStatus Status
+        {
+            get
+            {
+                try
+                {
+                    using (var service = ServiceController.GetServices().First(sc => string.Equals(sc.ServiceName, Constants.App.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        service.Refresh();
+
+                        return (Enums.ServiceStatus)service.Status;
+                    }
+                } 
+                catch
+                {
+                    return Enums.ServiceStatus.NotInstalled;
+                }
+            }
+        }
+
+        /// <summary>
         /// Called when debugging the service
         /// </summary>
         /// <param name="args"></param>
-        internal void OnDebug(string[] args)
+        public void OnDebug(string[] args)
         {
             OnStart(args);
             OnTimer(null, null);
