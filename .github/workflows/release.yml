@@ -38,13 +38,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Debug step: Show current working directory and list root contents
-      - name: Debug: List repo root directory
-        shell: pwsh
-        run: |
-          Write-Host "Current directory: $(Get-Location)"
-          Get-ChildItem -Path $PWD
-
       # Debug step: List contents of ci/net-framework folder to verify installer presence
       - name: Debug: List ci/net-framework directory contents
         shell: pwsh
