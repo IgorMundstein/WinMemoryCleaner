@@ -3,8 +3,8 @@ name: Build, Tag, and Draft Release
 on:
   push:
     branches:
-      - main        # Production release branch
-      - develop     # Development branch
+      - main
+      - develop
   workflow_dispatch:
     inputs:
       environment:
@@ -17,13 +17,12 @@ on:
           - release
 
 permissions:
-  contents: write   # Needed for pushing tags and creating releases
+  contents: write
   pull-requests: read
 
 jobs:
   build:
-    runs-on: windows-2019    # .NET Framework 4.0+ is included
-
+    runs-on: windows-2019
     env:
       CONFIGURATION: Release
 
