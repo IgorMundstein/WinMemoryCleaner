@@ -30,13 +30,15 @@ jobs:
       new_tag: ${{ steps.bump.outputs.new_tag }}
 
     steps:
-      # Checkout repository with full git history (needed for version tags)
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # List files to confirm solution file presence
-      - name: List files in repo after checkout
+      # Ensure MSBuild is available on PATH
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: List files in repo after checkout (debug)
         shell: pwsh
         run: |
           Get-ChildItem -Recurse
@@ -60,7 +62,7 @@ jobs:
       - name: Build solution
         shell: pwsh
         run: |
-          msbuild src/WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
+          msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
 
       # Only zip and sign executable for production ("main" branch)
       - name: Zip executable (release only)
