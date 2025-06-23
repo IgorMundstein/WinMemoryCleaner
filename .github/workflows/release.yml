@@ -1,4 +1,4 @@
-name: Build WinMemoryCleaner (.NET 4.0 workaround)
+name: Build WinMemoryCleaner (.NET 4.0 ReferenceAssemblies NuGet)
 
 on:
   push:
@@ -8,14 +8,9 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Extract .NET 4.0 Reference Assemblies
-        shell: pwsh
-        run: |
-          Expand-Archive -Path "ci/net-framework/4.0.zip" -DestinationPath "ci/net-framework/extracted"
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
@@ -24,13 +19,9 @@ jobs:
         shell: pwsh
         run: nuget restore src\WinMemoryCleaner.sln
 
-      - name: Build solution (.NET 4.0 workaround)
+      - name: Build solution
         shell: pwsh
-        run: |
-          msbuild src\WinMemoryCleaner.sln `
-            /p:Configuration=Release `
-            /p:Platform="Any CPU" `
-            /p:TargetFrameworkRootPath="${{ github.workspace }}\ci\net-framework\extracted\"
+        run: msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Upload build artifacts (if build succeeds)
         uses: actions/upload-artifact@v4
