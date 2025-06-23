@@ -46,8 +46,13 @@ jobs:
       # Install .NET Framework 4.0 Developer Pack for reference assemblies
       # GitHub runners do not include this targeting pack by default
       - name: Install .NET Framework 4.0 Developer Pack
+        shell: pwsh
         run: |
-          Start-Process -FilePath ci\net-framework\4.0.exe -ArgumentList '/q /norestart' -Wait
+          # Ensure working directory is repo root
+          Set-Location ${{ github.workspace }}
+      
+          # Run the installer silently with no restart
+          Start-Process -FilePath './ci/net-framework/4.0.exe' -ArgumentList '/q', '/norestart' -Wait
 
       # Automatically bump minor version tag based on existing tags (x.y format)
       - name: Bump minor version tag
