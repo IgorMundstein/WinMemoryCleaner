@@ -38,12 +38,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Debug step: List contents of ci/net-framework folder to verify installer presence
-      - name: Debug: List ci/net-framework directory contents
-        shell: pwsh
-        run: |
-          Get-ChildItem -Path "$PWD/ci/net-framework"
-
       # Check if .NET Framework 4.0 offline installer exists, fail if not found
       - name: Verify .NET Framework installer presence
         shell: pwsh
