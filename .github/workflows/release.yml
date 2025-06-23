@@ -1,12 +1,10 @@
 name: Build, Tag, and Draft Release
 
-# Trigger on push to main and develop branches
-# Also allow manual trigger with environment choice
 on:
   push:
     branches:
-      - main    # Release branch
-      - develop # Development branch (no signing, no release draft)
+      - main
+      - develop
   workflow_dispatch:
     inputs:
       environment:
@@ -18,7 +16,6 @@ on:
           - develop
           - release
 
-# Set repository permissions for this workflow
 permissions:
   contents: write   # Needed to push tags and create releases
   pull-requests: read
@@ -26,7 +23,6 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
-
     env:
       CONFIGURATION: Release
 
@@ -34,27 +30,40 @@ jobs:
       new_tag: ${{ steps.bump.outputs.new_tag }}
 
     steps:
-      # Checkout full repo history including tags for version bumping
+      # Checkout the repo with full history (needed for tags and all files)
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      # Debug: show current directory and list root contents
+      - name: Debug: List repo root directory
+        shell: pwsh
+        run: |
+          Write-Host "Current directory: $(Get-Location)"
+          Get-ChildItem -Path $PWD
+
+      # Debug: list ci/net-framework folder contents to verify installer is present
+      - name: Debug: List ci/net-framework directory contents
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path "$PWD/ci/net-framework"
+
+      # Install .NET Framework 4.0 Developer Pack (needed for building .NET Framework 4.0 projects)
+      # This runs on both main and develop branches for now (you can limit if needed)
+      - name: Install .NET Framework 4.0 Developer Pack
+        shell: pwsh
+        run: |
+          # Ensure we are at repo root where the ci folder exists
+          Set-Location ${{ github.workspace }}
+
+          # Run the offline installer silently, wait for completion
+          Start-Process -FilePath "$PWD/ci/net-framework/4.0.exe" -ArgumentList '/q', '/norestart' -Wait
 
       # Setup MSBuild environment for building .NET Framework projects
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      # Install .NET Framework 4.0 Developer Pack for reference assemblies
-      # GitHub runners do not include this targeting pack by default
-      - name: Install .NET Framework 4.0 Developer Pack
-        shell: pwsh
-        run: |
-          # Ensure working directory is repo root
-          Set-Location ${{ github.workspace }}
-      
-          # Run the installer silently with no restart
-          Start-Process -FilePath './ci/net-framework/4.0.exe' -ArgumentList '/q', '/norestart' -Wait
-
-      # Automatically bump minor version tag based on existing tags (x.y format)
+      # Bump the minor version tag automatically based on existing tags in format x.y
       - name: Bump minor version tag
         id: bump
         shell: pwsh
@@ -69,30 +78,30 @@ jobs:
           }
           Write-Host "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      # Debug step: List files in src folder to verify solution location
-      - name: List files in src folder
-        run: dir src
-
-      # Build the solution with Release configuration targeting Any CPU platform
+      # Build the solution located in src folder, with Release config and Any CPU platform
       - name: Build solution
+        shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      # Zip executable only on release (main branch)
+      # Zip executable (only for main branch)
       - name: Zip executable (release only)
         if: github.ref == 'refs/heads/main'
+        shell: pwsh
         run: Compress-Archive -Path src\bin\Release\WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
-      # Import code signing certificate (release only)
+      # Import signing certificate (only for main branch)
       - name: Import signing certificate (release only)
         if: github.ref == 'refs/heads/main'
+        shell: pwsh
         run: |
           echo "${{ secrets.SIGNING_CERT }}" | Out-File encoded.txt -Encoding ascii
           certutil -decode encoded.txt cert.pfx
           Remove-Item encoded.txt
 
-      # Sign the executable using signtool (release only)
+      # Sign executable (only for main branch)
       - name: Sign executable (release only)
         if: github.ref == 'refs/heads/main'
+        shell: pwsh
         run: |
           & "${env:ProgramFiles(x86)}\Windows Kits\10\bin\x64\signtool.exe" sign `
             /f cert.pfx `
@@ -101,22 +110,22 @@ jobs:
             /td sha256 /fd sha256 `
             src\bin\Release\WinMemoryCleaner.exe
 
-      # Cleanup certificate file after signing (release only)
+      # Cleanup signing certificate file (only for main branch)
       - name: Cleanup certificate (release only)
         if: github.ref == 'refs/heads/main'
+        shell: pwsh
         run: Remove-Item cert.pfx
 
-      # Create and push the new git tag for both develop and main branches
+      # Create and push tag (both main and develop branches)
       - name: Create and push tag
+        shell: pwsh
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git tag ${{ steps.bump.outputs.new_tag }}
           git push origin ${{ steps.bump.outputs.new_tag }}
 
-      # Upload artifacts:
-      # - always upload EXE
-      # - upload ZIP only on main (release) branch
+      # Upload build artifacts (exe and zip only on main branch)
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -128,12 +137,12 @@ jobs:
   release:
     needs: build
     runs-on: windows-latest
-    if: github.ref == 'refs/heads/main'  # Only run on release branch
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v3
 
-      # Draft GitHub release using Release Drafter and your config file
+      # Draft GitHub release using Release Drafter with your config file
       - name: Draft Release using Release Drafter
         uses: release-drafter/release-drafter@v5
         with:
@@ -141,7 +150,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Upload release assets as draft and mark as latest release
+      # Upload release assets as draft and mark as latest
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
         with:
