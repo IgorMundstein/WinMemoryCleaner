@@ -1,10 +1,12 @@
 name: Build, Tag, and Draft Release
 
+# Triggers the workflow on push to main or develop branches
+# and also allows manual triggering with environment choice.
 on:
   push:
     branches:
-      - main
-      - develop
+      - main        # Production release branch
+      - develop     # Development branch
   workflow_dispatch:
     inputs:
       environment:
@@ -16,6 +18,7 @@ on:
           - develop
           - release
 
+# Permissions needed for the workflow
 permissions:
   contents: write   # Needed to push tags and create releases
   pull-requests: read
@@ -30,40 +33,50 @@ jobs:
       new_tag: ${{ steps.bump.outputs.new_tag }}
 
     steps:
-      # Checkout the repo with full history (needed for tags and all files)
+      # Checkout repository with full git history to access tags
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # Debug: show current directory and list root contents
+      # Debug step: Show current working directory and list root contents
       - name: Debug: List repo root directory
         shell: pwsh
         run: |
           Write-Host "Current directory: $(Get-Location)"
           Get-ChildItem -Path $PWD
 
-      # Debug: list ci/net-framework folder contents to verify installer is present
+      # Debug step: List contents of ci/net-framework folder to verify installer presence
       - name: Debug: List ci/net-framework directory contents
         shell: pwsh
         run: |
           Get-ChildItem -Path "$PWD/ci/net-framework"
 
-      # Install .NET Framework 4.0 Developer Pack (needed for building .NET Framework 4.0 projects)
-      # This runs on both main and develop branches for now (you can limit if needed)
+      # Check if .NET Framework 4.0 offline installer exists, fail if not found
+      - name: Verify .NET Framework installer presence
+        shell: pwsh
+        run: |
+          if (Test-Path 'ci\net-framework\4.0.exe') {
+            Write-Host "Installer found."
+          } else {
+            Write-Error "Installer not found at ci\\net-framework\\4.0.exe"
+            exit 1
+          }
+
+      # Install .NET Framework 4.0 Developer Pack silently (required for build)
       - name: Install .NET Framework 4.0 Developer Pack
         shell: pwsh
         run: |
-          # Ensure we are at repo root where the ci folder exists
+          # Change directory to repo root (where ci folder is)
           Set-Location ${{ github.workspace }}
 
-          # Run the offline installer silently, wait for completion
-          Start-Process -FilePath "$PWD/ci/net-framework/4.0.exe" -ArgumentList '/q', '/norestart' -Wait
+          # Run the offline installer silently and wait for completion
+          Start-Process -FilePath 'ci\net-framework\4.0.exe' -ArgumentList '/q', '/norestart' -Wait
 
-      # Setup MSBuild environment for building .NET Framework projects
+      # Setup MSBuild environment to build .NET projects
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      # Bump the minor version tag automatically based on existing tags in format x.y
+      # Bump the minor version tag automatically by looking at existing tags (x.y format)
       - name: Bump minor version tag
         id: bump
         shell: pwsh
@@ -78,18 +91,20 @@ jobs:
           }
           Write-Host "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      # Build the solution located in src folder, with Release config and Any CPU platform
+      # Build the solution located in src folder with Release config and Any CPU platform
       - name: Build solution
         shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
+        run: |
+          msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      # Zip executable (only for main branch)
+      # Zip the executable only on main branch (release)
       - name: Zip executable (release only)
         if: github.ref == 'refs/heads/main'
         shell: pwsh
-        run: Compress-Archive -Path src\bin\Release\WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
+        run: |
+          Compress-Archive -Path src\bin\Release\WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
-      # Import signing certificate (only for main branch)
+      # Import signing certificate (only on main branch)
       - name: Import signing certificate (release only)
         if: github.ref == 'refs/heads/main'
         shell: pwsh
@@ -98,7 +113,7 @@ jobs:
           certutil -decode encoded.txt cert.pfx
           Remove-Item encoded.txt
 
-      # Sign executable (only for main branch)
+      # Sign the executable (only on main branch)
       - name: Sign executable (release only)
         if: github.ref == 'refs/heads/main'
         shell: pwsh
@@ -110,13 +125,13 @@ jobs:
             /td sha256 /fd sha256 `
             src\bin\Release\WinMemoryCleaner.exe
 
-      # Cleanup signing certificate file (only for main branch)
+      # Cleanup signing certificate file (only on main branch)
       - name: Cleanup certificate (release only)
         if: github.ref == 'refs/heads/main'
         shell: pwsh
         run: Remove-Item cert.pfx
 
-      # Create and push tag (both main and develop branches)
+      # Create and push new tag for both main and develop branches
       - name: Create and push tag
         shell: pwsh
         run: |
@@ -134,6 +149,7 @@ jobs:
             src\bin\Release\WinMemoryCleaner.exe
             WinMemoryCleaner.zip
 
+  # Release job, depends on build job and runs only on main branch
   release:
     needs: build
     runs-on: windows-latest
