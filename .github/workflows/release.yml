@@ -1,44 +1,57 @@
 name: Build, Tag, and Draft Release
 
-# Trigger workflow on push to main or develop, and allow manual trigger from UI
+# Workflow triggers:
+# - Automatically runs when code is pushed to main or develop branches
+# - Also allows manual execution from GitHub Actions tab via "Run workflow" button
 on:
   push:
     branches:
-      - main
-      - develop
-  workflow_dispatch:  # Enables manual trigger in Actions tab
+      - main        # Production-ready branch, triggers full release build
+      - develop     # Development branch, triggers build without signing or release
+  workflow_dispatch:   # Enables manual trigger in Actions tab for testing or manual runs
 
+# Define default permissions for GITHUB_TOKEN during workflow runs.
+# 'contents: write' is needed for pushing git tags and creating releases.
 permissions:
-  contents: write   # Needed for pushing tags and creating releases
+  contents: write
   pull-requests: read
 
 jobs:
   build:
+    # Use Windows runner because the project is .NET Framework targeting Windows OS.
     runs-on: windows-latest
+    
+    # Environment variable for build configuration to be used in MSBuild command
     env:
       CONFIGURATION: Release
 
-    # Pass new_tag output to next jobs
+    # Export the new_tag value from the bump step so it can be used by other jobs
     outputs:
       new_tag: ${{ steps.bump.outputs.new_tag }}
 
     steps:
-      # Checkout the repo with full history, needed for tags
+      # Step 1: Check out repository source code including full history (fetch-depth: 0)
+      # Full git history is required to correctly fetch tags for version bumping.
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # Setup MSBuild environment to build the solution
+      # Step 2: Set up MSBuild on Windows runner to build .NET Framework projects
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      # Automatically bump minor version tag based on existing tags like 1.0, 1.1, etc.
+      # Step 3: Bump the minor version tag based on the latest existing tag in format X.Y
+      # Logic:
+      # - Fetch all tags from remote
+      # - Select tags that match the semantic version pattern (e.g. 1.0, 1.1, 2.0)
+      # - If none found, start at 1.0
+      # - Otherwise, increment minor version of latest tag by 1 (e.g., 1.0 -> 1.1)
+      # - Set new_tag output variable for subsequent steps and jobs
       - name: Bump minor version tag
         id: bump
         shell: pwsh
         run: |
           git fetch --tags
-          # Get tags matching x.y format sorted by creation date descending
           $tags = git tag --sort=-creatordate | Where-Object { $_ -match '^[0-9]+\.[0-9]+$' }
           if (-not $tags) {
             $newTag='1.0'
@@ -46,23 +59,26 @@ jobs:
             $parts = ($tags[0]).Split('.')
             $newTag = "{0}.{1}" -f $parts[0],([int]$parts[1]+1)
           }
-          # Set the output for next steps
           Write-Host "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      # Debug: List files in src folder to confirm location of solution file
+      # Step 4: Debug step - list contents of src folder to verify solution file path
       - name: List files in src folder
         run: dir src
 
-      # Build the solution file with Release config and Any CPU platform
+      # Step 5: Build the WinMemoryCleaner solution (.sln) in the src folder
+      # Use Release configuration and Any CPU platform to maximize compatibility
+      # Important: Correct relative path to .sln avoids MSBuild errors
       - name: Build solution
         run: msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      # Zip the executable only on main branch (release builds)
+      # Step 6: For release builds (main branch), zip the executable for artifact upload and release packaging
+      # This step is skipped for develop branch to speed up CI and reduce storage usage
       - name: Zip executable (release only)
         if: github.ref == 'refs/heads/main'
         run: Compress-Archive -Path src\bin\Release\WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
-      # Import the signing certificate only on main branch (release)
+      # Step 7: Import the signing certificate from GitHub secrets on main branch only (release builds)
+      # The certificate is stored base64 encoded in the SIGNING_CERT secret for security
       - name: Import signing certificate (release only)
         if: github.ref == 'refs/heads/main'
         run: |
@@ -70,7 +86,9 @@ jobs:
           certutil -decode encoded.txt cert.pfx
           Remove-Item encoded.txt
 
-      # Sign the executable only on main branch (release)
+      # Step 8: Sign the executable with the imported certificate using signtool.exe
+      # Applies SHA256 signature and timestamps using DigiCert's timestamp server
+      # Only runs on main branch for production release builds
       - name: Sign executable (release only)
         if: github.ref == 'refs/heads/main'
         run: |
@@ -81,13 +99,62 @@ jobs:
             /td sha256 /fd sha256 `
             src\bin\Release\WinMemoryCleaner.exe
 
-      # Cleanup the certificate after signing to avoid leakage
+      # Step 9: Cleanup signing certificate file after use to prevent leaks
       - name: Cleanup certificate (release only)
         if: github.ref == 'refs/heads/main'
         run: Remove-Item cert.pfx
 
-      # Create and push the new tag (for both main and develop branches)
+      # Step 10: Create and push the new git tag reflecting the new version
+      # Configures git author info for automated push
+      # Tags are pushed for both main and develop branches
       - name: Create and push tag
         run: |
           git config user.name "github-actions"
-          git config user.email "github-actions@githu
+          git config user.email "github-actions@github.com"
+          git tag ${{ steps.bump.outputs.new_tag }}
+          git push origin ${{ steps.bump.outputs.new_tag }}
+
+      # Step 11: Upload artifacts to GitHub Actions for later download or use in release job
+      # Upload both the executable (always) and the zip (only created for main branch)
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: built
+          path: |
+            src\bin\Release\WinMemoryCleaner.exe
+            WinMemoryCleaner.zip
+
+  release:
+    # This job depends on the build job finishing successfully
+    needs: build
+    # Run only on Windows runner to be consistent with build environment
+    runs-on: windows-latest
+    # Only run on main branch (production/release branch)
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      # Step 1: Checkout repository code
+      - uses: actions/checkout@v3
+
+      # Step 2: Draft a GitHub release using the Release Drafter action
+      # Reads from release-drafter.yml config file in the repo root or .github folder
+      # Automatically drafts release notes with categorized changes based on PR labels
+      - name: Draft Release using Release Drafter
+        uses: release-drafter/release-drafter@v5
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 3: Upload the built artifacts to the release draft and mark it as the latest
+      # Sets draft=true to avoid immediately publishing the release
+      # 'make_latest: true' marks this as the latest release on GitHub UI
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.build.outputs.new_tag }}
+          files: |
+            ./src/bin/Release/WinMemoryCleaner.exe
+            ./WinMemoryCleaner.zip
+          draft: true
+          make_latest: true
