@@ -55,5 +55,6 @@
   "UseHotkey": "gunakan tombol pintas",
   "VirtualMemory": "memori virtual",
   "WhenFreeMemoryIsBelow": "ketika sisa memori dibawah {0}%",
+  "WinGetDownload": "winget mengunduh versi {0} ke {1}",
   "WorkingSet": "working set"
 }

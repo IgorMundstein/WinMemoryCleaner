@@ -55,5 +55,6 @@
   "UseHotkey": "kısayol tuşu kullan",
   "VirtualMemory": "sanal bellek",
   "WhenFreeMemoryIsBelow": "boş bellek {0}% altına düştüğünde",
+  "WinGetDownload": "winget, {0} sürümünü {1} konumuna indirdi",
   "WorkingSet": "çalışma kümesi"
 }

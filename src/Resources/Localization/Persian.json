@@ -55,5 +55,6 @@
   "UseHotkey": "استفاده از کلید میانبر",
   "VirtualMemory": "حافظه مجازی",
   "WhenFreeMemoryIsBelow": "وقتی حافظه آزاد کمتر از {0}% باشد",
+  "WinGetDownload": "ویندگت نسخه {0} را به {1} دانلود کرد",
   "WorkingSet": "مجموعه کاری"
 }

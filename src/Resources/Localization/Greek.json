@@ -55,5 +55,6 @@
   "UseHotkey": "χρήση πλήκτρου πρόσβασης",
   "VirtualMemory": "εικονική μνήμη",
   "WhenFreeMemoryIsBelow": "όταν η ελεύθερη μνήμη είναι λιγότερη από {0}%",
+  "WinGetDownload": "το winget κατέβασε την έκδοση {0} στο {1}",
   "WorkingSet": "ενεργό σύνολο"
 }

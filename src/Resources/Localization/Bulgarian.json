@@ -39,7 +39,7 @@
   "Remove": "премахни",
   "RepositoryInfo": "документация, проблеми и предложения.",
   "RunOnLowPriority": "изпълни с нисък приоритет",
-  "RunOnStartup": "включи заедно с windows",
+  "RunOnStartup": "стартиране при зареждане на системата",
   "Schedule": "график",
   "Seconds": "секунди",
   "Settings": "настройки",
@@ -55,5 +55,6 @@
   "UseHotkey": "използване на клавишна комбинация",
   "VirtualMemory": "виртуална памет",
   "WhenFreeMemoryIsBelow": "когато свободната памет падне под {0}%",
+  "WinGetDownload": "winget изтегли версия {0} в {1}",
   "WorkingSet": "работен набор"
 }

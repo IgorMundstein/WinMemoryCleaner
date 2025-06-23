@@ -55,5 +55,6 @@
   "UseHotkey": "uporabi bližnjico",
   "VirtualMemory": "virtualni pomnilnik",
   "WhenFreeMemoryIsBelow": "ko je prosti pomnilnik pod {0}%",
+  "WinGetDownload": "winget je prenesel različico {0} v {1}",
   "WorkingSet": "delovni nabor"
 }

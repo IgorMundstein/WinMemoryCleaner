@@ -78,7 +78,7 @@ namespace WinMemoryCleaner
                 App.ReleaseMemory();
             }
             else
-                Application.Current.Shutdown();
+                App.Shutdown();
         }
 
         /// <summary>
@@ -143,7 +143,7 @@ namespace WinMemoryCleaner
                 else
                 {
                     Thread.Sleep(1000);
-                    Application.Current.Shutdown();
+                    App.Shutdown();
                 }
             }
             else

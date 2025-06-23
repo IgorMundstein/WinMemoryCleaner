@@ -112,7 +112,7 @@ namespace WinMemoryCleaner
             // Exit
             _notifyIcon.ContextMenuStrip.Items.Add(Localizer.String.Exit, null, (sender, args) =>
             {
-                Application.Current.Shutdown();
+                App.Shutdown();
             });
 
             Update(new Memory());

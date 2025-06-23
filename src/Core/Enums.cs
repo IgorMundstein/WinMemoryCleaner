@@ -89,6 +89,7 @@ namespace WinMemoryCleaner
         {
             App,
             Installation,
+            Package,
             Service,
             Silent,
             Uninstallation

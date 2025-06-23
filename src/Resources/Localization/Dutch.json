@@ -55,5 +55,6 @@
   "UseHotkey": "gebruik sneltoets",
   "VirtualMemory": "virtueel geheugen",
   "WhenFreeMemoryIsBelow": "wanneer het vrije geheugen lager is dan {0}%",
+  "WinGetDownload": "winget heeft versie {0} gedownload naar {1}",
   "WorkingSet": "werkset"
 }

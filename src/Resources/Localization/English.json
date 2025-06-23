@@ -55,5 +55,6 @@
   "UseHotkey": "use hotkey",
   "VirtualMemory": "virtual memory",
   "WhenFreeMemoryIsBelow": "when free memory is below {0}%",
+  "WinGetDownload": "winget downloaded version {0} to {1}",
   "WorkingSet": "working set"
 }

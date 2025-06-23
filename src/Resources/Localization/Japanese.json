@@ -55,5 +55,6 @@
   "UseHotkey": "ホットキーを使う",
   "VirtualMemory": "仮想メモリ",
   "WhenFreeMemoryIsBelow": "フリーメモリが {0}% 以下になったら",
+  "WinGetDownload": "winget はバージョン {0} を {1} にダウンロードしました",
   "WorkingSet": "ワーキングセット"
 }

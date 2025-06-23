@@ -1,8 +1,0 @@
-PackageIdentifier: IgorMundstein.WinMemoryCleaner
-PackageVersion: 2.8
-InstallerType: portable
-Installers:
-  - Architecture: x64
-    InstallerUrl: https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe
-    InstallerSha256: 5CF342A7237A0013FEB61B26A768C103E32C820A5E399818EEADF34DB039971E
-    Scope: user

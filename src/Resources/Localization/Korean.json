@@ -55,5 +55,6 @@
   "UseHotkey": "단축키 사용",
   "VirtualMemory": "가상 메모리",
   "WhenFreeMemoryIsBelow": "사용 가능한 메모리가 {0}% 미만인 경우",
+  "WinGetDownload": "winget이(가) 버전 {0}을(를) {1}에 다운로드했습니다",
   "WorkingSet": "작업 집합"
 }

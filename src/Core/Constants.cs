@@ -20,10 +20,25 @@ namespace WinMemoryCleaner
             public const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization.";
             public const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
+            public const string VersionFormat = "{0}.{1}";
 
             public static class Author
             {
                 public const string Name = "Igor Mundstein";
+            }
+
+            public static class CommandLineArgument
+            {
+                public const string Install = "Install";
+                public const string Package = "Package";
+                public const string Service = "Service";
+                public const string Uninstall = "Uninstall";
+                public const string WinGet = "WinGet";
+            }
+
+            public static class Defaults
+            {
+                public static readonly string Path = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             }
 
             public static class Log
@@ -53,6 +68,7 @@ namespace WinMemoryCleaner
                     public const string MemoryAreas = "MemoryAreas";
                     public const string OptimizationKey = "OptimizationKey";
                     public const string OptimizationModifiers = "OptimizationModifiers";
+                    public const string Path = "Path";
                     public const string RunOnPriority = "RunOnPriority";
                     public const string RunOnStartup = "RunOnStartup";
                     public const string ShowOptimizationNotifications = "ShowOptimizationNotifications";

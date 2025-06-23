@@ -85,6 +85,8 @@ namespace WinMemoryCleaner
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.OptimizationModifiers, OptimizationModifiers), _culture), out optimizationModifiers) && optimizationModifiers.IsValid())
                             OptimizationModifiers = optimizationModifiers;
 
+                        Path = Convert.ToString(key.GetValue(Constants.App.Registry.Name.Path, Path), _culture);
+
                         Enums.Priority runOnPriority;
 
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.RunOnPriority, RunOnPriority), _culture), out runOnPriority) && runOnPriority.IsValid())
@@ -159,6 +161,8 @@ namespace WinMemoryCleaner
 
         public static ModifierKeys OptimizationModifiers { get; set; }
 
+        public static string Path { get; set; }
+
         public static SortedSet<string> ProcessExclusionList { get; private set; }
 
         public static Enums.Priority RunOnPriority { get; set; }
@@ -214,7 +218,7 @@ namespace WinMemoryCleaner
                         key.SetValue(Constants.App.Registry.Name.MemoryAreas, (int)MemoryAreas);
                         key.SetValue(Constants.App.Registry.Name.OptimizationKey, (int)OptimizationKey);
                         key.SetValue(Constants.App.Registry.Name.OptimizationModifiers, (int)OptimizationModifiers);
-                        key.SetValue(Constants.App.Registry.Name.RunOnPriority, (int)RunOnPriority);
+                        key.SetValue(Constants.App.Registry.Name.Path, Path);
                         key.SetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications ? 1 : 0);
                         key.SetValue(Constants.App.Registry.Name.ShowVirtualMemory, ShowVirtualMemory ? 1 : 0);

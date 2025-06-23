@@ -55,5 +55,6 @@
   "UseHotkey": "использовать горячую клавишу",
   "VirtualMemory": "виртуальная память",
   "WhenFreeMemoryIsBelow": "когда свободная память ниже {0}%",
+  "WinGetDownload": "winget загрузил версию {0} в {1}",
   "WorkingSet": "рабочий набор"
 }

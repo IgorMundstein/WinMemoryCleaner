@@ -101,19 +101,20 @@
   - `(80% - 89%)` <picture><img src="./.github/images/memory-usage-warning.png"></picture>
   - `(90% - 100%)` <picture><img src="./.github/images/memory-usage-danger.png"></picture>
 
-## 🔳 Command arguments (NO GUI)
+## 🔳 Command‑line arguments (no GUI)
 
-You can use the following arguments to run the app silently.
+You can use the following command‑line arguments to run the optimization silently.
 
+🔳 Memory areas
 - `/CombinedPageList`
 - `/ModifiedFileCache`
 - `/ModifiedPageList`
 - `/RegistryCache`
-- `/StandbyList` OR `/StandbyListLowPriority`
+- `/StandbyList` **OR** `/StandbyListLowPriority`
 - `/SystemFileCache`
 - `/WorkingSet`
 
-Shortcut target example
+💡 Shortcut target example
 
 `C:\WinMemoryCleaner.exe /CombinedPageList /ModifiedFileCache /ModifiedPageList /RegistryCache /StandbyList /SystemFileCache /WorkingSet`
 
@@ -123,7 +124,7 @@ You can install and run the app as a service.
 
 To install or uninstall the service, run the app using the `/Install` or `/Uninstall` parameters in a command prompt with administrator privileges.
 
-Example 
+💡 Example 
 
 `C:\WinMemoryCleaner.exe /Install`
 
@@ -152,7 +153,7 @@ The app generates logs in the Windows event
 
 Visual Studio 2022 and newer do not support targeting .NET Framework 4.0. To compile and run the app, follow these steps as a workaround.
 
-1. Download the .NET Framework 4.0 from https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/.github/NET-Framework-4.zip
+1. Download the .NET Framework 4.0 from https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/.packages/NET-Framework/4.0.zip
 2. Once the download is complete, extract the files to the `C:\`
 3. It must replace files in the directory: `C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0`
 4. Open Visual Studio, and you should now see .NET Framework 4.0 as an available target. You will be able to compile and run the app
