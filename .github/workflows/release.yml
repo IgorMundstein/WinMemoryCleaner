@@ -13,10 +13,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Download .NET 4.0 Reference Assemblies
+        shell: pwsh
         run: |
           curl -L -o netfx40.zip "https://github.com/IgorMundstein/WinMemoryCleaner/raw/master/.packages/NET-Framework/4.0.zip"
-          mkdir netfx40
-          tar -xf netfx40.zip -C netfx40
+          Expand-Archive -Path netfx40.zip -DestinationPath netfx40
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
