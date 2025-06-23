@@ -12,11 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download .NET 4.0 Reference Assemblies
+      - name: Extract .NET 4.0 Reference Assemblies
         shell: pwsh
         run: |
-          curl -L -o netfx40.zip "https://github.com/IgorMundstein/WinMemoryCleaner/raw/master/.packages/NET-Framework/4.0.zip"
-          Expand-Archive -Path netfx40.zip -DestinationPath netfx40
+          Expand-Archive -Path "ci/net-framework/4.0.zip" -DestinationPath "ci/net-framework/extracted"
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
@@ -27,7 +26,7 @@ jobs:
           msbuild src\WinMemoryCleaner.sln `
             /p:Configuration=Release `
             /p:Platform="Any CPU" `
-            /p:TargetFrameworkRootPath="${{ github.workspace }}\netfx40\"
+            /p:TargetFrameworkRootPath="${{ github.workspace }}\ci\net-framework\extracted\"
 
       - name: Upload build artifacts (if build succeeds)
         uses: actions/upload-artifact@v4
