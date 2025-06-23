@@ -35,6 +35,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # List files to confirm solution file presence
+      - name: List files in repo after checkout
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse
+
       # Auto-increment minor version (x.y) based on latest tag
       - name: Bump minor version tag
         id: bump
@@ -54,7 +60,7 @@ jobs:
       - name: Build solution
         shell: pwsh
         run: |
-          msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
+          msbuild src/WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
 
       # Only zip and sign executable for production ("main" branch)
       - name: Zip executable (release only)
