@@ -1,7 +1,5 @@
 name: Build, Tag, and Draft Release
 
-# Triggers the workflow on push to main or develop branches
-# and also allows manual triggering with environment choice.
 on:
   push:
     branches:
@@ -18,14 +16,14 @@ on:
           - develop
           - release
 
-# Permissions needed for the workflow
 permissions:
-  contents: write   # Needed to push tags and create releases
+  contents: write   # Needed for pushing tags and creating releases
   pull-requests: read
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019    # Ensures .NET Framework 4.0 is available
+
     env:
       CONFIGURATION: Release
 
@@ -33,36 +31,16 @@ jobs:
       new_tag: ${{ steps.bump.outputs.new_tag }}
 
     steps:
-      # Checkout repository with full git history to access tags
+      # Checkout repository with full git history (required for tags)
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # Check if .NET Framework 4.0 offline installer exists, fail if not found
-      - name: Verify .NET Framework installer presence
-        shell: pwsh
-        run: |
-          if (Test-Path 'ci\net-framework\4.0.exe') {
-            Write-Host "Installer found."
-          } else {
-            Write-Error "Installer not found at ci\\net-framework\\4.0.exe"
-            exit 1
-          }
-
-      # Install .NET Framework 4.0 Developer Pack silently (required for build)
-      - name: Install .NET Framework 4.0 Developer Pack
-        shell: pwsh
-        run: |
-          # Change directory to repo root (where ci folder is)
-          Set-Location ${{ github.workspace }}
-          # Run the offline installer silently and wait for completion
-          Start-Process -FilePath 'ci\net-framework\4.0.exe' -ArgumentList '/q', '/norestart' -Wait
-
-      # Setup MSBuild environment to build .NET projects
+      # Setup MSBuild for building .NET projects
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      # Bump the minor version tag automatically by looking at existing tags (x.y format)
+      # Auto-increment minor version (x.y) based on latest tag
       - name: Bump minor version tag
         id: bump
         shell: pwsh
@@ -77,20 +55,20 @@ jobs:
           }
           Write-Host "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      # Build the solution located in src folder with Release config and Any CPU platform
+      # Build the solution in Release mode for Any CPU
       - name: Build solution
         shell: pwsh
         run: |
           msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      # Zip the executable only on main branch (release)
+      # Only zip and sign executable for production ("main" branch)
       - name: Zip executable (release only)
         if: github.ref == 'refs/heads/main'
         shell: pwsh
         run: |
           Compress-Archive -Path src\bin\Release\WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
-      # Import signing certificate (only on main branch)
+      # Import signing certificate for code signing (main branch only)
       - name: Import signing certificate (release only)
         if: github.ref == 'refs/heads/main'
         shell: pwsh
@@ -99,7 +77,7 @@ jobs:
           certutil -decode encoded.txt cert.pfx
           Remove-Item encoded.txt
 
-      # Sign the executable (only on main branch)
+      # Sign the executable on release (main branch only)
       - name: Sign executable (release only)
         if: github.ref == 'refs/heads/main'
         shell: pwsh
@@ -111,13 +89,13 @@ jobs:
             /td sha256 /fd sha256 `
             src\bin\Release\WinMemoryCleaner.exe
 
-      # Cleanup signing certificate file (only on main branch)
+      # Clean up the certificate file after signing (main branch only)
       - name: Cleanup certificate (release only)
         if: github.ref == 'refs/heads/main'
         shell: pwsh
         run: Remove-Item cert.pfx
 
-      # Create and push new tag for both main and develop branches
+      # Tag and push the new version for both main and develop branches
       - name: Create and push tag
         shell: pwsh
         run: |
@@ -126,7 +104,7 @@ jobs:
           git tag ${{ steps.bump.outputs.new_tag }}
           git push origin ${{ steps.bump.outputs.new_tag }}
 
-      # Upload build artifacts (exe and zip only on main branch)
+      # Upload build artifacts (exe and zip)
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -135,16 +113,15 @@ jobs:
             src\bin\Release\WinMemoryCleaner.exe
             WinMemoryCleaner.zip
 
-  # Release job, depends on build job and runs only on main branch
   release:
     needs: build
-    runs-on: windows-latest
+    runs-on: windows-2019
     if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v3
 
-      # Draft GitHub release using Release Drafter with your config file
+      # Draft GitHub release using Release Drafter config
       - name: Draft Release using Release Drafter
         uses: release-drafter/release-drafter@v5
         with:
@@ -152,7 +129,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Upload release assets as draft and mark as latest
+      # Upload release assets and mark as draft/latest
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
         with:
