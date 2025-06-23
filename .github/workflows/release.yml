@@ -20,6 +20,10 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: nuget restore src\WinMemoryCleaner.sln
+
       - name: Build solution (.NET 4.0 workaround)
         shell: pwsh
         run: |
