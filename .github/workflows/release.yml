@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-2019    # Ensures .NET Framework 4.0 is available
+    runs-on: windows-2019    # .NET Framework 4.0+ is included
 
     env:
       CONFIGURATION: Release
@@ -31,14 +31,10 @@ jobs:
       new_tag: ${{ steps.bump.outputs.new_tag }}
 
     steps:
-      # Checkout repository with full git history (required for tags)
+      # Checkout repository with full git history (needed for version tags)
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      # Setup MSBuild for building .NET projects
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
 
       # Auto-increment minor version (x.y) based on latest tag
       - name: Bump minor version tag
