@@ -1,144 +1,37 @@
-name: Build, Tag, and Draft Release
+name: Build WinMemoryCleaner (.NET 4.0 workaround)
 
 on:
   push:
-    branches:
-      - main
-      - develop
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Choose the environment to deploy (develop or release)'
-        required: true
-        default: 'develop'
-        type: choice
-        options:
-          - develop
-          - release
-
-permissions:
-  contents: write
-  pull-requests: read
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
   build:
     runs-on: windows-2019
-    env:
-      CONFIGURATION: Release
-
-    outputs:
-      new_tag: ${{ steps.bump.outputs.new_tag }}
-
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
-      # Ensure MSBuild is available on PATH
+      - name: Download .NET 4.0 Reference Assemblies
+        run: |
+          curl -L -o netfx40.zip "https://github.com/IgorMundstein/WinMemoryCleaner/raw/master/.packages/NET-Framework/4.0.zip"
+          mkdir netfx40
+          tar -xf netfx40.zip -C netfx40
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      - name: List files in repo after checkout (debug)
+      - name: Build solution (.NET 4.0 workaround)
         shell: pwsh
         run: |
-          Get-ChildItem -Recurse
+          msbuild src\WinMemoryCleaner.sln `
+            /p:Configuration=Release `
+            /p:Platform="Any CPU" `
+            /p:TargetFrameworkRootPath="${{ github.workspace }}\netfx40\"
 
-      # Auto-increment minor version (x.y) based on latest tag
-      - name: Bump minor version tag
-        id: bump
-        shell: pwsh
-        run: |
-          git fetch --tags
-          $tags = git tag --sort=-creatordate | Where-Object { $_ -match '^[0-9]+\.[0-9]+$' }
-          if (-not $tags) {
-            $newTag='1.0'
-          } else {
-            $parts = ($tags[0]).Split('.')
-            $newTag = "{0}.{1}" -f $parts[0],([int]$parts[1]+1)
-          }
-          Write-Host "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-      # Build the solution in Release mode for Any CPU
-      - name: Build solution
-        shell: pwsh
-        run: |
-          msbuild src\WinMemoryCleaner.sln /p:Configuration=Release /p:Platform="Any CPU"
-
-      # Only zip and sign executable for production ("main" branch)
-      - name: Zip executable (release only)
-        if: github.ref == 'refs/heads/main'
-        shell: pwsh
-        run: |
-          Compress-Archive -Path src\bin\Release\WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
-
-      # Import signing certificate for code signing (main branch only)
-      - name: Import signing certificate (release only)
-        if: github.ref == 'refs/heads/main'
-        shell: pwsh
-        run: |
-          echo "${{ secrets.SIGNING_CERT }}" | Out-File encoded.txt -Encoding ascii
-          certutil -decode encoded.txt cert.pfx
-          Remove-Item encoded.txt
-
-      # Sign the executable on release (main branch only)
-      - name: Sign executable (release only)
-        if: github.ref == 'refs/heads/main'
-        shell: pwsh
-        run: |
-          & "${env:ProgramFiles(x86)}\Windows Kits\10\bin\x64\signtool.exe" sign `
-            /f cert.pfx `
-            /p "${{ secrets.SIGNING_PASSWORD }}" `
-            /tr http://timestamp.digicert.com `
-            /td sha256 /fd sha256 `
-            src\bin\Release\WinMemoryCleaner.exe
-
-      # Clean up the certificate file after signing (main branch only)
-      - name: Cleanup certificate (release only)
-        if: github.ref == 'refs/heads/main'
-        shell: pwsh
-        run: Remove-Item cert.pfx
-
-      # Tag and push the new version for both main and develop branches
-      - name: Create and push tag
-        shell: pwsh
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git tag ${{ steps.bump.outputs.new_tag }}
-          git push origin ${{ steps.bump.outputs.new_tag }}
-
-      # Upload build artifacts (exe and zip)
-      - name: Upload artifacts
+      - name: Upload build artifacts (if build succeeds)
         uses: actions/upload-artifact@v4
         with:
-          name: built
+          name: WinMemoryCleaner
           path: |
             src\bin\Release\WinMemoryCleaner.exe
-            WinMemoryCleaner.zip
-
-  release:
-    needs: build
-    runs-on: windows-2019
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - uses: actions/checkout@v3
-
-      # Draft GitHub release using Release Drafter config
-      - name: Draft Release using Release Drafter
-        uses: release-drafter/release-drafter@v5
-        with:
-          config-name: release-drafter.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Upload release assets and mark as draft/latest
-      - name: Upload release assets
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ needs.build.outputs.new_tag }}
-          files: |
-            ./src/bin/Release/WinMemoryCleaner.exe
-            ./WinMemoryCleaner.zip
-          draft: true
-          make_latest: true
