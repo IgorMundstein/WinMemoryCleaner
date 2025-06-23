@@ -1,8 +1,13 @@
-blank_issues_enabled: false
-contact_links:
-  - name: ❓ Question
-    url: https://github.com/IgorMundstein/WinMemoryCleaner/discussions
-    about: Please use Discussions.
-  - name: 🌐 Translation
-    url: https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14
-    about: If you are a native speaker of any language other than English, you can contribute to this project.
+default: false
+labels:
+  - bug
+  - documentation
+  - duplicate
+  - enhancement
+  - false positive
+  - help wanted
+  - invalid
+  - lack of information
+  - question
+  - release
+  - translation
