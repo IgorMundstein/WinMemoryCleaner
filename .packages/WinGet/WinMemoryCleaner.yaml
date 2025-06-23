@@ -1,0 +1,15 @@
+Id: IgorMundstein.WinMemoryCleaner
+Name: Windows Memory Cleaner
+Version: 2.9
+Publisher: Igor Mundstein
+License: GPL-3.0
+Homepage: https://github.com/IgorMundstein/WinMemoryCleaner
+Installers:
+  - Arch: x64
+    Url: https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/2.9/WinMemoryCleaner.exe
+    Sha256: 
+    InstallerType: exe
+    Switches:
+      Silent: /Package
+      SilentWithProgress: /Package
+Description: This free RAM cleaner uses native Windows features to optimize memory areas. It's a compact, portable, and smart application.
