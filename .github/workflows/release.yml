@@ -68,7 +68,6 @@ jobs:
         run: |
           # Change directory to repo root (where ci folder is)
           Set-Location ${{ github.workspace }}
-
           # Run the offline installer silently and wait for completion
           Start-Process -FilePath 'ci\net-framework\4.0.exe' -ArgumentList '/q', '/norestart' -Wait
 
