@@ -255,4 +255,44 @@
   <Import Project="packages\Microsoft.NetFramework.Analyzers.3.3.2\build\Microsoft.NetFramework.Analyzers.targets" Condition="Exists('packages\Microsoft.NetFramework.Analyzers.3.3.2\build\Microsoft.NetFramework.Analyzers.targets')" />
   <Import Project="packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.2\build\Microsoft.CodeAnalysis.FxCopAnalyzers.targets" Condition="Exists('packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.2\build\Microsoft.CodeAnalysis.FxCopAnalyzers.targets')" />
   <Import Project="packages\Microsoft.NETFramework.ReferenceAssemblies.net40.1.0.3\build\Microsoft.NETFramework.ReferenceAssemblies.net40.targets" Condition="Exists('packages\Microsoft.NETFramework.ReferenceAssemblies.net40.1.0.3\build\Microsoft.NETFramework.ReferenceAssemblies.net40.targets')" />
+  <PropertyGroup>
+    <ProgramFilesX86>$([System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)'))</ProgramFilesX86>
+    <NetFramework40RootDir>$(ProgramFilesX86)\Reference Assemblies\Microsoft\Framework\.NETFramework</NetFramework40RootDir>
+    <NetFramework40ReferenceDir>$(NetFramework40RootDir)\v4.0</NetFramework40ReferenceDir>
+    <NetFramework40NuGetDir>$(SolutionDir)packages\Microsoft.NETFramework.ReferenceAssemblies.net40.1.0.3\build\.NETFramework\v4.0</NetFramework40NuGetDir>
+    <NetFramework40FlagFile>$(NetFramework40ReferenceDir)\.net40_reference_installed.flag</NetFramework40FlagFile>
+    <RestartFlag>$(NetFramework40ReferenceDir)\.net40_restart_required.flag</RestartFlag>
+  </PropertyGroup>
+  <Target Name="CheckAdministrator" BeforeTargets="BeforeBuild">
+    <Exec Command="cmd /c echo test > %windir%\temp\admin_check.txt" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="AdminCheckExitCode" />
+    </Exec>
+    <Exec Condition="'$(AdminCheckExitCode)' == '0'" Command="cmd /c del %windir%\temp\admin_check.txt" />
+    <Error Condition="'$(AdminCheckExitCode)' != '0'" Text="WinMemoryCleaner must be built as administrator. Restart Visual Studio as Administrator." />
+  </Target>
+  <Target Name="EnsureNet40ReferenceAssemblies" BeforeTargets="Build" DependsOnTargets="Restore">
+    <PropertyGroup>
+      <_Net40JustInstalled>false</_Net40JustInstalled>
+    </PropertyGroup>
+    <MakeDir Condition="Exists('$(NetFramework40NuGetDir)\mscorlib.dll') AND !Exists('$(NetFramework40FlagFile)') AND !Exists('$(NetFramework40ReferenceDir)')" Directories="$(NetFramework40ReferenceDir)">
+      <Output TaskParameter="DirectoriesCreated" ItemName="CreatedDirs" />
+    </MakeDir>
+    <Exec Condition="Exists('$(NetFramework40NuGetDir)\mscorlib.dll') AND !Exists('$(NetFramework40FlagFile)')" Command="xcopy /E /I /Y /V /F &quot;$(NetFramework40NuGetDir)\*.*&quot; &quot;$(NetFramework40ReferenceDir)\&quot;">
+      <Output TaskParameter="ExitCode" PropertyName="XCopyExitCode" />
+    </Exec>
+    <PropertyGroup Condition="Exists('$(NetFramework40NuGetDir)\mscorlib.dll') AND !Exists('$(NetFramework40FlagFile)')">
+      <_Net40JustInstalled>true</_Net40JustInstalled>
+    </PropertyGroup>
+    <WriteLinesToFile Condition="'$(_Net40JustInstalled)' == 'true'" File="$(NetFramework40FlagFile)" Lines="Installed" />
+    <WriteLinesToFile Condition="'$(_Net40JustInstalled)' == 'true'" File="$(RestartFlag)" Lines="Restart required" Overwrite="true" />
+  </Target>
+  <Target Name="RequireRestartAfterCopy" BeforeTargets="Build" Condition="Exists('$(RestartFlag)')">
+    <Warning Text="The .NET Framework 4.0 reference assemblies were just installed. Please close and restart Visual Studio to load XAML properly, then rebuild. Build stopped intentionally." />
+  </Target>
+  <Target Name="CleanupRestartFlag" BeforeTargets="BeforeBuild" Condition="Exists('$(RestartFlag)')">
+    <Delete Files="$(RestartFlag)" />
+  </Target>
+  <ItemGroup>
+    <Reference Remove="Microsoft.VisualBasic" />
+  </ItemGroup>
 </Project>
