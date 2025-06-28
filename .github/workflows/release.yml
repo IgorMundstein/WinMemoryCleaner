@@ -1,35 +1,198 @@
+name: Build and Release
 
-# Workflow triggers:
-# - Automatically on any push to the 'main' branch (used as 'release' environment)
-# - Manually triggered via workflow_dispatch with environment input ('develop' or 'release')
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
 
-# Permissions to allow this workflow to create tags, releases, and read PR data if needed
 permissions:
   contents: write
   pull-requests: read
 
 jobs:
   build:
-    name: Build Solution
+    name: Build for Release
     runs-on: windows-latest
-    env:
-      CONFIGURATION: Release  # MSBuild configuration (Release mode for optimizations)
-
     outputs:
-      build_success: ${{ steps.build_step.outcome }}  # Pass success/failure status for conditional job chaining
+      new_tag: ${{ steps.bump.outputs.new_tag }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-
+
+      - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
+      - name: Bump minor version tag
+        id: bump
         shell: pwsh
+        run: |
+          git fetch --tags
+          $tags = git tag --sort=-creatordate | Where-Object { $_ -match '^[0-9]+\.[0-9]+$' }
+          if (-not $tags) {
+            $newTag = '1.0'
+          } else {
+            $parts = ($tags[0]).Split('.')
+            $newTag = "{0}.{1}" -f $parts[0], ([int]$parts[1] + 1)
+          }
+          "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: nuget restore src\WinMemoryCleaner.sln
 
+      - name: Build solution
+        shell: pwsh
+        run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
+
+      - name: Import signing certificate
+        shell: pwsh
+        run: |
+          echo "${{ secrets.SIGNING_CERT }}" | Out-File encoded.txt -Encoding ascii
+          certutil -decode encoded.txt cert.pfx
+          Remove-Item encoded.txt
+
+      - name: Sign executable
+        shell: pwsh
+        run: |
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
+            Where-Object { $_.FullName -match '\\x64\\' } |
+            Select-Object -First 1 -ExpandProperty FullName
+          if (-not $signtool) {
+            $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
+              Where-Object { $_.FullName -match '\\x86\\' } |
+              Select-Object -First 1 -ExpandProperty FullName
+          }
+          if (-not $signtool) {
+            Write-Error "signtool.exe not found"
+            exit 1
+          }
+          if (-not (Test-Path cert.pfx)) {
+            Write-Error "cert.pfx not found!"
+            exit 1
+          }
+          $exePath = Resolve-Path src\bin\Release\WinMemoryCleaner.exe
+          & $signtool sign /f cert.pfx /p "${{ secrets.SIGNING_PASSWORD }}" `
+            /tr http://timestamp.digicert.com /td sha256 /fd sha256 $exePath
+
+      - name: Verify signature
+        shell: pwsh
+        run: |
+          $sigInfo = Get-AuthenticodeSignature -FilePath src\bin\Release\WinMemoryCleaner.exe
+          if ($sigInfo.SignerCertificate -eq $null) {
+            Write-Error "Executable is not signed!"
+            exit 1
+          }
+
+      - name: Cleanup signing certificate
+        shell: pwsh
+        run: Remove-Item cert.pfx
+
+      - name: Create ZIP archive
+        shell: pwsh
+        run: Compress-Archive -Path src\bin\Release\WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
+
+      - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
+          name: winmemorycleaner-release-${{ steps.bump.outputs.new_tag }}
           path: |
+            src\bin\Release\WinMemoryCleaner.exe
+            WinMemoryCleaner.zip
+          retention-days: 30
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: winmemorycleaner-release-${{ needs.build.outputs.new_tag }}
+          path: release_artifacts
+
+      - name: Create or reuse version tag
+        shell: pwsh
+        run: |
+          $tag = "${{ needs.build.outputs.new_tag }}"
+          git fetch --tags
+          $tagExists = git tag -l $tag
+          if (-not $tagExists) {
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git tag $tag
+            git push origin $tag
+          } else {
+            Write-Host "Tag '$tag' already exists. Reusing..."
+          }
+
+      - name: Check if release already exists
+        id: check_release
+        shell: pwsh
+        run: |
+          $tag = "${{ needs.build.outputs.new_tag }}"
+          $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN" }
+          $uri = "https://api.github.com/repos/${{ github.repository }}/releases/tags/$tag"
+          try {
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method GET
+            Write-Host "Release already exists for tag $tag."
+            "skip=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          } catch {
+            if ($_.Exception.Response.StatusCode.value__ -eq 404) {
+              Write-Host "No release exists for tag $tag. Proceeding."
+              "skip=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            } else {
+              Write-Error "Unexpected error: $($_.Exception.Message)"
+              exit 1
+            }
+          }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get commit date
+        id: commit_date
+        shell: pwsh
+        run: |
+          $date = (git show -s --format=%cd --date=short ${{ github.event.head_commit.id }}).Trim()
+          echo "date=$date" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Format commit message for release notes
+        id: formatted_message
+        shell: pwsh
+        run: |
+          $msg = @()
+          foreach ($line in "${{ github.event.head_commit.message }}" -split "`n") {
+            $msg += "- $line"
+          }
+          $body = $msg -join "`n"
+          echo "body<<EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          echo "$body" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          echo "EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload GitHub release assets
+        if: steps.check_release.outputs.skip == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.build.outputs.new_tag }}
+          name: ${{ needs.build.outputs.new_tag }}
+          body: |
+            # ${{ steps.commit_date.outputs.date }}
+            ${{ steps.formatted_message.outputs.body }}
+          files: |
+            release_artifacts/src/bin/Release/WinMemoryCleaner.exe
+            release_artifacts/WinMemoryCleaner.zip
+          draft: true
+          generate_release_notes: false

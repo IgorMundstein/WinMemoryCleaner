@@ -1,13 +1,9 @@
-default: false
-labels:
-  - bug
-  - documentation
-  - duplicate
-  - enhancement
-  - false positive
-  - help wanted
-  - invalid
-  - lack of information
-  - question
-  - release
-  - translation
+blank_issues_enabled: false
+contact_links:
+  - name: "💡 Suggestions"
+    url: https://github.com/IgorMundstein/WinMemoryCleaner/discussions/11
+    about: "Share your suggestions and ideas in Discussions."
+
+  - name: "🌐 Translations"
+    url: https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14
+    about: "Help contribute translations and localization."
