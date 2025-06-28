@@ -157,16 +157,6 @@ The app generates logs in the Windows event
 
 ## ❓ Frequently Asked Questions (FAQ)
 
-### How to build the app on Visual Studio 2022 or later?
-
-Visual Studio 2022 and newer do not support targeting .NET Framework 4.0. To compile and run the app, follow these steps as a workaround.
-
-1. Download the .NET Framework 4.0 from https://github.com/IgorMundstein/WinMemoryCleaner/blob/master/.packages/NET-Framework/4.0.zip
-2. Once the download is complete, extract the files to the `C:\`
-3. It must replace files in the directory: `C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0`
-4. Open Visual Studio, and you should now see .NET Framework 4.0 as an available target. You will be able to compile and run the app
-
-
 ### What are the project requirements?
 
 - Minimalistic user interface
