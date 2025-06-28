@@ -26,10 +26,12 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 - **Chocolatey**  
   ```powershell
   choco install winmemorycleaner
+  ```
 
 - **WinGet**  
   ```powershell
   winget install IgorMundstein.WinMemoryCleaner
+  ```
 
 ## 🖥️ Computer requirements
 
@@ -126,6 +128,7 @@ You can use the following command‑line arguments to run the optimization silen
 
 ```cmd
 C:\WinMemoryCleaner.exe /CombinedPageList /ModifiedFileCache /ModifiedPageList /RegistryCache /StandbyList /SystemFileCache /WorkingSet
+```
 
 ## 🔧 Windows Service
 
@@ -137,9 +140,11 @@ To install or uninstall the service, run the app using the `/Install` or `/Unins
 
 ```cmd
 C:\WinMemoryCleaner.exe /Install
+```
 
 ```cmd
 C:\WinMemoryCleaner.exe /Uninstall
+```
 
 The installation will close some processes to install or uninstall the service without requiring a system restart, and log files will be generated along with the .exe file. Some application settings will be modified based on recommendations. You can still open the application (GUI) and configure it as desired. The service will utilize these settings.
 
