@@ -1,0 +1,134 @@
+name: Submit to WinGet
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+env:
+  FORK_REPO: IgorMundstein/winget-pkgs
+  UPSTREAM_REPO: microsoft/winget-pkgs
+
+jobs:
+  submit-winget:
+    name: Submit to winget-pkgs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check WINGET_PKGS_TOKEN secret
+        run: |
+          if [ -z "${{ secrets.WINGET_PKGS_TOKEN }}" ]; then
+            echo "Error: WINGET_PKGS_TOKEN secret is not set!"
+            exit 1
+          fi
+
+      - name: Extract release tag
+        id: release
+        run: echo "RELEASE_TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Check if version already exists on WinGet
+        id: check_winget
+        run: |
+          set -e
+          response=$(curl -s https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/I/IgorMundstein/WinMemoryCleaner)
+          if echo "$response" | jq -r '.[].name' | grep -qx "${RELEASE_TAG}"; then
+            echo "Version ${RELEASE_TAG} already exists in winget-pkgs. Skipping..."
+            echo "skip=true" >> $GITHUB_ENV
+          else
+            echo "skip=false" >> $GITHUB_ENV
+          fi
+
+      - name: Stop if already published
+        if: env.skip == 'true'
+        run: |
+          echo "This version already exists on WinGet. Skipping workflow."
+          exit 0
+
+      - name: Download WinMemoryCleaner.exe from release
+        run: |
+          set -e
+          curl -L -o WinMemoryCleaner.exe "https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/WinMemoryCleaner.exe"
+
+      - name: Calculate SHA256
+        id: sha
+        run: |
+          set -e
+          sha256sum WinMemoryCleaner.exe | cut -d ' ' -f1 > sha.txt
+          echo "SHA256=$(cat sha.txt)" >> $GITHUB_ENV
+
+      - name: Fetch repository metadata
+        id: metadata
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const repo = await github.rest.repos.get({ owner: context.repo.owner, repo: context.repo.repo });
+            if (!repo.data.description) throw new Error("Missing GitHub repo description");
+            if (!repo.data.license?.spdx_id) throw new Error("Missing GitHub license");
+            return {
+              desc: repo.data.description,
+              homepage: repo.data.homepage || repo.data.html_url,
+              license: repo.data.license.spdx_id,
+              publisher: context.repo.owner
+            };
+
+      - name: Generate WinGet manifest
+        run: |
+          set -e
+          mkdir -p manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}
+          cat > manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}/WinMemoryCleaner.yaml <<EOF
+Id: IgorMundstein.WinMemoryCleaner
+Name: Windows Memory Cleaner
+Publisher: ${{ steps.metadata.outputs.publisher }}
+Version: ${RELEASE_TAG}
+License: ${{ steps.metadata.outputs.license }}
+Homepage: ${{ steps.metadata.outputs.homepage }}
+Description: ${{ steps.metadata.outputs.desc }}
+Installers:
+  - Arch: x64
+    InstallerType: exe
+    Url: https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/WinMemoryCleaner.exe
+    Sha256: ${{ env.SHA256 }}
+    Switches:
+      Silent: /Package
+      SilentWithProgress: /Package
+EOF
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Checkout forked winget-pkgs repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.FORK_REPO }}
+          token: ${{ secrets.WINGET_PKGS_TOKEN }}
+          path: forked
+          fetch-depth: 0
+
+      - name: Setup fork remotes and branch
+        run: |
+          set -e
+          cd forked
+          git remote add upstream https://github.com/${{ env.UPSTREAM_REPO }}.git
+          git fetch upstream
+          git checkout -b add-winmemorycleaner-${RELEASE_TAG}
+          mkdir -p manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}
+          cp ../manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}/WinMemoryCleaner.yaml manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}/
+          git add .
+          git commit -m "Add WinMemoryCleaner v${RELEASE_TAG} manifest"
+          git push origin add-winmemorycleaner-${RELEASE_TAG}
+
+      - name: Create PR to winget-pkgs
+        env:
+          GH_TOKEN: ${{ secrets.WINGET_PKGS_TOKEN }}
+        run: |
+          gh auth login --with-token <<< "${GH_TOKEN}"
+          gh pr create \
+            --title "Add WinMemoryCleaner v${RELEASE_TAG}" \
+            --body "Automatically submitted WinGet manifest for version ${RELEASE_TAG}" \
+            --repo ${{ env.UPSTREAM_REPO }} \
+            --head ${{ env.FORK_REPO }}:add-winmemorycleaner-${RELEASE_TAG} \
+            --base master
