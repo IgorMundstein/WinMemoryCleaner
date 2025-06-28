@@ -125,7 +125,7 @@ EOF
         env:
           GH_TOKEN: ${{ secrets.WINGET_PKGS_TOKEN }}
         run: |
-          gh auth login --with-token <<< "${GH_TOKEN}"
+          echo "${GH_TOKEN}" | gh auth login --with-token
           gh pr create \
             --title "Add WinMemoryCleaner v${RELEASE_TAG}" \
             --body "Automatically submitted WinGet manifest for version ${RELEASE_TAG}" \
