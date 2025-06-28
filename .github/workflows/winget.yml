@@ -66,12 +66,10 @@ jobs:
             const repo = await github.rest.repos.get({ owner: context.repo.owner, repo: context.repo.repo });
             if (!repo.data.description) throw new Error("Missing GitHub repo description");
             if (!repo.data.license?.spdx_id) throw new Error("Missing GitHub license");
-            return {
-              desc: repo.data.description,
-              homepage: repo.data.homepage || repo.data.html_url,
-              license: repo.data.license.spdx_id,
-              publisher: context.repo.owner
-            };
+            core.setOutput("desc", repo.data.description);
+            core.setOutput("homepage", repo.data.homepage || repo.data.html_url);
+            core.setOutput("license", repo.data.license.spdx_id);
+            core.setOutput("publisher", context.repo.owner);
 
       - name: Generate WinGet manifest
         run: |
