@@ -4,16 +4,8 @@
 [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE)
   [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
-  <picture>
-    <img src="./.github/images/main-window.png">
-  </picture>
-
   <p align="justify">
-    This free RAM cleaner uses native Windows features to clear memory areas. Sometimes, programs do not release the allocated memory, making the computer slow. That is when you use Windows Memory Cleaner to optimize the memory so you can keep working without wasting time restarting your system. 
-  </p>
-
-  <p align="justify">
-    The app has a minimalistic interface and smart features. It's portable, and you do not need to install it, but it requires administrator privileges to run. Click on the download button below and run the executable to get started.
+This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run. Click the download button below to get started, or use a package manager like Chocolatey or WinGet.
   </p>
 
   <p align="center">
@@ -21,7 +13,23 @@
       <img alt="DOWNLOAD" src="./.github/images/download-button.png">
     </a>
   </p>
+
+  <p align="center">
+    <picture>
+        <img src="./.github/images/main-window.png">
+    </picture>
+  </p>
 </div>
+
+## ⬇️ Download from package managers
+
+- 🍫 **Chocolatey**  
+  ```powershell
+  choco install winmemorycleaner
+
+- 🟢 **WinGet**  
+  ```powershell
+  winget install IgorMundstein.WinMemoryCleaner
 
 ## 🖥️ Computer requirements
 
