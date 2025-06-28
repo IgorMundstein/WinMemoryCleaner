@@ -15,7 +15,6 @@ jobs:
   submit-winget:
     name: Submit to winget-pkgs
     runs-on: ubuntu-latest
-
     steps:
       - name: Check WINGET_PKGS_TOKEN secret
         run: |
@@ -66,32 +65,34 @@ jobs:
             const repo = await github.rest.repos.get({ owner: context.repo.owner, repo: context.repo.repo });
             if (!repo.data.description) throw new Error("Missing GitHub repo description");
             if (!repo.data.license?.spdx_id) throw new Error("Missing GitHub license");
-            core.setOutput("desc", repo.data.description);
-            core.setOutput("homepage", repo.data.homepage || repo.data.html_url);
-            core.setOutput("license", repo.data.license.spdx_id);
-            core.setOutput("publisher", context.repo.owner);
+            return {
+              desc: repo.data.description,
+              homepage: repo.data.homepage || repo.data.html_url,
+              license: repo.data.license.spdx_id,
+              publisher: context.repo.owner
+            };
 
       - name: Generate WinGet manifest
         run: |
           set -e
           mkdir -p manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}
           cat > manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}/WinMemoryCleaner.yaml <<EOF
-Id: IgorMundstein.WinMemoryCleaner
-Name: Windows Memory Cleaner
-Publisher: ${{ steps.metadata.outputs.publisher }}
-Version: ${RELEASE_TAG}
-License: ${{ steps.metadata.outputs.license }}
-Homepage: ${{ steps.metadata.outputs.homepage }}
-Description: ${{ steps.metadata.outputs.desc }}
-Installers:
-  - Arch: x64
-    InstallerType: exe
-    Url: https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/WinMemoryCleaner.exe
-    Sha256: ${{ env.SHA256 }}
-    Switches:
-      Silent: /Package
-      SilentWithProgress: /Package
-EOF
+          Id: IgorMundstein.WinMemoryCleaner
+          Name: Windows Memory Cleaner
+          Publisher: ${{ steps.metadata.outputs.publisher }}
+          Version: ${RELEASE_TAG}
+          License: ${{ steps.metadata.outputs.license }}
+          Homepage: ${{ steps.metadata.outputs.homepage }}
+          Description: ${{ steps.metadata.outputs.desc }}
+          Installers:
+          - Arch: x64
+            InstallerType: exe
+            Url: https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/WinMemoryCleaner.exe
+            Sha256: ${{ env.SHA256 }}
+            Switches:
+              Silent: /Package
+              SilentWithProgress: /Package
+          EOF
 
       - name: Configure Git
         run: |
@@ -123,7 +124,9 @@ EOF
         env:
           GH_TOKEN: ${{ secrets.WINGET_PKGS_TOKEN }}
         run: |
-          gh pr create --title "Add WinMemoryCleaner v${RELEASE_TAG}" \
+          echo "${GH_TOKEN}" | gh auth login --with-token
+          gh pr create \
+            --title "Add WinMemoryCleaner v${RELEASE_TAG}" \
             --body "Automatically submitted WinGet manifest for version ${RELEASE_TAG}" \
             --repo ${{ env.UPSTREAM_REPO }} \
             --head ${{ env.FORK_REPO }}:add-winmemorycleaner-${RELEASE_TAG} \
