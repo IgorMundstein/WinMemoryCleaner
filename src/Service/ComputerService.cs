@@ -680,7 +680,7 @@ namespace WinMemoryCleaner
                 if (OperatingSystem.Is64Bit)
                     systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation64 { MinimumWorkingSet = -1L, MaximumWorkingSet = -1L };
                 else
-                    systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation32 { MinimumWorkingSet = uint.MaxValue, MaximumWorkingSet = uint.MaxValue };
+                    systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation32 { MinimumWorkingSet = int.MaxValue, MaximumWorkingSet = int.MaxValue };
 
                 handle = GCHandle.Alloc(systemFileCacheInformation, GCHandleType.Pinned);
 

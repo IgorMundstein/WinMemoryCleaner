@@ -11,17 +11,17 @@
         /// <param name="free">The amount of memory currently available</param>
         /// <param name="total">The amount of actual memory</param>
         /// <param name="used">A number between 0 and 100 that specifies the approximate amount of memory that is in use</param>
-        public MemoryStats(ulong free, ulong total, uint? used = null)
+        public MemoryStats(long free, long total, int? used = null)
         {
             Free = new MemorySize(free);
             Total = new MemorySize(total);
             Used = new MemorySize(total >= free ? total - free : free - total);
 
             if (used == null)
-                used = Used.Value > 0 && Total.Value > 0 ? (uint)(Used.Value * 100 / Total.Value) : 0;
+                used = Used.Value > 0 && Total.Value > 0 ? (int)(Used.Value * 100 / Total.Value) : 0;
 
-            Free.Percentage = (uint)(100 - used);
-            Used.Percentage = (uint)used;
+            Free.Percentage = (int)(100 - used);
+            Used.Percentage = (int)used;
         }
 
         /// <summary>

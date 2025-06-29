@@ -151,8 +151,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-
-        public static KeyValuePair<double, Enums.Memory.Unit> ToMemoryUnit(this ulong value)
+        public static KeyValuePair<double, Enums.Memory.Unit> ToMemoryUnit(this long value)
         {
             if (value < 1024)
                 return new KeyValuePair<double, Enums.Memory.Unit>(value, Enums.Memory.Unit.B);
