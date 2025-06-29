@@ -15,7 +15,49 @@ namespace WinMemoryCleaner
 
         #endregion Fields
 
+        #region Constructor
+
+        /// <summary>
+        /// Initializes the <see cref="Logger"/> class.
+        /// </summary>
+        static Logger()
+        {
+            try
+            {
+                Trace.AutoFlush = true;
+
+                Trace.Listeners.Clear();
+                Trace.Listeners.AddRange(new TraceListener[]
+                {
+                    new ConsoleTraceListener(false) { Name = Constants.App.Title },
+                    new EventLogTraceListener(Constants.App.Title)
+                });
+            }
+            catch
+            {
+                try
+                {
+                    if (Trace.Listeners.Count == 0)
+                        Trace.Listeners.Add(new DefaultTraceListener() { Name = Constants.App.Title });
+                }
+                catch (Exception e)
+                {
+                    Event(e.GetMessage(), EventLogEntryType.Error);
+                }
+            }
+        }
+
+        #endregion
+
         #region Properties
+
+        private static bool IsDebugEnabled { get { return (_level & Enums.Log.Levels.Debug) != 0; } }
+
+        private static bool IsErrorEnabled { get { return (_level & Enums.Log.Levels.Error) != 0; } }
+
+        private static bool IsInformationEnabled { get { return (_level & Enums.Log.Levels.Information) != 0; } }
+
+        private static bool IsWarningEnabled { get { return (_level & Enums.Log.Levels.Warning) != 0; } }
 
         /// <summary>
         /// Sets the log level.
@@ -56,11 +98,22 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Debug
         /// </summary>
+        /// <param name="exception">Exception</param>
+        /// <param name="message">Custom message about the Exception</param>
+        /// <param name="method">Method</param>
+        public static void Debug(Exception exception, string message = null, [CallerMemberName] string method = null)
+        {
+            Exception(Enums.Log.Levels.Debug, exception, message, method);
+        }
+
+        /// <summary>
+        /// Debug
+        /// </summary>
         /// <param name="message">Message</param>
         /// <param name="method">Method</param>
         public static void Debug(string message, [CallerMemberName] string method = null)
         {
-            Log(Enums.Log.Levels.Debug, message, method);
+            Log(new Log(Enums.Log.Levels.Debug, message, null, method));
         }
 
         /// <summary>
@@ -71,27 +124,7 @@ namespace WinMemoryCleaner
         /// <param name="method">Method</param>
         public static void Error(Exception exception, string message = null, [CallerMemberName] string method = null)
         {
-            if ((_level & Enums.Log.Levels.Debug) != 0)
-            {
-                try
-                {
-                    var stackTrace = new StackTrace(exception, true);
-                    var frame = stackTrace.GetFrame(stackTrace.FrameCount - 1);
-                    var methodBase = frame.GetMethod();
-
-                    if (methodBase.DeclaringType != null)
-                        method = string.Format(Localizer.Culture, "{0}.{1}", methodBase.DeclaringType.Name, methodBase.Name);
-                }
-                catch
-                {
-                    // ignored
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(message) && exception != null)
-                message = exception.GetMessage();
-
-            Log(Enums.Log.Levels.Error, message, method);
+            Exception(Enums.Log.Levels.Error, exception, message, method);
         }
 
         /// <summary>
@@ -101,7 +134,7 @@ namespace WinMemoryCleaner
         /// <param name="method">Method</param>
         public static void Error(string message, [CallerMemberName] string method = null)
         {
-            Log(Enums.Log.Levels.Error, message, method);
+            Log(new Log(Enums.Log.Levels.Error, message, null, method));
         }
 
         /// <summary>
@@ -122,13 +155,45 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Exception
+        /// </summary>
+        /// <param name="level">The level.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="method">The method.</param>
+        private static void Exception(Enums.Log.Levels level, Exception exception, string message = null, [CallerMemberName] string method = null)
+        {
+            if (IsDebugEnabled)
+            {
+                try
+                {
+                    var stackTrace = new StackTrace(exception, true);
+                    var frame = stackTrace.GetFrame(stackTrace.FrameCount - 1);
+                    var methodBase = frame.GetMethod();
+
+                    if (methodBase.DeclaringType != null)
+                        method = string.Format(Localizer.Culture, "{0}.{1}", methodBase.DeclaringType.Name, methodBase.Name);
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(message) && exception != null)
+                message = exception.GetMessage();
+
+            Log(new Log(level, message, null, method));
+        }
+
+        /// <summary>
         /// Information
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="method">Method</param>
         public static void Information(string message, [CallerMemberName] string method = null)
         {
-            Log(Enums.Log.Levels.Information, message, method);
+            Log(new Log(Enums.Log.Levels.Information, message, null, method));
         }
 
         /// <summary>
@@ -136,71 +201,55 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="level">Levels</param>
         /// <param name="message">Message</param>
-        /// <param name="method">Method</param>
-        private static void Log(Enums.Log.Levels level, string message, [CallerMemberName] string method = null)
+        private static void Log(Enums.Log.Levels level, string message)
         {
             try
             {
-                var log = new Log
-                {
-                    DateTime = DateTime.Now,
-                    Level = level,
-                    Method = method,
-                    Message = message
-                };
-
-                var traceMessage = string.Format(Localizer.Culture, "{0}\t{1}\t{2}",
-                    log.DateTime.ToString(Constants.App.Log.DatetimeFormat, Localizer.Culture),
-                    log.Level.ToString().ToUpper(Localizer.Culture),
-                    string.IsNullOrWhiteSpace(log.Method) ? log.Message : string.Format(Localizer.Culture, "[{0}] {1}", log.Method, log.Message));
-
                 switch (level)
                 {
                     case Enums.Log.Levels.Debug:
-                        if ((_level & Enums.Log.Levels.Debug) != 0)
-                        {
-                            Event(message);
-                            Trace.WriteLine(traceMessage);
-                        }
+                        if (IsDebugEnabled)
+                            Trace.WriteLine(message);
                         break;
 
                     case Enums.Log.Levels.Information:
-                        if ((_level & Enums.Log.Levels.Information) != 0)
-                        {
-                            Event(message);
-                            Trace.TraceInformation(traceMessage);
-                        }
+                        if (IsInformationEnabled)
+                            Trace.TraceInformation(message);
                         break;
 
                     case Enums.Log.Levels.Warning:
-                        if ((_level & Enums.Log.Levels.Warning) != 0)
-                        {
-                            Event(message, EventLogEntryType.Warning);
-                            Trace.TraceWarning(traceMessage);
-                        }
+                        if (IsWarningEnabled)
+                            Trace.TraceWarning(message);
                         break;
 
                     case Enums.Log.Levels.Error:
-                        if ((_level & Enums.Log.Levels.Error) != 0)
-                        {
-                            Event(message, EventLogEntryType.Error);
-                            Trace.TraceError(traceMessage);
-                        }
+                        if (IsErrorEnabled)
+                            Trace.TraceError(message);
                         break;
                 }
             }
             catch (Exception e)
             {
-                try
-                {
-                    Trace.TraceError(e.GetMessage());
-                }
-                catch
-                {
-                    // ignored
-                }
-
                 Event(string.Format(Localizer.Culture, Localizer.String.ErrorCanNotSaveLog, message, e.GetMessage()), EventLogEntryType.Error);
+            }
+        }
+
+        /// <summary>
+        /// Log
+        /// </summary>
+        /// <param name="log">The log.</param>
+        public static void Log(Log log)
+        {
+            try
+            {
+                if (log == null)
+                    throw new ArgumentNullException("log");
+
+                Log(log.Level, log.ToString());
+            }
+            catch (Exception e)
+            {
+                Event(string.Format(Localizer.Culture, Localizer.String.ErrorCanNotSaveLog, log != null ? log.Message : "NULL", e.GetMessage()), EventLogEntryType.Error);
             }
         }
 
@@ -211,7 +260,7 @@ namespace WinMemoryCleaner
         /// <param name="method">Method</param>
         public static void Warning(string message, [CallerMemberName] string method = null)
         {
-            Log(Enums.Log.Levels.Warning, message, method);
+            Log(new Log(Enums.Log.Levels.Warning, message, null, method));
         }
     }
 

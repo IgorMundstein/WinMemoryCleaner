@@ -116,8 +116,6 @@
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
-    <Compile Include="Interfaces\IHotkeyService.cs" />
-    <Compile Include="Model\ObservableItem.cs" />
     <Compile Include="Service\HotkeyService.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
@@ -126,6 +124,8 @@
     <Compile Include="Core\Structs.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
+    <Compile Include="Interfaces\IHotkeyService.cs" />
+    <Compile Include="Interfaces\ILogData.cs" />
     <Compile Include="Interfaces\IMemoryService.cs" />
     <Compile Include="Interfaces\INotificationService.cs" />
     <Compile Include="Interfaces\IOperatingSystem.cs" />
@@ -133,10 +133,13 @@
     <Compile Include="Model\Hotkey.cs" />
     <Compile Include="Model\Language.cs" />
     <Compile Include="Model\Localization.cs" />
-    <Compile Include="Model\Log.cs" />
+    <Compile Include="Model\Log\Log.cs" />
+    <Compile Include="Model\Log\LogOptimizationData.cs" />
+    <Compile Include="Model\Log\LogOptimizationDataMemoryArea.cs" />
     <Compile Include="Model\Memory\Memory.cs" />
     <Compile Include="Model\Memory\MemorySize.cs" />
     <Compile Include="Model\Memory\MemoryStats.cs" />
+    <Compile Include="Model\ObservableItem.cs" />
     <Compile Include="Model\OperatingSystem.cs" />
     <Compile Include="Service\ComputerService.cs" />
     <Compile Include="Service\NotificationService.cs" />
@@ -266,7 +269,7 @@
     <RestartFlag>$(NetFramework40ReferenceDir)\.net40_restart_required.flag</RestartFlag>
   </PropertyGroup>
   <Target Name="CheckAdministrator" BeforeTargets="BeforeBuild" Condition=" '$(IsCI)' != 'true' ">
-    <Exec Command="cmd /c echo test > %windir%\temp\admin_check.txt" ContinueOnError="true">
+    <Exec Command="cmd /c echo test &gt; %windir%\temp\admin_check.txt" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="AdminCheckExitCode" />
     </Exec>
     <Exec Condition="'$(AdminCheckExitCode)' == '0'" Command="cmd /c del %windir%\temp\admin_check.txt" />

@@ -41,11 +41,6 @@ namespace WinMemoryCleaner
                 public static readonly string Path = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             }
 
-            public static class Log
-            {
-                public const string DatetimeFormat = "yyyy-MM-dd HH:mm:ss.fff";
-            }
-
             public static class Registry
             {
                 public static class Key

@@ -460,7 +460,7 @@ namespace WinMemoryCleaner
             {
                 var items = new List<ObservableItem<bool>>();
 
-                Action<string, Enums.Memory.Areas, bool> Add = (name, area, isEnabled) =>
+                Action<string, Enums.Memory.Areas, bool> add = (name, area, isEnabled) =>
                 {
 
                     items.Add(new ObservableItem<bool>
@@ -472,14 +472,14 @@ namespace WinMemoryCleaner
                     ));
                 };
 
-                Add(Localizer.String.CombinedPageList, Enums.Memory.Areas.CombinedPageList, Computer.OperatingSystem.HasCombinedPageList);
-                Add(Localizer.String.ModifiedFileCache, Enums.Memory.Areas.ModifiedFileCache, Computer.OperatingSystem.HasModifiedFileCache);
-                Add(Localizer.String.ModifiedPageList, Enums.Memory.Areas.ModifiedPageList, Computer.OperatingSystem.HasModifiedPageList);
-                Add(Localizer.String.RegistryCache, Enums.Memory.Areas.RegistryCache, Computer.OperatingSystem.HasRegistryHive);
-                Add(Localizer.String.StandbyList, Enums.Memory.Areas.StandbyList, Computer.OperatingSystem.HasStandbyList);
-                Add(Localizer.String.StandbyListLowPriority, Enums.Memory.Areas.StandbyListLowPriority, Computer.OperatingSystem.HasStandbyList);
-                Add(Localizer.String.SystemFileCache, Enums.Memory.Areas.SystemFileCache, Computer.OperatingSystem.HasSystemFileCache);
-                Add(Localizer.String.WorkingSet, Enums.Memory.Areas.WorkingSet, Computer.OperatingSystem.HasWorkingSet);
+                add(Localizer.String.CombinedPageList, Enums.Memory.Areas.CombinedPageList, Computer.OperatingSystem.HasCombinedPageList);
+                add(Localizer.String.ModifiedFileCache, Enums.Memory.Areas.ModifiedFileCache, Computer.OperatingSystem.HasModifiedFileCache);
+                add(Localizer.String.ModifiedPageList, Enums.Memory.Areas.ModifiedPageList, Computer.OperatingSystem.HasModifiedPageList);
+                add(Localizer.String.RegistryCache, Enums.Memory.Areas.RegistryCache, Computer.OperatingSystem.HasRegistryHive);
+                add(Localizer.String.StandbyList, Enums.Memory.Areas.StandbyList, Computer.OperatingSystem.HasStandbyList);
+                add(Localizer.String.StandbyListLowPriority, Enums.Memory.Areas.StandbyListLowPriority, Computer.OperatingSystem.HasStandbyList);
+                add(Localizer.String.SystemFileCache, Enums.Memory.Areas.SystemFileCache, Computer.OperatingSystem.HasSystemFileCache);
+                add(Localizer.String.WorkingSet, Enums.Memory.Areas.WorkingSet, Computer.OperatingSystem.HasWorkingSet);
                     
                 return new ObservableCollection<ObservableItem<bool>>(items.OrderBy(item => item.Name));
             }
@@ -1160,9 +1160,9 @@ namespace WinMemoryCleaner
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Logger.Debug(ex.GetMessage());
+                    Logger.Debug(e);
                 }
             }
         }
@@ -1221,9 +1221,9 @@ namespace WinMemoryCleaner
                     if (_cancellationTokenSource.Token.WaitHandle.WaitOne(5000))
                         break;
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Logger.Debug(ex.GetMessage());
+                    Logger.Debug(e);
                 }
             }
         }

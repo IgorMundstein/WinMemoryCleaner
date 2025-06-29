@@ -74,7 +74,7 @@ namespace WinMemoryCleaner
         /// <returns>  
         /// An array of values that have been converted from the target value back to the source values.  
         /// </returns>  
-        /// <exception cref="System.NotSupportedException"></exception>  
+        /// <exception cref="NotSupportedException"></exception>  
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();

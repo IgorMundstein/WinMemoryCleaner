@@ -148,7 +148,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                Logger.Debug(e.GetMessage());
+                Logger.Debug(e);
             }
 
             if (hotKey != null && _registered.TryGetValue(hotKey, out action))

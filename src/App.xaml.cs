@@ -57,28 +57,6 @@ namespace WinMemoryCleaner
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets a argument indicating whether it is running.
-        /// </summary>
-        /// <argument>
-        ///   <c>true</c> if it is running; otherwise, <c>false</c>.
-        /// </argument>
-        private bool IsRunning
-        {
-            get
-            {
-                bool createdNew;
-
-                _mutex = new Mutex(true, Constants.App.Id, out createdNew);
-
-                return !createdNew;
-            }
-        }
-
-        #endregion
-
         #region IDisposable
 
         /// <summary>
@@ -219,8 +197,8 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Raises the <see cref="E:System.Windows.Application.Startup" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:System.Windows.StartupEventArgs" /> that contains the event data.</param>
-        protected override void OnStartup(StartupEventArgs e)
+        /// <param name="se">The <see cref="StartupEventArgs"/> instance containing the event data.</param>
+        protected override void OnStartup(StartupEventArgs se)
         {
             try
             {
@@ -233,7 +211,7 @@ namespace WinMemoryCleaner
                 // App Version
                 _version = Assembly.GetExecutingAssembly().GetName().Version;
 
-                var commandLineArguments = e != null ? new List<string>(e.Args.Select(arg => arg.Replace("-", "/").Trim())) : null;
+                var commandLineArguments = se != null ? new List<string>(se.Args.Select(arg => arg.Replace("-", "/").Trim())) : null;
                 var memoryAreas = Enums.Memory.Areas.None;
                 var startupType = Enums.StartupType.App;
 
@@ -286,7 +264,11 @@ namespace WinMemoryCleaner
                 {
                     case Enums.StartupType.App:
                         // Check if app is already running
-                        if (IsRunning)
+                        bool createdNew;
+
+                        _mutex = new Mutex(true, Constants.App.Id, out createdNew);
+
+                        if (!createdNew)
                         {
                             try
                             {
@@ -393,10 +375,10 @@ namespace WinMemoryCleaner
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Logger.Error(ex);
-                ShowDialog(ex);
+                Logger.Error(e);
+                ShowDialog(e);
 
                 Shutdown(true);
             }
