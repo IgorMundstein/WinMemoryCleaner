@@ -30,10 +30,12 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 We prioritize transparency and user safety. Files are digitally signed through [SignPath.io](https://about.signpath.io/product/open-source) using a certificate from a trusted certificate authority. This process ensures the authenticity and integrity of the files. This was introduced in version **2.9**
 
-🔍 **Verify using:**
+🔍 **How to verify**
 
-- **Windows UI**: Right-click → Properties → Digital Signatures
-- **Command line**:  
+- **Windows UI**
+  Right-click → Properties → Digital Signatures
+
+- **Command-line**
   ```sh
   signtool verify /pa WinMemoryCleaner.exe
 
