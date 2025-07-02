@@ -129,7 +129,7 @@ C:\WinMemoryCleaner.exe /Uninstall
 
 The installation will close some processes to install or uninstall the service without requiring a system restart, and log files will be generated along with the .exe file. Some application settings will be modified based on recommendations. You can still open the application (GUI) and configure it as desired. The service will utilize these settings.
 
-[![](./.github/images/windows-service.png)](#windows-service)
+[![](./.github/images/windows-service.png)](#-windows-service)
 
 ## 📖 Logs
 
@@ -138,7 +138,7 @@ The app generates logs in the Windows Event
 1. Press **Win + R** to open the Run command dialog box
 2. Type **eventvwr** and press **Enter** to open the Event Viewer
 
-[![](./.github/images/windows-event-log.png)](#logs)
+[![](./.github/images/windows-event-log.png)](#-logs)
 
 ## ❓ Frequently Asked Questions (FAQ)
 
