@@ -8,12 +8,13 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
   </p>
 </div>
 
-[![](./.github/images/main-window.png)](#windows-memory-cleaner)
+  [![](./.github/images/main-window.png)](#windows-memory-cleaner)
 
 ## 📦 Download
 
 - **GitHub**
- [![](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?sort=semver&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
+
+  [![](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?sort=semver&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
 - **Chocolatey**  
   ```powershell
@@ -24,6 +25,17 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
   ```powershell
   winget install IgorMundstein.WinMemoryCleaner
   ```
+
+## 🔐 Trust & Integrity
+
+We prioritize transparency and user safety. Files are digitally signed through [SignPath.io](https://about.signpath.io/product/open-source) using a certificate from a trusted certificate authority. This process ensures the authenticity and integrity of the files. This was introduced in version **2.9**
+
+🔍 **Verify using:**
+
+- **Windows UI**: Right-click → Properties → Digital Signatures
+- **Command line**:  
+  ```sh
+  signtool verify /pa WinMemoryCleaner.exe
 
 ## 🚀 Features
 
