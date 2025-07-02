@@ -33,11 +33,18 @@ We prioritize transparency and user safety. Files are digitally signed through [
 🔍 **How to verify**
 
 - **Windows UI**
-  Right-click → Properties → Digital Signatures
+
+1. Right-click on executable 
+2. Properties
+3. Go to Digital Signatures tab
+
+<TODO: Insert digital-signature image>
 
 - **Command-line**
-  ```sh
-  signtool verify /pa WinMemoryCleaner.exe
+  
+```cmd
+signtool verify /pa WinMemoryCleaner.exe
+```
 
 ## 🚀 Features
 
