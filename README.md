@@ -8,7 +8,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
   </p>
 </div>
 
-![](./.github/images/main-window.png)
+[![](./.github/images/main-window.png)](#windows-memory-cleaner)
 
 ## 📦 Download
 
@@ -37,13 +37,13 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 - Arrow (Up/Down) next to the minimize button to collapse and extend the window
 
-![](./.github/images/main-window-compact.png)
+[![](./.github/images/main-window-compact.png)](#compact-mode)
 
 ### Memory Areas
 
 - `Combined page list` Flushes the blocks from the combined page list effectively only when page combining is enabled
 - `Modified file cache` Flushes volume file cache to disk
-- `Modified page list` Flushes memory from the modified page list, writing unsaved data to disk and moving the pages to the standby list
+- `Modified page list` Flushes memory from the modified page list, writing unsaved data to disk, and moving the pages to the standby list
 - `Registry cache` Flushes registry hives. A hive is a logical group of keys, subkeys, and values in the registry that has a set of supporting files loaded into memory when the operating system is started or a user logs in
 - `Standby list` Flushes pages from all standby lists to the free list
 - `Standby list (low priority)` Flushes pages from the lowest-priority standby list to the free list
@@ -60,7 +60,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 ### Optimization hotkey
 
-- Set a keyboard global hotkey to run the optimization. `CTRL + SHIFT + M` is the default and customizable value
+- Set a global keyboard hotkey to run the optimization. `CTRL + SHIFT + M` is the default and customizable value
 
 ### Settings
 
@@ -68,7 +68,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 - `Auto update` Keeps the app up to date. It checks for updates every 24 hours
 - `Close after optimization` Closes the app after optimization
 - `Close to the notification area` Minimize the app to the system tray when clicking the close (X) button
-- `Run on low priority` It limits the app resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
+- `Run on low priority` It limits the app's resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
 - `Run on startup` Runs the app after the system boots up. It creates an entry on Windows **Task Scheduler** and Windows Registry path **SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run**
 - `Show optimization notifications` Sends a message to the notification area after optimization. It includes the approximate memory released
 - `Show virtual memory` It also monitors the virtual memory usage
@@ -78,11 +78,11 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 - Menu
 
-![](./.github/images/system-tray.png)
+[![](./.github/images/main-window-compact.png)](#system-tray-notification-area)
 
 - Notification
 
-![](./.github/images/notification.png)
+[![](./.github/images/notification.png)](#system-tray-notification-area)
 
 ### Tray icon
 
@@ -129,16 +129,16 @@ C:\WinMemoryCleaner.exe /Uninstall
 
 The installation will close some processes to install or uninstall the service without requiring a system restart, and log files will be generated along with the .exe file. Some application settings will be modified based on recommendations. You can still open the application (GUI) and configure it as desired. The service will utilize these settings.
 
-![](./.github/images/windows-service.png)
+[![](./.github/images/windows-service.png)](#windows-service)
 
 ## 📖 Logs
 
-The app generates logs in the Windows event
+The app generates logs in the Windows Event
 
 1. Press **Win + R** to open the Run command dialog box
 2. Type **eventvwr** and press **Enter** to open the Event Viewer
 
-![](./.github/images/windows-event-log.png)
+[![](./.github/images/windows-event-log.png)](#logs)
 
 ## ❓ Frequently Asked Questions (FAQ)
 
@@ -153,7 +153,7 @@ The app generates logs in the Windows event
 - Use of Windows native methods for memory management
 - Windows Event to save logs
 - Windows Presentation Foundation (WPF) for user interface
-- Windows Registry to save user config
+- Windows Registry to save user settings
 
 ### Where does the app save the settings?
 
@@ -161,7 +161,7 @@ They are saved in the Windows registry path `Computer\HKEY_LOCAL_MACHINE\Softwar
 
 ### Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
 
-One of the reasons for this **false alarm** is that the application adds entries to the registry and task scheduler to run the application at startup. Windows doesn't “like” applications with administrator privileges running at startup. I understand that, but this is the way to do it. I apologize, but the application cannot deep clean memory without administrator privileges.
+One of the reasons for this **false alarm** is that the application adds entries to the registry and creates a scheduled task to run at startup. Windows doesn't suggest letting applications with administrator privileges run at startup. I understand that, but this is the way to do it. I apologize, but the application cannot perform a deep memory clean without administrator privileges.
 
 That's a common issue that persists every time a new app version is released. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
 It helps if more users [submit the app for malware analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
@@ -184,7 +184,7 @@ If you are a native speaker of any language other than English, you can contribu
 2. Change the file build action property to Embedded Resource
 3. Rebuild and run the WinMemoryCleaner project
 
-💡 Google Translate tool will be used when a new version requires translated text changes. The contributor's efforts to submit updates are always appreciated.
+💡 AI translation tools will be utilized when a new version necessitates changes to the translated text. The contributor's efforts to submit updates are always appreciated.
 
 ⭐ Contributors
 
