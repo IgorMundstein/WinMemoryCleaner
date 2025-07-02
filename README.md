@@ -78,7 +78,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 - Menu
 
-[![](./.github/images/main-window-compact.png)](#system-tray-notification-area)
+[![](./.github/images/system-tray.png)](#system-tray-notification-area)
 
 - Notification
 
