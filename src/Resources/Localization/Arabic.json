@@ -55,6 +55,5 @@
   "UseHotkey": "استخدام هوتكي",
   "VirtualMemory": "ذاكرة افتراضية",
   "WhenFreeMemoryIsBelow": "عندما تكون الذاكرة الحرة أقل من {0}%",
-  "WinGetDownload": "قام winget بتنزيل الإصدار {0} إلى {1}",
   "WorkingSet": "مجموعة العمل"
 }

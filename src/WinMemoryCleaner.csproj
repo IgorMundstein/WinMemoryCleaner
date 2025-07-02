@@ -117,9 +117,9 @@
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
-    <Compile Include="Service\HotkeyService.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\Migrator.cs" />
     <Compile Include="Core\NativeMethods.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Core\Structs.cs" />
@@ -143,6 +143,7 @@
     <Compile Include="Model\ObservableItem.cs" />
     <Compile Include="Model\OperatingSystem.cs" />
     <Compile Include="Service\ComputerService.cs" />
+    <Compile Include="Service\HotkeyService.cs" />
     <Compile Include="Service\NotificationService.cs" />
     <Compile Include="View\Control\ContextMenuStripControl.cs">
       <SubType>Component</SubType>

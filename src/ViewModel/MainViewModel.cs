@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Windows.Input;
 
@@ -939,9 +938,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                var version = Assembly.GetExecutingAssembly().GetName().Version;
-
-                return string.Format(Localizer.Culture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
+                return string.Format(Localizer.Culture, "{0} {1}.{2}", Constants.App.Title, App.Version.Major, App.Version.Minor);
             }
         }
 

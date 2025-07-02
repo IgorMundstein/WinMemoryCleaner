@@ -55,6 +55,5 @@
   "UseHotkey": "使用熱鍵",
   "VirtualMemory": "虛擬記憶體",
   "WhenFreeMemoryIsBelow": "當可用記憶體低於 {0}%",
-  "WinGetDownload": "winget 已將版本 {0} 下載到 {1}",
   "WorkingSet": "工作集"
 }

@@ -55,6 +55,5 @@
   "UseHotkey": "користи пречицу",
   "VirtualMemory": "виртуелна меморија",
   "WhenFreeMemoryIsBelow": "када је слободна меморија испод {0}%",
-  "WinGetDownload": "winget је преузео верзију {0} у {1}",
   "WorkingSet": "радни сет"
 }

@@ -55,6 +55,5 @@
   "UseHotkey": "ใช้ปุ่มลัด",
   "VirtualMemory": "หน่วยความจำเสมือน",
   "WhenFreeMemoryIsBelow": "เมื่อหน่วยความจำว่างต่ำกว่า {0}%",
-  "WinGetDownload": "winget ดาวน์โหลดเวอร์ชัน {0} ไปยัง {1}",
   "WorkingSet": "ชุดการทำงาน"
 }

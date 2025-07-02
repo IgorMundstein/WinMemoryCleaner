@@ -55,6 +55,5 @@
   "UseHotkey": "bruk hurtigtast",
   "VirtualMemory": "virtuelt minne",
   "WhenFreeMemoryIsBelow": "når ledig minne er under {0}%",
-  "WinGetDownload": "winget lastet ned versjon {0} til {1}",
   "WorkingSet": "arbeidssett"
 }

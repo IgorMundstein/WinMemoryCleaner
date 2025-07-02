@@ -55,6 +55,5 @@
   "UseHotkey": "използване на клавишна комбинация",
   "VirtualMemory": "виртуална памет",
   "WhenFreeMemoryIsBelow": "когато свободната памет падне под {0}%",
-  "WinGetDownload": "winget изтегли версия {0} в {1}",
   "WorkingSet": "работен набор"
 }

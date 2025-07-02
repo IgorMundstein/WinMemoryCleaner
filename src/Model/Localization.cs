@@ -28,7 +28,7 @@ namespace WinMemoryCleaner
         private string _trayIcon;
         private string _updatedToVersion, _used, _useHotkey;
         private string _virtualMemory;
-        private string _whenFreeMemoryIsBelow, _winGetDownload, _workingSet;
+        private string _whenFreeMemoryIsBelow, _workingSet;
 
         #endregion
 
@@ -424,13 +424,6 @@ namespace WinMemoryCleaner
         {
             get { return _whenFreeMemoryIsBelow; }
             private set { _whenFreeMemoryIsBelow = value.Capitalize(); }
-        }
-
-        [DataMember]
-        public string WinGetDownload
-        {
-            get { return _winGetDownload; }
-            private set { _winGetDownload = value.Capitalize(); }
         }
 
         [DataMember]

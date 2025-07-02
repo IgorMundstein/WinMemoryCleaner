@@ -55,6 +55,5 @@
   "UseHotkey": "השתמש במקש קיצור",
   "VirtualMemory": "זיכרון וירטואלי",
   "WhenFreeMemoryIsBelow": "כאשר הזיכרון הפנוי נמוך מ- {0}%",
-  "WinGetDownload": "winget הוריד את הגרסה {0} אל {1}",
   "WorkingSet": "קבוצת עבודה"
 }

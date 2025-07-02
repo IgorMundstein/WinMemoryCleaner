@@ -55,6 +55,5 @@
   "UseHotkey": "përdorni hotkey",
   "VirtualMemory": "memorie virtuale",
   "WhenFreeMemoryIsBelow": "kur memoria e lirë është nën {0}%",
-  "WinGetDownload": "winget shkarkoi versionin {0} në {1}",
   "WorkingSet": "grupi i punës"
 }

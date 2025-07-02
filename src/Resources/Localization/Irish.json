@@ -55,6 +55,5 @@
   "UseHotkey": "úsáid hotkey",
   "VirtualMemory": "cuimhne fhíorúil",
   "WhenFreeMemoryIsBelow": "nuair atá cuimhne saor thíos {0}%",
-  "WinGetDownload": "shíosaigh winget leagan {0} chuig {1}",
   "WorkingSet": "tacar oibre"
 }

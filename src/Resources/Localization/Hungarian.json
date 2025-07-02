@@ -55,6 +55,5 @@
   "UseHotkey": "gyorsbillentyű használata",
   "VirtualMemory": "virtuális memória",
   "WhenFreeMemoryIsBelow": "amikor a szabad memória alacsony {0}%",
-  "WinGetDownload": "a winget letöltötte a(z) {0} verziót ide: {1}",
   "WorkingSet": "munkakészlet"
 }
