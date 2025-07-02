@@ -685,7 +685,7 @@ namespace WinMemoryCleaner
                     {
                         var exe = AppDomain.CurrentDomain.FriendlyName;
                         var sourcePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), exe);
-                        var targePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
+                        var targetPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
 
                         if (File.Exists(sourcePath))
                             File.Delete(sourcePath);
@@ -696,7 +696,7 @@ namespace WinMemoryCleaner
                         {
                             _processes.Add(new ProcessStartInfo
                             {
-                                Arguments = string.Format(Localizer.Culture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, sourcePath, targePath, newestVersion, string.Join(" ", commandLineArguments)).Trim(),
+                                Arguments = string.Format(Localizer.Culture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, sourcePath, targetPath, newestVersion, string.Join(" ", commandLineArguments)).Trim(),
                                 CreateNoWindow = true,
                                 FileName = "cmd",
                                 RedirectStandardError = false,

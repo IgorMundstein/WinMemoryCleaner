@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Input;
 
@@ -333,6 +334,7 @@ namespace WinMemoryCleaner
                     Settings.Save();
 
                     RaisePropertyChanged();
+                    RaisePropertyChanged(() => Title);
                 }
                 finally
                 {
@@ -938,7 +940,11 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return string.Format(Localizer.Culture, "{0} {1}.{2}", Constants.App.Title, App.Version.Major, App.Version.Minor);
+                var version = IsInDesignMode ? Assembly.GetExecutingAssembly().GetName().Version : App.Version;
+
+                return CompactMode
+                    ? Constants.App.Title
+                    : string.Format(Localizer.Culture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
             }
         }
 

@@ -1,27 +1,20 @@
 <div align="center">
   <h1>Windows Memory Cleaner</h1>
 
-[![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE)
-  [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
+![](https://img.shields.io/badge/WINDOWS-XP%20–%2011-blue?style=for-the-badge) ![](https://img.shields.io/badge/SERVER-2003%20–%202026-blue?style=for-the-badge) [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE) [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
   <p align="justify">
 This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run. Click the download button below to get started, or use a package manager like Chocolatey or WinGet.
   </p>
-
-  <p align="center">
-    <a href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
-      <img alt="DOWNLOAD" src="./.github/images/download-button.png">
-    </a>
-  </p>
-
-  <p align="center">
-    <picture>
-        <img src="./.github/images/main-window.png">
-    </picture>
-  </p>
 </div>
 
-## 📦 Download from package managers
+![](./.github/images/main-window.png)
+
+## 📦 Download
+
+- GitHub
+
+  [![](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?sort=semver&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
 - **Chocolatey**  
   ```powershell
@@ -32,12 +25,6 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
   ```powershell
   winget install IgorMundstein.WinMemoryCleaner
   ```
-
-## 🖥️ Computer requirements
-
-- Microsoft .NET Framework 4
-- Windows `XP` `Vista` `7` `8` `10` `11`
-- Windows Server `2003` `2008` `2012` `2016` `2019` `2022` `2026`
 
 ## 🚀 Features
 
@@ -50,9 +37,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 - Arrow (Up/Down) next to the minimize button to collapse and extend the window
 
-<picture>
-  <img src="./.github/images/main-window-compact.png">
-</picture>
+![](./.github/images/main-window-compact.png)
 
 ### Memory Areas
 
@@ -93,15 +78,11 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 - Menu
 
-<picture>
-  <img src="./.github/images/system-tray.png">
-</picture>
+![](./.github/images/system-tray.png)
 
 - Notification
 
-<picture>
-  <img src="./.github/images/notification.png">
-</picture>
+![](./.github/images/notification.png)
 
 ### Tray icon
 
@@ -148,9 +129,7 @@ C:\WinMemoryCleaner.exe /Uninstall
 
 The installation will close some processes to install or uninstall the service without requiring a system restart, and log files will be generated along with the .exe file. Some application settings will be modified based on recommendations. You can still open the application (GUI) and configure it as desired. The service will utilize these settings.
 
-<picture>
-  <img src="./.github/images/windows-service.png">
-</picture>
+![](./.github/images/windows-service.png)
 
 ## 📖 Logs
 
@@ -159,9 +138,7 @@ The app generates logs in the Windows event
 1. Press **Win + R** to open the Run command dialog box
 2. Type **eventvwr** and press **Enter** to open the Event Viewer
 
-<picture>
-  <img src="./.github/images/windows-event-log.png">
-</picture>
+![](./.github/images/windows-event-log.png)
 
 ## ❓ Frequently Asked Questions (FAQ)
 
