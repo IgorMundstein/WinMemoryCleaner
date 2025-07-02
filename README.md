@@ -4,7 +4,7 @@
 ![](https://img.shields.io/badge/WINDOWS-XP%20–%2011-blue?style=for-the-badge) ![](https://img.shields.io/badge/SERVER-2003%20–%202026-blue?style=for-the-badge) [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE) [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
   <p align="justify">
-This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run. Click the download button below to get started, or use a package manager like Chocolatey or WinGet.
+This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run.
   </p>
 </div>
 
@@ -12,9 +12,8 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 ## 📦 Download
 
-- GitHub
-
-  [![](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?sort=semver&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
+- **GitHub**
+ [![](https://img.shields.io/github/v/release/IgorMundstein/WinMemoryCleaner?sort=semver&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
 - **Chocolatey**  
   ```powershell
@@ -184,7 +183,7 @@ If you are a native speaker of any language other than English, you can contribu
 2. Change the file build action property to Embedded Resource
 3. Rebuild and run the WinMemoryCleaner project
 
-💡 AI translation tools will be utilized when a new version necessitates changes to the translated text. The contributor's efforts to submit updates are always appreciated.
+💡 AI translation tools will be utilized when a new version requires changes to the translated text. The contributor's efforts to submit updates are always appreciated.
 
 ⭐ Contributors
 
