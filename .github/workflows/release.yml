@@ -4,6 +4,16 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build and release'
+        required: true
+        default: 'main'
+        type: choice
+        options:
+          - main
+          - develop
 
 permissions:
   contents: write
@@ -11,7 +21,7 @@ permissions:
 
 jobs:
   build:
-    name: Build for Release
+    name: Build and Sign for Release
     runs-on: windows-latest
     outputs:
       new_tag: ${{ steps.bump.outputs.new_tag }}
@@ -19,6 +29,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
@@ -53,59 +65,35 @@ jobs:
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
-      - name: Import signing certificate
-        shell: pwsh
-        run: |
-          echo "${{ secrets.SIGNING_CERT }}" | Out-File encoded.txt -Encoding ascii
-          certutil -decode encoded.txt cert.pfx
-          Remove-Item encoded.txt
+      - name: Upload unsigned EXE for signing
+        id: upload-unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned
+          path: src\bin\Release\WinMemoryCleaner.exe
 
-      - name: Sign executable
-        shell: pwsh
-        run: |
-          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
-            Where-Object { $_.FullName -match '\\x64\\' } |
-            Select-Object -First 1 -ExpandProperty FullName
-          if (-not $signtool) {
-            $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
-              Where-Object { $_.FullName -match '\\x86\\' } |
-              Select-Object -First 1 -ExpandProperty FullName
-          }
-          if (-not $signtool) {
-            Write-Error "signtool.exe not found"
-            exit 1
-          }
-          if (-not (Test-Path cert.pfx)) {
-            Write-Error "cert.pfx not found!"
-            exit 1
-          }
-          $exePath = Resolve-Path src\bin\Release\WinMemoryCleaner.exe
-          & $signtool sign /f cert.pfx /p "${{ secrets.SIGNING_PASSWORD }}" `
-            /tr http://timestamp.digicert.com /td sha256 /fd sha256 $exePath
-
-      - name: Verify signature
-        shell: pwsh
-        run: |
-          $sigInfo = Get-AuthenticodeSignature -FilePath src\bin\Release\WinMemoryCleaner.exe
-          if ($sigInfo.SignerCertificate -eq $null) {
-            Write-Error "Executable is not signed!"
-            exit 1
-          }
-
-      - name: Cleanup signing certificate
-        shell: pwsh
-        run: Remove-Item cert.pfx
+      - name: Submit to SignPath (release cert later)
+        id: signpath
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: WinMemoryCleaner
+          signing-policy-slug: test-signing
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ./signed
 
       - name: Create ZIP archive
         shell: pwsh
-        run: Compress-Archive -Path src\bin\Release\WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
+        run: Compress-Archive -Path signed/WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: winmemorycleaner-release-${{ steps.bump.outputs.new_tag }}
           path: |
-            src\bin\Release\WinMemoryCleaner.exe
+            signed/WinMemoryCleaner.exe
             WinMemoryCleaner.zip
           retention-days: 30
 
@@ -137,7 +125,6 @@ jobs:
             git push origin $tag
           } else {
             Write-Host "Tag '$tag' already exists. Reusing..."
-          }
 
       - name: Check if release already exists
         id: check_release
@@ -192,7 +179,7 @@ jobs:
             # ${{ steps.commit_date.outputs.date }}
             ${{ steps.formatted_message.outputs.body }}
           files: |
-            release_artifacts/src/bin/Release/WinMemoryCleaner.exe
+            release_artifacts/signed/WinMemoryCleaner.exe
             release_artifacts/WinMemoryCleaner.zip
           draft: true
           generate_release_notes: false
