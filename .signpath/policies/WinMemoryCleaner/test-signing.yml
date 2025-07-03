@@ -6,8 +6,7 @@ github-policies:
       include:
         - main
         - develop
-
-artifactRules:
-  - artifactType: "Application"
-    filePath: "**/WinMemoryCleaner.exe"
-    sign: true
+    rules:
+      - artifactType: "Application"
+        filePath: "**/WinMemoryCleaner.exe"
+        sign: true
