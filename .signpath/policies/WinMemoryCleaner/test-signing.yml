@@ -1,9 +1,0 @@
-github-policies:
-  - name: Default GitHub Policy
-    branches:
-      include:
-        - main
-    rules:
-      - artifactType: Application
-        filePath: "**/WinMemoryCleaner.exe"
-        sign: true

@@ -4,16 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to build and release'
-        required: true
-        default: 'main'
-        type: choice
-        options:
-          - main
-          - develop
 
 permissions:
   contents: write
@@ -30,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
+          ref: ${{ github.ref_name }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
@@ -72,6 +62,12 @@ jobs:
           name: unsigned
           path: src\bin\Release\WinMemoryCleaner.exe
 
+      - name: Download unsigned EXE for signing
+        uses: actions/download-artifact@v4
+        with:
+          name: unsigned
+          path: unsigned
+
       - name: Submit to SignPath (release cert later)
         id: signpath
         uses: signpath/github-action-submit-signing-request@v1.1
@@ -80,7 +76,7 @@ jobs:
           organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
           project-slug: WinMemoryCleaner
           signing-policy-slug: test-signing
-          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          artifact-path: unsigned/WinMemoryCleaner.exe
           wait-for-completion: true
           output-artifact-directory: ./signed
 
