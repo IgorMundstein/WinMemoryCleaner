@@ -4,6 +4,16 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build and release'
+        required: true
+        default: 'main'
+        type: choice
+        options:
+          - main
+          - develop
 
 permissions:
   contents: write
@@ -19,6 +29,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
