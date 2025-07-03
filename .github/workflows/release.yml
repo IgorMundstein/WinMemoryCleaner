@@ -61,6 +61,7 @@ jobs:
         with:
           name: unsigned
           path: src\bin\Release\WinMemoryCleaner.exe
+          if-no-files-found: error
 
       - name: Submit to SignPath (release cert later)
         id: signpath
