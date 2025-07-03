@@ -43,8 +43,8 @@ jobs:
 
       - name: Validate inputs and environment
         run: |
-          if [ -z "${{ secrets.WINGET_PKGS_TOKEN }}" ]; then
-            echo "::error::WINGET_PKGS_TOKEN secret is not set!"
+          if [ -z "${{ secrets.WINGET_TOKEN }}" ]; then
+            echo "::error::WINGET_TOKEN secret is not set!"
             exit 1
           fi
           
@@ -326,7 +326,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ env.FORK_REPO }}
-          token: ${{ secrets.WINGET_PKGS_TOKEN }}
+          token: ${{ secrets.WINGET_TOKEN }}
           path: winget-fork
           fetch-depth: 1
 
@@ -357,11 +357,11 @@ jobs:
 
       - name: Create Pull Request
         env:
-          GH_TOKEN: ${{ secrets.WINGET_PKGS_TOKEN }}
+          GH_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
           echo "::group::Creating pull request"
           
-          echo "${{ secrets.WINGET_PKGS_TOKEN }}" | gh auth login --with-token
+          echo "${{ secrets.WINGET_TOKEN }}" | gh auth login --with-token
           
           PR_TITLE="New package: IgorMundstein.WinMemoryCleaner version ${RELEASE_TAG}"
           PR_BODY="## Package Information

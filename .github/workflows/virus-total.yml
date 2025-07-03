@@ -1,0 +1,137 @@
+name: Submit to VirusTotal
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  VIRUS_TOTAL_API_KEY: ${{ secrets.VIRUS_TOTAL_API_KEY }}
+
+jobs:
+  submit-virustotal:
+    name: Submit latest release to VirusTotal
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Get latest release tag
+        id: get_release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: release } = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            core.setOutput('tag', release.tag_name);
+
+      - name: Validate VirusTotal API Key
+        run: |
+          if [ -z "${{ env.VIRUS_TOTAL_API_KEY }}" ]; then
+            echo "::error::VIRUS_TOTAL_API_KEY secret is not set!"
+            exit 1
+          fi
+
+      - name: Download WinMemoryCleaner.exe
+        run: |
+          RELEASE_TAG=${{ steps.get_release.outputs.tag }}
+          echo "::group::Downloading WinMemoryCleaner.exe from release $RELEASE_TAG"
+          for i in {1..3}; do
+            if curl -fL --retry 3 --retry-delay 5 -o WinMemoryCleaner.exe \
+              "https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/WinMemoryCleaner.exe"; then
+              break
+            fi
+            if [ $i -eq 3 ]; then
+              echo "::error::Failed to download after 3 attempts"
+              exit 1
+            fi
+            sleep $(( 2 ** i ))
+          done
+          echo "::endgroup::"
+
+      - name: Verify downloaded file size and calculate SHA256
+        id: file_info
+        run: |
+          FILE_SIZE=$(stat -c%s WinMemoryCleaner.exe)
+          if [ "$FILE_SIZE" -lt 10000 ]; then
+            echo "::error::Downloaded file size too small: $FILE_SIZE bytes"
+            exit 1
+          fi
+          echo "::notice::Downloaded file size: $FILE_SIZE bytes"
+          SHA256=$(sha256sum WinMemoryCleaner.exe | cut -d ' ' -f1)
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "::notice::SHA256: $SHA256"
+
+      - name: Submit file to VirusTotal
+        id: vt_submit
+        env:
+          VIRUS_TOTAL_API_KEY: ${{ env.VIRUS_TOTAL_API_KEY }}
+        run: |
+          RESPONSE=$(curl --request POST \
+            --url https://www.virustotal.com/api/v3/files \
+            --header "x-apikey: $VIRUS_TOTAL_API_KEY" \
+            --form file=@WinMemoryCleaner.exe)
+          echo "$RESPONSE" > vt_response.json
+
+          ANALYSIS_ID=$(jq -e -r '.data.id' vt_response.json)
+          if [ -z "$ANALYSIS_ID" ] || [ "$ANALYSIS_ID" == "null" ]; then
+            echo "::error::Failed to get analysis ID from VirusTotal response"
+            cat vt_response.json
+            exit 1
+          fi
+
+          echo "analysis_id=$ANALYSIS_ID" >> $GITHUB_OUTPUT
+          echo "::notice::Submitted to VirusTotal with analysis ID $ANALYSIS_ID"
+
+      - name: Poll VirusTotal for analysis result
+        env:
+          VIRUS_TOTAL_API_KEY: ${{ env.VIRUS_TOTAL_API_KEY }}
+        run: |
+          ANALYSIS_ID=${{ steps.vt_submit.outputs.analysis_id }}
+
+          echo "::group::Polling VirusTotal analysis result"
+          for i in {1..10}; do
+            RESPONSE=$(curl --request GET \
+              --url "https://www.virustotal.com/api/v3/analyses/$ANALYSIS_ID" \
+              --header "x-apikey: $VIRUS_TOTAL_API_KEY")
+            STATUS=$(echo "$RESPONSE" | jq -e -r '.data.attributes.status')
+            echo "Attempt $i: status = $STATUS"
+            if [ "$STATUS" == "completed" ]; then
+              echo "$RESPONSE" > vt_analysis_result.json
+              break
+            fi
+            sleep 15
+          done
+
+          if [ "$STATUS" != "completed" ]; then
+            echo "::warning::Analysis not completed after 10 attempts"
+            exit 1
+          fi
+
+          TOTAL=$(jq '.data.attributes.stats.harmless + .data.attributes.stats.malicious + .data.attributes.stats.suspicious + .data.attributes.stats.undetected + .data.attributes.stats.timeout' vt_analysis_result.json)
+          MALICIOUS=$(jq '.data.attributes.stats.malicious' vt_analysis_result.json)
+          SUSPICIOUS=$(jq '.data.attributes.stats.suspicious' vt_analysis_result.json)
+          UNDETECTED=$(jq '.data.attributes.stats.undetected' vt_analysis_result.json)
+
+          echo "::notice::VirusTotal scan results summary:"
+          echo "Total scanners: $TOTAL"
+          echo "Malicious detections: $MALICIOUS"
+          echo "Suspicious detections: $SUSPICIOUS"
+          echo "Undetected: $UNDETECTED"
+          echo "::endgroup::"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f WinMemoryCleaner.exe vt_response.json vt_analysis_result.json
+          echo "::notice::Cleanup completed"
