@@ -1,5 +1,3 @@
-version: 1.0
-
 github-policies:
   - name: "Default GitHub Policy"
     branches:
