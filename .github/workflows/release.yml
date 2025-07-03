@@ -62,12 +62,6 @@ jobs:
           name: unsigned
           path: src\bin\Release\WinMemoryCleaner.exe
 
-      - name: Download unsigned EXE for signing
-        uses: actions/download-artifact@v4
-        with:
-          name: unsigned
-          path: unsigned
-
       - name: Submit to SignPath (release cert later)
         id: signpath
         uses: signpath/github-action-submit-signing-request@v1.1
@@ -76,7 +70,7 @@ jobs:
           organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
           project-slug: WinMemoryCleaner
           signing-policy-slug: test-signing
-          artifact-path: unsigned/WinMemoryCleaner.exe
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: ./signed
 
