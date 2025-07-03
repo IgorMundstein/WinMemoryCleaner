@@ -1,4 +1,12 @@
 version: 1.0
+
+github-policies:
+  - name: "Default GitHub Policy"
+    branches:
+      include:
+        - main
+        - develop
+
 artifactRules:
   - artifactType: "Application"
     filePath: "**/WinMemoryCleaner.exe"
