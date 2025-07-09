@@ -22,6 +22,7 @@ namespace WinMemoryCleaner
         private readonly IComputerService _computerService;
         private readonly IHotkeyService _hotKeyService;
         private bool _isOptimizationKeyValid;
+        private bool _isOptimizationRunning;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
         private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
         private byte _optimizationProgressPercentage;
@@ -48,6 +49,7 @@ namespace WinMemoryCleaner
 
             // Commands
             AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList, () => CanAddProcessToExclusionList);
+            NavigateUriCommand = new RelayCommand<Uri>(Navigate);
             OptimizeCommand = new RelayCommand(() => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual), () => CanOptimize);
             RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
 
@@ -335,6 +337,8 @@ namespace WinMemoryCleaner
 
                     RaisePropertyChanged();
                     RaisePropertyChanged(() => Title);
+
+                    App.ReleaseMemory();
                 }
                 finally
                 {
@@ -371,6 +375,22 @@ namespace WinMemoryCleaner
             set
             {
                 _isOptimizationKeyValid = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether is optimization running.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if is optimization running; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsOptimizationRunning
+        {
+            get { return _isOptimizationRunning; }
+            set
+            {
+                _isOptimizationRunning = value;
                 RaisePropertyChanged();
             }
         }
@@ -481,7 +501,7 @@ namespace WinMemoryCleaner
                 add(Localizer.String.StandbyListLowPriority, Enums.Memory.Areas.StandbyListLowPriority, Computer.OperatingSystem.HasStandbyList);
                 add(Localizer.String.SystemFileCache, Enums.Memory.Areas.SystemFileCache, Computer.OperatingSystem.HasSystemFileCache);
                 add(Localizer.String.WorkingSet, Enums.Memory.Areas.WorkingSet, Computer.OperatingSystem.HasWorkingSet);
-                    
+
                 return new ObservableCollection<ObservableItem<bool>>(items.OrderBy(item => item.Name));
             }
         }
@@ -944,7 +964,7 @@ namespace WinMemoryCleaner
 
                 return CompactMode
                     ? Constants.App.Title
-                    : string.Format(Localizer.Culture, "{0} {1}.{2}", Constants.App.Title, version.Major, version.Minor);
+                    : string.Format(Localizer.Culture, "{0} {1}", Constants.App.Title, string.Format(Localizer.Culture, Constants.App.VersionFormat, version.Major, version.Minor, version.Build));
             }
         }
 
@@ -1047,7 +1067,7 @@ namespace WinMemoryCleaner
 
         #endregion
 
-        #region Commands | Events
+        #region Commands
 
         /// <summary>
         /// Gets the add process to exclusion list.
@@ -1058,6 +1078,14 @@ namespace WinMemoryCleaner
         public ICommand AddProcessToExclusionListCommand { get; private set; }
 
         /// <summary>
+        /// Gets the navigate URI command.
+        /// </summary>
+        /// <value>
+        /// The navigate URI command.
+        /// </value>
+        public ICommand NavigateUriCommand { get; private set; }
+
+        /// <summary>
         /// Gets the optimize command.
         /// </summary>
         /// <value>
@@ -1066,17 +1094,26 @@ namespace WinMemoryCleaner
         public ICommand OptimizeCommand { get; private set; }
 
         /// <summary>
-        /// Occurs when [optimize command is completed].
-        /// </summary>
-        public event Action OnOptimizeCommandCompleted;
-
-        /// <summary>
         /// Gets the remove process from exclusion list command.
         /// </summary>
         /// <value>
         /// The remove process from exclusion list command.
         /// </value>
         public ICommand RemoveProcessFromExclusionListCommand { get; private set; }
+
+        #endregion
+
+        #region Actions
+
+        /// <summary>
+        /// Occurs when [on navigate URI command completed].
+        /// </summary>
+        public event Action OnNavigateUriCommandCompleted;
+
+        /// <summary>
+        /// Occurs when [optimize command is completed].
+        /// </summary>
+        public event Action OnOptimizeCommandCompleted;
 
         /// <summary>
         /// Occurs when [remove process from exclusion list command is completed].
@@ -1231,6 +1268,30 @@ namespace WinMemoryCleaner
             }
         }
 
+        /// <summary>  
+        /// Navigates the specified URI.  
+        /// </summary>  
+        /// <param name="uri">The URI.</param>  
+        public void Navigate(Uri uri)
+        {
+            if (uri == null)
+                return;
+
+            using (Process.Start(new ProcessStartInfo
+            {
+                FileName = uri.AbsoluteUri,
+                UseShellExecute = true
+            })) { }
+
+            if (OnNavigateUriCommandCompleted != null)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                {
+                    OnNavigateUriCommandCompleted();
+                });
+            }
+        }
+
         /// <summary>
         /// Called when [optimize progress is update].
         /// </summary>
@@ -1252,6 +1313,7 @@ namespace WinMemoryCleaner
             try
             {
                 IsBusy = true;
+                IsOptimizationRunning = true;
 
                 // App priority
                 App.SetPriority(Settings.RunOnPriority);
@@ -1289,6 +1351,7 @@ namespace WinMemoryCleaner
             }
             finally
             {
+                IsOptimizationRunning = false;
                 IsBusy = false;
             }
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -20,7 +21,7 @@ namespace WinMemoryCleaner
             public const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization.";
             public const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
-            public const string VersionFormat = "{0}.{1}";
+            public const string VersionFormat = "{0}.{1}.{2}";
 
             public static class Author
             {
@@ -47,7 +48,6 @@ namespace WinMemoryCleaner
                 {
                     public const string ProcessExclusionList = @"SOFTWARE\WinMemoryCleaner\ProcessExclusionList";
                     public const string Settings = @"SOFTWARE\WinMemoryCleaner";
-                    public const string Startup = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run";
                 }
 
                 public static class Name
@@ -76,9 +76,13 @@ namespace WinMemoryCleaner
 
             public static class Repository
             {
-                public static readonly Uri AssemblyInfoUri = new Uri("https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/src/Properties/AssemblyInfo.cs");
-                public static readonly Uri LatestExeUri = new Uri("https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe");
-                public static readonly Uri Uri = new Uri("https://github.com/IgorMundstein/WinMemoryCleaner/");
+                private static string GitHub = "https://github.com/IgorMundstein/WinMemoryCleaner";
+                private static string GitHubRaw = "https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main";
+
+                public static readonly Uri AboutUri = new Uri(GitHub + "?tab=readme-ov-file#windows-memory-cleaner");
+                public static readonly Uri AssemblyInfoUri = new Uri(Path.Combine(GitHubRaw, "src/Properties/AssemblyInfo.cs"));
+                public static readonly Uri LatestExeUri = new Uri(Path.Combine(GitHub, "releases/latest/download/WinMemoryCleaner.exe"));
+                public static readonly Uri Uri = new Uri(GitHub);
             }
         }
 

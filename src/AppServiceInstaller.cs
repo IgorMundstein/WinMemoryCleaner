@@ -73,6 +73,9 @@ namespace WinMemoryCleaner
             Settings.ShowOptimizationNotifications = false;
             Settings.Save();
 
+            // Remove run on startup
+            App.RunOnStartup(false);
+
             // Start service after install
             using (var sc = new ServiceController(_serviceInstaller.ServiceName))
                 sc.Start();

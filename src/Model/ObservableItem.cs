@@ -10,7 +10,7 @@ namespace WinMemoryCleaner
     public class ObservableItem<T> : ObservableObject
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ObservableItem{T}"/> class.
+        /// Initializes a new instance of the <see cref="ObservableItem{T}" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="getter">The getter.</param>

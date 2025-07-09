@@ -1,21 +1,19 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Windows;
 using WinMemoryCleaner;
 
 [assembly: AssemblyCompany(Constants.App.Author.Name)]
-[assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCopyright(Constants.App.License)]
-[assembly: AssemblyCulture("")]
 [assembly: AssemblyDescription(Constants.App.Title)]
-[assembly: AssemblyFileVersion("2.9.0.0")]
 [assembly: AssemblyKeyFile(Constants.App.KeyFile)]
 [assembly: AssemblyProduct(Constants.App.Name)]
 [assembly: AssemblyTitle(Constants.App.Title)]
-[assembly: AssemblyTrademark(Constants.App.Author.Name)]
-[assembly: AssemblyVersion("2.9.0.0")]
+[assembly: AssemblyVersion("3.0.0.0")]
 [assembly: ComVisible(false)]
+[assembly: CLSCompliant(true)]
 [assembly: Guid(Constants.App.Id)]
-[assembly: NeutralResourcesLanguage("")]
+[assembly: NeutralResourcesLanguage(Constants.Windows.Locale.Name.English)]
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.None)]

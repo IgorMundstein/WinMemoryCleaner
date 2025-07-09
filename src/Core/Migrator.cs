@@ -15,7 +15,10 @@ namespace WinMemoryCleaner
         {
             // 2.9+  
             if (App.Version >= new Version(2, 9))
+            {
                 MigrateSettingsFromCurrentUserToLocalMachine();
+                RemoveStartupRegistry();
+            }
         }
 
         #region Classes  
@@ -37,7 +40,7 @@ namespace WinMemoryCleaner
 
         #endregion
 
-        #region Methods  
+        #region Methods
 
         /// <summary>
         /// From version 2.9, settings were moved from the current user key to the local machine to support a new feature that enables the app to run in service mode.
@@ -116,6 +119,25 @@ namespace WinMemoryCleaner
 
                 Registry.CurrentUser.DeleteSubKey(Constants.App.Registry.Key.ProcessExclusionList, false);
                 Registry.CurrentUser.DeleteSubKey(Constants.App.Registry.Key.Settings, false);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Removes the startup registry to avoid UAC warnings. Use a scheduled task instead to run at startup.
+        /// </summary>
+        private static void RemoveStartupRegistry()
+        {
+            try
+            {
+                using (var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"))
+                {
+                    if (key != null)
+                        key.DeleteValue(Constants.App.Title, false);
+                }
             }
             catch (Exception e)
             {

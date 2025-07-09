@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace WinMemoryCleaner
 {
@@ -10,16 +11,20 @@ namespace WinMemoryCleaner
     public static class ExtensionMethods
     {
         /// <summary>
-        /// Capitalizes the first letter and converts the rest of the characters to lowercase.
+        /// Capitalizes the first letter and every letter immediately following a dot, converting all other letters to lowercase.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
         public static string Capitalize(this string value)
         {
-            if (string.IsNullOrEmpty(value))
-                return value;
-            
-            return Localizer.Culture.TextInfo.ToUpper(value[0]) + Localizer.Culture.TextInfo.ToLower(value.Substring(1));
+            return string.IsNullOrEmpty(value)
+                ? value
+                : Regex.Replace
+                (
+                    Localizer.Culture.TextInfo.ToLower(value),
+                    @"(^|(?<=\.))(\s*)([a-zA-Z])",
+                    m => m.Groups[1].Value + m.Groups[2].Value + Localizer.Culture.TextInfo.ToUpper(m.Groups[3].Value[0])
+                );
         }
 
         /// <summary>

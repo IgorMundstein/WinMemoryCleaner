@@ -12,12 +12,12 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
-        private string _add, _alwaysOnTop, _autoOptimization, _autoOptimizationInterval, _autoUpdate;
+        private string _about, _add, _alwaysOnTop, _autoOptimization, _autoOptimizationInterval, _autoUpdate;
         private string _close, _closeAfterOptimization, _closeToTheNotificationArea, _collapse, _combinedPageList;
-        private string _developedBy;
+        private string _donate, _donationMessage, _donationTitle;
         private string _error, _errorAdminPrivilegeRequired, _errorCanNotSaveLog, _errorMemoryAreaOptimizationNotSupported, _everyHour, _exit, _expand;
         private string _free;
-        private string _hotkeyIsInUseByOperatingSystem;
+        private string _help, _hotkeyIsInUseByOperatingSystem;
         private string _image, _invalid;
         private string _lowMemory;
         private string _manual, _memoryAreas, _memoryOptimized, _memoryUsage, _minimize, _modifiedFileCache, _modifiedPageList;
@@ -33,6 +33,13 @@ namespace WinMemoryCleaner
         #endregion
 
         #region Properties
+
+        [DataMember]
+        public string About
+        {
+            get { return _about; }
+            private set { _about = value.Capitalize(); }
+        }
 
         [DataMember]
         public string Add
@@ -105,10 +112,24 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
-        public string DevelopedBy
+        public string Donate
         {
-            get { return _developedBy; }
-            private set { _developedBy = value.Capitalize(); }
+            get { return _donate; }
+            private set { _donate = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string DonationMessage
+        {
+            get { return _donationMessage; }
+            private set { _donationMessage = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string DonationTitle
+        {
+            get { return _donationTitle; }
+            private set { _donationTitle = value.Capitalize(); }
         }
 
         [DataMember]
@@ -165,6 +186,13 @@ namespace WinMemoryCleaner
         {
             get { return _free; }
             private set { _free = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string Help
+        {
+            get { return _help; }
+            private set { _help = value.Capitalize(); }
         }
 
         [DataMember]

@@ -1,0 +1,215 @@
+﻿<Window x:Class="WinMemoryCleaner.DonationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WinMemoryCleaner"
+        AllowsTransparency="True"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        BorderThickness="0"
+        DataContext="{Binding MainViewModel, Source={StaticResource ViewModelLocator}}"
+        FlowDirection="{Binding Path=(local:Localizer.Language).Direction}"
+        Foreground="{StaticResource DarkForeground}"
+        Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        SnapsToDevicePixels="True"
+        Title="{x:Static local:Constants+App.Title}"
+        UseLayoutRounding="True"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None">
+    <Border Background="{StaticResource DarkWindowBackground}"
+            BorderBrush="{StaticResource DarkWindowBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="10"
+            Width="450">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock FontWeight="Normal"
+                           Grid.Column="0"
+                           HorizontalAlignment="Left"
+                           Margin="15,0,0,0"
+                           Text="{Binding Path=(local:Localizer.String).DonationTitle}"
+                           Typography.Capitals="AllSmallCaps"
+                           VerticalAlignment="Center" />
+                <Button Background="Transparent"
+                        BorderThickness="0"
+                        Click="OnCloseButtonClick"
+                        Content="✕"
+                        Cursor="Hand"
+                        Grid.Column="1"
+                        Height="28"
+                        HorizontalAlignment="Right"
+                        Margin="0"
+                        ToolTip="Close"
+                        VerticalAlignment="Top"
+                        Width="28" />
+            </Grid>
+            <TextBlock Grid.Row="1"
+                       Margin="15,0,15,10"
+                       Padding="0"
+                       Text="{Binding Path=(local:Localizer.String).DonationMessage}"
+                       TextAlignment="Justify"
+                       TextWrapping="Wrap" />
+            <UniformGrid Columns="2"
+                         Grid.Row="3"
+                         HorizontalAlignment="Stretch"
+                         Margin="0">
+                <!-- GitHub Sponsor -->
+                <Button Click="OnHyperlinkRequestNavigate"
+                        Cursor="Hand"
+                        HorizontalAlignment="Stretch"
+                        Margin="10"
+                        MinHeight="64"
+                        MinWidth="150"
+                        Padding="10"
+                        Tag="https://github.com/sponsors/IgorMundstein"
+                        VerticalAlignment="Stretch">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0"
+                              Margin="0,0,10,0"
+                              VerticalAlignment="Center">
+                            <Viewbox Width="32" Height="32">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                          Fill="Transparent"
+                                          Stroke="#EA4AAA"
+                                          StrokeThickness="2" />
+                                </Canvas>
+                            </Viewbox>
+                        </Grid>
+                        <TextBlock Grid.Column="1"
+                                   Margin="12,0,0,0"
+                                   Text="GitHub Sponsor"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <!-- Bitcoin -->
+                <Button Click="OnHyperlinkRequestNavigate"
+                        Cursor="Hand"
+                        HorizontalAlignment="Stretch"
+                        Margin="10"
+                        MinHeight="64"
+                        MinWidth="150"
+                        Padding="10"
+                        Tag="https://www.blockchain.com/btc/address/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap"
+                        VerticalAlignment="Stretch">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center">
+                            <Ellipse Fill="#f7931a"
+                                     Height="32"
+                                     Width="32" />
+                            <Path Data="M17.625 13.797c.246-1.642-1.005-2.527-2.721-3.12l.555-2.225-1.354-.338-.539 2.164c-.356-.089-.723-.172-1.088-.255l.541-2.17-1.352-.338-.555 2.225c-.295-.067-.586-.134-.872-.205l.001-.006-1.868-.466-.36 1.444s1.005.231.984.246c.548.137.647.5.631.788l-.631 2.531c.038.01.087.024.142.046l-.144-.036-.884 3.542c-.067.168-.236.42-.617.324.013.019-.985-.246-.985-.246l-.672 1.551 1.762.439c.327.083.648.17.964.252l-.56 2.246 1.351.338.555-2.225c.37.1.729.193 1.082.281l-.553 2.217 1.354.338.561-2.246c2.309.437 4.046.26 4.779-1.828.589-1.684-.03-2.656-1.243-3.292.889-.205 1.557-.787 1.737-1.994zm-3.108 4.349c-.422 1.684-3.275.774-4.199.546l.75-3.011c.924.23 3.886.687 3.449 2.465zm.423-4.37c-.385 1.542-2.754.758-3.522.567l.678-2.726c.768.19 3.24.547 2.844 2.159zm2.075 4.393c-.423 1.685-3.22.82-4.105.613l.752-3.012c.885.207 3.783.594 3.353 2.399zm.429-4.396c-.38 1.543-2.705.851-3.475.66l.679-2.727c.77.191 3.178.493 2.796 2.067z"
+                                  Fill="White"
+                                  Height="20"
+                                  Stretch="Uniform"
+                                  Width="20" />
+                        </Grid>
+                        <TextBlock Grid.Column="1"
+                                   Margin="12,0,0,0"
+                                   Text="Bitcoin"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <!-- Ko-fi -->
+                <Button Click="OnHyperlinkRequestNavigate"
+                        Cursor="Hand"
+                        HorizontalAlignment="Stretch"
+                        Margin="10"
+                        MinHeight="64"
+                        MinWidth="150"
+                        Padding="10"
+                        Tag="https://ko-fi.com/igormundstein"
+                        VerticalAlignment="Stretch">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0"
+                              Margin="0,0,10,0"
+                              VerticalAlignment="Center">
+                            <Viewbox Height="32"
+                                     Stretch="Uniform"
+                                     Width="32">
+                                <Canvas Width="100" Height="100">
+                                    <Ellipse Fill="#29B6E6"
+                                             Height="100"
+                                             Width="100" />
+                                    <Path Data="M86.1,39.3c0,11.5-9.3,20.8-20.8,20.8h-4.3c-0.3,7.7-6.6,13.8-14.4,13.8H30.8c-8,0-14.5-6.5-14.5-14.5V30.8c0-8,6.5-14.5,14.5-14.5h34.6c11.3,0,20.6,9.1,20.7,20.3C86.1,36.9,86.1,38.1,86.1,39.3z M69.2,43.5h3.5c2.7,0,4.9-2.2,4.9-4.9s-2.2-4.9-4.9-4.9h-3.5V43.5z"
+                                          Fill="White" />
+                                    <Path Data="M40.2,56c-3.4-2.8-6.4-5.4-8.8-8.1c-2.7-3-4.5-5.9-5.1-8.5c-1-4.8,1.2-9.4,5.1-11.5c4.4-2.4,9.7-0.7,12.8,2.8c0.4,0.4,0.7,0.9,1,1.4c0.3-0.5,0.6-1,1-1.4c3.1-3.5,8.4-5.2,12.8-2.8c3.9,2.1,6.1,6.7,5.1,11.5c-0.6,2.6-2.4,5.5-5.1,8.5c-2.4,2.6-5.4,5.3-8.8,8.1c-1.1,0.9-2.7,0.9-3.8,0C42.8,58.2,41.5,57.1,40.2,56z"
+                                          Fill="#ED4C5C" />
+                                </Canvas>
+                            </Viewbox>
+                        </Grid>
+                        <TextBlock Grid.Column="1"
+                                   Margin="12,0,0,0"
+                                   Text="Ko-fi"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+                <!-- Ethereum -->
+                <Button Click="OnHyperlinkRequestNavigate"
+                        Cursor="Hand"
+                        HorizontalAlignment="Stretch"
+                        Margin="10"
+                        MinHeight="64"
+                        MinWidth="150"
+                        Padding="10"
+                        Tag="https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d"
+                        VerticalAlignment="Stretch">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0"
+                              Margin="0,0,10,0"
+                              VerticalAlignment="Center">
+                            <Ellipse Fill="#627eea"
+                                     Height="32"
+                                     Width="32" />
+                            <Polygon Fill="White"
+                                     Points="16,4 28,20 16,14" />
+                            <Polygon Fill="#b9c5f7"
+                                     Points="16,4 4,20 16,14" />
+                            <Polygon Fill="White"
+                                     Points="16,18 28,22 16,28" />
+                            <Polygon Fill="#b9c5f7"
+                                     Points="16,18 16,28 4,22" />
+                            <Polygon Fill="#a8b8e6"
+                                     Points="16,14 28,20 16,18" />
+                            <Polygon Fill="#a8b8e6"
+                                     Points="16,14 16,18 4,20" />
+                        </Grid>
+                        <TextBlock Grid.Column="1"
+                                   Margin="12,0,0,0"
+                                   Text="Ethereum"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+                </Button>
+            </UniformGrid>
+        </Grid>
+    </Border>
+</Window>

@@ -11,7 +11,7 @@ namespace WinMemoryCleaner
     public class LogOptimizationData : ILogData
     {
         /// <summary>  
-        /// Initializes a new instance of the <see cref="LogOptimizationData"/> class.  
+        /// Initializes a new instance of the <see cref="LogOptimizationData" /> class.  
         /// </summary>  
         public LogOptimizationData()
         {

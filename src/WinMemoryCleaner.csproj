@@ -92,6 +92,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="View\Window\DonationWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="View\Window\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -148,10 +152,13 @@
     <Compile Include="View\Control\ContextMenuStripControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ViewModel\Base\ObservableObject.cs" />
+    <Compile Include="Core\ObservableObject.cs" />
     <Compile Include="ViewModel\Base\ViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\Window\DonationWindow.xaml.cs">
+      <DependentUpon>DonationWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Window\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -214,9 +221,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\github.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\win-memory-cleaner.ico" />

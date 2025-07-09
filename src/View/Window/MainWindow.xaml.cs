@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Navigation;
 
 namespace WinMemoryCleaner
 {
@@ -25,26 +23,30 @@ namespace WinMemoryCleaner
         {
             InitializeComponent();
 
-            _viewModel = (MainViewModel)DataContext;
-            _viewModel.OnOptimizeCommandCompleted += OnOptimizeCommandCompleted;
-            _viewModel.OnRemoveProcessFromExclusionListCommandCompleted += SetFocusToProcessExclusionList;
+            _viewModel = DataContext as MainViewModel;
+            if (_viewModel != null)
+            {
+                _viewModel.OnNavigateUriCommandCompleted += OnNavigateUriCommandCompleted;
+                _viewModel.OnOptimizeCommandCompleted += OnOptimizeCommandCompleted;
+                _viewModel.OnRemoveProcessFromExclusionListCommandCompleted += SetFocusToProcessExclusionList;
+            }
 
             // Slider
             var sliderPreviewMouseLeftButtonDownEvent = new MouseButtonEventHandler((sender, e) =>
-            {
-                var slider = (Slider)sender;
-                var track = slider.Template.FindName("PART_Track", slider) as Track;
-
-                if (!slider.IsMoveToPointEnabled || track == null || track.Thumb == null || track.Thumb.IsMouseOver)
-                    return;
-
-                track.Thumb.UpdateLayout();
-                track.Thumb.RaiseEvent(new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, MouseButton.Left)
                 {
-                    RoutedEvent = MouseLeftButtonDownEvent,
-                    Source = track.Thumb
+                    var slider = (Slider)sender;
+                    var track = slider.Template.FindName("PART_Track", slider) as Track;
+
+                    if (!slider.IsMoveToPointEnabled || track == null || track.Thumb == null || track.Thumb.IsMouseOver)
+                        return;
+
+                    track.Thumb.UpdateLayout();
+                    track.Thumb.RaiseEvent(new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, MouseButton.Left)
+                    {
+                        RoutedEvent = MouseLeftButtonDownEvent,
+                        Source = track.Thumb
+                    });
                 });
-            });
 
             AutoOptimizationInterval.AddHandler(PreviewMouseLeftButtonDownEvent, sliderPreviewMouseLeftButtonDownEvent, true);
             AutoOptimizationMemoryUsage.AddHandler(PreviewMouseLeftButtonDownEvent, sliderPreviewMouseLeftButtonDownEvent, true);
@@ -82,6 +84,16 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Called when [ComboBox mouse right button up].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
+        private void OnComboBoxMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            SetFocusToOptimizationButton();
+        }
+
+        /// <summary>
         /// Called when [compact mode button click].
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -92,15 +104,54 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Handles the RequestNavigate event of the Hyperlink control.
+        /// Called when [donate menu item click].
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RequestNavigateEventArgs" /> instance containing the event data.</param>
-        private void OnHyperlinkRequestNavigate(object sender, RequestNavigateEventArgs e)
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void OnDonateMenuItemClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                IsEnabled = false;
+
+                var donationWindow = new DonationWindow() { Owner = this };
+
+                donationWindow.ShowDialog();
+
+                SetFocusToOptimizationButton();
+            }
+            finally
+            {
+                IsEnabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Called when [help button click].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
+        private void OnHelpButtonClick(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var contextMenu = button.Resources["HelpContextMenu"] as ContextMenu;
+
+            if (contextMenu != null)
+            {
+                contextMenu.IsOpen = true;
+                contextMenu.Placement = PlacementMode.Bottom;
+                contextMenu.PlacementTarget = button;
+            }
+        }
+
+        /// <summary>
+        /// Called when [help button preview mouse right button down].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
+        private void OnHelpButtonPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             SetFocusToOptimizationButton();
-
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
         }
 
@@ -125,6 +176,14 @@ namespace WinMemoryCleaner
             base.OnMouseLeftButtonDown(e);
 
             DragMove();
+        }
+
+        /// <summary>
+        /// Called when [navigate URI command completed].
+        /// </summary>
+        private void OnNavigateUriCommandCompleted()
+        {
+            SetFocusToOptimizationButton();
         }
 
         /// <summary>

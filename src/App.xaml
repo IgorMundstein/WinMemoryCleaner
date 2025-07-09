@@ -33,6 +33,9 @@
             <Style x:Key="ControlBase" TargetType="{x:Type Control}" BasedOn="{StaticResource FrameworkElementBase}">
                 <Setter Property="Background" Value="{StaticResource DarkBackground}" />
                 <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="Light" />
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Style.Resources>
                     <Style TargetType="{x:Type Border}">
@@ -287,7 +290,9 @@
                 </Style.Triggers>
             </Style>
             <Style TargetType="{x:Type Image}" BasedOn="{StaticResource FrameworkElementBase}" />
-            <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource ControlBase}" />
+            <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource ControlBase}" >
+                <Setter Property="IsTabStop" Value="False" />
+            </Style>
             <Style TargetType="{x:Type Label}" BasedOn="{StaticResource FrameworkElementBase}">
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="Margin" Value="0" />
@@ -349,6 +354,129 @@
                                     <Setter TargetName="Border" Property="Fill" Value="{StaticResource DarkBackground}" />
                                     <Setter TargetName="Border" Property="Stroke" Value="{StaticResource DarkBorderBrush}" />
                                     <Setter TargetName="CheckMark" Property="Fill" Value="{StaticResource DarkDisabled}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <!-- ContextMenu -->
+            <Style TargetType="{x:Type ContextMenu}">
+                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ContextMenu}">
+                            <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="5"
+                                    SnapsToDevicePixels="True"
+                                    VerticalAlignment="Center">
+                                <StackPanel KeyboardNavigation.DirectionalNavigation="Cycle"
+                                            IsItemsHost="True" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <!-- MenuItem -->
+            <Style TargetType="{x:Type MenuItem}">
+                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="Margin" Value="10, 0, 10, 0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type MenuItem}">
+                            <Border x:Name="Border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="0"
+                                    Margin="0"
+                                    Padding="0, 5, 0, 5"
+                                    SnapsToDevicePixels="True"
+                                    VerticalAlignment="Center">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border x:Name="IconBorder"
+                                            Background="{StaticResource DarkBackground}"
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Left"
+                                            Margin="0"
+                                            Padding="0"
+                                            SnapsToDevicePixels="True"
+                                            VerticalAlignment="Center">
+                                        <ContentPresenter x:Name="Icon"
+                                                          ContentSource="Icon"
+                                                          HorizontalAlignment="Center"
+                                                          Margin="0"
+                                                          VerticalAlignment="Center" />
+                                    </Border>
+                                    <ContentPresenter Grid.Column="1"
+                                                      ContentSource="Header"
+                                                      HorizontalAlignment="Left"
+                                                      Margin="10,0,0,0"
+                                                      RecognizesAccessKey="True"
+                                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                      VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2"
+                                               Foreground="{StaticResource DarkDisabled}"
+                                               Margin="0"
+                                               Padding="0"
+                                               Text="{TemplateBinding InputGestureText}"
+                                               VerticalAlignment="Center" />
+                                    <Path Grid.Column="3"
+                                          Data="M 0 0 L 4 4 L 0 8 Z"
+                                          Fill="{StaticResource DarkForeground}"
+                                          HorizontalAlignment="Center"
+                                          Margin="0"
+                                          Name="Arrow"
+                                          Visibility="Collapsed"
+                                          VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="HasItems" Value="True">
+                                    <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                                </Trigger>
+                                <Trigger Property="Icon" Value="{x:Null}">
+                                    <Setter TargetName="IconBorder" Property="Width" Value="0" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                                    <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DarkDisabled}" />
+                                </Trigger>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsSubmenuOpen" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -513,6 +641,9 @@
                 </Style.Resources>
             </Style>
             <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource FrameworkElementBase}">
+                <Setter Property="FontFamily" Value="Calibri" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="Light" />
                 <Setter Property="Margin" Value="0" />
                 <Setter Property="Padding" Value="0" />
                 <Style.Triggers>

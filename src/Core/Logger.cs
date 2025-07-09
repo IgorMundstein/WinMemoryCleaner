@@ -18,7 +18,7 @@ namespace WinMemoryCleaner
         #region Constructor
 
         /// <summary>
-        /// Initializes the <see cref="Logger"/> class.
+        /// Initializes the <see cref="Logger" /> class.
         /// </summary>
         static Logger()
         {

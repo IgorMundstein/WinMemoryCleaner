@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,7 +12,6 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
 
-[assembly: CLSCompliant(true)]
 namespace WinMemoryCleaner
 {
     /// <summary>
@@ -227,7 +225,7 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Raises the <see cref="E:Startup" /> event.
         /// </summary>
-        /// <param name="startupEvent">The <see cref="StartupEventArgs"/> instance containing the event data.</param>
+        /// <param name="startupEvent">The <see cref="StartupEventArgs" /> instance containing the event data.</param>
         protected override void OnStartup(StartupEventArgs startupEvent)
         {
             try
@@ -253,7 +251,7 @@ namespace WinMemoryCleaner
 
                         // Version (Update)
                         if (argument.Equals(Version.ToString()))
-                            _notifications.Add(string.Format(Localizer.Culture, Localizer.String.UpdatedToVersion, string.Format(Localizer.Culture, Constants.App.VersionFormat, Version.Major, Version.Minor)));
+                            _notifications.Add(string.Format(Localizer.Culture, Localizer.String.UpdatedToVersion, string.Format(Localizer.Culture, Constants.App.VersionFormat, Version.Major, Version.Minor, Version.Build)));
 
                         // Startup Type
                         if (memoryAreas != Enums.Memory.Areas.None)
@@ -466,26 +464,23 @@ namespace WinMemoryCleaner
         {
             try
             {
-                // Registry (Disabled to avoid UAC warnings)
-                try
+                using (Process.Start(new ProcessStartInfo
                 {
-                    using (var key = Registry.LocalMachine.CreateSubKey(Constants.App.Registry.Key.Startup))
-                    {
-                        if (key != null)
-                            key.DeleteValue(Constants.App.Title, false);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
+                    Arguments = string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title),
+                    CreateNoWindow = true,
+                    FileName = "schtasks",
+                    RedirectStandardError = false,
+                    RedirectStandardInput = false,
+                    RedirectStandardOutput = false,
+                    UseShellExecute = false,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                })) { }
 
-                // Scheduled Task
-                try
+                if (enable)
                 {
                     using (Process.Start(new ProcessStartInfo
                     {
-                        Arguments = string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title),
+                        Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT /RL HIGHEST /RU ADMINISTRATORS /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, Path),
                         CreateNoWindow = true,
                         FileName = "schtasks",
                         RedirectStandardError = false,
@@ -494,25 +489,6 @@ namespace WinMemoryCleaner
                         UseShellExecute = false,
                         WindowStyle = ProcessWindowStyle.Hidden
                     })) { }
-
-                    if (enable)
-                    {
-                        using (Process.Start(new ProcessStartInfo
-                        {
-                            Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT /RL HIGHEST /RU ADMINISTRATORS /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, Path),
-                            CreateNoWindow = true,
-                            FileName = "schtasks",
-                            RedirectStandardError = false,
-                            RedirectStandardInput = false,
-                            RedirectStandardOutput = false,
-                            UseShellExecute = false,
-                            WindowStyle = ProcessWindowStyle.Hidden
-                        })) { }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
                 }
             }
             catch (Exception e)
