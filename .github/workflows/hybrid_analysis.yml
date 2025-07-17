@@ -78,21 +78,18 @@ jobs:
           HYBRID_ANALYSIS_API_KEY: ${{ env.HYBRID_ANALYSIS_API_KEY }}
         run: |
           RESPONSE=$(curl -L --request POST \
-            --url https://www.hybrid-analysis.com/api/v2/submit/file \
+            --url https://hybrid-analysis.com/api/v2/submit/file \
             --header "api-key: $HYBRID_ANALYSIS_API_KEY" \
             --header "User-Agent: Falcon Sandbox" \
             --header "Accept: application/json" \
             --form file=@WinMemoryCleaner.exe \
             --form environment_id=100)
           echo "$RESPONSE" > ha_response.json
-
-          # Check if the response is valid JSON
           if ! echo "$RESPONSE" | jq empty; then
             echo "::error::Hybrid Analysis did not return valid JSON. Raw response:"
             cat ha_response.json
             exit 1
           fi
-
           JOB_ID=$(jq -e -r '.job_id' ha_response.json)
           if [ -z "$JOB_ID" ] || [ "$JOB_ID" == "null" ]; then
             echo "::error::Failed to get job_id from Hybrid Analysis response"
@@ -110,7 +107,7 @@ jobs:
           echo "::group::Polling Hybrid Analysis report status"
           for i in {1..20}; do
             RESPONSE=$(curl --request GET \
-              --url "https://www.hybrid-analysis.com/api/v2/report/${JOB_ID}" \
+              --url "https://hybrid-analysis.com/api/v2/report/${JOB_ID}" \
               --header "api-key: $HYBRID_ANALYSIS_API_KEY" \
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
