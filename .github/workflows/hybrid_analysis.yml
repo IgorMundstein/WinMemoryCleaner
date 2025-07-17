@@ -59,7 +59,6 @@ jobs:
           echo "::endgroup::"
 
       - name: Verify downloaded file size
-        id: file_info
         run: |
           FILE_SIZE=$(stat -c%s WinMemoryCleaner.exe)
           if [ "$FILE_SIZE" -lt 10000 ]; then
@@ -93,18 +92,26 @@ jobs:
           JOB_ID=${{ steps.ha_submit.outputs.job_id }}
           echo "::group::Polling Hybrid Analysis report status for Job ID: $JOB_ID"
           for i in {1..20}; do
-            RESPONSE=$(curl --request GET --location \
+            RESPONSE=$(curl --request GET --location --silent \
               --url "https://hybrid-analysis.com/api/v2/scans/${JOB_ID}" \
               --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
+
+            # Handle the case where the job ID isn't found yet by treating it like a queue
+            if [[ "$RESPONSE" == *"Not Found"* ]]; then
+              echo "Attempt $i: Job ID not found yet. Waiting for system to index the new scan..."
+              sleep 45
+              continue
+            fi
+
             STATUS=$(echo "$RESPONSE" | jq -r '.state // "error"')
             echo "Attempt $i: report status = $STATUS"
             if [ "$STATUS" == "SUCCESS" ]; then
               echo "$RESPONSE" > ha_report.json
               break
             elif [ "$STATUS" == "IN_PROGRESS" ] || [ "$STATUS" == "IN_QUEUE" ]; then
-              sleep 30
+              sleep 45
             else
               echo "::error::Unexpected report status or API error. Full response:"
               echo "$RESPONSE"
