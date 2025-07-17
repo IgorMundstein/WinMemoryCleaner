@@ -4,19 +4,15 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-    branches: [main]
 
 permissions:
   contents: read
 
-env:
-  HYBRID_ANALYSIS_API_KEY: ${{ secrets.HYBRID_ANALYSIS_API_KEY }}
-
 jobs:
-  submit-hybrid-analysis:
-    name: Submit latest release to Hybrid Analysis
+  submit-and-analyze:
+    name: Submit Latest Release to Hybrid Analysis
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 15
 
     steps:
       - name: Harden Runner
@@ -24,124 +20,51 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: Get latest release tag
+      - name: Get Latest Release Info
         id: get_release
         uses: actions/github-script@v7
         with:
           script: |
             const { data: release } = await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
-              repo: context.repo.repo
+              repo: context.repo.repo,
             });
-            core.setOutput('tag', release.tag_name);
+            const asset = release.assets.find(asset => asset.name.endsWith('.exe'));
+            if (!asset) {
+              core.setFailed('Could not find .exe asset in the latest release.');
+              return;
+            }
+            core.setOutput('asset_url', asset.browser_download_url);
+            core.setOutput('asset_name', asset.name);
+            core.setOutput('release_tag', release.tag_name);
 
-      - name: Validate Hybrid Analysis API Key
+      - name: Download Release Asset
         run: |
-          if [ -z "${{ env.HYBRID_ANALYSIS_API_KEY }}" ]; then
-            echo "::error::HYBRID_ANALYSIS_API_KEY secret is not set!"
-            exit 1
-          fi
+          echo "Downloading ${{ steps.get_release.outputs.asset_name }} from release ${{ steps.get_release.outputs.release_tag }}"
+          curl -fL --retry 5 --retry-delay 5 \
+            -o "${{ steps.get_release.outputs.asset_name }}" \
+            "${{ steps.get_release.outputs.asset_url }}"
 
-      - name: Download WinMemoryCleaner.exe
-        run: |
-          RELEASE_TAG=${{ steps.get_release.outputs.tag }}
-          echo "::group::Downloading WinMemoryCleaner.exe from release $RELEASE_TAG"
-          for i in {1..3}; do
-            if curl -fL --retry 3 --retry-delay 5 -o WinMemoryCleaner.exe \
-              "https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/WinMemoryCleaner.exe"; then
-              break
-            fi
-            if [ $i -eq 3 ]; then
-              echo "::error::Failed to download after 3 attempts"
-              exit 1
-            fi
-            sleep $(( 2 ** i ))
-          done
-          echo "::endgroup::"
+      - name: Submit to Hybrid Analysis and Get Report
+        id: ha_analysis
+        uses: bluecatengineering/hybrid-analysis-action@v1
+        with:
+          api_key: ${{ secrets.HYBRID_ANALYSIS_API_KEY }}
+          file: ${{ steps.get_release.outputs.asset_name }}
+          environment_id: '100' # Windows 7 64-bit
 
-      - name: Verify downloaded file size and calculate SHA256
-        id: file_info
+      - name: Display Analysis Summary
         run: |
-          FILE_SIZE=$(stat -c%s WinMemoryCleaner.exe)
-          if [ "$FILE_SIZE" -lt 10000 ]; then
-            echo "::error::Downloaded file size too small: $FILE_SIZE bytes"
-            exit 1
-          fi
-          echo "::notice::Downloaded file size: $FILE_SIZE bytes"
-          SHA256=$(sha256sum WinMemoryCleaner.exe | cut -d ' ' -f1)
-          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
-          echo "::notice::SHA256: $SHA256"
+          echo "## Hybrid Analysis Report Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Verdict:** ${{ steps.ha_analysis.outputs.verdict }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **AV Detections:** ${{ steps.ha_analysis.outputs.av_detect }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Malicious:** ${{ steps.ha_analysis.outputs.malicious }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Suspicious:** ${{ steps.ha_analysis.outputs.suspicious }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Report URL:** https://hybrid-analysis.com/sample/${{ steps.ha_analysis.outputs.sha256 }}" >> $GITHUB_STEP_SUMMARY
 
-      - name: Submit file to Hybrid Analysis
-        id: ha_submit
-        env:
-          HYBRID_ANALYSIS_API_KEY: ${{ env.HYBRID_ANALYSIS_API_KEY }}
+      - name: Check Verdict
+        if: steps.ha_analysis.outputs.verdict != 'no-specific-threat'
         run: |
-          RESPONSE=$(curl --request POST \
-            --url https://api.hybrid-analysis.com/api/v2/submit/file \
-            --header "api-key: $HYBRID_ANALYSIS_API_KEY" \
-            --header "User-Agent: Falcon Sandbox" \
-            --header "Accept: application/json" \
-            --form file=@WinMemoryCleaner.exe \
-            --form environment_id=100)
-          echo "$RESPONSE" > ha_response.json
-          if ! echo "$RESPONSE" | jq empty; then
-            echo "::error::Hybrid Analysis did not return valid JSON. Raw response:"
-            cat ha_response.json
-            exit 1
-          fi
-          JOB_ID=$(jq -e -r '.job_id' ha_response.json)
-          if [ -z "$JOB_ID" ] || [ "$JOB_ID" == "null" ]; then
-            echo "::error::Failed to get job_id from Hybrid Analysis response"
-            cat ha_response.json
-            exit 1
-          fi
-          echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
-          echo "::notice::Submitted to Hybrid Analysis with job ID $JOB_ID"
-
-      - name: Poll Hybrid Analysis for report
-        env:
-          HYBRID_ANALYSIS_API_KEY: ${{ env.HYBRID_ANALYSIS_API_KEY }}
-        run: |
-          JOB_ID=${{ steps.ha_submit.outputs.job_id }}
-          echo "::group::Polling Hybrid Analysis report status"
-          for i in {1..20}; do
-            RESPONSE=$(curl --request GET \
-              --url "https://api.hybrid-analysis.com/api/v2/report/${JOB_ID}" \
-              --header "api-key: $HYBRID_ANALYSIS_API_KEY" \
-              --header "User-Agent: Falcon Sandbox" \
-              --header "Accept: application/json")
-            STATUS=$(echo "$RESPONSE" | jq -e -r '.status')
-            echo "Attempt $i: report status = $STATUS"
-            if [ "$STATUS" == "completed" ]; then
-              echo "$RESPONSE" > ha_report.json
-              break
-            elif [ "$STATUS" == "pending" ] || [ "$STATUS" == "processing" ]; then
-              sleep 15
-            else
-              echo "::error::Unexpected report status: $STATUS"
-              exit 1
-            fi
-          done
-          if [ "$STATUS" != "completed" ]; then
-            echo "::warning::Report not completed after 20 attempts"
-            exit 1
-          fi
-          echo "::endgroup::"
-
-      - name: Summarize Hybrid Analysis results
-        run: |
-          echo "::group::Hybrid Analysis summary"
-          MALWARE_VERDICT=$(jq -r '.verdict' ha_report.json)
-          AV_DETECTIONS=$(jq -r '.av_detected' ha_report.json)
-          SUSPICIOUS_COUNT=$(jq -r '.suspicious' ha_report.json)
-          echo "Malware verdict: $MALWARE_VERDICT"
-          echo "AV detections: $AV_DETECTIONS"
-          echo "Suspicious findings count: $SUSPICIOUS_COUNT"
-          echo "::endgroup::"
-
-      - name: Cleanup
-        if: always()
-        run: |
-          rm -f WinMemoryCleaner.exe ha_response.json ha_report.json
-          echo "::notice::Cleanup completed"
+          echo "::error::Hybrid Analysis returned a non-clean verdict: ${{ steps.ha_analysis.outputs.verdict }}"
+          exit 1
