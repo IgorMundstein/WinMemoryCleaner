@@ -98,7 +98,6 @@ jobs:
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
 
-            # Handle the case where the job ID isn't found yet by treating it like a queue
             if [[ "$RESPONSE" == *"Not Found"* ]]; then
               echo "Attempt $i: Job ID not found yet. Waiting for system to index the new scan..."
               sleep 45
@@ -107,10 +106,10 @@ jobs:
 
             STATUS=$(echo "$RESPONSE" | jq -r '.state // "error"')
             echo "Attempt $i: report status = $STATUS"
-            if [ "$STATUS" == "SUCCESS" ]; then
+            if [[ "$STATUS" == "FINISHED" || "$STATUS" == "SUCCESS" ]]; then
               echo "$RESPONSE" > ha_report.json
               break
-            elif [ "$STATUS" == "IN_PROGRESS" ] || [ "$STATUS" == "IN_QUEUE" ]; then
+            elif [[ "$STATUS" == "IN_PROGRESS" || "$STATUS" == "IN_QUEUE" ]]; then
               sleep 45
             else
               echo "::error::Unexpected report status or API error. Full response:"
