@@ -15,7 +15,7 @@ jobs:
   submit-hybrid-analysis:
     name: Submit latest release to Hybrid Analysis
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60
 
     steps:
       - name: Harden Runner
@@ -79,7 +79,7 @@ jobs:
           
           sleep 45
 
-          for i in {1..40}; do
+          for i in {1..60}; do
             RESPONSE=$(curl --request GET --location --silent \
               --url "https://hybrid-analysis.com/api/v2/report/${FILE_HASH}" \
               --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
@@ -89,7 +89,6 @@ jobs:
             RESPONSE_LENGTH=${#RESPONSE}
             echo "Attempt $i: Polling for report. Response size: $RESPONSE_LENGTH bytes."
 
-            # A full report is typically over 1000 bytes. A small response means it's not ready.
             if (( RESPONSE_LENGTH > 1000 )); then
               echo "Full report received. Parsing for final verdict."
               echo "$RESPONSE" > ha_report.json
