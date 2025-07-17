@@ -12,10 +12,10 @@ env:
   HYBRID_ANALYSIS_API_KEY: ${{ secrets.HYBRID_ANALYSIS_API_KEY }}
 
 jobs:
-  submit-hybrid-analysis:
+  submit-and-get-report-link:
     name: Submit latest release to Hybrid Analysis
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 10
 
     steps:
       - name: Harden Runner
@@ -63,61 +63,31 @@ jobs:
           echo "$RESPONSE" > ha_submit_response.json
 
           SHA256=$(jq -e -r '.sha256' ha_submit_response.json)
-          if [ -z "$SHA256" ] || [ "$SHA256" == "null" ]; then
-            echo "::error::Failed to get sha256 from Hybrid Analysis response"
+          JOB_ID=$(jq -e -r '.job_id' ha_submit_response.json)
+
+          if [ -z "$SHA256" ] || [ -z "$JOB_ID" ]; then
+            echo "::error::Failed to get sha256 or job_id from Hybrid Analysis response"
             cat ha_submit_response.json
             exit 1
           fi
 
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
-          echo "::notice::Submitted to Hybrid Analysis. SHA256: $SHA256"
+          echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
+          echo "::notice::Successfully submitted file to Hybrid Analysis."
 
-      - name: Poll Hybrid Analysis for report
+      - name: Create Link to Report
         run: |
-          FILE_HASH=${{ steps.ha_submit.outputs.sha256 }}
-          echo "::group::Polling Hybrid Analysis report status for SHA256: $FILE_HASH"
-          
-          sleep 45
-
-          for i in {1..60}; do
-            RESPONSE=$(curl --request GET --location --silent \
-              --url "https://hybrid-analysis.com/api/v2/report/${FILE_HASH}" \
-              --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
-              --header "User-Agent: Falcon Sandbox" \
-              --header "Cache-Control: no-cache")
-            
-            RESPONSE_LENGTH=${#RESPONSE}
-            echo "Attempt $i: Polling for report. Response size: $RESPONSE_LENGTH bytes."
-
-            if (( RESPONSE_LENGTH > 1000 )); then
-              echo "Full report received. Parsing for final verdict."
-              echo "$RESPONSE" > ha_report.json
-              break
-            else
-              echo "Report not ready, waiting..."
-              sleep 30
-            fi
-          done
-
-          if [ ! -f ha_report.json ]; then
-            echo "::error::Report polling timed out or failed to complete."
-            exit 1
-          fi
-          echo "::endgroup::"
-
-      - name: Summarize Hybrid Analysis results
-        run: |
-          echo "::group::Hybrid Analysis summary"
-          MALWARE_VERDICT=$(jq -r '.verdict // "N/A"' ha_report.json)
-          THREAT_SCORE=$(jq -r '.threat_score // "N/A"' ha_report.json)
-          AV_DETECTIONS=$(jq -r '.av_detect // "N/A"' ha_report.json)
-          echo "Malware verdict: $MALWARE_VERDICT"
-          echo "Threat Score: $THREAT_SCORE"
-          echo "AV detections: $AV_DETECTIONS"
-          echo "::endgroup::"
+          SHA256=${{ steps.ha_submit.outputs.sha256 }}
+          JOB_ID=${{ steps.ha_submit.outputs.job_id }}
+          REPORT_URL="https://hybrid-analysis.com/sample/${SHA256}/${JOB_ID}"
+          echo "View the report at: $REPORT_URL"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Hybrid Analysis Report" >> $GITHUB_STEP_SUMMARY
+          echo "**Report Link:** [View Report]($REPORT_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "_Please note: The report may take several minutes to become available._" >> $GITHUB_STEP_SUMMARY
 
       - name: Cleanup
         if: always()
         run: |
-          rm -f WinMemoryCleaner.exe ha_submit_response.json ha_report.json
+          rm -f WinMemoryCleaner.exe ha_submit_response.json
           echo "::notice::Cleanup completed"
