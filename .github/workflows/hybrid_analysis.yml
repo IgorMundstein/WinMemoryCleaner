@@ -77,7 +77,7 @@ jobs:
         env:
           HYBRID_ANALYSIS_API_KEY: ${{ env.HYBRID_ANALYSIS_API_KEY }}
         run: |
-          RESPONSE=$(curl --request POST \
+          RESPONSE=$(curl -L --request POST \
             --url https://www.hybrid-analysis.com/api/v2/submit/file \
             --header "api-key: $HYBRID_ANALYSIS_API_KEY" \
             --header "User-Agent: Falcon Sandbox" \
