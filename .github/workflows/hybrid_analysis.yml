@@ -84,17 +84,18 @@ jobs:
               --url "https://hybrid-analysis.com/api/v2/report/${FILE_HASH}" \
               --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
               --header "User-Agent: Falcon Sandbox" \
-              --header "Accept: application/json")
+              --header "Cache-Control: no-cache")
+            
+            RESPONSE_LENGTH=${#RESPONSE}
+            echo "Attempt $i: Polling for report. Response size: $RESPONSE_LENGTH bytes."
 
-            VERDICT=$(echo "$RESPONSE" | jq -r '.verdict')
-
-            if [[ "$VERDICT" != "null" ]]; then
-              echo "Analysis complete. Verdict: $VERDICT"
+            # A full report is typically over 1000 bytes. A small response means it's not ready.
+            if (( RESPONSE_LENGTH > 1000 )); then
+              echo "Full report received. Parsing for final verdict."
               echo "$RESPONSE" > ha_report.json
               break
             else
-              STATE=$(echo "$RESPONSE" | jq -r '.state')
-              echo "Attempt $i: Report not finalized. Current state: ${STATE:-'not available'}"
+              echo "Report not ready, waiting..."
               sleep 30
             fi
           done
