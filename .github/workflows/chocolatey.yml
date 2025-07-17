@@ -263,56 +263,49 @@ jobs:
           `$ErrorActionPreference = 'Stop'
           `$toolsDir = "`$(Split-Path -parent `$MyInvocation.MyCommand.Definition)"
           `$packageName = 'winmemorycleaner'
-          `$url64 = 'https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe'
-          `$checksum64 = '$env:SHA256'
-          `$checksumType64 = 'sha256'
-          
+          `$serviceName = 'WinMemoryCleaner'
+          `$exePath = Join-Path `$toolsDir 'WinMemoryCleaner.exe'
+
           `$packageArgs = @{
-            packageName   = `$packageName
-            unzipLocation = `$toolsDir
-            fileType      = 'EXE'
-            url64bit      = `$url64
-            checksum64    = `$checksum64
-            checksumType64= `$checksumType64
-            softwareName  = 'Windows Memory Cleaner*'
-            silentArgs    = '/Package'
-            validExitCodes= @(0)
+            packageName    = `$packageName
+            unzipLocation  = `$toolsDir
+            fileType       = 'EXE'
+            url64bit       = 'https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe'
+            checksum64     = '$env:SHA256'
+            checksumType64 = 'sha256'
+            silentArgs     = '/S'
+            validExitCodes = @(0)
           }
-          
+
           Install-ChocolateyPackage @packageArgs
+
+          Write-Host "Creating and starting service: `$serviceName"
+          New-Service -Name `$serviceName -BinaryPathName "`"`$exePath`" -DisplayName 'Windows Memory Cleaner' -StartupType Automatic
+          Start-Service -Name `$serviceName
           "@
           
           $installScript | Out-File -FilePath "$toolsDir\chocolateyinstall.ps1" -Encoding UTF8
           
           $uninstallScript = @"
-          `$ErrorActionPreference = 'Stop'
-          `$packageArgs = @{
-            packageName   = 'winmemorycleaner'
-            softwareName  = 'Windows Memory Cleaner*'
-            fileType      = 'EXE'
-            silentArgs    = '/uninstall /quiet'
-            validExitCodes= @(0)
-          }
-          
-          [array]`$key = Get-UninstallRegistryKey -SoftwareName `$packageArgs['softwareName']
-          
-          if (`$key.Count -eq 1) {
-            `$key | % { 
-              `$packageArgs['file'] = "`$(`$_.UninstallString)"
-              if (`$packageArgs['fileType'] -eq 'MSI') {
-                `$packageArgs['silentArgs'] = "`$(`$_.PSChildName) `$(`$packageArgs['silentArgs'])"
-                `$packageArgs['file'] = ''
-              }
-              Uninstall-ChocolateyPackage @packageArgs
+          `$ErrorActionPreference = 'Continue'
+          `$serviceName = 'WinMemoryCleaner'
+          `$packageDir = Get-PackageRoot 'winmemorycleaner'
+
+          `$service = Get-Service -Name `$serviceName -ErrorAction SilentlyContinue
+          if (`$service) {
+            if (`$service.Status -ne 'Stopped') {
+              Write-Host "Stopping service: `$serviceName"
+              Stop-Service -Name `$serviceName -Force
             }
-          } elseif (`$key.Count -eq 0) {
-            Write-Warning "`$packageName has already been uninstalled by other means."
-          } elseif (`$key.Count -gt 1) {
-            Write-Warning "`$(`$key.Count) matches found!"
-            Write-Warning "To prevent accidental data loss, no programs will be uninstalled."
-            Write-Warning "Please alert package maintainer the following keys were matched:"
-            `$key | % {Write-Warning "- `$(`$_.DisplayName)"}
+            
+            Write-Host "Removing service: `$serviceName"
+            sc.exe delete `$serviceName
+          } else {
+            Write-Warning "Service '`$serviceName' not found. Skipping service removal."
           }
+
+          Write-Host "Removing package directory: `$packageDir"
+          Remove-Item `$packageDir -Recurse -Force
           "@
           
           $uninstallScript | Out-File -FilePath "$toolsDir\chocolateyuninstall.ps1" -Encoding UTF8
