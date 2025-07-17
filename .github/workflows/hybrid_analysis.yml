@@ -83,17 +83,22 @@ jobs:
             --header "User-Agent: Falcon Sandbox" \
             --header "Accept: application/json" \
             --form file=@WinMemoryCleaner.exe \
-            --form environment_id=100)  # 100 = Windows 10 x64
-
+            --form environment_id=100)
           echo "$RESPONSE" > ha_response.json
-          JOB_ID=$(jq -e -r '.job_id' ha_response.json)
 
+          # Check if the response is valid JSON
+          if ! echo "$RESPONSE" | jq empty; then
+            echo "::error::Hybrid Analysis did not return valid JSON. Raw response:"
+            cat ha_response.json
+            exit 1
+          fi
+
+          JOB_ID=$(jq -e -r '.job_id' ha_response.json)
           if [ -z "$JOB_ID" ] || [ "$JOB_ID" == "null" ]; then
             echo "::error::Failed to get job_id from Hybrid Analysis response"
             cat ha_response.json
             exit 1
           fi
-
           echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
           echo "::notice::Submitted to Hybrid Analysis with job ID $JOB_ID"
 
@@ -102,7 +107,6 @@ jobs:
           HYBRID_ANALYSIS_API_KEY: ${{ env.HYBRID_ANALYSIS_API_KEY }}
         run: |
           JOB_ID=${{ steps.ha_submit.outputs.job_id }}
-
           echo "::group::Polling Hybrid Analysis report status"
           for i in {1..20}; do
             RESPONSE=$(curl --request GET \
@@ -110,7 +114,6 @@ jobs:
               --header "api-key: $HYBRID_ANALYSIS_API_KEY" \
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
-
             STATUS=$(echo "$RESPONSE" | jq -e -r '.status')
             echo "Attempt $i: report status = $STATUS"
             if [ "$STATUS" == "completed" ]; then
@@ -123,7 +126,6 @@ jobs:
               exit 1
             fi
           done
-
           if [ "$STATUS" != "completed" ]; then
             echo "::warning::Report not completed after 20 attempts"
             exit 1
