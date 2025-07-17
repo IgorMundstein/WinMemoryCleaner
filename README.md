@@ -28,9 +28,9 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 ## 🔐 Trust & Integrity
 
-We prioritize transparency and user safety. Files are digitally signed through [SignPath.io](https://about.signpath.io/product/open-source) using a certificate from a trusted certificate authority. This process ensures the authenticity and integrity of the files. This was introduced in version **2.9**
+We prioritize transparency and user safety. Files are digitally signed through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The certificate was granted to this project in recognition of its popularity and public value in the open-source community. This process ensures that distributed files are authentic and have not been tampered with. This signing was introduced in version **3.0.0**
 
-🔍 **How to verify**
+### 🔍 How to verify
 
 - **Windows UI**
 
@@ -38,13 +38,29 @@ We prioritize transparency and user safety. Files are digitally signed through [
 2. Properties
 3. Go to Digital Signatures tab
 
-<TODO: Insert digital-signature image>
+[![](./.github/images/digital-signature.png)](#-trust--integrity)
 
 - **Command-line**
   
 ```cmd
 signtool verify /pa WinMemoryCleaner.exe
 ```
+
+### 🔷 Microsoft Defender SmartScreen
+
+Even with clean security reports and a valid digital signature, Microsoft Defender SmartScreen may initially flag a new release with a "Windows protected your PC" warning.
+
+[![](./.github/images/microsoft-defender-smart-screen.png)](#-microsoft-defender-smartscreen)
+
+This happens because the application is new and hasn't yet built a reputation with Microsoft. Our files are digitally signed to verify their authenticity and ensure they haven't been tampered with. This warning is a standard security measure for any new software.
+
+This is a standard reputation-based security measure for new files that haven't been seen by many users yet. By running the app, you help it build a positive reputation, which will cause this warning to disappear more quickly for other users. We appreciate your trust and understanding.
+
+By the end, to ensure transparency and safety, each new version is submitted for analysis to leading security platforms, including:
+
+- Hybrid Analysis
+- Microsoft Security Intelligence
+- VirusTotal
 
 ## 🚀 Features
 
@@ -80,7 +96,7 @@ signtool verify /pa WinMemoryCleaner.exe
 
 ### Optimization hotkey
 
-- Set a global keyboard hotkey to run the optimization. `CTRL + SHIFT + M` is the default and customizable value
+- Set a global keyboard hotkey to run the optimization. `CTRL + SHIFT + M` is the default and customizable value. It can be disabled if you don't want to use it
 
 ### Settings
 
@@ -166,7 +182,7 @@ The app generates logs in the Windows Event
 
 - Minimalistic user interface
 - Model-View-ViewModel (MVVM) design pattern
-- No third library or DLL dependencies
+- No third library dependencies
 - Portable (Single .exe file)
 - Right-to-left language support and bidirectional text
 - S.O.L.I.D. Principles of Object-Oriented
@@ -235,3 +251,12 @@ If you are a native speaker of any language other than English, you can contribu
 - `Thai (ไทย)` [nongice](https://github.com/21icepril)
 - `Turkish (Türkçe)` [Rıza Emet](https://github.com/rizaemet) | [Viollje](https://github.com/Viollje)
 - `Ukrainian (Українська)` [RieBi](https://github.com/RieBi) | [Oleksander](https://github.com/Mariachi1231)
+
+## ❤️ Support the Project
+
+If you find this app helpful, consider donating. Your donation helps keep the project alive, optimized, and free for everyone.
+
+- [Sponsor on GitHub](https://github.com/sponsors/IgorMundstein)
+- [Buy me a coffee on Ko-fi](https://ko-fi.com/igormundstein)
+- [Bitcoin (BTC)](https://www.blockchain.com/btc/address/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap)
+- [Ethereum (ETH)](https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d)
