@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - develop
+    paths:
+      - 'src/**'
   pull_request:
     branches:
       - main
       - develop
+    paths:
+      - 'src/**'
 
 permissions:
   contents: read
