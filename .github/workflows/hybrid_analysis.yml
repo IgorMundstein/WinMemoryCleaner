@@ -74,8 +74,8 @@ jobs:
       - name: Submit file to Hybrid Analysis
         id: ha_submit
         run: |
-          RESPONSE=$(curl --request POST --location --post301 \
-            --url https://www.hybrid-analysis.com/api/v2/submit/file \
+          RESPONSE=$(curl --request POST --location \
+            --url https://hybrid-analysis.com/api/v2/submit/file \
             --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
             --header "User-Agent: Falcon Sandbox" \
             --header "Accept: application/json" \
@@ -102,11 +102,11 @@ jobs:
           echo "::group::Polling Hybrid Analysis report status"
           for i in {1..20}; do
             RESPONSE=$(curl --request GET --location \
-              --url "https://www.hybrid-analysis.com/api/v2/report/${JOB_ID}" \
+              --url "https://hybrid-analysis.com/api/v2/report/${JOB_ID}" \
               --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
-            STATUS=$(echo "$RESPONSE" | jq -e -r '.status')
+            STATUS=$(echo "$RESPONSE" | jq -e -r '.status // "error"')
             echo "Attempt $i: report status = $STATUS"
             if [ "$STATUS" == "completed" ]; then
               echo "$RESPONSE" > ha_report.json
@@ -114,12 +114,13 @@ jobs:
             elif [ "$STATUS" == "pending" ] || [ "$STATUS" == "processing" ]; then
               sleep 15
             else
-              echo "::error::Unexpected report status: $STATUS"
+              echo "::error::Unexpected report status or API error. Full response:"
+              echo "$RESPONSE"
               exit 1
             fi
           done
-          if [ "$STATUS" != "completed" ]; then
-            echo "::warning::Report not completed after 20 attempts"
+          if [ ! -f ha_report.json ]; then
+            echo "::error::Report polling timed out or failed to complete."
             exit 1
           fi
           echo "::endgroup::"
