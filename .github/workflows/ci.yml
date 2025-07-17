@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   build:
-    name: Build (develop/pr only)
+    name: Build and Sign (develop/pr only)
     runs-on: windows-latest
 
     steps:
@@ -45,9 +45,29 @@ jobs:
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
-      - name: Upload build artifacts
+      - name: Upload unsigned EXE for signing
+        id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-dev-${{ github.run_number }}
+          name: unsigned
           path: src\bin\Release\WinMemoryCleaner.exe
+          if-no-files-found: error
+
+      - name: Submit to SignPath (CI signing)
+        id: signpath
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: WinMemoryCleaner
+          signing-policy-slug: ci-signing
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ./signed
+
+      - name: Upload signed build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: winmemorycleaner-dev-signed-${{ github.run_number }}
+          path: signed/WinMemoryCleaner.exe
           retention-days: 30
