@@ -77,8 +77,8 @@ jobs:
         env:
           HYBRID_ANALYSIS_API_KEY: ${{ env.HYBRID_ANALYSIS_API_KEY }}
         run: |
-          RESPONSE=$(curl -L --request POST \
-            --url https://hybrid-analysis.com/api/v2/submit/file \
+          RESPONSE=$(curl --request POST \
+            --url https://api.hybrid-analysis.com/api/v2/submit/file \
             --header "api-key: $HYBRID_ANALYSIS_API_KEY" \
             --header "User-Agent: Falcon Sandbox" \
             --header "Accept: application/json" \
@@ -107,7 +107,7 @@ jobs:
           echo "::group::Polling Hybrid Analysis report status"
           for i in {1..20}; do
             RESPONSE=$(curl --request GET \
-              --url "https://hybrid-analysis.com/api/v2/report/${JOB_ID}" \
+              --url "https://api.hybrid-analysis.com/api/v2/report/${JOB_ID}" \
               --header "api-key: $HYBRID_ANALYSIS_API_KEY" \
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
