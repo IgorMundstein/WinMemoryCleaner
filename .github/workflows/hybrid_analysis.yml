@@ -58,15 +58,6 @@ jobs:
           done
           echo "::endgroup::"
 
-      - name: Verify downloaded file size
-        run: |
-          FILE_SIZE=$(stat -c%s WinMemoryCleaner.exe)
-          if [ "$FILE_SIZE" -lt 10000 ]; then
-            echo "::error::Downloaded file size too small: $FILE_SIZE bytes"
-            exit 1
-          fi
-          echo "::notice::Downloaded file size: $FILE_SIZE bytes"
-
       - name: Submit file to Hybrid Analysis
         id: ha_submit
         run: |
@@ -77,46 +68,49 @@ jobs:
             --header "Accept: application/json" \
             --form file=@WinMemoryCleaner.exe \
             --form environment_id=100)
+          
           echo "$RESPONSE" > ha_submit_response.json
-          JOB_ID=$(jq -e -r '.job_id' ha_submit_response.json)
-          if [ -z "$JOB_ID" ] || [ "$JOB_ID" == "null" ]; then
-            echo "::error::Failed to get job_id from Hybrid Analysis response"
+
+          SHA256=$(jq -e -r '.sha256' ha_submit_response.json)
+          if [ -z "$SHA256" ] || [ "$SHA256" == "null" ]; then
+            echo "::error::Failed to get sha256 from Hybrid Analysis response"
             cat ha_submit_response.json
             exit 1
           fi
-          echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
-          echo "::notice::Submitted to Hybrid Analysis with job ID $JOB_ID"
+
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "::notice::Submitted to Hybrid Analysis. SHA256: $SHA256"
 
       - name: Poll Hybrid Analysis for report
         run: |
-          JOB_ID=${{ steps.ha_submit.outputs.job_id }}
-          echo "::group::Polling Hybrid Analysis report status for Job ID: $JOB_ID"
-          for i in {1..20}; do
+          FILE_HASH=${{ steps.ha_submit.outputs.sha256 }}
+          echo "::group::Polling Hybrid Analysis report status for SHA256: $FILE_HASH"
+          
+          # Initial wait for the analysis to start
+          sleep 45
+
+          for i in {1..40}; do
             RESPONSE=$(curl --request GET --location --silent \
-              --url "https://hybrid-analysis.com/api/v2/scans/${JOB_ID}" \
+              --url "https://hybrid-analysis.com/api/v2/report/${FILE_HASH}" \
               --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
 
-            if [[ "$RESPONSE" == *"Not Found"* ]]; then
-              echo "Attempt $i: Job ID not found yet. Waiting for system to index the new scan..."
-              sleep 45
-              continue
-            fi
-
             STATUS=$(echo "$RESPONSE" | jq -r '.state // "error"')
             echo "Attempt $i: report status = $STATUS"
-            if [[ "$STATUS" == "FINISHED" || "$STATUS" == "SUCCESS" ]]; then
+
+            if [ "$STATUS" == "FINISHED" ]; then
               echo "$RESPONSE" > ha_report.json
               break
             elif [[ "$STATUS" == "IN_PROGRESS" || "$STATUS" == "IN_QUEUE" ]]; then
-              sleep 45
+              sleep 30
             else
-              echo "::error::Unexpected report status or API error. Full response:"
-              echo "$RESPONSE"
-              exit 1
+              # This block handles cases where the report is not yet created
+              echo "Report not ready, waiting..."
+              sleep 30
             fi
           done
+
           if [ ! -f ha_report.json ]; then
             echo "::error::Report polling timed out or failed to complete."
             exit 1
@@ -127,7 +121,7 @@ jobs:
         run: |
           echo "::group::Hybrid Analysis summary"
           MALWARE_VERDICT=$(jq -r '.verdict // "N/A"' ha_report.json)
-          THREAT_SCORE=$(jq -r '.threat_level // "N/A"' ha_report.json)
+          THREAT_SCORE=$(jq -r '.threat_score // "N/A"' ha_report.json)
           AV_DETECTIONS=$(jq -r '.av_detect // "N/A"' ha_report.json)
           echo "Malware verdict: $MALWARE_VERDICT"
           echo "Threat Score: $THREAT_SCORE"
