@@ -102,17 +102,17 @@ jobs:
           echo "::group::Polling Hybrid Analysis report status"
           for i in {1..20}; do
             RESPONSE=$(curl --request GET --location \
-              --url "https://hybrid-analysis.com/api/v2/report/${JOB_ID}" \
+              --url "https://hybrid-analysis.com/api/v2/overview/${JOB_ID}" \
               --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
-            STATUS=$(echo "$RESPONSE" | jq -e -r '.status // "error"')
+            STATUS=$(echo "$RESPONSE" | jq -e -r '.state // "error"')
             echo "Attempt $i: report status = $STATUS"
-            if [ "$STATUS" == "completed" ]; then
+            if [ "$STATUS" == "SUCCESS" ]; then
               echo "$RESPONSE" > ha_report.json
               break
-            elif [ "$STATUS" == "pending" ] || [ "$STATUS" == "processing" ]; then
-              sleep 15
+            elif [ "$STATUS" == "IN_PROGRESS" ] || [ "$STATUS" == "IN_QUEUE" ]; then
+              sleep 30
             else
               echo "::error::Unexpected report status or API error. Full response:"
               echo "$RESPONSE"
@@ -128,12 +128,13 @@ jobs:
       - name: Summarize Hybrid Analysis results
         run: |
           echo "::group::Hybrid Analysis summary"
-          MALWARE_VERDICT=$(jq -r '.verdict' ha_report.json)
-          AV_DETECTIONS=$(jq -r '.av_detected' ha_report.json)
-          SUSPICIOUS_COUNT=$(jq -r '.suspicious' ha_report.json)
+          # Note: The 'overview' endpoint response structure is slightly different
+          MALWARE_VERDICT=$(jq -r '.verdict // "N/A"' ha_report.json)
+          AV_DETECTIONS=$(jq -r '.scanners[].total // 0 | add' ha_report.json)
+          THREAT_SCORE=$(jq -r '.threat_score.score // "N/A"' ha_report.json)
           echo "Malware verdict: $MALWARE_VERDICT"
           echo "AV detections: $AV_DETECTIONS"
-          echo "Suspicious findings count: $SUSPICIOUS_COUNT"
+          echo "Threat Score: $THREAT_SCORE"
           echo "::endgroup::"
 
       - name: Cleanup
