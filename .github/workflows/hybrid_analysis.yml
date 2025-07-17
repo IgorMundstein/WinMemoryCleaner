@@ -74,39 +74,25 @@ jobs:
       - name: Submit file to Hybrid Analysis
         id: ha_submit
         run: |
-          RESPONSE=$(curl --request POST --location \
+          curl --request POST --location \
             --url https://hybrid-analysis.com/api/v2/submit/file \
             --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
             --header "User-Agent: Falcon Sandbox" \
             --header "Accept: application/json" \
             --form file=@WinMemoryCleaner.exe \
-            --form environment_id=100)
-          echo "$RESPONSE" > ha_response.json
-          if ! echo "$RESPONSE" | jq empty; then
-            echo "::error::Hybrid Analysis did not return valid JSON. Raw response:"
-            cat ha_response.json
-            exit 1
-          fi
-          JOB_ID=$(jq -e -r '.job_id' ha_response.json)
-          if [ -z "$JOB_ID" ] || [ "$JOB_ID" == "null" ]; then
-            echo "::error::Failed to get job_id from Hybrid Analysis response"
-            cat ha_response.json
-            exit 1
-          fi
-          echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
-          echo "::notice::Submitted to Hybrid Analysis with job ID $JOB_ID"
+            --form environment_id=100
 
       - name: Poll Hybrid Analysis for report
         run: |
-          JOB_ID=${{ steps.ha_submit.outputs.job_id }}
-          echo "::group::Polling Hybrid Analysis report status"
+          FILE_HASH=${{ steps.file_info.outputs.sha256 }}
+          echo "::group::Polling Hybrid Analysis report status for SHA256: $FILE_HASH"
           for i in {1..20}; do
             RESPONSE=$(curl --request GET --location \
-              --url "https://hybrid-analysis.com/api/v2/overview/${JOB_ID}" \
+              --url "https://hybrid-analysis.com/api/v2/overview/${FILE_HASH}" \
               --header "api-key: ${{ env.HYBRID_ANALYSIS_API_KEY }}" \
               --header "User-Agent: Falcon Sandbox" \
               --header "Accept: application/json")
-            STATUS=$(echo "$RESPONSE" | jq -e -r '.state // "error"')
+            STATUS=$(echo "$RESPONSE" | jq -r '.state // "error"')
             echo "Attempt $i: report status = $STATUS"
             if [ "$STATUS" == "SUCCESS" ]; then
               echo "$RESPONSE" > ha_report.json
@@ -128,17 +114,16 @@ jobs:
       - name: Summarize Hybrid Analysis results
         run: |
           echo "::group::Hybrid Analysis summary"
-          # Note: The 'overview' endpoint response structure is slightly different
           MALWARE_VERDICT=$(jq -r '.verdict // "N/A"' ha_report.json)
-          AV_DETECTIONS=$(jq -r '.scanners[].total // 0 | add' ha_report.json)
-          THREAT_SCORE=$(jq -r '.threat_score.score // "N/A"' ha_report.json)
+          THREAT_SCORE=$(jq -r '.threat_score // "N/A"' ha_report.json)
+          AV_DETECTIONS=$(jq -r '.av_detect // "N/A"' ha_report.json)
           echo "Malware verdict: $MALWARE_VERDICT"
-          echo "AV detections: $AV_DETECTIONS"
           echo "Threat Score: $THREAT_SCORE"
+          echo "AV detections: $AV_DETECTIONS"
           echo "::endgroup::"
 
       - name: Cleanup
         if: always()
         run: |
-          rm -f WinMemoryCleaner.exe ha_response.json ha_report.json
+          rm -f WinMemoryCleaner.exe ha_report.json
           echo "::notice::Cleanup completed"
