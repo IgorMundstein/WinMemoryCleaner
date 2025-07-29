@@ -174,4 +174,12 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.build.outputs.new_tag }}
-          name: ${{ needs
+          name: ${{ needs.build.outputs.new_tag }}
+          body: |
+            # ${{ steps.commit_date.outputs.date }}
+            ${{ steps.formatted_message.outputs.body }}
+          files: |
+            release_artifacts/signed/WinMemoryCleaner.exe
+            release_artifacts/WinMemoryCleaner.zip
+          draft: true
+          generate_release_notes: false
