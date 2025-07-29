@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace WinMemoryCleaner
@@ -67,11 +69,45 @@ namespace WinMemoryCleaner
 
             // App priority
             SetPriority(Settings.RunOnPriority);
+
+            // Brushes
+            Brushes = typeof(System.Drawing.Color)
+                .GetProperties(BindingFlags.Public | BindingFlags.Static)
+                .Where(property => property.PropertyType == typeof(System.Drawing.Color))
+                .Select(property => (System.Drawing.Color)property.GetValue(null, null))
+                .Where(color => color.A == 255)
+                .OrderBy(color => color.GetHue())
+                .ThenBy(color => color.GetSaturation())
+                .ThenBy(color => color.GetBrightness())
+                .Select(color => new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)))
+                .ToList();
         }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the brushes.
+        /// </summary>
+        /// <value>
+        /// The brushes.
+        /// </value>
+        public static List<SolidColorBrush> Brushes { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is in design mode.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is in design mode; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsInDesignMode
+        {
+            get
+            {
+                return DesignerProperties.GetIsInDesignMode(new DependencyObject());
+            }
+        }
 
         /// <summary>
         /// App path
@@ -194,6 +230,14 @@ namespace WinMemoryCleaner
                 // Show/Hide
                 if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
                 {
+                    if (MainWindow.OwnedWindows.Cast<View>().Where(window => window != null && window.IsDialog).Any())
+                    {
+                        MainWindow.Activate();
+                        MainWindow.Focus();
+
+                        return;
+                    }
+
                     switch (MainWindow.Visibility)
                     {
                         case Visibility.Collapsed:

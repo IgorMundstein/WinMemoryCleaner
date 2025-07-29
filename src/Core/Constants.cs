@@ -34,12 +34,19 @@ namespace WinMemoryCleaner
                 public const string Package = "Package";
                 public const string Service = "Service";
                 public const string Uninstall = "Uninstall";
-                public const string WinGet = "WinGet";
             }
 
             public static class Defaults
             {
                 public static readonly string Path = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            }
+
+            public static class Donation
+            {
+                public static readonly Uri BitcoinUri = new Uri("https://www.blockchain.com/explorer/addresses/btc/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap");
+                public static readonly Uri EthereumUri = new Uri("https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d");
+                public static readonly Uri GitHubSponsorUri = new Uri("https://github.com/sponsors/IgorMundstein");
+                public static readonly Uri KofiUri = new Uri("https://ko-fi.com/igormundstein");
             }
 
             public static class Registry
@@ -49,35 +56,12 @@ namespace WinMemoryCleaner
                     public const string ProcessExclusionList = @"SOFTWARE\WinMemoryCleaner\ProcessExclusionList";
                     public const string Settings = @"SOFTWARE\WinMemoryCleaner";
                 }
-
-                public static class Name
-                {
-                    public const string AlwaysOnTop = "AlwaysOnTop";
-                    public const string AutoOptimizationInterval = "AutoOptimizationInterval";
-                    public const string AutoOptimizationMemoryUsage = "AutoOptimizationMemoryUsage";
-                    public const string AutoUpdate = "AutoUpdate";
-                    public const string CloseAfterOptimization = "CloseAfterOptimization";
-                    public const string CloseToTheNotificationArea = "CloseToTheNotificationArea";
-                    public const string CompactMode = "CompactMode";
-                    public const string Language = "Language";
-                    public const string MemoryAreas = "MemoryAreas";
-                    public const string OptimizationKey = "OptimizationKey";
-                    public const string OptimizationModifiers = "OptimizationModifiers";
-                    public const string Path = "Path";
-                    public const string RunOnPriority = "RunOnPriority";
-                    public const string RunOnStartup = "RunOnStartup";
-                    public const string ShowOptimizationNotifications = "ShowOptimizationNotifications";
-                    public const string ShowVirtualMemory = "ShowVirtualMemory";
-                    public const string StartMinimized = "StartMinimized";
-                    public const string TrayIcon = "TrayIcon";
-                    public const string UseHotkey = "UseHotkey";
-                }
             }
 
             public static class Repository
             {
-                private static string GitHub = "https://github.com/IgorMundstein/WinMemoryCleaner";
-                private static string GitHubRaw = "https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main";
+                private const string GitHub = "https://github.com/IgorMundstein/WinMemoryCleaner";
+                private const string GitHubRaw = "https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main";
 
                 public static readonly Uri AboutUri = new Uri(GitHub + "?tab=readme-ov-file#windows-memory-cleaner");
                 public static readonly Uri AssemblyInfoUri = new Uri(Path.Combine(GitHubRaw, "src/Properties/AssemblyInfo.cs"));
@@ -122,6 +106,8 @@ namespace WinMemoryCleaner
                 public static class Name
                 {
                     public const string English = "en";
+                    public const string SimplifiedChinese = "zh-Hans";
+                    public const string TraditionalChinese = "zh-Hant";
                 }
             }
 

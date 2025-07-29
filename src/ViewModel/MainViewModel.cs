@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace WinMemoryCleaner
 {
@@ -49,18 +50,22 @@ namespace WinMemoryCleaner
 
             // Commands
             AddProcessToExclusionListCommand = new RelayCommand<string>(AddProcessToExclusionList, () => CanAddProcessToExclusionList);
-            NavigateUriCommand = new RelayCommand<Uri>(Navigate);
             OptimizeCommand = new RelayCommand(() => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual), () => CanOptimize);
             RemoveProcessFromExclusionListCommand = new RelayCommand<string>(RemoveProcessFromExclusionList);
+            ResetSettingsToDefaultConfigurationCommand = new RelayCommand(ResetSettingsToDefaultConfiguration);
+
+            // Properties
+            FontSize = Settings.FontSize;
+            MemoryUsageThresholds = Enumerable.Range(1, 99).Select(number => (byte)number).ToList();
 
             // Models
             Computer = new Computer();
 
-            if (IsInDesignMode)
+            if (App.IsInDesignMode)
             {
                 Settings.AutoUpdate = true;
 
-                Computer.OperatingSystem.IsWindows81OrGreater = false;
+                Computer.OperatingSystem.IsWindows81OrGreater = true;
                 Computer.OperatingSystem.IsWindows8OrGreater = true;
                 Computer.OperatingSystem.IsWindowsVistaOrGreater = true;
                 Computer.OperatingSystem.IsWindowsXpOrGreater = true;
@@ -231,6 +236,20 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets the brushes.
+        /// </summary>
+        /// <value>
+        /// The brushes.
+        /// </value>
+        public ObservableCollection<SolidColorBrush> Brushes
+        {
+            get
+            {
+                return new ObservableCollection<SolidColorBrush>(App.IsInDesignMode ? new List<SolidColorBrush> { System.Windows.Media.Brushes.White } : App.Brushes);
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance can add process to exclusion list.
         /// </summary>
         /// <value>
@@ -364,6 +383,38 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets or sets the size of the font.
+        /// </summary>
+        /// <value>
+        /// The size of the font.
+        /// </value>
+        public double FontSize
+        {
+            get { return Settings.FontSize; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.FontSize = value;
+                    Settings.Save();
+
+                    System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                    {
+                        System.Windows.Application.Current.Resources["FontSize"] = value;
+                    }));
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether optimization key is valid.
         /// </summary>
         /// <value>
@@ -446,7 +497,7 @@ namespace WinMemoryCleaner
 
                     Localizer.Language = value;
 
-                    if (!IsInDesignMode)
+                    if (!App.IsInDesignMode)
                     {
                         Computer.Memory = _computerService.Memory;
                         RaisePropertyChanged(() => Computer);
@@ -456,6 +507,14 @@ namespace WinMemoryCleaner
                     }
 
                     RaisePropertyChanged(string.Empty);
+
+                    if (OnLanguageChangeCompleted != null)
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                        {
+                            OnLanguageChangeCompleted();
+                        });
+                    }
                 }
                 catch (Exception e)
                 {
@@ -575,6 +634,14 @@ namespace WinMemoryCleaner
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the memory usage thresholds.
+        /// </summary>
+        /// <value>
+        /// The memory usage thresholds.
+        /// </value>
+        public List<byte> MemoryUsageThresholds { get; private set; }
 
         /// <summary>
         /// Gets or sets the optimization key.
@@ -960,7 +1027,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                var version = IsInDesignMode ? Assembly.GetExecutingAssembly().GetName().Version : App.Version;
+                var version = App.IsInDesignMode ? Assembly.GetExecutingAssembly().GetName().Version : App.Version;
 
                 return CompactMode
                     ? Constants.App.Title
@@ -969,21 +1036,271 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Gets or sets the tray icon.
+        /// Gets or sets the color of the tray icon background.
         /// </summary>
         /// <value>
-        /// The tray icon.
+        /// The color of the tray icon background.
         /// </value>
-        public Enums.Icon.Tray TrayIcon
+        public Brush TrayIconBackgroundColor
         {
-            get { return Settings.TrayIcon; }
+            get
+            {
+                if (App.IsInDesignMode)
+                    return System.Windows.Media.Brushes.White;
+
+                var brush = Settings.TrayIconBackgroundColor as System.Drawing.SolidBrush;
+                var fallbackValue = System.Windows.Media.Brushes.White;
+
+                if (brush == null)
+                    return fallbackValue;
+
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color)) ?? fallbackValue;
+            }
+            set
+            {
+                if (value == null)
+                    return;
+
+                Settings.TrayIconBackgroundColor = value.ToBrush();
+                Settings.Save();
+
+                NotificationService.Update(Computer.Memory);
+
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the color of the tray icon on the danger level.
+        /// </summary>
+        /// <value>
+        /// The color of the tray icon on the danger level.
+        /// </value>
+        public Brush TrayIconDangerColor
+        {
+            get
+            {
+                if (App.IsInDesignMode)
+                    return System.Windows.Media.Brushes.White;
+
+                var brush = Settings.TrayIconDangerColor as System.Drawing.SolidBrush;
+                var fallbackValue = System.Windows.Media.Brushes.DarkRed;
+
+                if (brush == null)
+                    return fallbackValue;
+
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color)) ?? fallbackValue;
+            }
+            set
+            {
+                if (value == null)
+                    return;
+
+                Settings.TrayIconDangerColor = value.ToBrush();
+                Settings.Save();
+
+                NotificationService.Update(Computer.Memory);
+
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tray icon danger level value.
+        /// </summary>
+        /// <value>
+        /// The tray icon danger level value.
+        /// </value>
+        public byte TrayIconDangerLevel
+        {
+            get { return Settings.TrayIconDangerLevel; }
             set
             {
                 try
                 {
                     IsBusy = true;
 
-                    Settings.TrayIcon = value;
+                    Settings.TrayIconDangerLevel = value;
+                    Settings.Save();
+
+                    NotificationService.Update(Computer.Memory);
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the tray icon items.
+        /// </summary>
+        /// <value>
+        /// The tray icon items.
+        /// </value>
+        public ObservableCollection<ObservableItem<bool>> TrayIconItems
+        {
+            get
+            {
+                return new ObservableCollection<ObservableItem<bool>>
+                (
+                    new List<ObservableItem<bool>>
+                    {
+                       new ObservableItem<bool>(Localizer.String.ShowMemoryUsage, () => TrayIconShowMemoryUsage, value => TrayIconShowMemoryUsage = value),
+                       new ObservableItem<bool>(Localizer.String.UseTransparentBackground, () => TrayIconUseTransparentBackground, value => TrayIconUseTransparentBackground = value, TrayIconShowMemoryUsage)
+                    }
+                    .OrderBy(item => item.Name)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [tray icon show memory usage].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [tray icon show memory usage]; otherwise, <c>false</c>.
+        /// </value>
+        public bool TrayIconShowMemoryUsage
+        {
+            get { return Settings.TrayIconShowMemoryUsage; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.TrayIconShowMemoryUsage = value;
+                    Settings.Save();
+
+                    NotificationService.Update(Computer.Memory);
+
+                    RaisePropertyChanged();
+                    RaisePropertyChanged(() => TrayIconItems);
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the color of the tray icon text.
+        /// </summary>
+        /// <value>
+        /// The color of the tray icon text.
+        /// </value>
+        public Brush TrayIconTextColor
+        {
+            get
+            {
+                if (App.IsInDesignMode)
+                    return System.Windows.Media.Brushes.White;
+
+                var brush = Settings.TrayIconTextColor as System.Drawing.SolidBrush;
+                var fallbackValue = System.Windows.Media.Brushes.White;
+
+                if (brush == null)
+                    return fallbackValue;
+
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color)) ?? fallbackValue;
+            }
+            set
+            {
+                if (value == null)
+                    return;
+
+                Settings.TrayIconTextColor = value.ToBrush();
+                Settings.Save();
+
+                NotificationService.Update(Computer.Memory);
+
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [tray icon use transparent background].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [tray icon use transparent background]; otherwise, <c>false</c>.
+        /// </value>
+        public bool TrayIconUseTransparentBackground
+        {
+            get { return Settings.TrayIconUseTransparentBackground; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.TrayIconUseTransparentBackground = value;
+                    Settings.Save();
+
+                    NotificationService.Update(Computer.Memory);
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the color of the tray icon on the warning level.
+        /// </summary>
+        /// <value>
+        /// The color of the tray icon on the warning level.
+        /// </value>
+        public Brush TrayIconWarningColor
+        {
+            get
+            {
+                if (App.IsInDesignMode)
+                    return System.Windows.Media.Brushes.White;
+
+                var brush = Settings.TrayIconWarningColor as System.Drawing.SolidBrush;
+                var fallbackValue = System.Windows.Media.Brushes.DarkRed;
+
+                if (brush == null)
+                    return fallbackValue;
+
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color)) ?? fallbackValue;
+            }
+            set
+            {
+                if (value == null)
+                    return;
+
+                Settings.TrayIconWarningColor = value.ToBrush();
+                Settings.Save();
+
+                NotificationService.Update(Computer.Memory);
+
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tray icon warning level value.
+        /// </summary>
+        /// <value>
+        /// The tray icon warning level value.
+        /// </value>
+        public byte TrayIconWarningLevel
+        {
+            get { return Settings.TrayIconWarningLevel; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.TrayIconWarningLevel = value;
                     Settings.Save();
 
                     NotificationService.Update(Computer.Memory);
@@ -1078,14 +1395,6 @@ namespace WinMemoryCleaner
         public ICommand AddProcessToExclusionListCommand { get; private set; }
 
         /// <summary>
-        /// Gets the navigate URI command.
-        /// </summary>
-        /// <value>
-        /// The navigate URI command.
-        /// </value>
-        public ICommand NavigateUriCommand { get; private set; }
-
-        /// <summary>
         /// Gets the optimize command.
         /// </summary>
         /// <value>
@@ -1101,22 +1410,35 @@ namespace WinMemoryCleaner
         /// </value>
         public ICommand RemoveProcessFromExclusionListCommand { get; private set; }
 
+        /// <summary>
+        /// Gets the reset settings to default configuration command.
+        /// </summary>
+        /// <value>
+        /// The reset settings to default configuration command.
+        /// </value>
+        public ICommand ResetSettingsToDefaultConfigurationCommand { get; private set; }
+
         #endregion
 
         #region Actions
 
         /// <summary>
-        /// Occurs when [on navigate URI command completed].
+        /// Occurs when [on add process to exclusion list command completed].
         /// </summary>
-        public event Action OnNavigateUriCommandCompleted;
+        public event Action OnAddProcessToExclusionListCommandCompleted;
 
         /// <summary>
-        /// Occurs when [optimize command is completed].
+        /// Occurs when [on language change completed].
+        /// </summary>
+        public event Action OnLanguageChangeCompleted;
+
+        /// <summary>
+        /// Occurs when [on optimize command completed].
         /// </summary>
         public event Action OnOptimizeCommandCompleted;
 
         /// <summary>
-        /// Occurs when [remove process from exclusion list command is completed].
+        /// Occurs when [on remove process from exclusion list command completed].
         /// </summary>
         public event Action OnRemoveProcessFromExclusionListCommandCompleted;
 
@@ -1142,6 +1464,14 @@ namespace WinMemoryCleaner
 
                         RaisePropertyChanged(() => Processes);
                         RaisePropertyChanged(() => ProcessExclusionList);
+
+                        if (OnAddProcessToExclusionListCommandCompleted != null)
+                        {
+                            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                            {
+                                OnAddProcessToExclusionListCommandCompleted();
+                            });
+                        }
                     }
                 }
             }
@@ -1265,30 +1595,6 @@ namespace WinMemoryCleaner
                 {
                     Logger.Debug(e);
                 }
-            }
-        }
-
-        /// <summary>  
-        /// Navigates the specified URI.  
-        /// </summary>  
-        /// <param name="uri">The URI.</param>  
-        public void Navigate(Uri uri)
-        {
-            if (uri == null)
-                return;
-
-            using (Process.Start(new ProcessStartInfo
-            {
-                FileName = uri.AbsoluteUri,
-                UseShellExecute = true
-            })) { }
-
-            if (OnNavigateUriCommandCompleted != null)
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
-                {
-                    OnNavigateUriCommandCompleted();
-                });
             }
         }
 
@@ -1430,6 +1736,31 @@ namespace WinMemoryCleaner
                         OnRemoveProcessFromExclusionListCommandCompleted();
                     });
                 }
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// Resets settings to the default configuration.
+        /// </summary>
+        private void ResetSettingsToDefaultConfiguration()
+        {
+            try
+            {
+                IsBusy = true;
+
+                Settings.Reset(true);
+
+                FontSize = Settings.FontSize;
+                OptimizationKey = Settings.OptimizationKey;
+                OptimizationModifiers = Settings.OptimizationModifiers;
+                
+                NotificationService.Update(Computer.Memory);
+
+                RaisePropertyChanged(string.Empty);
             }
             finally
             {

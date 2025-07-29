@@ -715,68 +715,74 @@ namespace WinMemoryCleaner
             if (!OperatingSystem.HasWorkingSet)
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.WorkingSet));
 
-            // Check privilege
-            if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeDebugName))
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
-
             var errors = new StringBuilder();
-            var processes = Process.GetProcesses().Where(process => process != null && !Settings.ProcessExclusionList.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase));
 
-            foreach (var process in processes)
+            if (Settings.ProcessExclusionList.Any())
             {
-                using (process)
+                // Check privilege
+                if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeDebugName))
+                    throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
+
+                var processes = Process.GetProcesses().Where(process => process != null && !Settings.ProcessExclusionList.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase));
+
+                foreach (var process in processes)
+                {
+                    using (process)
+                    {
+                        try
+                        {
+                            if (!NativeMethods.EmptyWorkingSet(process.Handle))
+                                throw new Win32Exception(Marshal.GetLastWin32Error());
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // ignored
+                        }
+                        catch (Win32Exception e)
+                        {
+                            if (e.NativeErrorCode != Constants.Windows.SystemErrorCode.ErrorAccessDenied)
+                                errors.Append(string.Format(Localizer.Culture, "{0}: {1} | ", process.ProcessName, e.GetMessage()));
+                        }
+                    }
+                }
+
+                if (errors.Length > 3)
+                    errors.Remove(errors.Length - 3, 3);
+            }
+            else
+            {
+                // Check privilege
+                if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
+                    throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
+
+                var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets, GCHandleType.Pinned);
+
+                try
+                {
+                    if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    {
+                        var e = new Win32Exception(Marshal.GetLastWin32Error());
+
+                        if (e != null)
+                        {
+                            if (errors.Length > 0)
+                                errors.Append(" | ");
+
+                            errors.Append(e.GetMessage());
+                        }
+                    }
+                }
+                finally
                 {
                     try
                     {
-                        if (!NativeMethods.EmptyWorkingSet(process.Handle))
-                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                        if (handle.IsAllocated)
+                            handle.Free();
                     }
                     catch (InvalidOperationException)
                     {
                         // ignored
                     }
-                    catch (Win32Exception e)
-                    {
-                        if (e.NativeErrorCode != Constants.Windows.SystemErrorCode.ErrorAccessDenied)
-                            errors.Append(string.Format(Localizer.Culture, "{0}: {1} | ", process.ProcessName, e.GetMessage()));
-                    }
-                }
-            }
-
-            if (errors.Length > 3)
-                errors.Remove(errors.Length - 3, 3);
-
-            // Check privilege
-            if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
-
-            var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets, GCHandleType.Pinned);
-
-            try
-            {
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                {
-                    var e = new Win32Exception(Marshal.GetLastWin32Error());
-
-                    if (e != null)
-                    {
-                        if (errors.Length > 0)
-                            errors.Append(" | ");
-
-                        errors.Append(e.GetMessage());
-                    }
-                }
-            }
-            finally
-            {
-                try
-                {
-                    if (handle.IsAllocated)
-                        handle.Free();
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored
                 }
             }
 

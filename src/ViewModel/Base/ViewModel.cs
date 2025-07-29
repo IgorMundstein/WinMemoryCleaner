@@ -1,5 +1,6 @@
-﻿using System.ComponentModel;
-using System.Windows;
+﻿using System;
+using System.Diagnostics;
+using System.Windows.Input;
 
 namespace WinMemoryCleaner
 {
@@ -22,7 +23,11 @@ namespace WinMemoryCleaner
         /// <param name="notificationService">Notification service</param>
         protected ViewModel(INotificationService notificationService)
         {
+            // Services
             NotificationService = notificationService;
+
+            // Commands
+            NavigateUriCommand = new RelayCommand<Uri>(Navigate);
         }
 
         #endregion
@@ -53,21 +58,8 @@ namespace WinMemoryCleaner
                 }
 
                 _isBusy = value;
-                RaisePropertyChanged();
-            }
-        }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is in design mode.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is in design mode; otherwise, <c>false</c>.
-        /// </value>
-        protected bool IsInDesignMode
-        {
-            get
-            {
-                return DesignerProperties.GetIsInDesignMode(new DependencyObject());
+                RaisePropertyChanged();
             }
         }
 
@@ -81,7 +73,52 @@ namespace WinMemoryCleaner
 
         #endregion
 
+        #region Commands
+
+        /// <summary>
+        /// Gets the navigate URI command.
+        /// </summary>
+        /// <value>
+        /// The navigate URI command.
+        /// </value>
+        public ICommand NavigateUriCommand { get; private set; }
+
+        #endregion
+
+        #region Actions
+
+        /// <summary>
+        /// Occurs when [on navigate URI command completed].
+        /// </summary>
+        public event Action OnNavigateUriCommandCompleted;
+
+        #endregion
+
         #region Methods
+
+        /// <summary>  
+        /// Navigates the specified URI.  
+        /// </summary>  
+        /// <param name="uri">The URI.</param>  
+        protected void Navigate(Uri uri)
+        {
+            if (uri == null)
+                return;
+
+            using (Process.Start(new ProcessStartInfo
+            {
+                FileName = uri.AbsoluteUri,
+                UseShellExecute = true
+            })) { }
+
+            if (OnNavigateUriCommandCompleted != null)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                {
+                    OnNavigateUriCommandCompleted();
+                });
+            }
+        }
 
         /// <summary>
         /// Displays a Notification

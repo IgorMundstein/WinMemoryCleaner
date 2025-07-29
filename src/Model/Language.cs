@@ -34,6 +34,30 @@ namespace WinMemoryCleaner
         public FlowDirection Direction { get; private set; }
 
         /// <summary>
+        /// Gets the display english name.
+        /// </summary>
+        /// <value>
+        /// The display english name.
+        /// </value>
+        public string DisplayEnglishName
+        {
+            get
+            {
+                switch (Name)
+                {
+                    case Constants.Windows.Locale.Name.SimplifiedChinese:
+                        return "Chinese (S)";
+
+                    case Constants.Windows.Locale.Name.TraditionalChinese:
+                        return "Chinese (T)";
+
+                    default:
+                        return EnglishName;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the english name.
         /// </summary>
         /// <value>
@@ -110,7 +134,7 @@ namespace WinMemoryCleaner
         /// </returns>
         public override string ToString()
         {
-            return EnglishName == NativeName ? EnglishName : string.Format(Localizer.Culture, "{0} ({1})", EnglishName, NativeName);
+            return EnglishName == NativeName ? EnglishName : string.Format(Localizer.Culture, "{0} ({1})", DisplayEnglishName, NativeName);
         }
     }
 }

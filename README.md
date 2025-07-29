@@ -122,11 +122,11 @@ By the end, to ensure transparency and safety, each new version is submitted for
 
 ### Tray icon
 
-- `Image` Show app icon
-- `Memory usage` Show physical memory usage with a background color based on the value
-  - `(0% - 79%)` <picture><img src="./.github/images/memory-usage.png"></picture>
-  - `(80% - 89%)` <picture><img src="./.github/images/memory-usage-warning.png"></picture>
-  - `(90% - 100%)` <picture><img src="./.github/images/memory-usage-danger.png"></picture>
+- `Show memory usage` Display the physical memory usage instead of the application image
+- `Use transparent background` Set the background to transparent
+- `Background` Set the background color
+- `Text` Set the text color
+- `Warning/Danger levels` Set the danger and warning level thresholds and colors for memory usage. The icon will change color based on the memory usage
 
 ## 🔳 Command‑line arguments (no GUI)
 

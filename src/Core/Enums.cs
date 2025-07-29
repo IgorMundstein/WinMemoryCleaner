@@ -9,6 +9,16 @@ namespace WinMemoryCleaner
     /// </summary>
     public static class Enums
     {
+        public static class Dialog
+        {
+            public enum Button
+            {
+                None,
+                Yes,
+                No
+            }
+        }
+
         public static class Icon
         {
             public enum Notification
@@ -17,12 +27,6 @@ namespace WinMemoryCleaner
                 Information,
                 Warning,
                 Error
-            }
-
-            public enum Tray
-            {
-                Image,
-                MemoryUsage
             }
         }
 

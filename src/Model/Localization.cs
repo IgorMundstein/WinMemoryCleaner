@@ -13,22 +13,25 @@ namespace WinMemoryCleaner
         #region Fields
 
         private string _about, _add, _alwaysOnTop, _autoOptimization, _autoOptimizationInterval, _autoUpdate;
+        private string _background;
         private string _close, _closeAfterOptimization, _closeToTheNotificationArea, _collapse, _combinedPageList;
-        private string _donate, _donationMessage, _donationTitle;
+        private string _dangerLevel, _donate, _donationMessage, _donationTitle;
         private string _error, _errorAdminPrivilegeRequired, _errorCanNotSaveLog, _errorMemoryAreaOptimizationNotSupported, _everyHour, _exit, _expand;
         private string _free;
         private string _help, _hotkeyIsInUseByOperatingSystem;
-        private string _image, _invalid;
+        private string _invalid;
         private string _lowMemory;
         private string _manual, _memoryAreas, _memoryOptimized, _memoryUsage, _minimize, _modifiedFileCache, _modifiedPageList;
+        private string _no;
         private string _optimizationHotkey, _optimize, _optimized;
         private string _physicalMemory, _processExclusionList;
-        private string _reason, _registryCache, _remove, _repositoryInfo, _runOnLowPriority, _runOnStartup;
-        private string _schedule, _seconds, _settings, _showOptimizationNotifications, _showVirtualMemory, _standbyList, _standbyListLowPriority, _startMinimized, _systemFileCache;
-        private string _trayIcon;
-        private string _updatedToVersion, _used, _useHotkey;
+        private string _reason, _registryCache, _remove, _repositoryInfo, _reset, _resetConfirmation, _runOnLowPriority, _runOnStartup;
+        private string _schedule, _seconds, _settings, _showMemoryUsage, _showOptimizationNotifications, _showVirtualMemory, _standbyList, _standbyListLowPriority, _startMinimized, _systemFileCache;
+        private string _text, _trayIcon;
+        private string _updatedToVersion, _used, _useHotkey, _useTransparentBackground;
         private string _virtualMemory;
-        private string _whenFreeMemoryIsBelow, _workingSet;
+        private string _warningLevel, _whenFreeMemoryIsBelow, _workingSet;
+        private string _yes;
 
         #endregion
 
@@ -77,6 +80,13 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
+        public string Background
+        {
+            get { return _background; }
+            private set { _background = value.Capitalize(); }
+        }
+
+        [DataMember]
         public string Close
         {
             get { return _close; }
@@ -109,6 +119,13 @@ namespace WinMemoryCleaner
         {
             get { return _combinedPageList; }
             private set { _combinedPageList = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string DangerLevel
+        {
+            get { return _dangerLevel; }
+            private set { _dangerLevel = value.Capitalize(); }
         }
 
         [DataMember]
@@ -203,13 +220,6 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
-        public string Image
-        {
-            get { return _image; }
-            private set { _image = value.Capitalize(); }
-        }
-
-        [DataMember]
         public string Invalid
         {
             get { return _invalid; }
@@ -270,6 +280,13 @@ namespace WinMemoryCleaner
         {
             get { return _modifiedPageList; }
             private set { _modifiedPageList = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string No
+        {
+            get { return _no; }
+            private set { _no = value.Capitalize(); }
         }
 
         [DataMember]
@@ -336,6 +353,20 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
+        public string Reset
+        {
+            get { return _reset; }
+            private set { _reset = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string ResetConfirmation
+        {
+            get { return _resetConfirmation; }
+            private set { _resetConfirmation = value.Capitalize(); }
+        }
+
+        [DataMember]
         public string RunOnLowPriority
         {
             get { return _runOnLowPriority; }
@@ -368,6 +399,13 @@ namespace WinMemoryCleaner
         {
             get { return _settings; }
             private set { _settings = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string ShowMemoryUsage
+        {
+            get { return _showMemoryUsage; }
+            private set { _showMemoryUsage = value.Capitalize(); }
         }
 
         [DataMember]
@@ -413,6 +451,13 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
+        public string Text
+        {
+            get { return _text; }
+            private set { _text = value.Capitalize(); }
+        }
+
+        [DataMember]
         public string TrayIcon
         {
             get { return _trayIcon; }
@@ -424,6 +469,13 @@ namespace WinMemoryCleaner
         {
             get { return _updatedToVersion; }
             private set { _updatedToVersion = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string UseTransparentBackground
+        {
+            get { return _useTransparentBackground; }
+            private set { _useTransparentBackground = value.Capitalize(); }
         }
 
         [DataMember]
@@ -455,10 +507,24 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
+        public string WarningLevel
+        {
+            get { return _warningLevel; }
+            private set { _warningLevel = value.Capitalize(); }
+        }
+
+        [DataMember]
         public string WorkingSet 
         {
             get { return _workingSet; }
             private set { _workingSet = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string Yes
+        {
+            get { return _yes; }
+            private set { _yes = value.Capitalize(); }
         }
 
         #endregion

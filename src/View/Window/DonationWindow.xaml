@@ -1,22 +1,22 @@
-﻿<Window x:Class="WinMemoryCleaner.DonationWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:WinMemoryCleaner"
-        AllowsTransparency="True"
-        Background="Transparent"
-        BorderBrush="Transparent"
-        BorderThickness="0"
-        DataContext="{Binding MainViewModel, Source={StaticResource ViewModelLocator}}"
-        FlowDirection="{Binding Path=(local:Localizer.Language).Direction}"
-        Foreground="{StaticResource DarkForeground}"
-        Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico"
-        ResizeMode="NoResize"
-        SizeToContent="WidthAndHeight"
-        SnapsToDevicePixels="True"
-        Title="{x:Static local:Constants+App.Title}"
-        UseLayoutRounding="True"
-        WindowStartupLocation="CenterOwner"
-        WindowStyle="None">
+﻿<local:View x:Class="WinMemoryCleaner.DonationWindow"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:local="clr-namespace:WinMemoryCleaner"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"        
+            AllowsTransparency="True"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            BorderThickness="0"
+            DataContext="{Binding DonationViewModel, Source={StaticResource ViewModelLocator}}"
+            FlowDirection="{Binding Path=(local:Localizer.Language).Direction}"
+            Foreground="{StaticResource DarkForeground}"
+            Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico"
+            ResizeMode="NoResize"
+            SizeToContent="WidthAndHeight"
+            SnapsToDevicePixels="True"
+            Title="{x:Static local:Constants+App.Title}"
+            UseLayoutRounding="True"
+            WindowStartupLocation="CenterScreen"
+            WindowStyle="None">
     <Border Background="{StaticResource DarkWindowBackground}"
             BorderBrush="{StaticResource DarkWindowBorderBrush}"
             BorderThickness="1"
@@ -28,9 +28,9 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid Grid.Row="0" 
+                  Margin="0, 0, 0, 10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -38,7 +38,7 @@
                 <TextBlock FontWeight="Normal"
                            Grid.Column="0"
                            HorizontalAlignment="Left"
-                           Margin="15,0,0,0"
+                           Margin="15, 0, 0, 0"
                            Text="{Binding Path=(local:Localizer.String).DonationTitle}"
                            Typography.Capitals="AllSmallCaps"
                            VerticalAlignment="Center" />
@@ -56,24 +56,25 @@
                         Width="28" />
             </Grid>
             <TextBlock Grid.Row="1"
-                       Margin="15,0,15,10"
+                       Margin="15, 0, 15, 10"
                        Padding="0"
                        Text="{Binding Path=(local:Localizer.String).DonationMessage}"
                        TextAlignment="Justify"
                        TextWrapping="Wrap" />
             <UniformGrid Columns="2"
-                         Grid.Row="3"
+                         Grid.Row="2"
                          HorizontalAlignment="Stretch"
                          Margin="0">
                 <!-- GitHub Sponsor -->
-                <Button Click="OnHyperlinkRequestNavigate"
+                <Button Command="{Binding NavigateUriCommand}"
+                        CommandParameter="{x:Static local:Constants+App+Donation.GitHubSponsorUri}"
                         Cursor="Hand"
                         HorizontalAlignment="Stretch"
                         Margin="10"
                         MinHeight="64"
                         MinWidth="150"
                         Padding="10"
-                        Tag="https://github.com/sponsors/IgorMundstein"
+                        TabIndex="0"
                         VerticalAlignment="Stretch">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -81,7 +82,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0"
-                              Margin="0,0,10,0"
+                              Margin="0, 0, 10, 0"
                               VerticalAlignment="Center">
                             <Viewbox Width="32" Height="32">
                                 <Canvas Width="24" Height="24">
@@ -93,20 +94,21 @@
                             </Viewbox>
                         </Grid>
                         <TextBlock Grid.Column="1"
-                                   Margin="12,0,0,0"
+                                   Margin="12, 0, 0, 0"
                                    Text="GitHub Sponsor"
                                    VerticalAlignment="Center" />
                     </Grid>
                 </Button>
                 <!-- Bitcoin -->
-                <Button Click="OnHyperlinkRequestNavigate"
+                <Button Command="{Binding NavigateUriCommand}"
+                        CommandParameter="{x:Static local:Constants+App+Donation.BitcoinUri}"
                         Cursor="Hand"
                         HorizontalAlignment="Stretch"
                         Margin="10"
                         MinHeight="64"
                         MinWidth="150"
                         Padding="10"
-                        Tag="https://www.blockchain.com/btc/address/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap"
+                        TabIndex="2"
                         VerticalAlignment="Stretch">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -114,7 +116,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0"
-                            Margin="0,0,10,0"
+                            Margin="0, 0, 10, 0"
                             VerticalAlignment="Center">
                             <Ellipse Fill="#f7931a"
                                      Height="32"
@@ -126,20 +128,21 @@
                                   Width="20" />
                         </Grid>
                         <TextBlock Grid.Column="1"
-                                   Margin="12,0,0,0"
+                                   Margin="12, 0, 0, 0"
                                    Text="Bitcoin"
                                    VerticalAlignment="Center" />
                     </Grid>
                 </Button>
                 <!-- Ko-fi -->
-                <Button Click="OnHyperlinkRequestNavigate"
+                <Button Command="{Binding NavigateUriCommand}"
+                        CommandParameter="{x:Static local:Constants+App+Donation.KofiUri}"
                         Cursor="Hand"
                         HorizontalAlignment="Stretch"
                         Margin="10"
                         MinHeight="64"
                         MinWidth="150"
                         Padding="10"
-                        Tag="https://ko-fi.com/igormundstein"
+                        TabIndex="1"
                         VerticalAlignment="Stretch">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -147,7 +150,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0"
-                              Margin="0,0,10,0"
+                              Margin="0, 0, 10, 0"
                               VerticalAlignment="Center">
                             <Viewbox Height="32"
                                      Stretch="Uniform"
@@ -164,20 +167,21 @@
                             </Viewbox>
                         </Grid>
                         <TextBlock Grid.Column="1"
-                                   Margin="12,0,0,0"
+                                   Margin="12, 0, 0, 0"
                                    Text="Ko-fi"
                                    VerticalAlignment="Center" />
                     </Grid>
                 </Button>
                 <!-- Ethereum -->
-                <Button Click="OnHyperlinkRequestNavigate"
+                <Button Command="{Binding NavigateUriCommand}"
+                        CommandParameter="{x:Static local:Constants+App+Donation.EthereumUri}"
                         Cursor="Hand"
                         HorizontalAlignment="Stretch"
                         Margin="10"
                         MinHeight="64"
                         MinWidth="150"
                         Padding="10"
-                        Tag="https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d"
+                        TabIndex="3"
                         VerticalAlignment="Stretch">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -185,7 +189,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0"
-                              Margin="0,0,10,0"
+                              Margin="0, 0, 10, 0"
                               VerticalAlignment="Center">
                             <Ellipse Fill="#627eea"
                                      Height="32"
@@ -204,7 +208,7 @@
                                      Points="16,14 16,18 4,20" />
                         </Grid>
                         <TextBlock Grid.Column="1"
-                                   Margin="12,0,0,0"
+                                   Margin="12, 0, 0, 0"
                                    Text="Ethereum"
                                    VerticalAlignment="Center" />
                     </Grid>
@@ -212,4 +216,4 @@
             </UniformGrid>
         </Grid>
     </Border>
-</Window>
+</local:View>

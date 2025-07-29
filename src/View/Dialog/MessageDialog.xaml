@@ -1,0 +1,52 @@
+﻿<local:View x:Class="WinMemoryCleaner.MessageDialog"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:local="clr-namespace:WinMemoryCleaner"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            AllowsTransparency="True"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            BorderThickness="0"
+            DataContext="{Binding MessageViewModel, Source={StaticResource ViewModelLocator}}"
+            FlowDirection="{Binding Path=(local:Localizer.Language).Direction}"
+            FocusManager.FocusedElement="{Binding ElementName=RightButton}"
+            Foreground="{StaticResource DarkForeground}"
+            Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico"
+            ResizeMode="NoResize"
+            SizeToContent="WidthAndHeight"
+            SnapsToDevicePixels="True"
+            Title="{x:Static local:Constants+App.Title}"
+            UseLayoutRounding="True"
+            WindowStartupLocation="CenterScreen"
+            WindowStyle="None">
+    <Border Background="{StaticResource DarkWindowBackground}"
+            BorderBrush="{StaticResource DarkWindowBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock FontWeight="Normal"
+                       Grid.Row="0"
+                       Text="{Binding Message}"
+                       TextWrapping="Wrap" />
+            <StackPanel Grid.Row="1"
+                        HorizontalAlignment="Right"
+                        Margin="0, 20, 0, 0"
+                        Orientation="Horizontal">
+                <Button Click="OnLeftButtonClick"
+                        Content="{Binding LeftButton.Key}"
+                        Margin="0, 0, 15, 0"
+                        Padding="15, 5, 15, 5"
+                        Visibility="{Binding LeftButton.Key, Converter={StaticResource NullToVisibilityConverter}}" />
+                <Button Click="OnRightButtonClick"
+                        Content="{Binding RightButton.Key}"
+                        Padding="15, 5, 15, 5"
+                        Name="RightButton" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</local:View>

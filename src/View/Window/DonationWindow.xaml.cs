@@ -1,45 +1,30 @@
-﻿using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Navigation;
+﻿using System.Windows;
 
 namespace WinMemoryCleaner
 {
     /// <summary>
     /// Donation Window
     /// </summary>
-    public partial class DonationWindow
+    public partial class DonationWindow : View
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DonationWindow" /> class.
         /// </summary>
-        public DonationWindow()
+        /// <param name="owner">The owner.</param>
+        /// <param name="showInTaskbar">if set to <c>true</c> [show in taskbar].</param>
+        /// <param name="windowStartupLocation">The window startup location.</param>
+        public DonationWindow(Window owner, bool showInTaskbar = false, WindowStartupLocation windowStartupLocation = WindowStartupLocation.CenterOwner)
+            : base(owner)
         {
             InitializeComponent();
+
+            ShowInTaskbar = showInTaskbar;
+            WindowStartupLocation = windowStartupLocation;
         }
 
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             Close();
-        }
-
-        private void OnHyperlinkRequestNavigate(object sender, RequestNavigateEventArgs e)
-        {
-            using (Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true })) { }
-            e.Handled = true;
-        }
-
-        private void OnHyperlinkRequestNavigate(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-
-            if (button != null)
-            {
-                var url = button.Tag as string;
-
-                if (url != null)
-                    using (Process.Start(new ProcessStartInfo(url) { UseShellExecute = true })) { }
-            }
         }
     }
 }

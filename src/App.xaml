@@ -1,14 +1,17 @@
 ﻿<Application x:Class="WinMemoryCleaner.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:WinMemoryCleaner">
+             xmlns:local="clr-namespace:WinMemoryCleaner" 
+             xmlns:System="clr-namespace:System;assembly=mscorlib">
     <Application.Resources>
         <ResourceDictionary>
             <!-- Converters -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <local:BrushToHexConverter x:Key="BrushToHexConverter" />
             <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <local:StringFormatConverter x:Key="StringFormatConverter" />
             <local:SumNumericConverter x:Key="SumNumericConverter" />
             <local:ViewModelLocator x:Key="ViewModelLocator" />
@@ -22,8 +25,13 @@
             <SolidColorBrush x:Key="DarkOver" Color="#00AEF7" />
             <SolidColorBrush x:Key="DarkWindowBackground" Color="#202020" />
             <SolidColorBrush x:Key="DarkWindowBorderBrush" Color="#303030" />
+            <!-- Font -->
+            <FontFamily x:Key="FontFamily">Calibri</FontFamily>
+            <System:Double x:Key="FontSize">15</System:Double>
+            <FontWeight x:Key="FontWeight">Light</FontWeight>
             <!-- Styles (Base) -->
             <Style x:Key="FrameworkElementBase" TargetType="{x:Type FrameworkElement}">
+                <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Style.Triggers>
                     <Trigger Property="IsFocused" Value="True">
                         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -33,13 +41,15 @@
             <Style x:Key="ControlBase" TargetType="{x:Type Control}" BasedOn="{StaticResource FrameworkElementBase}">
                 <Setter Property="Background" Value="{StaticResource DarkBackground}" />
                 <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
-                <Setter Property="FontFamily" Value="Calibri" />
-                <Setter Property="FontSize" Value="16" />
-                <Setter Property="FontWeight" Value="Light" />
+                <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
+                <Setter Property="FontSize" Value="{DynamicResource FontSize}" />
+                <Setter Property="FontWeight" Value="{DynamicResource FontWeight}" />
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Style.Resources>
                     <Style TargetType="{x:Type Border}">
                         <Setter Property="CornerRadius" Value="3" />
+                        <Setter Property="SnapsToDevicePixels" Value="True" />
                     </Style>
                 </Style.Resources>
                 <Style.Triggers>
@@ -60,6 +70,7 @@
                 <Setter Property="FontWeight" Value="Normal" />
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="Padding" Value="3, 0, 3, 0" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
                 <Setter Property="Template">
                     <Setter.Value>
@@ -67,9 +78,11 @@
                             <Border Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="3">
+                                    CornerRadius="3"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                                   Margin="{TemplateBinding Padding}"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             </Border>
                         </ControlTemplate>
@@ -77,21 +90,25 @@
                 </Setter>
             </Style>
             <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource ControlBase}">
+                <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel HorizontalAlignment="Stretch"
-                                        Orientation="Horizontal">
+                                        Orientation="Horizontal"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                                 <Border Background="{TemplateBinding Background}" 
                                         BorderBrush="{TemplateBinding BorderBrush}"
                                         BorderThickness="{TemplateBinding BorderThickness}" 
                                         CornerRadius="3"
                                         Height="15"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                         Width="15">
                                     <Path Data="F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z " 
                                           Fill="{TemplateBinding Foreground}" 
                                           Height="10" 
                                           Name="eliCheck" 
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                           Stretch="Uniform" 
                                           Visibility="Collapsed" 
                                           Width="15" />
@@ -99,6 +116,7 @@
                                 <ContentPresenter HorizontalAlignment="Left"
                                                   Margin="5, -1, 0, 0"
                                                   RecognizesAccessKey="True"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                   VerticalAlignment="Center" />
                             </StackPanel>
                             <ControlTemplate.Triggers>
@@ -112,36 +130,40 @@
             </Style>
             <!-- ComboBox (BEGIN) -->
             <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
-                <Grid>
+                <Grid SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="20" />
                     </Grid.ColumnDefinitions>
                     <Border x:Name="Border" 
-                            Grid.ColumnSpan="2"
-                            CornerRadius="3"
                             Background="{StaticResource DarkBackground}"
                             BorderBrush="{StaticResource DarkBorderBrush}"
-                            BorderThickness="1" />
+                            BorderThickness="1"
+                            CornerRadius="3"
+                            Grid.ColumnSpan="2"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                     <Path x:Name="Arrow"
-                          Grid.Column="1"   
+                          Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
                           Fill="{TemplateBinding Foreground}"
+                          Grid.Column="1"
                           HorizontalAlignment="Center"
-                          VerticalAlignment="Center"
-                          Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z" />
+                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                          VerticalAlignment="Center" />
                 </Grid>
             </ControlTemplate>
             <ControlTemplate x:Key="ComboBoxTextBox" TargetType="{x:Type TextBox}">
                 <Border x:Name="PART_ContentHost" 
                         Background="{TemplateBinding Background}"
-                        Focusable="False" />
+                        Focusable="False"
+                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
             </ControlTemplate>
             <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ControlBase}">
                 <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ComboBox}">
-                            <Grid>
+                            <Grid SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                                 <ToggleButton ClickMode="Press"
                                               Focusable="False"
                                               IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
@@ -155,6 +177,7 @@
                                                   IsHitTestVisible="False"  
                                                   Margin="5, 3, 19, 3"
                                                   Name="ContentSite" 
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                   VerticalAlignment="Center" />
                                 <TextBox x:Name="PART_EditableTextBox"
                                          Background="{StaticResource DarkBackground}"
@@ -163,6 +186,7 @@
                                          HorizontalAlignment="Left" 
                                          IsReadOnly="{TemplateBinding IsReadOnly}"
                                          Margin="3, 3, 19, 3"
+                                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                          Style="{x:Null}" 
                                          Template="{StaticResource ComboBoxTextBox}" 
                                          VerticalAlignment="Center" 
@@ -173,19 +197,21 @@
                                        Placement="Bottom"
                                        PopupAnimation="Fade"
                                        Name="Popup">
-                                    <Grid MinWidth="{TemplateBinding ActualWidth}"
-                                          MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    <Grid MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                          MinWidth="{TemplateBinding ActualWidth}"
                                           Name="DropDown"
-                                          SnapsToDevicePixels="False">
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                                         <Border x:Name="DropDownBorder"
                                                 Background="{StaticResource DarkBackground}"
                                                 BorderThickness="1"
                                                 BorderBrush="{StaticResource DarkBorderBrush}"
-                                                CornerRadius="3" />
+                                                CornerRadius="3"
+                                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                         <ScrollViewer Margin="1, 3, 2, 2" 
-                                                      SnapsToDevicePixels="False">
+                                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                                             <StackPanel IsItemsHost="True"
-                                                        KeyboardNavigation.DirectionalNavigation="Contained" />
+                                                        KeyboardNavigation.DirectionalNavigation="Contained"
+                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                         </ScrollViewer>
                                     </Grid>
                                 </Popup>
@@ -226,6 +252,7 @@
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ComboBoxItem}">
@@ -375,7 +402,7 @@
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     Background="{TemplateBinding Background}"
                                     CornerRadius="5"
-                                    SnapsToDevicePixels="True"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                     VerticalAlignment="Center">
                                 <StackPanel KeyboardNavigation.DirectionalNavigation="Cycle"
                                             IsItemsHost="True" VerticalAlignment="Center" />
@@ -391,7 +418,6 @@
                 <Setter Property="Background" Value="{StaticResource DarkBackground}" />
                 <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
                 <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="FontSize" Value="15" />
                 <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
                 <Setter Property="Margin" Value="10, 0, 10, 0" />
                 <Setter Property="Padding" Value="0" />
@@ -406,7 +432,7 @@
                                     BorderThickness="0"
                                     Margin="0"
                                     Padding="0, 5, 0, 5"
-                                    SnapsToDevicePixels="True"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                     VerticalAlignment="Center">
                                 <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
@@ -421,7 +447,7 @@
                                             HorizontalAlignment="Left"
                                             Margin="0"
                                             Padding="0"
-                                            SnapsToDevicePixels="True"
+                                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                             VerticalAlignment="Center">
                                         <ContentPresenter x:Name="Icon"
                                                           ContentSource="Icon"
@@ -432,7 +458,7 @@
                                     <ContentPresenter Grid.Column="1"
                                                       ContentSource="Header"
                                                       HorizontalAlignment="Left"
-                                                      Margin="10,0,0,0"
+                                                      Margin="10, 0, 0, 0"
                                                       RecognizesAccessKey="True"
                                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                       VerticalAlignment="Center" />
@@ -595,6 +621,7 @@
                                         VerticalAlignment="Center">
                                     <Border x:Name="PART_SelectionRange" 
                                             Background="{TemplateBinding Foreground}"
+                                            CornerRadius="3, 0, 0, 3"
                                             Height="4"
                                             HorizontalAlignment="Left" />
                                 </Canvas>
@@ -641,9 +668,9 @@
                 </Style.Resources>
             </Style>
             <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource FrameworkElementBase}">
-                <Setter Property="FontFamily" Value="Calibri" />
-                <Setter Property="FontSize" Value="16" />
-                <Setter Property="FontWeight" Value="Light" />
+                <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
+                <Setter Property="FontSize" Value="{DynamicResource FontSize}" />
+                <Setter Property="FontWeight" Value="{DynamicResource FontWeight}" />
                 <Setter Property="Margin" Value="0" />
                 <Setter Property="Padding" Value="0" />
                 <Style.Triggers>
@@ -683,6 +710,22 @@
                 </Setter>
             </Style>
             <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource ControlBase}" />
+            <!-- Separator -->
+            <Style TargetType="{x:Type Separator}" BasedOn="{StaticResource ControlBase}" x:Key="{x:Static MenuItem.SeparatorStyleKey}">
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Separator}">
+                            <Grid Margin="0">
+                                <Rectangle Fill="{StaticResource DarkBorderBrush}"
+                                           Height="1"
+                                           HorizontalAlignment="Stretch" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -25,16 +25,26 @@ namespace WinMemoryCleaner
 
         private static class V28
         {
-            [Flags]
-            internal enum MemoryAreas
+            internal class Enums
             {
-                None = 0,
-                CombinedPageList = 1,
-                ModifiedPageList = 2,
-                ProcessesWorkingSet = 4,
-                StandbyList = 8,
-                StandbyListLowPriority = 16,
-                SystemWorkingSet = 32
+                [Flags]
+                internal enum MemoryAreas
+                {
+                    None = 0,
+                    CombinedPageList = 1,
+                    ModifiedPageList = 2,
+                    ProcessesWorkingSet = 4,
+                    StandbyList = 8,
+                    StandbyListLowPriority = 16,
+                    SystemWorkingSet = 32
+                }
+            }
+
+            internal class Registry
+            {
+                internal const string MemoryAreas = "MemoryAreas";
+                internal const string TrayIcon = "TrayIcon";
+                internal const string TrayIconShowMemoryUsage = "TrayIconShowMemoryUsage";
             }
         }
 
@@ -61,43 +71,49 @@ namespace WinMemoryCleaner
                         {
                             var value = userKey.GetValue(name);
 
-                            if (string.Equals("MemoryAreas", name, StringComparison.OrdinalIgnoreCase))
+                            switch (name)
                             {
-                                var newMemoryAreas = Enums.Memory.Areas.None;
-                                V28.MemoryAreas oldMemoryAreas;
+                                case V28.Registry.MemoryAreas:
+                                    var newMemoryAreas = Enums.Memory.Areas.None;
+                                    V28.Enums.MemoryAreas oldMemoryAreas;
 
-                                if (Enum.TryParse(value.ToString(), out oldMemoryAreas) && oldMemoryAreas.IsValid())
-                                {
-                                    if ((oldMemoryAreas & V28.MemoryAreas.StandbyList) != 0 && (oldMemoryAreas & V28.MemoryAreas.StandbyListLowPriority) != 0)
-                                        oldMemoryAreas &= ~V28.MemoryAreas.StandbyListLowPriority;
-                                }
+                                    if (Enum.TryParse(value.ToString(), out oldMemoryAreas) && oldMemoryAreas.IsValid())
+                                    {
+                                        if ((oldMemoryAreas & V28.Enums.MemoryAreas.StandbyList) != 0 && (oldMemoryAreas & V28.Enums.MemoryAreas.StandbyListLowPriority) != 0)
+                                            oldMemoryAreas &= ~V28.Enums.MemoryAreas.StandbyListLowPriority;
+                                    }
 
-                                if ((oldMemoryAreas & V28.MemoryAreas.CombinedPageList) != 0)
-                                    newMemoryAreas |= Enums.Memory.Areas.CombinedPageList;
+                                    if ((oldMemoryAreas & V28.Enums.MemoryAreas.CombinedPageList) != 0)
+                                        newMemoryAreas |= Enums.Memory.Areas.CombinedPageList;
 
-                                if ((oldMemoryAreas & V28.MemoryAreas.ModifiedPageList) != 0)
-                                    newMemoryAreas |= Enums.Memory.Areas.ModifiedPageList;
+                                    if ((oldMemoryAreas & V28.Enums.MemoryAreas.ModifiedPageList) != 0)
+                                        newMemoryAreas |= Enums.Memory.Areas.ModifiedPageList;
 
-                                if ((oldMemoryAreas & V28.MemoryAreas.ProcessesWorkingSet) != 0)
-                                    newMemoryAreas |= Enums.Memory.Areas.WorkingSet;
+                                    if ((oldMemoryAreas & V28.Enums.MemoryAreas.ProcessesWorkingSet) != 0)
+                                        newMemoryAreas |= Enums.Memory.Areas.WorkingSet;
 
-                                if ((oldMemoryAreas & V28.MemoryAreas.StandbyList) != 0)
-                                    newMemoryAreas |= Enums.Memory.Areas.StandbyList;
+                                    if ((oldMemoryAreas & V28.Enums.MemoryAreas.StandbyList) != 0)
+                                        newMemoryAreas |= Enums.Memory.Areas.StandbyList;
 
-                                if ((oldMemoryAreas & V28.MemoryAreas.StandbyListLowPriority) != 0)
-                                    newMemoryAreas |= Enums.Memory.Areas.StandbyListLowPriority;
+                                    if ((oldMemoryAreas & V28.Enums.MemoryAreas.StandbyListLowPriority) != 0)
+                                        newMemoryAreas |= Enums.Memory.Areas.StandbyListLowPriority;
 
-                                if ((oldMemoryAreas & V28.MemoryAreas.SystemWorkingSet) != 0)
-                                    newMemoryAreas |= Enums.Memory.Areas.SystemFileCache;
+                                    if ((oldMemoryAreas & V28.Enums.MemoryAreas.SystemWorkingSet) != 0)
+                                        newMemoryAreas |= Enums.Memory.Areas.SystemFileCache;
 
-                                newMemoryAreas |= Enums.Memory.Areas.RegistryCache | Enums.Memory.Areas.ModifiedFileCache;
+                                    newMemoryAreas |= Enums.Memory.Areas.RegistryCache | Enums.Memory.Areas.ModifiedFileCache;
 
-                                machineKey.SetValue(name, (int)newMemoryAreas);
+                                    machineKey.SetValue(name, (int)newMemoryAreas);
+                                    break;
 
-                                continue;
+                                case V28.Registry.TrayIcon:
+                                    machineKey.SetValue(V28.Registry.TrayIconShowMemoryUsage, value);
+                                    break;
+
+                                default:
+                                    machineKey.SetValue(name, value);
+                                    break;
                             }
-
-                            machineKey.SetValue(name, value);
                         }
                     }
                 }

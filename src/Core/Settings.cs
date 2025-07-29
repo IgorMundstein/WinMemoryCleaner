@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
@@ -17,6 +18,76 @@ namespace WinMemoryCleaner
 
         static Settings()
         {
+            Load();
+            Save();
+        }
+
+        #endregion
+
+        #region Properties
+
+        public static bool AlwaysOnTop { get; set; }
+
+        public static int AutoOptimizationInterval { get; set; }
+
+        public static int AutoOptimizationMemoryUsage { get; set; }
+
+        public static bool AutoUpdate { get; set; }
+
+        public static bool CloseAfterOptimization { get; set; }
+
+        public static bool CloseToTheNotificationArea { get; set; }
+
+        public static bool CompactMode { get; set; }
+
+        public static double FontSize { get; set; }
+
+        public static string Language { get; set; }
+
+        public static Enums.Memory.Areas MemoryAreas { get; set; }
+
+        public static Key OptimizationKey { get; set; }
+
+        public static ModifierKeys OptimizationModifiers { get; set; }
+
+        public static string Path { get; set; }
+
+        public static SortedSet<string> ProcessExclusionList { get; private set; }
+
+        public static Enums.Priority RunOnPriority { get; set; }
+
+        public static bool RunOnStartup { get; set; }
+
+        public static bool ShowOptimizationNotifications { get; set; }
+
+        public static bool ShowVirtualMemory { get; set; }
+
+        public static bool StartMinimized { get; set; }
+
+        public static Brush TrayIconBackgroundColor { get; set; }
+
+        public static Brush TrayIconDangerColor { get; set; }
+
+        public static byte TrayIconDangerLevel { get; set; }
+
+        public static bool TrayIconShowMemoryUsage { get; set; }
+
+        public static Brush TrayIconTextColor { get; set; }
+
+        public static bool TrayIconUseTransparentBackground { get; set; }
+
+        public static Brush TrayIconWarningColor { get; set; }
+
+        public static byte TrayIconWarningLevel { get; set; }
+
+        public static bool UseHotkey { get; set; }
+
+        #endregion
+
+        #region Methods
+
+        private static void Load(bool loadUserValues = true)
+        {
             // Default values
             AlwaysOnTop = false;
             AutoOptimizationInterval = 0;
@@ -25,6 +96,7 @@ namespace WinMemoryCleaner
             CloseAfterOptimization = false;
             CloseToTheNotificationArea = false;
             CompactMode = false;
+            FontSize = 15;
             Language = Constants.Windows.Locale.Name.English;
             MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedFileCache | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.RegistryCache | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemFileCache | Enums.Memory.Areas.WorkingSet;
             OptimizationKey = Key.M;
@@ -35,12 +107,22 @@ namespace WinMemoryCleaner
             ShowOptimizationNotifications = true;
             ShowVirtualMemory = false;
             StartMinimized = false;
-            TrayIcon = Enums.Icon.Tray.Image;
+            TrayIconBackgroundColor = Brushes.DarkGreen;
+            TrayIconDangerColor = Brushes.DarkRed;
+            TrayIconDangerLevel = 90;
+            TrayIconShowMemoryUsage = false;
+            TrayIconTextColor = Brushes.White;
+            TrayIconUseTransparentBackground = false;
+            TrayIconWarningColor = Brushes.DarkGoldenrod;
+            TrayIconWarningLevel = 80;
             UseHotkey = true;
 
             // User values
             try
             {
+                if (!loadUserValues)
+                    return;
+
                 // Process Exclusion List
                 using (var key = Registry.LocalMachine.OpenSubKey(Constants.App.Registry.Key.ProcessExclusionList))
                 {
@@ -56,18 +138,19 @@ namespace WinMemoryCleaner
                 {
                     if (key != null)
                     {
-                        AlwaysOnTop = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AlwaysOnTop, AlwaysOnTop), _culture);
-                        AutoOptimizationInterval = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval), _culture);
-                        AutoOptimizationMemoryUsage = Convert.ToInt32(key.GetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage), _culture);
-                        AutoUpdate = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate), _culture);
-                        CloseAfterOptimization = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseAfterOptimization, CloseAfterOptimization), _culture);
-                        CloseToTheNotificationArea = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CloseToTheNotificationArea, CloseToTheNotificationArea), _culture);
-                        CompactMode = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.CompactMode, CompactMode), _culture);
-                        Language = Convert.ToString(key.GetValue(Constants.App.Registry.Name.Language, Language), _culture);
+                        AlwaysOnTop = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => AlwaysOnTop), AlwaysOnTop), _culture);
+                        AutoOptimizationInterval = Convert.ToInt32(key.GetValue(Helper.NameOf(() => AutoOptimizationInterval), AutoOptimizationInterval), _culture);
+                        AutoOptimizationMemoryUsage = Convert.ToInt32(key.GetValue(Helper.NameOf(() => AutoOptimizationMemoryUsage), AutoOptimizationMemoryUsage), _culture);
+                        AutoUpdate = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => AutoUpdate), AutoUpdate), _culture);
+                        CloseAfterOptimization = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CloseAfterOptimization), CloseAfterOptimization), _culture);
+                        CloseToTheNotificationArea = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CloseToTheNotificationArea), CloseToTheNotificationArea), _culture);
+                        CompactMode = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CompactMode), CompactMode), _culture);
+                        FontSize = Convert.ToDouble(key.GetValue(Helper.NameOf(() => FontSize), FontSize), _culture);
+                        Language = Convert.ToString(key.GetValue(Helper.NameOf(() => Language), Language), _culture);
 
                         Enums.Memory.Areas memoryAreas;
 
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.MemoryAreas, MemoryAreas), _culture), out memoryAreas) && memoryAreas.IsValid())
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => MemoryAreas), MemoryAreas), _culture), out memoryAreas) && memoryAreas.IsValid())
                         {
                             if ((memoryAreas & Enums.Memory.Areas.StandbyList) != 0 && (memoryAreas & Enums.Memory.Areas.StandbyListLowPriority) != 0)
                                 memoryAreas &= ~Enums.Memory.Areas.StandbyListLowPriority;
@@ -77,32 +160,34 @@ namespace WinMemoryCleaner
 
                         Key optimizationKey;
 
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.OptimizationKey, OptimizationKey), _culture), out optimizationKey) && optimizationKey.IsValid())
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => OptimizationKey), OptimizationKey), _culture), out optimizationKey) && optimizationKey.IsValid())
                             OptimizationKey = optimizationKey;
 
                         ModifierKeys optimizationModifiers;
 
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.OptimizationModifiers, OptimizationModifiers), _culture), out optimizationModifiers) && optimizationModifiers.IsValid())
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => OptimizationModifiers), OptimizationModifiers), _culture), out optimizationModifiers) && optimizationModifiers.IsValid())
                             OptimizationModifiers = optimizationModifiers;
 
-                        Path = Convert.ToString(key.GetValue(Constants.App.Registry.Name.Path, Path), _culture);
+                        Path = Convert.ToString(key.GetValue(Helper.NameOf(() => Path), Path), _culture);
 
                         Enums.Priority runOnPriority;
 
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.RunOnPriority, RunOnPriority), _culture), out runOnPriority) && runOnPriority.IsValid())
+                        if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => RunOnPriority), RunOnPriority), _culture), out runOnPriority) && runOnPriority.IsValid())
                             RunOnPriority = runOnPriority;
 
-                        RunOnStartup = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup), _culture);
-                        ShowOptimizationNotifications = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications), _culture);
-                        ShowVirtualMemory = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.ShowVirtualMemory, ShowVirtualMemory), _culture);
-                        StartMinimized = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized), _culture);
-
-                        Enums.Icon.Tray trayIcon;
-
-                        if (Enum.TryParse(Convert.ToString(key.GetValue(Constants.App.Registry.Name.TrayIcon, TrayIcon), _culture), out trayIcon) && trayIcon.IsValid())
-                            TrayIcon = trayIcon;
-
-                        UseHotkey = Convert.ToBoolean(key.GetValue(Constants.App.Registry.Name.UseHotkey, UseHotkey), _culture);
+                        RunOnStartup = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => RunOnStartup), RunOnStartup), _culture);
+                        ShowOptimizationNotifications = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => ShowOptimizationNotifications), ShowOptimizationNotifications), _culture);
+                        ShowVirtualMemory = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => ShowVirtualMemory), ShowVirtualMemory), _culture);
+                        StartMinimized = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => StartMinimized), StartMinimized), _culture);
+                        TrayIconBackgroundColor = Convert.ToString(key.GetValue(Helper.NameOf(() => TrayIconBackgroundColor), TrayIconBackgroundColor), _culture).ToBrush(TrayIconBackgroundColor);
+                        TrayIconDangerColor = Convert.ToString(key.GetValue(Helper.NameOf(() => TrayIconDangerColor), TrayIconDangerColor), _culture).ToBrush(TrayIconDangerColor);
+                        TrayIconDangerLevel = Convert.ToByte(key.GetValue(Helper.NameOf(() => TrayIconDangerLevel), TrayIconDangerLevel), _culture);
+                        TrayIconShowMemoryUsage = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => TrayIconShowMemoryUsage), TrayIconShowMemoryUsage), _culture);
+                        TrayIconTextColor = Convert.ToString(key.GetValue(Helper.NameOf(() => TrayIconTextColor), TrayIconTextColor), _culture).ToBrush(TrayIconTextColor);
+                        TrayIconUseTransparentBackground = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => TrayIconUseTransparentBackground), TrayIconUseTransparentBackground), _culture);
+                        TrayIconWarningColor = Convert.ToString(key.GetValue(Helper.NameOf(() => TrayIconWarningColor), TrayIconWarningColor), _culture).ToBrush(TrayIconWarningColor);
+                        TrayIconWarningLevel = Convert.ToByte(key.GetValue(Helper.NameOf(() => TrayIconWarningLevel), TrayIconWarningLevel), _culture);
+                        UseHotkey = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => UseHotkey), UseHotkey), _culture);
                     }
                     else
                     {
@@ -129,59 +214,19 @@ namespace WinMemoryCleaner
             {
                 Logger.Error(e);
             }
-            finally
-            {
-                Save();
-            }
         }
 
-        #endregion
+        public static void Reset(bool keepLanguage = false)
+        {
+            var language = Language;
 
-        #region Properties
+            Load(false);
 
-        public static bool AlwaysOnTop { get; set; }
+            if (keepLanguage)
+                Language = language;
 
-        public static int AutoOptimizationInterval { get; set; }
-
-        public static int AutoOptimizationMemoryUsage { get; set; }
-
-        public static bool AutoUpdate { get; set; }
-
-        public static bool CloseAfterOptimization { get; set; }
-
-        public static bool CloseToTheNotificationArea { get; set; }
-
-        public static bool CompactMode { get; set; }
-
-        public static string Language { get; set; }
-
-        public static Enums.Memory.Areas MemoryAreas { get; set; }
-
-        public static Key OptimizationKey { get; set; }
-
-        public static ModifierKeys OptimizationModifiers { get; set; }
-
-        public static string Path { get; set; }
-
-        public static SortedSet<string> ProcessExclusionList { get; private set; }
-
-        public static Enums.Priority RunOnPriority { get; set; }
-
-        public static bool RunOnStartup { get; set; }
-
-        public static bool ShowOptimizationNotifications { get; set; }
-
-        public static bool ShowVirtualMemory { get; set; }
-
-        public static bool StartMinimized { get; set; }
-        
-        public static Enums.Icon.Tray TrayIcon { get; set; }
-
-        public static bool UseHotkey { get; set; }
-
-        #endregion
-
-        #region Methods
+            Save();
+        }
 
         public static void Save()
         {
@@ -207,24 +252,32 @@ namespace WinMemoryCleaner
                 {
                     if (key != null)
                     {
-                        key.SetValue(Constants.App.Registry.Name.AlwaysOnTop, AlwaysOnTop ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.AutoOptimizationInterval, AutoOptimizationInterval);
-                        key.SetValue(Constants.App.Registry.Name.AutoOptimizationMemoryUsage, AutoOptimizationMemoryUsage);
-                        key.SetValue(Constants.App.Registry.Name.AutoUpdate, AutoUpdate ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.CloseAfterOptimization, CloseAfterOptimization ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.CloseToTheNotificationArea, CloseToTheNotificationArea ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.CompactMode, CompactMode ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.Language, Language);
-                        key.SetValue(Constants.App.Registry.Name.MemoryAreas, (int)MemoryAreas);
-                        key.SetValue(Constants.App.Registry.Name.OptimizationKey, (int)OptimizationKey);
-                        key.SetValue(Constants.App.Registry.Name.OptimizationModifiers, (int)OptimizationModifiers);
-                        key.SetValue(Constants.App.Registry.Name.Path, Path);
-                        key.SetValue(Constants.App.Registry.Name.RunOnStartup, RunOnStartup ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.ShowOptimizationNotifications, ShowOptimizationNotifications ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.ShowVirtualMemory, ShowVirtualMemory ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.StartMinimized, StartMinimized ? 1 : 0);
-                        key.SetValue(Constants.App.Registry.Name.TrayIcon, (int)TrayIcon);
-                        key.SetValue(Constants.App.Registry.Name.UseHotkey, UseHotkey ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => AlwaysOnTop), AlwaysOnTop ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => AutoOptimizationInterval), AutoOptimizationInterval);
+                        key.SetValue(Helper.NameOf(() => AutoOptimizationMemoryUsage), AutoOptimizationMemoryUsage);
+                        key.SetValue(Helper.NameOf(() => AutoUpdate), AutoUpdate ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => CloseAfterOptimization), CloseAfterOptimization ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => CloseToTheNotificationArea), CloseToTheNotificationArea ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => CompactMode), CompactMode ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => FontSize), FontSize);
+                        key.SetValue(Helper.NameOf(() => Language), Language);
+                        key.SetValue(Helper.NameOf(() => MemoryAreas), (int)MemoryAreas);
+                        key.SetValue(Helper.NameOf(() => OptimizationKey), (int)OptimizationKey);
+                        key.SetValue(Helper.NameOf(() => OptimizationModifiers), (int)OptimizationModifiers);
+                        key.SetValue(Helper.NameOf(() => Path), Path);
+                        key.SetValue(Helper.NameOf(() => RunOnStartup), RunOnStartup ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => ShowOptimizationNotifications), ShowOptimizationNotifications ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => ShowVirtualMemory), ShowVirtualMemory ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => StartMinimized), StartMinimized ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => TrayIconBackgroundColor), TrayIconBackgroundColor.GetHex(true));
+                        key.SetValue(Helper.NameOf(() => TrayIconDangerColor), TrayIconDangerColor.GetHex(true));
+                        key.SetValue(Helper.NameOf(() => TrayIconDangerLevel), TrayIconDangerLevel);
+                        key.SetValue(Helper.NameOf(() => TrayIconShowMemoryUsage), TrayIconShowMemoryUsage ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => TrayIconTextColor), TrayIconTextColor.GetHex(true));
+                        key.SetValue(Helper.NameOf(() => TrayIconUseTransparentBackground), TrayIconUseTransparentBackground ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => TrayIconWarningColor), TrayIconWarningColor.GetHex(true));
+                        key.SetValue(Helper.NameOf(() => TrayIconWarningLevel), TrayIconWarningLevel);
+                        key.SetValue(Helper.NameOf(() => UseHotkey), UseHotkey ? 1 : 0);
                     }
                 }
             }

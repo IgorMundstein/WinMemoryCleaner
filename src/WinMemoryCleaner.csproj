@@ -92,6 +92,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="View\Dialog\MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Window\DonationWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -112,19 +116,23 @@
     </Compile>
     <Compile Include="Attribute\CallerMemberNameAttribute.cs" />
     <Compile Include="Command\RelayCommand.cs" />
+    <Compile Include="Converters\BrushToHexConverter.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\SumNumericConverter.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
+    <Compile Include="Core\Helper.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\Migrator.cs" />
     <Compile Include="Core\NativeMethods.cs" />
+    <Compile Include="Core\ObservableObject.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Core\Structs.cs" />
     <Compile Include="GlobalSuppressions.cs" />
@@ -149,13 +157,13 @@
     <Compile Include="Service\ComputerService.cs" />
     <Compile Include="Service\HotkeyService.cs" />
     <Compile Include="Service\NotificationService.cs" />
-    <Compile Include="View\Control\ContextMenuStripControl.cs">
+    <Compile Include="View\Base\View.cs" />
+    <Compile Include="View\Control\TrayIconContextMenuControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Core\ObservableObject.cs" />
-    <Compile Include="ViewModel\Base\ViewModel.cs" />
-    <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\Dialog\MessageDialog.xaml.cs">
+      <DependentUpon>MessageDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Window\DonationWindow.xaml.cs">
       <DependentUpon>DonationWindow.xaml</DependentUpon>
     </Compile>
@@ -163,6 +171,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ViewModel\Base\ViewModel.cs" />
+    <Compile Include="ViewModel\DonationViewModel.cs" />
+    <Compile Include="ViewModel\MainViewModel.cs" />
+	<Compile Include="ViewModel\MessageViewModel.cs" />
+    <Compile Include="ViewModel\ViewModelLocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
