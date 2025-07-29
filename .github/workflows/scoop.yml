@@ -48,57 +48,60 @@ jobs:
           GH_TOKEN: ${{ secrets.SCOOP_TOKEN }}
           RELEASE_TAG: ${{ steps.get_release.outputs.tag }}
           SHA256: ${{ steps.download.outputs.sha256 }}
+          FORK_OWNER: ${{ github.repository_owner }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" scoop-bucket-clone
           cd scoop-bucket-clone
+
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream main --depth=1
-          $branchName = "update/WinMemoryCleaner/$env:RELEASE_TAG"
+          
+          $branchName = "update/WinMemoryCleaner-$env:RELEASE_TAG"
           git checkout -b "$branchName" upstream/main
-          $manifestDir = "bucket/w/winmemorycleaner"
-          New-Item -ItemType Directory -Path $manifestDir -Force
+          
+          $manifestDir = "bucket"
           $manifestContent = @"
           {
-            "version": "$env:RELEASE_TAG",
-            "description": "This free RAM cleaner uses native Windows features to clear memory areas.",
-            "homepage": "https://github.com/IgorMundstein/WinMemoryCleaner/",
-            "license": "GPL-3.0",
-            "architecture": {
-              "64bit": {
-                "url": "https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe",
-                "hash": "$env:SHA256"
+              "version": "$($env:RELEASE_TAG.TrimStart('v'))",
+              "description": "This free RAM cleaner uses native Windows features to clear memory areas.",
+              "homepage": "https://github.com/IgorMundstein/WinMemoryCleaner/",
+              "license": "GPL-3.0",
+              "architecture": {
+                  "64bit": {
+                      "url": "https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe",
+                      "hash": "$env:SHA256"
+                  }
+              },
+              "bin": "WinMemoryCleaner.exe",
+              "shortcuts": [
+                  [
+                      "WinMemoryCleaner.exe",
+                      "Windows Memory Cleaner"
+                  ]
+              ],
+              "checkver": "github",
+              "autoupdate": {
+                  "architecture": {
+                      "64bit": {
+                          "url": "https://github.com/${{ github.repository }}/releases/download/v$version/WinMemoryCleaner.exe"
+                      }
+                  }
               }
-            },
-            "bin": "WinMemoryCleaner.exe",
-            "shortcuts": [
-                [
-                    "WinMemoryCleaner.exe",
-                    "Windows Memory Cleaner"
-                ]
-            ],
-            "checkver": {
-                "github": "IgorMundstein/WinMemoryCleaner"
-            },
-            "autoupdate": {
-                "url": "https://github.com/${{ github.repository }}/releases/download/$version/WinMemoryCleaner.exe",
-                "hash": {
-                    "url": "$url"
-                }
-            }
           }
           "@
           $manifestContent | Out-File -FilePath "$manifestDir/winmemorycleaner.json" -Encoding UTF8
+          
           git add .
           git commit -m "WinMemoryCleaner: Add version $env:RELEASE_TAG"
           git push origin "$branchName"
+          
           gh pr create `
             --repo "${{ env.UPSTREAM_REPO }}" `
-            --head "$(echo ${{ env.FORK_REPO }} | cut -d'/' -f1):$branchName" `
+            --head "$env:FORK_OWNER`:$branchName" `
             --base main `
             --title "WinMemoryCleaner: Add version $env:RELEASE_TAG" `
             --body "Automated submission for WinMemoryCleaner version $env:RELEASE_TAG."
         shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.SCOOP_TOKEN }}
