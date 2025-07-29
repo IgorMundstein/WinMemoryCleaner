@@ -21,8 +21,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref_name }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
@@ -72,6 +70,7 @@ jobs:
           if-no-files-found: error
 
       - name: Submit to SignPath (release cert later)
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         id: signpath
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
@@ -84,10 +83,12 @@ jobs:
           output-artifact-directory: ./signed
 
       - name: Create ZIP archive
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         shell: pwsh
         run: Compress-Archive -Path signed/WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
       - name: Upload release artifacts
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: winmemorycleaner-release-${{ steps.bump.outputs.new_tag }}
