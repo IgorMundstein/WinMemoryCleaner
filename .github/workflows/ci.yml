@@ -12,6 +12,12 @@ on:
       - develop
     paths:
       - 'src/**'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'develop'
 
 permissions:
   contents: read
@@ -25,6 +31,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
