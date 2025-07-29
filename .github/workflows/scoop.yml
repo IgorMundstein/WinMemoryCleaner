@@ -4,7 +4,6 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-    branches: [main]
 
 permissions:
   contents: read
@@ -57,10 +56,10 @@ jobs:
           cd scoop-bucket-clone
 
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
-          git fetch upstream main --depth=1
+          git fetch upstream master --depth=1
           
           $branchName = "update/WinMemoryCleaner-$env:RELEASE_TAG"
-          git checkout -b "$branchName" upstream/main
+          git checkout -b "$branchName" upstream/master
           
           $manifestDir = "bucket"
           $manifestContent = @"
@@ -86,7 +85,7 @@ jobs:
               "autoupdate": {
                   "architecture": {
                       "64bit": {
-                          "url": "https://github.com/${{ github.repository }}/releases/download/v$version/WinMemoryCleaner.exe"
+                          "url": "https://github.com/${{ github.repository }}/releases/download/v`$version/WinMemoryCleaner.exe"
                       }
                   }
               }
@@ -101,7 +100,7 @@ jobs:
           gh pr create `
             --repo "${{ env.UPSTREAM_REPO }}" `
             --head "$env:FORK_OWNER`:$branchName" `
-            --base main `
+            --base master `
             --title "WinMemoryCleaner: Add version $env:RELEASE_TAG" `
             --body "Automated submission for WinMemoryCleaner version $env:RELEASE_TAG."
         shell: pwsh
