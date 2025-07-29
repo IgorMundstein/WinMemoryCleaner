@@ -27,8 +27,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref_name }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
@@ -49,7 +47,7 @@ jobs:
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
-      - name: Upload unsigned EXE for signing
+      - name: Upload unsigned EXE as artifact
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
@@ -58,7 +56,7 @@ jobs:
           if-no-files-found: error
 
       - name: Submit to SignPath (Develop CI Signing)
-        if: github.ref == 'refs/heads/develop'
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/develop'
         id: signpath
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
@@ -71,6 +69,7 @@ jobs:
           output-artifact-directory: ./signed
 
       - name: Upload signed build artifact
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4
         with:
           name: winmemorycleaner-dev-signed-${{ github.run_number }}
