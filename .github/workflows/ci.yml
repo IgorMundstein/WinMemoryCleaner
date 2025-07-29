@@ -13,11 +13,7 @@ on:
     paths:
       - 'src/**'
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to build'
-        required: true
-        default: 'develop'
+    branches: [main, develop]
 
 permissions:
   contents: read
@@ -32,7 +28,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
+          ref: ${{ github.ref_name }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
@@ -61,7 +57,8 @@ jobs:
           path: src\bin\Release\WinMemoryCleaner.exe
           if-no-files-found: error
 
-      - name: Submit to SignPath (CI signing)
+      - name: Submit to SignPath (Develop CI Signing)
+        if: github.ref == 'refs/heads/develop'
         id: signpath
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
