@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  FORK_REPO: IgorMundstein/winget-pkgs
+  FORK_REPO: ${{ github.repository_owner }}/WinGet
   UPSTREAM_REPO: microsoft/winget-pkgs
 
 jobs:
@@ -49,7 +49,7 @@ jobs:
         id: check_winget
         run: |
           HTTP_CODE=$(curl -s -w "%{http_code}" -o /dev/null \
-            "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/I/IgorMundstein/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}")
+            "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/I/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}")
           
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "::notice::Version ${{ steps.get_release.outputs.tag }} already exists. Skipping."
@@ -96,19 +96,19 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
-          git clone "https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPO}.git" winget-fork
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" winget-fork
           cd winget-fork
-          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
+          git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream master --depth=1
           
-          BRANCH_NAME="add/IgorMundstein/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
+          BRANCH_NAME="add/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
           git checkout -b "$BRANCH_NAME" upstream/master
           
-          MANIFEST_DIR="manifests/I/IgorMundstein/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
+          MANIFEST_DIR="manifests/I/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
           mkdir -p "$MANIFEST_DIR"
           
           cat > "${MANIFEST_DIR}/IgorMundstein.WinMemoryCleaner.yaml" <<EOF
-          PackageIdentifier: IgorMundstein.WinMemoryCleaner
+          PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
           PackageVersion: ${{ steps.get_release.outputs.tag }}
           PackageLocale: en-US
           Publisher: Igor Mundstein
@@ -129,15 +129,15 @@ jobs:
           EOF
           
           git add .
-          git commit -m "Add IgorMundstein.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}"
+          git commit -m "Add ${{ github.repository_owner }}.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}"
           git push origin "$BRANCH_NAME"
           
           gh pr create \
-            --repo "${UPSTREAM_REPO}" \
-            --head "$(echo $FORK_REPO | cut -d'/' -f1):${BRANCH_NAME}" \
+            --repo "${{ env.UPSTREAM_REPO }}" \
+            --head "$(echo ${{ env.FORK_REPO }} | cut -d'/' -f1):${BRANCH_NAME}" \
             --base master \
-            --title "Add IgorMundstein.WinMemoryCleaner ${{ steps.get_release.outputs.tag }}" \
-            --body "Automated submission for IgorMundstein.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}."
+            --title "Add ${{ github.repository_owner }}.WinMemoryCleaner ${{ steps.get_release.outputs.tag }}" \
+            --body "Automated submission for ${{ github.repository_owner }}.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}."
             
           echo "::notice::Pull request created successfully."
 
