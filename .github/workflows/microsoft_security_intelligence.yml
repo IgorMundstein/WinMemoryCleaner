@@ -1,0 +1,46 @@
+name: 'Submit to Microsoft Security Intelligence'
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  print-reminder:
+    name: Submit a file for malware analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Form
+        run: |
+          RELEASE_URL=$(echo '${{ toJSON(github.event.release.assets) }}' | jq -r '.[] | select(.name=="WinMemoryCleaner.exe") | .browser_download_url')
+          echo "========================================================================"
+          echo " Manual Submission Required for Microsoft Defender SmartScreen"
+          echo "========================================================================"
+          echo "A new release has been published. Please submit the release executable to"
+          echo "Microsoft to prevent SmartScreen warnings for new users."
+          echo ""
+          echo "➡️ Submission Form:"
+          echo "https://www.microsoft.com/en-us/wdsi/filesubmission?persona=SoftwareDeveloper"
+          echo ""
+          echo "➡️ Release Download:"
+          echo "$RELEASE_URL"
+          echo ""
+          echo "-------------------[ COPY THE INFORMATION BELOW ]-------------------"
+          echo ""
+          echo "🔹 Select the Microsoft security product used to scan the file"
+          echo "Microsoft Defender SmartScreen"
+          echo ""
+          echo "🔹 Company Name"
+          echo "https://github.com/IgorMundstein/WinMemoryCleaner"
+          echo ""
+          echo "🔹 What do you believe this file is?"
+          echo "Incorrectly detected as malware/malicious"
+          echo ""
+          echo "🔹 Detection name"
+          echo "N/A (Microsoft Defender SmartScreen reputation block)"
+          echo ""
+          echo "🔹 Additional information:"
+          echo "Microsoft Defender SmartScreen is incorrectly blocking WinMemoryCleaner.exe as an 'unrecognized app'. It is a legitimate, digitally signed through SignPath.io, and open-source memory optimization tool. Please investigate this false positive and remove the warning. The source code is available for review at: https://github.com/IgorMundstein/WinMemoryCleaner"
+          echo ""
+          echo "--------------------------------------------------------------------"
+          echo "========================================================================"
