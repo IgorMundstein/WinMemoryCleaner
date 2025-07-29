@@ -4,7 +4,6 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-    branches: [main]
 
 permissions:
   contents: read
@@ -74,8 +73,6 @@ jobs:
 
       - name: Submit file to VirusTotal
         id: vt_submit
-        env:
-          VIRUS_TOTAL_API_KEY: ${{ env.VIRUS_TOTAL_API_KEY }}
         run: |
           RESPONSE=$(curl --request POST \
             --url https://www.virustotal.com/api/v3/files \
@@ -94,14 +91,12 @@ jobs:
           echo "::notice::Submitted to VirusTotal with analysis ID $ANALYSIS_ID"
 
       - name: Poll VirusTotal for analysis result
-        env:
-          VIRUS_TOTAL_API_KEY: ${{ env.VIRUS_TOTAL_API_KEY }}
         run: |
           ANALYSIS_ID=${{ steps.vt_submit.outputs.analysis_id }}
 
           echo "::group::Polling VirusTotal analysis result"
           for i in {1..10}; do
-            RESPONSE=$(curl --request GET \
+            RESPONSE=$(curl --silent --request GET \
               --url "https://www.virustotal.com/api/v3/analyses/$ANALYSIS_ID" \
               --header "x-apikey: $VIRUS_TOTAL_API_KEY")
             STATUS=$(echo "$RESPONSE" | jq -e -r '.data.attributes.status')
@@ -112,9 +107,10 @@ jobs:
             fi
             sleep 15
           done
+          echo "::endgroup::"
 
           if [ "$STATUS" != "completed" ]; then
-            echo "::warning::Analysis not completed after 10 attempts"
+            echo "::error::Analysis not completed after 10 attempts"
             exit 1
           fi
 
@@ -128,7 +124,6 @@ jobs:
           echo "Malicious detections: $MALICIOUS"
           echo "Suspicious detections: $SUSPICIOUS"
           echo "Undetected: $UNDETECTED"
-          echo "::endgroup::"
 
       - name: Cleanup
         if: always()
