@@ -4,7 +4,6 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-    branches: [main]
 
 permissions:
   contents: read
@@ -58,7 +57,7 @@ jobs:
             echo "::notice::Version not found. Proceeding with submission."
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
-        
+      
       - name: Download release and get SHA256
         if: steps.check_winget.outputs.skip == 'false'
         id: download
@@ -107,7 +106,7 @@ jobs:
           MANIFEST_DIR="manifests/I/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
           mkdir -p "$MANIFEST_DIR"
           
-          cat > "${MANIFEST_DIR}/IgorMundstein.WinMemoryCleaner.yaml" <<EOF
+          cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.yaml" <<EOF
           PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
           PackageVersion: ${{ steps.get_release.outputs.tag }}
           PackageLocale: en-US
