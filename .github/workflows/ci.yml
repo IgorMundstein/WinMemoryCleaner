@@ -43,11 +43,26 @@ jobs:
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /t:restore /m /p:Configuration=Release /p:Platform="Any CPU"
 
+      - name: Get App Version
+        id: version
+        shell: pwsh
+        run: |
+          $csprojPath = "src/WinMemoryCleaner.csproj"
+          $match = Select-String -Path $csprojPath -Pattern '<Version>(.*?)<\/Version>'
+          if ($match) {
+            $appVersion = $match.Matches[0].Groups[1].Value
+            echo "app_version=$appVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Host "Detected app version: $appVersion"
+          } else {
+            Write-Host "::error::Could not find version in $csprojPath"
+            exit 1
+          }
+
       - name: Upload unsigned EXE as artifact
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned
+          name: winmemorycleaner-${{ steps.version.outputs.app_version }}-unsigned
           path: src\bin\Release\WinMemoryCleaner.exe
           if-no-files-found: error
 
@@ -61,6 +76,7 @@ jobs:
           project-slug: WinMemoryCleaner
           signing-policy-slug: ci-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          output-artifact-name: winmemorycleaner-${{ steps.version.outputs.app_version }}-signed
           wait-for-completion: true
           output-artifact-directory: ./signed
 
@@ -68,6 +84,6 @@ jobs:
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-dev-signed-${{ github.run_number }}
+          name: winmemorycleaner-${{ steps.version.outputs.app_version }}-signed
           path: signed/WinMemoryCleaner.exe
           retention-days: 30
