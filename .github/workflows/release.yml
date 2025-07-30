@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'src/**'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -53,13 +54,9 @@ jobs:
           "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           Write-Host "New tag generated: $newTag"
 
-      - name: Restore NuGet packages
+      - name: Restore and Build solution
         shell: pwsh
-        run: nuget restore src\WinMemoryCleaner.sln
-
-      - name: Build solution
-        shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
+        run: msbuild src\WinMemoryCleaner.sln /t:restore /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Upload unsigned EXE for signing
         id: upload-unsigned
