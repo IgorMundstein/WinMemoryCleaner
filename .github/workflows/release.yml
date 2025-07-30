@@ -68,7 +68,7 @@ jobs:
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}-unsigned
+          name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}
           path: src\bin\Release\WinMemoryCleaner.exe
           if-no-files-found: error
 
@@ -83,12 +83,12 @@ jobs:
           signing-policy-slug: release-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
-          output-artifact-directory: ./signed
+          output-artifact-directory: ./
 
       - name: Create ZIP archive
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         shell: pwsh
-        run: Compress-Archive -Path signed/WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
+        run: Compress-Archive -Path WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
       - name: Upload release artifacts
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
@@ -96,7 +96,7 @@ jobs:
         with:
           name: winmemorycleaner-release-${{ steps.bump.outputs.new_tag }}
           path: |
-            signed/WinMemoryCleaner.exe
+            WinMemoryCleaner.exe
             WinMemoryCleaner.zip
           retention-days: 30
 
@@ -182,7 +182,7 @@ jobs:
             # ${{ steps.commit_date.outputs.date }}
             ${{ steps.formatted_message.outputs.body }}
           files: |
-            release_artifacts/signed/WinMemoryCleaner.exe
+            release_artifacts/WinMemoryCleaner.exe
             release_artifacts/WinMemoryCleaner.zip
           draft: true
           generate_release_notes: false
