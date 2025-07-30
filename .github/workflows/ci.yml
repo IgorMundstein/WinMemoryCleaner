@@ -39,9 +39,13 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      - name: Restore and Build solution
+      - name: Restore NuGet packages
         shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /t:Restore,Build /m /p:Configuration=Release /p:Platform="Any CPU"
+        run: nuget restore src\WinMemoryCleaner.sln
+
+      - name: Build solution
+        shell: pwsh
+        run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Get App Version
         id: version
