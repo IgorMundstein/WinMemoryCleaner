@@ -56,9 +56,13 @@ jobs:
           "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           Write-Host "New tag generated: $newTag"
 
-      - name: Restore and Build solution
+      - name: Restore NuGet packages
         shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /t:restore /m /p:Configuration=Release /p:Platform="Any CPU"
+        run: nuget restore src\WinMemoryCleaner.sln
+
+      - name: Build solution
+        shell: pwsh
+        run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Upload unsigned EXE for signing
         id: upload-unsigned
@@ -78,7 +82,6 @@ jobs:
           project-slug: WinMemoryCleaner
           signing-policy-slug: release-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
-          output-artifact-name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}-signed
           wait-for-completion: true
           output-artifact-directory: ./signed
 
