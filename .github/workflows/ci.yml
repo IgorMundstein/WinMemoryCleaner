@@ -41,7 +41,7 @@ jobs:
 
       - name: Restore and Build solution
         shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /t:restore /m /p:Configuration=Release /p:Platform="Any CPU"
+        run: msbuild src\WinMemoryCleaner.sln /t:Restore,Build /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Get App Version
         id: version
