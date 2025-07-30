@@ -4,18 +4,17 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-    branches: [main]
 
 permissions:
   contents: read
 
 env:
-  FORK_REPO: IgorMundstein/winget-pkgs
+  FORK_REPO: ${{ github.repository_owner }}/WinGet
   UPSTREAM_REPO: microsoft/winget-pkgs
 
 jobs:
   submit-winget:
-    name: Submit to winget packages
+    name: Submit to WinGet Packages
     runs-on: ubuntu-latest
     timeout-minutes: 30
     
@@ -34,177 +33,82 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            
             const tag = release.tag_name;
             core.setOutput('tag', tag);
-            core.exportVariable('RELEASE_TAG', tag);
-            console.log(`Latest release tag: ${tag}`);
             return tag;
 
-      - name: Validate inputs and environment
+      - name: Validate inputs
         run: |
-          if [ -z "${{ secrets.WINGET_PKGS_TOKEN }}" ]; then
-            echo "::error::WINGET_PKGS_TOKEN secret is not set!"
+          if [ -z "${{ secrets.WINGET_TOKEN }}" ]; then
+            echo "::error::WINGET_TOKEN secret is not set!"
             exit 1
           fi
-          
-          if [[ ! "$RELEASE_TAG" =~ ^[0-9]+\.[0-9]+$ ]]; then
-            echo "::warning::Version format should be X.Y (e.g., 1.0, 1.1, 2.8)"
-          fi
 
-      - name: Check if version already exists on WinGet
+      - name: Check if version already exists
         id: check_winget
         run: |
-          set -e
-          echo "::group::Checking existing versions"
-          
-          HTTP_CODE=$(curl -s -w "%{http_code}" -o response.json \
-            "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/I/IgorMundstein/WinMemoryCleaner")
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o /dev/null \
+            "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/I/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}")
           
           if [ "$HTTP_CODE" -eq 200 ]; then
-            if jq -r '.[].name' response.json | grep -qx "${RELEASE_TAG}"; then
-              echo "::notice::Version ${RELEASE_TAG} already exists in winget-pkgs"
-              echo "skip=true" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-          elif [ "$HTTP_CODE" -eq 404 ]; then
-            echo "::notice::Package directory doesn't exist yet, proceeding with first submission"
+            echo "::notice::Version ${{ steps.get_release.outputs.tag }} already exists. Skipping."
+            echo "skip=true" >> $GITHUB_OUTPUT
           else
-            echo "::error::Failed to check existing versions (HTTP: $HTTP_CODE)"
-            exit 1
+            echo "::notice::Version not found. Proceeding with submission."
+            echo "skip=false" >> $GITHUB_OUTPUT
           fi
-          
-          echo "skip=false" >> $GITHUB_OUTPUT
-          echo "::endgroup::"
-
-      - name: Skip if version exists
-        if: steps.check_winget.outputs.skip == 'true'
+      
+      - name: Download release and get SHA256
+        if: steps.check_winget.outputs.skip == 'false'
+        id: download
         run: |
-          echo "::notice::Version ${RELEASE_TAG} already exists on WinGet. Workflow completed."
-          exit 0
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe"
+          echo "::notice::Downloading from $DOWNLOAD_URL"
 
-      - name: Verify release assets
-        run: |
-          echo "::group::Verifying release assets"
-          
-          RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/tags/${RELEASE_TAG}"
-          HTTP_CODE=$(curl -s -w "%{http_code}" -o release.json "$RELEASE_URL")
-          
-          if [ "$HTTP_CODE" -ne 200 ]; then
-            echo "::error::Release ${RELEASE_TAG} not found (HTTP: $HTTP_CODE)"
-            exit 1
-          fi
-          
-          if ! jq -r '.assets[].name' release.json | grep -qx "WinMemoryCleaner.exe"; then
-            echo "::error::WinMemoryCleaner.exe not found in release assets"
-            echo "Available assets:"
-            jq -r '.assets[].name' release.json
-            exit 1
-          fi
-          
-          echo "::notice::Release verification successful"
-          echo "::endgroup::"
-
-      - name: Download and verify release asset
-        run: |
-          echo "::group::Downloading release asset"
-          
-          for i in {1..3}; do
-            if curl -fL --retry 3 --retry-delay 5 \
-              -o WinMemoryCleaner.exe \
-              "https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/WinMemoryCleaner.exe"; then
-              break
-            fi
-            
-            if [ $i -eq 3 ]; then
-              echo "::error::Failed to download after 3 attempts"
-              exit 1
-            fi
-            
-            echo "::warning::Download attempt $i failed, retrying..."
-            sleep 5
-          done
-          
-          if [ ! -f "WinMemoryCleaner.exe" ] || [ ! -s "WinMemoryCleaner.exe" ]; then
-            echo "::error::Downloaded file is missing or empty"
-            exit 1
-          fi
-          
-          FILE_SIZE=$(stat -f%z WinMemoryCleaner.exe 2>/dev/null || stat -c%s WinMemoryCleaner.exe)
-          if [ "$FILE_SIZE" -lt 10000 ]; then
-            echo "::error::Downloaded file seems too small ($FILE_SIZE bytes)"
-            exit 1
-          fi
-          
-          echo "::notice::Downloaded WinMemoryCleaner.exe ($FILE_SIZE bytes)"
-          echo "::endgroup::"
-
-      - name: Calculate and verify SHA256
-        id: sha
-        run: |
-          echo "::group::Calculating SHA256"
+          curl -fL --retry 3 --retry-delay 5 -o WinMemoryCleaner.exe "$DOWNLOAD_URL"
           
           SHA256=$(sha256sum WinMemoryCleaner.exe | cut -d ' ' -f1)
-          echo "SHA256=$SHA256" >> $GITHUB_ENV
-          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
-          
-          if [[ ! "$SHA256" =~ ^[a-f0-9]{64}$ ]]; then
-            echo "::error::Invalid SHA256 format: $SHA256"
-            exit 1
-          fi
-          
-          echo "::notice::SHA256: $SHA256"
-          echo "::endgroup::"
+          echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
+          echo "::notice::SHA256: ${SHA256}"
 
       - name: Fetch repository metadata
+        if: steps.check_winget.outputs.skip == 'false'
         id: metadata
         uses: actions/github-script@v7
         with:
-          retries: 3
-          retry-exempt-status-codes: 400,401,403,404,422
           script: |
-            try {
-              const { data: repo } = await github.rest.repos.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              
-              if (!repo.description?.trim()) {
-                throw new Error("Repository description is required but missing");
-              }
-              
-              if (!repo.license?.spdx_id) {
-                throw new Error("Repository license is required but missing");
-              }
-              
-              const metadata = {
-                desc: repo.description.trim(),
-                homepage: repo.homepage || repo.html_url,
-                license: repo.license.spdx_id,
-                publisher: context.repo.owner
-              };
-              
-              core.setOutput('desc', metadata.desc);
-              core.setOutput('homepage', metadata.homepage);
-              core.setOutput('license', metadata.license);
-              core.setOutput('publisher', metadata.publisher);
-              
-              return metadata;
-            } catch (error) {
-              core.setFailed(`Failed to fetch repository metadata: ${error.message}`);
-              throw error;
-            }
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            core.setOutput('desc', repo.description.trim());
+            core.setOutput('homepage', repo.homepage || repo.html_url);
+            core.setOutput('license', repo.license.spdx_id);
 
-      - name: Generate WinGet manifest
+      - name: Create Manifest and Pull Request
+        if: steps.check_winget.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
-          echo "::group::Generating WinGet manifest"
+          set -e
           
-          MANIFEST_DIR="manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" winget-fork
+          cd winget-fork
+          git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
+          git fetch upstream master --depth=1
+          
+          BRANCH_NAME="add/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
+          git checkout -b "$BRANCH_NAME" upstream/master
+          
+          MANIFEST_DIR="manifests/I/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
           mkdir -p "$MANIFEST_DIR"
           
-          cat > "${MANIFEST_DIR}/IgorMundstein.WinMemoryCleaner.yaml" <<EOF
-          PackageIdentifier: IgorMundstein.WinMemoryCleaner
-          PackageVersion: ${RELEASE_TAG}
+          cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.yaml" <<EOF
+          PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
+          PackageVersion: ${{ steps.get_release.outputs.tag }}
           PackageLocale: en-US
           Publisher: Igor Mundstein
           PackageName: Windows Memory Cleaner
@@ -214,8 +118,8 @@ jobs:
           Installers:
           - Architecture: x64
             InstallerType: exe
-            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/WinMemoryCleaner.exe
-            InstallerSha256: ${{ env.SHA256 }}
+            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe
+            InstallerSha256: ${{ steps.download.outputs.sha256 }}
             InstallerSwitches:
               Silent: /Package
               SilentWithProgress: /Package
@@ -223,187 +127,19 @@ jobs:
           ManifestVersion: 1.6.0
           EOF
           
-          echo "::notice::Generated single-file manifest for validation:"
-          find "$MANIFEST_DIR" -name "*.yaml" -exec echo "- {}" \; -exec cat {} \;
-          echo "::endgroup::"
-
-      - name: Install winget-create for validation
-        run: |
-          echo "::group::Installing winget-create"
-          
-          # Download the latest winget-create release
-          LATEST_RELEASE=$(curl -s https://api.github.com/repos/microsoft/winget-create/releases/latest)
-          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name | contains("linux")) | .browser_download_url')
-          
-          if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
-            echo "::warning::No Linux version of winget-create found, skipping validation"
-            echo "SKIP_VALIDATION=true" >> $GITHUB_ENV
-          else
-            echo "::notice::Downloading winget-create from: $DOWNLOAD_URL"
-            curl -L "$DOWNLOAD_URL" -o winget-create.tar.gz
-            tar -xzf winget-create.tar.gz
-            chmod +x winget-create
-            echo "SKIP_VALIDATION=false" >> $GITHUB_ENV
-          fi
-          
-          echo "::endgroup::"
-
-      - name: Validate manifest
-        if: env.SKIP_VALIDATION != 'true'
-        run: |
-          echo "::group::Validating manifest"
-          
-          MANIFEST_FILE="manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}/IgorMundstein.WinMemoryCleaner.yaml"
-          
-          if [ -f "winget-create" ]; then
-            echo "::notice::Running manifest validation..."
-            ./winget-create validate "$MANIFEST_FILE" || {
-              echo "::error::Manifest validation failed"
-              exit 1
-            }
-            echo "::notice::✅ Manifest validation passed"
-          else
-            echo "::warning::Validation tool not available, skipping validation"
-          fi
-          
-          echo "::endgroup::"
-
-      - name: Test manifest syntax
-        run: |
-          echo "::group::Testing YAML syntax"
-          
-          MANIFEST_FILE="manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}/IgorMundstein.WinMemoryCleaner.yaml"
-          
-          # Install yq for YAML validation
-          sudo snap install yq
-          
-          # Validate YAML syntax
-          if yq eval '.' "$MANIFEST_FILE" > /dev/null; then
-            echo "::notice::✅ YAML syntax is valid"
-          else
-            echo "::error::❌ YAML syntax validation failed"
-            exit 1
-          fi
-          
-          # Check required fields
-          REQUIRED_FIELDS=(
-            ".PackageIdentifier"
-            ".PackageVersion" 
-            ".PackageLocale"
-            ".Publisher"
-            ".PackageName"
-            ".License"
-            ".ShortDescription"
-            ".Installers[0].Architecture"
-            ".Installers[0].InstallerType"
-            ".Installers[0].InstallerUrl"
-            ".Installers[0].InstallerSha256"
-            ".ManifestType"
-            ".ManifestVersion"
-          )
-          
-          echo "::notice::Checking required fields..."
-          for field in "${REQUIRED_FIELDS[@]}"; do
-            value=$(yq eval "$field" "$MANIFEST_FILE")
-            if [ "$value" = "null" ] || [ -z "$value" ]; then
-              echo "::error::❌ Required field missing: $field"
-              exit 1
-            else
-              echo "::notice::✅ $field: $value"
-            fi
-          done
-          
-          echo "::notice::✅ All required fields present"
-          echo "::endgroup::"
-
-      - name: Setup Git configuration
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global init.defaultBranch main
-
-      - name: Checkout forked winget-pkgs repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.FORK_REPO }}
-          token: ${{ secrets.WINGET_PKGS_TOKEN }}
-          path: winget-fork
-          fetch-depth: 1
-
-      - name: Setup upstream and create branch
-        working-directory: winget-fork
-        run: |
-          echo "::group::Setting up git remotes and branch"
-          
-          git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
-          git fetch upstream master --depth=1
-          
-          BRANCH_NAME="add-winmemorycleaner-${RELEASE_TAG}"
-          git checkout -b "$BRANCH_NAME" upstream/master
-          
-          MANIFEST_SOURCE="../manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}"
-          MANIFEST_DEST="manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}"
-          
-          mkdir -p "$MANIFEST_DEST"
-          cp -r "$MANIFEST_SOURCE"/* "$MANIFEST_DEST/"
-          
-          git add "manifests/I/IgorMundstein/WinMemoryCleaner/${RELEASE_TAG}/"
-          git commit -m "New package: IgorMundstein.WinMemoryCleaner version ${RELEASE_TAG}"
-          
+          git add .
+          git commit -m "Add ${{ github.repository_owner }}.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}"
           git push origin "$BRANCH_NAME"
-          
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "::endgroup::"
-
-      - name: Create Pull Request
-        env:
-          GH_TOKEN: ${{ secrets.WINGET_PKGS_TOKEN }}
-        run: |
-          echo "::group::Creating pull request"
-          
-          echo "${{ secrets.WINGET_PKGS_TOKEN }}" | gh auth login --with-token
-          
-          PR_TITLE="New package: IgorMundstein.WinMemoryCleaner version ${RELEASE_TAG}"
-          PR_BODY="## Package Information
-          
-          - **Package**: IgorMundstein.WinMemoryCleaner
-          - **Version**: ${RELEASE_TAG}
-          - **Publisher**: Igor Mundstein
-          - **License**: ${{ steps.metadata.outputs.license }}
-          - **Homepage**: ${{ steps.metadata.outputs.homepage }}
-          
-          ## Validation
-          
-          - ✅ Release exists and contains required assets
-          - ✅ SHA256 verified: \`${{ steps.sha.outputs.sha256 }}\`
-          - ✅ YAML syntax validation passed
-          - ✅ All required fields validated
-          - ✅ Manifest generated using schema v1.6.0
-          - ✅ Automated submission via GitHub Actions
-          
-          ## Changes from Previous Versions
-          
-          - Updated to latest manifest schema v1.6.0
-          - Removed dependencies (no longer required)
-          - Added comprehensive validation steps
-          
-          ## Additional Notes
-          
-          This submission was automatically generated and validated by GitHub Actions.
-          Repository: https://github.com/${{ github.repository }}"
           
           gh pr create \
             --repo "${{ env.UPSTREAM_REPO }}" \
-            --head "${{ env.FORK_REPO }}:${BRANCH_NAME}" \
+            --head "$(echo ${{ env.FORK_REPO }} | cut -d'/' -f1):${BRANCH_NAME}" \
             --base master \
-            --title "$PR_TITLE" \
-            --body "$PR_BODY"
-          
-          echo "::notice::Pull request created successfully"
-          echo "::endgroup::"
+            --title "Add ${{ github.repository_owner }}.WinMemoryCleaner ${{ steps.get_release.outputs.tag }}" \
+            --body "Automated submission for ${{ github.repository_owner }}.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}."
+            
+          echo "::notice::Pull request created successfully."
 
       - name: Cleanup
         if: always()
-        run: |
-          rm -f WinMemoryCleaner.exe response.json release.json winget-create.tar.gz
-          echo "::notice::Cleanup completed"
+        run: rm -f WinMemoryCleaner.exe

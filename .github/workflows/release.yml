@@ -4,16 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to build and release'
-        required: true
-        default: 'main'
-        type: choice
-        options:
-          - main
-          - develop
 
 permissions:
   contents: write
@@ -43,53 +36,59 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      - name: Bump minor version tag
+      - name: Bump version tag
         id: bump
         shell: pwsh
         run: |
           git fetch --tags
-          $tags = git tag --sort=-creatordate | Where-Object { $_ -match '^[0-9]+\.[0-9]+$' }
-          if (-not $tags) {
-            $newTag = '1.0'
+          $currentTag = git tag --sort=-creatordate | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Select-Object -First 1
+          if (-not $currentTag) {
+            $major = 1
+            $minor = 0
+            $patch = 0
           } else {
-            $parts = ($tags[0]).Split('.')
-            $newTag = "{0}.{1}" -f $parts[0], ([int]$parts[1] + 1)
+            $parts = $currentTag.Split('.')
+            $major = [int]$parts[0]
+            $minor = [int]$parts[1]
+            $patch = [int]$parts[2] + 1
           }
+          $newTag = "$($major).$($minor).$($patch)"
           "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "New tag generated: $newTag"
 
-      - name: Restore NuGet packages
+      - name: Restore and Build solution
         shell: pwsh
-        run: nuget restore src\WinMemoryCleaner.sln
-
-      - name: Build solution
-        shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
+        run: msbuild src\WinMemoryCleaner.sln /t:restore /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Upload unsigned EXE for signing
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned
+          name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}-unsigned
           path: src\bin\Release\WinMemoryCleaner.exe
+          if-no-files-found: error
 
       - name: Submit to SignPath (release cert later)
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         id: signpath
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
-          base-url: https://app.signpath.io
           project-slug: WinMemoryCleaner
-          signing-policy-slug: test-signing
+          signing-policy-slug: release-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          output-artifact-name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}-signed
           wait-for-completion: true
           output-artifact-directory: ./signed
 
       - name: Create ZIP archive
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         shell: pwsh
         run: Compress-Archive -Path signed/WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
       - name: Upload release artifacts
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: winmemorycleaner-release-${{ steps.bump.outputs.new_tag }}

@@ -4,7 +4,6 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-    branches: [main]
 
 permissions:
   contents: read
@@ -31,61 +30,63 @@ jobs:
               repo: context.repo.repo
             });
             
-            const tag = release.tag_name;
+            // Strip any 'v' prefix from the tag for cleaner versioning
+            const tag = release.tag_name.startsWith('v') ? release.tag_name.substring(1) : release.tag_name;
+
             core.setOutput('tag', tag);
-            core.exportVariable('RELEASE_TAG', tag);
-            console.log(`Latest release tag: ${tag}`);
+            console.log(`Latest release version: ${tag}`);
             return tag;
 
+      - name: Set Release Version Environment Variable
+        shell: powershell
+        run: echo "RELEASE_TAG=${{ steps.get_release.outputs.tag }}" >> $env:GITHUB_ENV
+
       - name: Validate inputs and environment
+        shell: powershell
         run: |
-          if (!("${{ secrets.CHOCOLATEY_API_KEY }}")) {
+          if (-not ("${{ secrets.CHOCOLATEY_API_KEY }}")) {
             Write-Host "::error::CHOCOLATEY_API_KEY secret is not set!"
             exit 1
           }
           
-          if (!("$env:RELEASE_TAG" -match "^[0-9]+\.[0-9]+$")) {
-            Write-Host "::warning::Version format should be X.Y (e.g., 1.0, 1.1, 2.8)"
+          # Corrected regex to match Major.Minor.Patch (e.g., 1.0.0)
+          if (-not ("$env:RELEASE_TAG" -match "^[0-9]+\.[0-9]+\.[0-9]+$")) {
+            Write-Host "::error::Version format must be Major.Minor.Patch (e.g., 1.0.0, 1.1.2, 2.8.3). Found: $env:RELEASE_TAG"
+            exit 1
           }
-        shell: powershell
 
       - name: Check if version already exists on Chocolatey
         id: check_chocolatey
+        shell: powershell
         run: |
           Write-Host "::group::Checking existing versions on Chocolatey"
           
           try {
-            $response = Invoke-RestMethod -Uri "https://chocolatey.org/api/v2/Packages?`$filter=Id%20eq%20'winmemorycleaner'" -Method Get
-            $existingVersions = $response.value | ForEach-Object { $_.Version }
+            $response = Invoke-RestMethod -Uri "https://community.chocolatey.org/api/v2/Packages()?`$filter=Id%20eq%20'winmemorycleaner'" -Method Get
+            $existingVersions = $response.entry.properties.Version.'#text'
             
             if ($existingVersions -contains "$env:RELEASE_TAG") {
-              Write-Host "::notice::Version $env:RELEASE_TAG already exists on Chocolatey"
-              echo "skip=true" >> $env:GITHUB_OUTPUT
-              exit 0
+              Write-Host "::notice::Version $env:RELEASE_TAG already exists on Chocolatey. Skipping submission."
+              echo "skip=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            } else {
+              Write-Host "::notice::Version $env:RELEASE_TAG not found, proceeding with submission."
+              echo "skip=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             }
-            
-            Write-Host "::notice::Version $env:RELEASE_TAG not found, proceeding with submission"
           }
           catch {
-            Write-Host "::notice::Could not check existing versions, proceeding with submission"
+            Write-Host "::notice::Could not check existing versions, proceeding with submission just in case."
+            echo "skip=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           }
           
-          echo "skip=false" >> $env:GITHUB_OUTPUT
           Write-Host "::endgroup::"
-        shell: powershell
-
-      - name: Skip if version exists
-        if: steps.check_chocolatey.outputs.skip == 'true'
-        run: |
-          Write-Host "::notice::Version $env:RELEASE_TAG already exists on Chocolatey. Workflow completed."
-          exit 0
-        shell: powershell
 
       - name: Verify release assets
+        if: steps.check_chocolatey.outputs.skip == 'false'
+        shell: powershell
         run: |
           Write-Host "::group::Verifying release assets"
           
-          $releaseUrl = "https://api.github.com/repos/${{ github.repository }}/releases/tags/$env:RELEASE_TAG"
+          $releaseUrl = "https://api.github.com/repos/${{ github.repository }}/releases/tags/v$env:RELEASE_TAG"
           
           try {
             $release = Invoke-RestMethod -Uri $releaseUrl -Method Get
@@ -93,332 +94,151 @@ jobs:
             
             if (-not $assets) {
               Write-Host "::error::WinMemoryCleaner.exe not found in release assets"
-              Write-Host "Available assets:"
-              $release.assets | ForEach-Object { Write-Host "- $($_.name)" }
               exit 1
             }
             
             Write-Host "::notice::Release verification successful"
           }
           catch {
-            Write-Host "::error::Release $env:RELEASE_TAG not found"
+            Write-Host "::error::Release v$env:RELEASE_TAG not found"
             exit 1
           }
           
           Write-Host "::endgroup::"
-        shell: powershell
 
       - name: Download and verify release asset
+        if: steps.check_chocolatey.outputs.skip == 'false'
+        shell: powershell
         run: |
           Write-Host "::group::Downloading release asset"
           
-          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe"
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/v$env:RELEASE_TAG/WinMemoryCleaner.exe"
           $outputFile = "WinMemoryCleaner.exe"
           
-          for ($i = 1; $i -le 3; $i++) {
-            try {
-              Invoke-WebRequest -Uri $downloadUrl -OutFile $outputFile -UseBasicParsing
-              break
-            }
-            catch {
-              if ($i -eq 3) {
-                Write-Host "::error::Failed to download after 3 attempts"
-                exit 1
-              }
-              Write-Host "::warning::Download attempt $i failed, retrying..."
-              Start-Sleep -Seconds 5
-            }
-          }
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $outputFile -UseBasicParsing
           
-          if (!(Test-Path $outputFile) -or (Get-Item $outputFile).Length -eq 0) {
-            Write-Host "::error::Downloaded file is missing or empty"
+          if (!(Test-Path $outputFile) -or (Get-Item $outputFile).Length -lt 10000) {
+            Write-Host "::error::Downloaded file is missing or too small."
             exit 1
           }
           
-          $fileSize = (Get-Item $outputFile).Length
-          if ($fileSize -lt 10000) {
-            Write-Host "::error::Downloaded file seems too small ($fileSize bytes)"
-            exit 1
-          }
-          
-          Write-Host "::notice::Downloaded WinMemoryCleaner.exe ($fileSize bytes)"
+          Write-Host "::notice::Downloaded WinMemoryCleaner.exe"
           Write-Host "::endgroup::"
-        shell: powershell
 
       - name: Calculate and verify SHA256
+        if: steps.check_chocolatey.outputs.skip == 'false'
         id: sha
+        shell: powershell
         run: |
-          Write-Host "::group::Calculating SHA256"
-          
           $hash = Get-FileHash -Path "WinMemoryCleaner.exe" -Algorithm SHA256
           $sha256 = $hash.Hash.ToLower()
           
           echo "SHA256=$sha256" >> $env:GITHUB_ENV
           echo "sha256=$sha256" >> $env:GITHUB_OUTPUT
-          
-          if (-not ($sha256 -match "^[a-f0-9]{64}$")) {
-            Write-Host "::error::Invalid SHA256 format: $sha256"
-            exit 1
-          }
-          
           Write-Host "::notice::SHA256: $sha256"
-          Write-Host "::endgroup::"
-        shell: powershell
 
       - name: Fetch repository metadata
+        if: steps.check_chocolatey.outputs.skip == 'false'
         id: metadata
         uses: actions/github-script@v7
         with:
-          retries: 3
-          retry-exempt-status-codes: 400,401,403,404,422
           script: |
-            try {
-              const { data: repo } = await github.rest.repos.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              
-              if (!repo.description?.trim()) {
-                throw new Error("Repository description is required but missing");
-              }
-              
-              if (!repo.license?.spdx_id) {
-                throw new Error("Repository license is required but missing");
-              }
-              
-              const metadata = {
-                desc: repo.description.trim(),
-                homepage: repo.homepage || repo.html_url,
-                license: repo.license.spdx_id,
-                publisher: context.repo.owner
-              };
-              
-              core.setOutput('desc', metadata.desc);
-              core.setOutput('homepage', metadata.homepage);
-              core.setOutput('license', metadata.license);
-              core.setOutput('publisher', metadata.publisher);
-              
-              return metadata;
-            } catch (error) {
-              core.setFailed(`Failed to fetch repository metadata: ${error.message}`);
-              throw error;
-            }
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            core.setOutput('desc', repo.description?.trim() || 'No description found.');
+            core.setOutput('homepage', repo.homepage || repo.html_url);
 
       - name: Install Chocolatey and dependencies
-        run: |
-          Write-Host "::group::Installing Chocolatey"
-          
-          if (!(Get-Command choco -ErrorAction SilentlyContinue)) {
-            Set-ExecutionPolicy Bypass -Scope Process -Force
-            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-            iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-          }
-          
-          refreshenv
-          
-          Write-Host "::notice::Chocolatey version: $(choco --version)"
-          Write-Host "::endgroup::"
+        if: steps.check_chocolatey.outputs.skip == 'false'
         shell: powershell
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          refreshenv
 
       - name: Generate Chocolatey package files
+        if: steps.check_chocolatey.outputs.skip == 'false'
+        shell: powershell
         run: |
-          Write-Host "::group::Generating Chocolatey package"
-          
           $packageDir = "chocolatey-package"
           New-Item -ItemType Directory -Path $packageDir -Force
-          
-          $toolsDir = "$packageDir\tools"
+          $toolsDir = Join-Path $packageDir "tools"
           New-Item -ItemType Directory -Path $toolsDir -Force
-          
+
           $nuspecContent = @"
           <?xml version="1.0" encoding="utf-8"?>
           <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
             <metadata>
               <id>winmemorycleaner</id>
               <version>$env:RELEASE_TAG</version>
-              <packageSourceUrl>https://github.com/${{ github.repository }}</packageSourceUrl>
               <owners>Igor Mundstein</owners>
               <title>Windows Memory Cleaner</title>
               <authors>Igor Mundstein</authors>
               <projectUrl>${{ steps.metadata.outputs.homepage }}</projectUrl>
-              <copyright>Copyright (c) Igor Mundstein</copyright>
+              <packageSourceUrl>https://github.com/${{ github.repository }}</packageSourceUrl>
+              <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/v$env:RELEASE_TAG</releaseNotes>
               <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
-              <requireLicenseAcceptance>false</requireLicenseAcceptance>
-              <projectSourceUrl>https://github.com/${{ github.repository }}</projectSourceUrl>
               <bugTrackerUrl>https://github.com/${{ github.repository }}/issues</bugTrackerUrl>
               <tags>memory cleaner ram optimization windows portable</tags>
               <summary>${{ steps.metadata.outputs.desc }}</summary>
               <description>${{ steps.metadata.outputs.desc }}</description>
-              <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/$env:RELEASE_TAG</releaseNotes>
             </metadata>
             <files>
               <file src="tools\**" target="tools" />
             </files>
           </package>
           "@
-          
-          $nuspecContent | Out-File -FilePath "$packageDir\winmemorycleaner.nuspec" -Encoding UTF8
-          
+          $nuspecContent | Out-File -FilePath (Join-Path $packageDir "winmemorycleaner.nuspec") -Encoding UTF8
+
           $installScript = @"
           `$ErrorActionPreference = 'Stop'
           `$toolsDir = "`$(Split-Path -parent `$MyInvocation.MyCommand.Definition)"
-          `$packageName = 'winmemorycleaner'
-          `$url64 = 'https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe'
-          `$checksum64 = '$env:SHA256'
-          `$checksumType64 = 'sha256'
-          
           `$packageArgs = @{
-            packageName   = `$packageName
-            unzipLocation = `$toolsDir
-            fileType      = 'EXE'
-            url64bit      = `$url64
-            checksum64    = `$checksum64
-            checksumType64= `$checksumType64
-            softwareName  = 'Windows Memory Cleaner*'
-            silentArgs    = '/Package'
-            validExitCodes= @(0)
+            packageName    = 'winmemorycleaner'
+            fileType       = 'EXE'
+            url64bit       = 'https://github.com/${{ github.repository }}/releases/download/v$env:RELEASE_TAG/WinMemoryCleaner.exe'
+            checksum64     = '$env:SHA256'
+            checksumType64 = 'sha256'
           }
-          
           Install-ChocolateyPackage @packageArgs
           "@
-          
-          $installScript | Out-File -FilePath "$toolsDir\chocolateyinstall.ps1" -Encoding UTF8
+          $installScript | Out-File -FilePath (Join-Path $toolsDir "chocolateyinstall.ps1") -Encoding UTF8
           
           $uninstallScript = @"
-          `$ErrorActionPreference = 'Stop'
-          `$packageArgs = @{
-            packageName   = 'winmemorycleaner'
-            softwareName  = 'Windows Memory Cleaner*'
-            fileType      = 'EXE'
-            silentArgs    = '/uninstall /quiet'
-            validExitCodes= @(0)
-          }
-          
-          [array]`$key = Get-UninstallRegistryKey -SoftwareName `$packageArgs['softwareName']
-          
-          if (`$key.Count -eq 1) {
-            `$key | % { 
-              `$packageArgs['file'] = "`$(`$_.UninstallString)"
-              if (`$packageArgs['fileType'] -eq 'MSI') {
-                `$packageArgs['silentArgs'] = "`$(`$_.PSChildName) `$(`$packageArgs['silentArgs'])"
-                `$packageArgs['file'] = ''
-              }
-              Uninstall-ChocolateyPackage @packageArgs
-            }
-          } elseif (`$key.Count -eq 0) {
-            Write-Warning "`$packageName has already been uninstalled by other means."
-          } elseif (`$key.Count -gt 1) {
-            Write-Warning "`$(`$key.Count) matches found!"
-            Write-Warning "To prevent accidental data loss, no programs will be uninstalled."
-            Write-Warning "Please alert package maintainer the following keys were matched:"
-            `$key | % {Write-Warning "- `$(`$_.DisplayName)"}
-          }
+          `$ErrorActionPreference = 'Continue'
+          Uninstall-ChocolateyPackage 'winmemorycleaner'
           "@
-          
-          $uninstallScript | Out-File -FilePath "$toolsDir\chocolateyuninstall.ps1" -Encoding UTF8
-          
-          Write-Host "::notice::Generated Chocolatey package files:"
-          Get-ChildItem -Path $packageDir -Recurse | ForEach-Object { Write-Host "- $($_.FullName)" }
-          Write-Host "::endgroup::"
-        shell: powershell
+          $uninstallScript | Out-File -FilePath (Join-Path $toolsDir "chocolateyuninstall.ps1") -Encoding UTF8
 
-      - name: Validate package files
-        run: |
-          Write-Host "::group::Validating package files"
-          
-          $packageDir = "chocolatey-package"
-          $requiredFiles = @(
-            "$packageDir\winmemorycleaner.nuspec",
-            "$packageDir\tools\chocolateyinstall.ps1",
-            "$packageDir\tools\chocolateyuninstall.ps1"
-          )
-          
-          foreach ($file in $requiredFiles) {
-            if (!(Test-Path $file)) {
-              Write-Host "::error::Required file missing: $file"
-              exit 1
-            } else {
-              Write-Host "::notice::✅ Found: $file"
-            }
-          }
-          
-          try {
-            [xml]$nuspecXml = Get-Content "$packageDir\winmemorycleaner.nuspec"
-            Write-Host "::notice::✅ Nuspec XML is valid"
-          }
-          catch {
-            Write-Host "::error::❌ Nuspec XML validation failed: $($_.Exception.Message)"
-            exit 1
-          }
-          
-          Write-Host "::notice::✅ All package files validated"
-          Write-Host "::endgroup::"
+      - name: Build and Push Chocolatey package
+        if: steps.check_chocolatey.outputs.skip == 'false'
         shell: powershell
-
-      - name: Build Chocolatey package
         run: |
-          Write-Host "::group::Building Chocolatey package"
-          
           cd chocolatey-package
           choco pack
           
           $nupkgFile = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
-          if (!$nupkgFile) {
+          if (-not $nupkgFile) {
             Write-Host "::error::No .nupkg file was created"
             exit 1
           }
-          
-          Write-Host "::notice::Created package: $($nupkgFile.Name)"
-          echo "NUPKG_FILE=$($nupkgFile.Name)" >> $env:GITHUB_ENV
-          
-          Write-Host "::endgroup::"
-        shell: powershell
 
-      - name: Test package installation locally
-        run: |
-          Write-Host "::group::Testing package installation"
+          choco apikey --key "${{ secrets.CHOCOLATEY_API_KEY }}" --source https://push.chocolatey.org/
+          choco push `$nupkgFile.FullName --source https://push.chocolatey.org/
           
-          cd chocolatey-package
-          
-          Write-Host "::notice::Testing package installation..."
-          choco install $env:NUPKG_FILE --source . --whatif
-          
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "::error::Package installation test failed"
-            exit 1
-          }
-          
-          Write-Host "::notice::✅ Package installation test passed"
-          Write-Host "::endgroup::"
-        shell: powershell
-
-      - name: Submit to Chocolatey Community Repository
-        run: |
-          Write-Host "::group::Submitting to Chocolatey"
-          
-          cd chocolatey-package
-          
-          choco apikey --key ${{ secrets.CHOCOLATEY_API_KEY }} --source https://push.chocolatey.org/
-          
-          Write-Host "::notice::Pushing $env:NUPKG_FILE to Chocolatey..."
-          choco push $env:NUPKG_FILE --source https://push.chocolatey.org/
-          
-          if ($LASTEXITCODE -ne 0) {
+          if (`$LASTEXITCODE -ne 0) {
             Write-Host "::error::Failed to push package to Chocolatey"
             exit 1
           }
-          
-          Write-Host "::notice::✅ Package successfully submitted to Chocolatey"
-          Write-Host "::notice::Package will be available after moderation approval"
-          Write-Host "::notice::Track status at: https://chocolatey.org/packages/winmemorycleaner"
-          
-          Write-Host "::endgroup::"
-        shell: powershell
+          Write-Host "::notice::Package successfully submitted."
 
       - name: Cleanup
         if: always()
+        shell: powershell
         run: |
           Remove-Item -Path "WinMemoryCleaner.exe" -ErrorAction SilentlyContinue
           Remove-Item -Path "chocolatey-package" -Recurse -ErrorAction SilentlyContinue
           Write-Host "::notice::Cleanup completed"
-        shell: powershell
