@@ -5,6 +5,9 @@ on:
     types: [published]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   print-reminder:
     name: Submit a file for malware analysis
@@ -12,7 +15,7 @@ jobs:
     steps:
       - name: Form
         run: |
-          LATEST_RELEASE_JSON=$(curl -s https://api.github.com/repos/IgorMundstein/WinMemoryCleaner/releases/latest)
+          LATEST_RELEASE_JSON=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest")
           RELEASE_URL=$(echo "$LATEST_RELEASE_JSON" | jq -r '.assets // [] | .[] | select(.name=="WinMemoryCleaner.exe") | .browser_download_url')
           if [ -z "$RELEASE_URL" ]; then
             RELEASE_URL="WinMemoryCleaner.exe not found in the latest release!"
