@@ -50,6 +50,7 @@
   "RunOnStartup": "mulai saat startup",
   "Schedule": "jadwal",
   "Seconds": "detik",
+  "SecurityWarning": "aplikasi ini mungkin telah dimanipulasi. Anda akan diarahkan ke repositori resmi untuk mengunduh versi yang aman.",
   "Settings": "pengaturan",
   "ShowMemoryUsage": "tampilkan penggunaan memori",
   "ShowOptimizationNotifications": "tampilkan notifikasi",

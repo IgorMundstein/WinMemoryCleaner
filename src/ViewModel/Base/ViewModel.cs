@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Windows.Input;
 
 namespace WinMemoryCleaner
@@ -102,14 +101,7 @@ namespace WinMemoryCleaner
         /// <param name="uri">The URI.</param>  
         protected void Navigate(Uri uri)
         {
-            if (uri == null)
-                return;
-
-            using (Process.Start(new ProcessStartInfo
-            {
-                FileName = uri.AbsoluteUri,
-                UseShellExecute = true
-            })) { }
+            App.Navigate(uri);
 
             if (OnNavigateUriCommandCompleted != null)
             {

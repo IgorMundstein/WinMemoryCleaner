@@ -50,6 +50,7 @@
   "RunOnStartup": "beim start ausführen",
   "Schedule": "plan",
   "Seconds": "sekunden",
+  "SecurityWarning": "diese anwendung könnte manipuliert worden sein. sie werden auf das offizielle repository weitergeleitet, um eine sichere version herunterzuladen.",
   "Settings": "einstellungen",
   "ShowMemoryUsage": "speicherauslastung anzeigen",
   "ShowOptimizationNotifications": "optimierungsbenachrichtigungen anzeigen",

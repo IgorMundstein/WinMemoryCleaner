@@ -50,6 +50,7 @@
   "RunOnStartup": "futtatás indításkor",
   "Schedule": "ütemezés",
   "Seconds": "másodpercek",
+  "SecurityWarning": "ez az alkalmazás manipulálva lehet. átirányítjuk az hivatalos tárolóra, hogy letölthessen egy biztonságos verziót.",
   "Settings": "beállítások",
   "ShowMemoryUsage": "memóriahasználat megjelenítése",
   "ShowOptimizationNotifications": "optimalizálási értesítések megjelenítése",

@@ -47,40 +47,6 @@ namespace WinMemoryCleaner
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             Dispatcher.UnhandledException += OnDispatcherUnhandledException;
-
-            // DI/IOC
-            DependencyInjection.Container.Register<IComputerService, ComputerService>();
-            DependencyInjection.Container.Register<IHotkeyService, HotkeyService>();
-            DependencyInjection.Container.Register<INotificationService, NotificationService>();
-
-            // Check if app is already running
-            bool createdNew;
-
-            _mutex = new Mutex(true, Constants.App.Id, out createdNew);
-            _isRunning = !createdNew;
-
-            // App properties
-            Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
-            Version = Assembly.GetExecutingAssembly().GetName().Version;
-
-            // App Migration
-            if (!_isRunning)
-                Migrator.Run();
-
-            // App priority
-            SetPriority(Settings.RunOnPriority);
-
-            // Brushes
-            Brushes = typeof(System.Drawing.Color)
-                .GetProperties(BindingFlags.Public | BindingFlags.Static)
-                .Where(property => property.PropertyType == typeof(System.Drawing.Color))
-                .Select(property => (System.Drawing.Color)property.GetValue(null, null))
-                .Where(color => color.A == 255)
-                .OrderBy(color => color.GetHue())
-                .ThenBy(color => color.GetSaturation())
-                .ThenBy(color => color.GetBrightness())
-                .Select(color => new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)))
-                .ToList();
         }
 
         #endregion
@@ -181,6 +147,60 @@ namespace WinMemoryCleaner
 
         #region Methods
 
+        private void Initialize()
+        {
+            // Check if the app is secure to run
+            SecurityCheck();
+
+            // DI/IOC
+            DependencyInjection.Container.Register<IComputerService, ComputerService>();
+            DependencyInjection.Container.Register<IHotkeyService, HotkeyService>();
+            DependencyInjection.Container.Register<INotificationService, NotificationService>();
+
+            // App properties
+            Brushes = typeof(System.Drawing.Color)
+                .GetProperties(BindingFlags.Public | BindingFlags.Static)
+                .Where(property => property.PropertyType == typeof(System.Drawing.Color))
+                .Select(property => (System.Drawing.Color)property.GetValue(null, null))
+                .Where(color => color.A == 255)
+                .OrderBy(color => color.GetHue())
+                .ThenBy(color => color.GetSaturation())
+                .ThenBy(color => color.GetBrightness())
+                .Select(color => new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)))
+                .ToList();
+            Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+            Version = Assembly.GetExecutingAssembly().GetName().Version;
+
+            // Check if app is already running
+            bool createdNew;
+
+            _mutex = new Mutex(true, Constants.App.Id, out createdNew);
+            _isRunning = !createdNew;
+
+            // App Migration
+            if (!_isRunning)
+                Migrator.Run();
+
+            // App priority
+            SetPriority(Settings.RunOnPriority);
+        }
+
+        /// <summary>
+        /// Navigates the specified URI.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        public static void Navigate(Uri uri)
+        {
+            if (uri == null)
+                return;
+
+            using (Process.Start(new ProcessStartInfo
+            {
+                FileName = uri.AbsoluteUri,
+                UseShellExecute = true
+            })) { }
+        }
+
         /// <summary>
         /// Called when [dispatcher unhandled exception].
         /// </summary>
@@ -274,6 +294,8 @@ namespace WinMemoryCleaner
         {
             try
             {
+                Initialize();
+
                 var commandLineArguments = startupEvent != null ? new List<string>(startupEvent.Args.Select(arg => arg.Replace("-", "/").Trim())) : null;
                 var memoryAreas = Enums.Memory.Areas.None;
                 var startupType = Enums.StartupType.App;
@@ -381,7 +403,7 @@ namespace WinMemoryCleaner
                     case Enums.StartupType.Package:
                         var exe = AppDomain.CurrentDomain.FriendlyName;
                         var sourcePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
-                        var targetPath = File.Exists(Settings.Path) ? Settings.Path : System.IO.Path.Combine(Constants.App.Defaults.Path, exe);                        
+                        var targetPath = File.Exists(Settings.Path) ? Settings.Path : System.IO.Path.Combine(Constants.App.Defaults.Path, exe);
 
                         try
                         {
@@ -542,6 +564,28 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Verify if the app is secure to run
+        /// </summary>
+        private void SecurityCheck()
+        {
+            if (Debugger.IsAttached)
+                return;
+
+            if (!Validator.IsCertificateValid())
+            {
+                try
+                {
+                    ShowDialog(Localizer.String.SecurityWarning, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Navigate(Constants.App.Repository.DownloadUri);
+                }
+                finally
+                {
+                    Shutdown(true);
+                }
+            }
+        }
+
+        /// <summary>
         /// Sets the app priority for the Windows
         /// </summary>
         public static void SetPriority(Enums.Priority priority)
@@ -642,9 +686,22 @@ namespace WinMemoryCleaner
         /// <param name="exception">Exception</param>
         private void ShowDialog(Exception exception)
         {
+            ShowDialog(exception.GetMessage(), MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="button">The button.</param>
+        /// <param name="icon">The icon.</param>
+        /// <param name="defaultResult">The default result.</param>
+        /// <param name="options">The options.</param>
+        private void ShowDialog(string message, MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None, MessageBoxResult defaultResult = MessageBoxResult.OK, System.Windows.MessageBoxOptions options = System.Windows.MessageBoxOptions.None)
+        {
             try
             {
-                System.Windows.MessageBox.Show(exception.GetMessage(), Constants.App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(message, Constants.App.Title, button, icon, defaultResult, options);
             }
             catch
             {

@@ -21,6 +21,11 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
   choco install winmemorycleaner
   ```
 
+- **Scoop**  
+  ```powershell
+  scoop install winmemorycleaner
+  ```
+
 - **WinGet**  
   ```powershell
   winget install IgorMundstein.WinMemoryCleaner

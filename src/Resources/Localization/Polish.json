@@ -50,6 +50,7 @@
   "RunOnStartup": "uruchom przy starcie",
   "Schedule": "harmonogram",
   "Seconds": "sekundy",
+  "SecurityWarning": "ta aplikacja mogła zostać zmodyfikowana. zostaniesz przekierowany do oficjalnego repozytorium, aby pobrać bezpieczną wersję.",
   "Settings": "ustawienia",
   "ShowMemoryUsage": "pokaż użycie pamięci",
   "ShowOptimizationNotifications": "pokaż powiadomienia o optymalizacji",

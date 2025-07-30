@@ -50,6 +50,7 @@
   "RunOnStartup": "start ved oppstart",
   "Schedule": "planlegging",
   "Seconds": "sekunder",
+  "SecurityWarning": "denne applikasjonen kan ha blitt manipulert. du vil bli omdirigert til det offisielle depotet for å laste ned en sikker versjon.",
   "Settings": "innstillinger",
   "ShowMemoryUsage": "vis minnebruk",
   "ShowOptimizationNotifications": "vis optimaliseringsvarsler",

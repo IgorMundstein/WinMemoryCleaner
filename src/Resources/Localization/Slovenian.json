@@ -50,6 +50,7 @@
   "RunOnStartup": "zaženi ob zagonu",
   "Schedule": "urnik",
   "Seconds": "sekunde",
+  "SecurityWarning": "ta aplikacija je morda bila spremenjena. preusmerjeni boste na uradno skladišče, da prenesete varno različico.",
   "Settings": "nastavitve",
   "ShowMemoryUsage": "prikaži uporabo pomnilnika",
   "ShowOptimizationNotifications": "prikaži obvestila o optimizaciji",

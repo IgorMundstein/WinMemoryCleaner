@@ -50,6 +50,7 @@
   "RunOnStartup": "esegui all'avvio",
   "Schedule": "pianificazione",
   "Seconds": "secondi",
+  "SecurityWarning": "questa applicazione potrebbe essere stata manomessa. verrai reindirizzato al repository ufficiale per scaricare una versione sicura.",
   "Settings": "impostazioni",
   "ShowMemoryUsage": "mostra utilizzo memoria",
   "ShowOptimizationNotifications": "mostra notifiche di ottimizzazione",

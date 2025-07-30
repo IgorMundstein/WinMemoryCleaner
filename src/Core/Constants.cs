@@ -36,6 +36,19 @@ namespace WinMemoryCleaner
                 public const string Uninstall = "Uninstall";
             }
 
+            public static class Certificate
+            {
+                public static class Release
+                {
+                    public const string Thumbprint = "9D201FB199626ABE7DA32FBE47013FC023670F9B";
+                }
+
+                public static class Test
+                {
+                    public const string Thumbprint = "2187092935C12F90727B29AD6913A7F89817B942";
+                }
+            }
+
             public static class Defaults
             {
                 public static readonly string Path = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
@@ -65,6 +78,7 @@ namespace WinMemoryCleaner
 
                 public static readonly Uri AboutUri = new Uri(GitHub + "?tab=readme-ov-file#windows-memory-cleaner");
                 public static readonly Uri AssemblyInfoUri = new Uri(Path.Combine(GitHubRaw, "src/Properties/AssemblyInfo.cs"));
+                public static readonly Uri DownloadUri = new Uri(GitHub + "?tab=readme-ov-file#-download");
                 public static readonly Uri LatestExeUri = new Uri(Path.Combine(GitHub, "releases/latest/download/WinMemoryCleaner.exe"));
                 public static readonly Uri Uri = new Uri(GitHub);
             }

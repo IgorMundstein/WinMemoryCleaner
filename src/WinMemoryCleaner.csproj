@@ -135,6 +135,7 @@
     <Compile Include="Core\ObservableObject.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Core\Structs.cs" />
+    <Compile Include="Core\Validator.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
     <Compile Include="Interfaces\IHotkeyService.cs" />
@@ -174,7 +175,7 @@
     <Compile Include="ViewModel\Base\ViewModel.cs" />
     <Compile Include="ViewModel\DonationViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
-	<Compile Include="ViewModel\MessageViewModel.cs" />
+    <Compile Include="ViewModel\MessageViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
   </ItemGroup>
   <ItemGroup>

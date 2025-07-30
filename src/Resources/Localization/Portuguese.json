@@ -50,6 +50,7 @@
   "RunOnStartup": "executar na inicialização",
   "Schedule": "agendamento",
   "Seconds": "segundos",
+  "SecurityWarning": "este aplicativo pode ter sido comprometido. você será redirecionado para o repositório oficial para baixar uma versão segura.",
   "Settings": "configurações",
   "ShowMemoryUsage": "mostrar uso de memória",
   "ShowOptimizationNotifications": "mostrar notificações de otimização",

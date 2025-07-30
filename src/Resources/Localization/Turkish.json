@@ -50,6 +50,7 @@
   "RunOnStartup": "başlangıçta çalıştır",
   "Schedule": "zamanlama",
   "Seconds": "saniye",
+  "SecurityWarning": "bu uygulama değiştirilmiş olabilir. güvenli bir sürüm indirmek için resmi depoya yönlendirileceksiniz.",
   "Settings": "ayarlar",
   "ShowMemoryUsage": "bellek kullanımını göster",
   "ShowOptimizationNotifications": "optimizasyon bildirimlerini göster",

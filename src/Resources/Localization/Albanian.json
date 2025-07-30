@@ -50,6 +50,7 @@
   "RunOnStartup": "vazhdo në fillim",
   "Schedule": "orari",
   "Seconds": "sekonda",
+  "SecurityWarning": "ky aplikacion mund të jetë manipuluar. do të ridrejtoheni në depozitat zyrtare për të shkarkuar një version të sigurt.",
   "Settings": "cilësimet",
   "ShowMemoryUsage": "shfaq përdorimin e memories",
   "ShowOptimizationNotifications": "shfaq njoftimet e optimizimit",
