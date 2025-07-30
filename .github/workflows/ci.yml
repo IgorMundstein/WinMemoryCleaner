@@ -95,12 +95,12 @@ jobs:
           signing-policy-slug: ci-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
-          output-artifact-directory: ./signed
+          output-artifact-directory: ./
 
       - name: Upload signed build artifact
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-${{ steps.version.outputs.app_version }}
-          path: signed/WinMemoryCleaner.exe
+          name: winmemorycleaner-${{ steps.version.outputs.app_version }}-signed
+          path: WinMemoryCleaner.exe
           retention-days: 30
