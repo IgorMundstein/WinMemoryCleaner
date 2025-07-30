@@ -39,13 +39,9 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      - name: Restore NuGet packages
+      - name: Restore and Build solution
         shell: pwsh
-        run: nuget restore src\WinMemoryCleaner.sln
-
-      - name: Build solution
-        shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
+        run: msbuild src\WinMemoryCleaner.sln /t:restore /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Upload unsigned EXE as artifact
         id: upload-unsigned
