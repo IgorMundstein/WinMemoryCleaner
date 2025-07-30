@@ -80,7 +80,7 @@ jobs:
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-${{ steps.version.outputs.app_version }}-unsigned
+          name: winmemorycleaner-${{ steps.version.outputs.app_version }}
           path: src\bin\Release\WinMemoryCleaner.exe
           if-no-files-found: error
 
@@ -101,6 +101,6 @@ jobs:
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-${{ steps.version.outputs.app_version }}-signed
+          name: winmemorycleaner-${{ steps.version.outputs.app_version }}
           path: signed/WinMemoryCleaner.exe
           retention-days: 30
