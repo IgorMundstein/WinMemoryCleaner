@@ -62,7 +62,7 @@ jobs:
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned
+          name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}-unsigned
           path: src\bin\Release\WinMemoryCleaner.exe
           if-no-files-found: error
 
@@ -76,6 +76,7 @@ jobs:
           project-slug: WinMemoryCleaner
           signing-policy-slug: release-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          output-artifact-name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}-signed
           wait-for-completion: true
           output-artifact-directory: ./signed
 
