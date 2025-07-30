@@ -47,14 +47,22 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          $csprojPath = "src/WinMemoryCleaner.csproj"
-          $match = Select-String -Path $csprojPath -Pattern '<Version>(.*?)<\/Version>'
-          if ($match) {
-            $appVersion = $match.Matches[0].Groups[1].Value
+          $assemblyInfoPath = "src/AssemblyInfo.cs"
+          if (-Not (Test-Path $assemblyInfoPath)) {
+            $assemblyInfoPath = "src/Properties/AssemblyInfo.cs"
+          }
+          if (-Not (Test-Path $assemblyInfoPath)) {
+            Write-Host "::error::AssemblyInfo.cs not found"
+            exit 1
+          }
+          $assemblyInfo = Get-Content $assemblyInfoPath
+          $versionLine = $assemblyInfo | Select-String -Pattern 'AssemblyVersion\("([0-9\.]+)"\)'
+          if ($versionLine -match 'AssemblyVersion\("([0-9\.]+)"\)') {
+            $appVersion = $matches[1]
             echo "app_version=$appVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             Write-Host "Detected app version: $appVersion"
           } else {
-            Write-Host "::error::Could not find version in $csprojPath"
+            Write-Host "::error::Could not find version in $assemblyInfoPath"
             exit 1
           }
 
