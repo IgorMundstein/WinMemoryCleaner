@@ -33,7 +33,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 ## 🔐 Trust & Integrity
 
-We prioritize transparency and user safety. Files are digitally signed through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The certificate was granted to this project in recognition of its popularity and public value in the open-source community. This process ensures that distributed files are authentic and have not been tampered with. This signing was introduced in version **3.0.0**
+We prioritize transparency and user safety. Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with. By doing this, we will build trust with Microsoft Defender SmartScreen over time, and maybe someday we will obliterate that "Windows protected your PC" warning.
 
 ### 🔍 How to verify
 
@@ -110,7 +110,7 @@ By the end, to ensure transparency and safety, each new version is submitted for
 - `Close after optimization` Closes the app after optimization
 - `Close to the notification area` Minimize the app to the system tray when clicking the close (X) button
 - `Run on low priority` It limits the app's resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
-- `Run on startup` Runs the app after the system boots up. It creates an entry on Windows **Task Scheduler** and Windows Registry path **SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run**
+- `Run on startup` Runs the app after the system boots up. It creates a task on Windows **Task Scheduler**
 - `Show optimization notifications` Sends a message to the notification area after optimization. It includes the approximate memory released
 - `Show virtual memory` It also monitors the virtual memory usage
 - `Start minimized` The app will start minimized to the system tray. Single-click on the icon to restore
@@ -185,16 +185,16 @@ The app generates logs in the Windows Event
 
 ### What are the project requirements?
 
-- Minimalistic user interface
+- Minimalistic user interface using (WPF) and single-page application (SPA) architecture
 - Model-View-ViewModel (MVVM) design pattern
-- No third library dependencies
-- Portable (Single .exe file)
+- No third-party dependencies
+- Portable (Single executable file)
 - Right-to-left language support and bidirectional text
-- S.O.L.I.D. Principles of Object-Oriented
+- Use of S.O.L.I.D. principles in object-oriented programming (limited due to the legacy .NET 4.0 framework)
 - Use of Windows native methods for memory management
 - Windows Event to save logs
 - Windows Presentation Foundation (WPF) for user interface
-- Windows Registry to save user settings
+- Windows retro compatibility (Windows XP, Server 2003, and later)
 
 ### Where does the app save the settings?
 
@@ -204,7 +204,7 @@ They are saved in the Windows registry path `Computer\HKEY_LOCAL_MACHINE\Softwar
 
 One of the reasons for this **false alarm** is that the application adds entries to the registry and creates a scheduled task to run at startup. Windows doesn't suggest letting applications with administrator privileges run at startup. I understand that, but this is the way to do it. I apologize, but the application cannot perform a deep memory clean without administrator privileges.
 
-That's a common issue that persists every time a new app version is released. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
+That's a common issue that persists with every new app version. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
 It helps if more users [submit the app for malware analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
 
 Meanwhile, as a workaround, you can [add an exclusion to Windows Security](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)

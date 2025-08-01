@@ -25,10 +25,10 @@ namespace WinMemoryCleaner
         private string _no;
         private string _optimizationHotkey, _optimize, _optimized;
         private string _physicalMemory, _processExclusionList;
-        private string _reason, _registryCache, _remove, _repositoryInfo, _reset, _resetConfirmation, _runOnLowPriority, _runOnStartup;
+        private string _reason, _registryCache, _remove, _reset, _resetConfirmation, _runOnLowPriority, _runOnStartup;
         private string _schedule, _seconds, _securityWarning, _settings, _showMemoryUsage, _showOptimizationNotifications, _showVirtualMemory, _standbyList, _standbyListLowPriority, _startMinimized, _systemFileCache;
         private string _text, _trayIcon;
-        private string _updatedToVersion, _used, _useHotkey, _useTransparentBackground;
+        private string _updatedToVersion, _used, _useTransparentBackground;
         private string _virtualMemory;
         private string _warningLevel, _whenFreeMemoryIsBelow, _workingSet;
         private string _yes;
@@ -346,13 +346,6 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
-        public string RepositoryInfo
-        {
-            get { return _repositoryInfo; }
-            private set { _repositoryInfo = value.Capitalize(); }
-        }
-
-        [DataMember]
         public string Reset
         {
             get { return _reset; }
@@ -490,13 +483,6 @@ namespace WinMemoryCleaner
         {
             get { return _used; }
             private set { _used = value.Capitalize(); }
-        }
-
-        [DataMember]
-        public string UseHotkey
-        {
-            get { return _useHotkey; }
-            private set { _useHotkey = value.Capitalize(); }
         }
 
         [DataMember]
