@@ -395,7 +395,7 @@ namespace WinMemoryCleaner
                         break;
 
                     case Enums.StartupType.Installation:
-                        AppServiceInstaller.Install();
+                        WinServiceInstaller.Install();
 
                         Shutdown();
                         break;
@@ -451,7 +451,7 @@ namespace WinMemoryCleaner
                         break;
 
                     case Enums.StartupType.Service:
-                        using (var service = new AppService())
+                        using (var service = new WinService())
                         {
                             if (Debugger.IsAttached)
                                 service.OnDebug(null);
@@ -467,7 +467,7 @@ namespace WinMemoryCleaner
                         break;
 
                     case Enums.StartupType.Uninstallation:
-                        AppServiceInstaller.Uninstall();
+                        WinServiceInstaller.Uninstall();
 
                         Shutdown();
                         break;

@@ -13,15 +13,15 @@ namespace WinMemoryCleaner
     /// Windows Memory Cleaner Service Installer
     /// </summary>
     [RunInstaller(true)]
-    public class AppServiceInstaller : Installer
+    public class WinServiceInstaller : Installer
     {
         private readonly ServiceInstaller _serviceInstaller;
         private readonly ServiceProcessInstaller _processInstaller;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AppServiceInstaller" /> class.
+        /// Initializes a new instance of the <see cref="WinServiceInstaller" /> class.
         /// </summary>
-        public AppServiceInstaller()
+        public WinServiceInstaller()
         {
             _processInstaller = new ServiceProcessInstaller
             {
@@ -108,7 +108,7 @@ namespace WinMemoryCleaner
         /// </summary>
         public static void Uninstall()
         {
-            if (AppService.IsInstalled)
+            if (WinService.IsInstalled)
             {
                 // Processess that blocks service refresh/uninstallation
                 var processesToKill = new[] { "mmc", "procexp", "procexp64", "taskmgr" };

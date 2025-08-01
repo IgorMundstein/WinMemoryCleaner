@@ -279,7 +279,7 @@ namespace WinMemoryCleaner
         /// </value>
         public bool CanRunOnStartup
         {
-            get { return !AppService.IsInstalled; }
+            get { return !WinService.IsInstalled; }
         }
 
         /// <summary>

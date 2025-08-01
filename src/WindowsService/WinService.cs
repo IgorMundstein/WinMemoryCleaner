@@ -8,7 +8,7 @@ namespace WinMemoryCleaner
     /// <summary>
     /// Windows Memory Cleaner Service
     /// </summary>
-    public class AppService : ServiceBase
+    public class WinService : ServiceBase
     {
         private readonly Computer _computer;
         private readonly IComputerService _computerService;
@@ -17,9 +17,9 @@ namespace WinMemoryCleaner
         private readonly Timer _timer = new Timer(60000);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AppService" /> class.
+        /// Initializes a new instance of the <see cref="WinService" /> class.
         /// </summary>
-        public AppService()
+        public WinService()
         {
             // App resources
             _computer = new Computer();

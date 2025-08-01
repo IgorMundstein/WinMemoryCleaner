@@ -92,6 +92,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Page Include="View\Dialog\MessageDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -104,14 +108,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="AppService.cs">
+    <Compile Include="WindowsService\WinService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="AppServiceInstaller.cs">
+    <Compile Include="WindowsService\WinServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Attribute\CallerMemberNameAttribute.cs" />
@@ -127,6 +127,7 @@
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
+	<Compile Include="Core\GlobalSuppressions.cs" />
     <Compile Include="Core\Helper.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
@@ -136,7 +137,6 @@
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Core\Structs.cs" />
     <Compile Include="Core\Validator.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
     <Compile Include="Interfaces\IHotkeyService.cs" />
     <Compile Include="Interfaces\ILogData.cs" />
