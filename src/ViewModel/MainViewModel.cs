@@ -400,10 +400,13 @@ namespace WinMemoryCleaner
                     Settings.FontSize = value;
                     Settings.Save();
 
-                    System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                    if (System.Windows.Application.Current != null)
                     {
-                        System.Windows.Application.Current.Resources["FontSize"] = value;
-                    }));
+                        System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                        {
+                            System.Windows.Application.Current.Resources["FontSize"] = value;
+                        }));
+                    }
 
                     RaisePropertyChanged();
                 }
