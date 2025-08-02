@@ -128,6 +128,7 @@ jobs:
             git push origin $tag
           } else {
             Write-Host "Tag '$tag' already exists. Reusing..."
+          }
 
       - name: Check if release already exists
         id: check_release
