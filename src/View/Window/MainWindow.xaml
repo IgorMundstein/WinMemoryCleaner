@@ -210,7 +210,7 @@
                           Grid.Row="0"
                           Header="{Binding Path=(local:Localizer.String).Settings}"
                           Margin="0, 5, 5, 0">
-                    <StackPanel>
+                    <StackPanel VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal"
                                     Margin="0, 0, 0, 6"
                                     VerticalAlignment="Center">
@@ -221,6 +221,7 @@
                             <ComboBox ItemsSource="{x:Static local:Localizer.Languages}"
                                       MouseRightButtonUp="OnComboBoxMouseRightButtonUp"
                                       SelectedValue="{Binding Language}"
+                                      VerticalAlignment="Center"
                                       VerticalContentAlignment="Center" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal"
@@ -236,15 +237,18 @@
                                     Name="FontSizeSlider"
                                     TickFrequency="1"
                                     Value="{Binding FontSize}"
+                                    VerticalAlignment="Center"
                                     Width="80" />
-                        </StackPanel>                      
-                        <ItemsControl ItemsSource="{Binding SettingItems}">
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{Binding SettingItems}"
+                                      VerticalAlignment="Center">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <CheckBox Content="{Binding Name}"
                                               IsChecked="{Binding Value, Mode=TwoWay}"
                                               IsEnabled="{Binding IsEnabled}"
-                                              Margin="0, 0, 0, 3" />
+                                              Margin="0, 0, 0, 3"
+                                              VerticalAlignment="Center" />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -255,13 +259,15 @@
                           Grid.Row="1"
                           Header="{Binding Path=(local:Localizer.String).MemoryAreas}"
                           Margin="0, 5, 5, 0">
-                    <ItemsControl ItemsSource="{Binding MemoryAreaItems}">
+                    <ItemsControl ItemsSource="{Binding MemoryAreaItems}"
+                                  VerticalAlignment="Center">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox Content="{Binding Name}"
                                           IsChecked="{Binding Value, Mode=TwoWay}"
                                           IsEnabled="{Binding IsEnabled}"
-                                          Margin="0, 0, 0, 3" />
+                                          Margin="0, 0, 0, 3"
+                                          VerticalAlignment="Center" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -273,39 +279,43 @@
                               Margin="0, 5, 5, 0"
                               Visibility="{Binding Computer.OperatingSystem.HasHotkeyManager, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}">
                     <StackPanel Orientation="Horizontal"
-                                    VerticalAlignment="Center">
+                                VerticalAlignment="Center">
                         <CheckBox IsChecked="{Binding UseHotkey}"
-                                      ToolTip="{Binding Path=(local:Localizer.String).UseHotkey}" />
+                                  ToolTip="{Binding Path=(local:Localizer.String).UseHotkey}"
+                                  VerticalAlignment="Center" />
                         <ComboBox DisplayMemberPath="Value"
-                                      IsEnabled="{Binding UseHotkey}"
-                                      ItemsSource="{Binding KeyboardModifiers}"
-                                      MouseRightButtonUp="OnComboBoxMouseRightButtonUp"
-                                      SelectedValue="{Binding OptimizationModifiers}"
-                                      SelectedValuePath="Key"
-                                      VerticalContentAlignment="Center" />
+                                  IsEnabled="{Binding UseHotkey}"
+                                  ItemsSource="{Binding KeyboardModifiers}"
+                                  MouseRightButtonUp="OnComboBoxMouseRightButtonUp"
+                                  SelectedValue="{Binding OptimizationModifiers}"
+                                  SelectedValuePath="Key"
+                                  VerticalAlignment="Center"
+                                  VerticalContentAlignment="Center" />
                         <TextBlock IsEnabled="{Binding UseHotkey}"
-                                       IsHitTestVisible="False" 
-                                       Margin="5, 0, 5, 0"
-                                       Text="+" 
-                                       VerticalAlignment="Center" />
+                                   IsHitTestVisible="False" 
+                                   Margin="5, 0, 5, 0"
+                                   Text="+" 
+                                   VerticalAlignment="Center" />
                         <ComboBox IsEnabled="{Binding UseHotkey}"
-                                      ItemsSource="{Binding KeyboardKeys}"
-                                      MouseRightButtonUp="OnComboBoxMouseRightButtonUp"
-                                      SelectedValue="{Binding OptimizationKey}"
-                                      VerticalContentAlignment="Center" />
+                                  ItemsSource="{Binding KeyboardKeys}"
+                                  MouseRightButtonUp="OnComboBoxMouseRightButtonUp"
+                                  SelectedValue="{Binding OptimizationKey}"
+                                  VerticalAlignment="Center"
+                                  VerticalContentAlignment="Center" />
                         <TextBlock Foreground="{StaticResource DarkDisabled}"
-                                       IsEnabled="{Binding UseHotkey}"
-                                       KeyboardNavigation.TabNavigation="None"
-                                       Margin="5, 0, 0, 0"
-                                       Text="{Binding Path=(local:Localizer.String).Invalid}" 
-                                       VerticalAlignment="Center"
-                                       Visibility="{Binding IsOptimizationKeyValid, Converter={StaticResource InverseBooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}" />
+                                   IsEnabled="{Binding UseHotkey}"
+                                   KeyboardNavigation.TabNavigation="None"
+                                   Margin="5, 0, 0, 0"
+                                   Text="{Binding Path=(local:Localizer.String).Invalid}" 
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding IsOptimizationKeyValid, Converter={StaticResource InverseBooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}" />
                     </StackPanel>
                 </GroupBox>
                 <!-- Process Exclusion List | Auto Optimization | Tray Icon -->
                 <Grid Grid.Column="1"
                       Grid.Row="0"
-                      Grid.RowSpan="3">
+                      Grid.RowSpan="3"
+                      VerticalAlignment="Stretch">
                     <Grid.MaxHeight>
                         <MultiBinding Converter="{StaticResource SumNumericConverter}">
                             <Binding ElementName="ContentGrid" Path="ActualHeight" />
@@ -324,142 +334,154 @@
                               Grid.Row="0"
                               Header="{Binding Path=(local:Localizer.String).TrayIcon}"
                               Margin="5, 5, 0, 0">
-                        <StackPanel>
-                            <StackPanel>
-                                <ItemsControl ItemsSource="{Binding TrayIconItems}">
-                                    <ItemsControl.ItemTemplate>
+                        <StackPanel VerticalAlignment="Center">
+                            <ItemsControl ItemsSource="{Binding TrayIconItems}"
+                                          VerticalAlignment="Center">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Content="{Binding Name}"
+                                                  IsChecked="{Binding Value, Mode=TwoWay}"
+                                                  IsEnabled="{Binding IsEnabled}"
+                                                  Margin="0, 0, 0, 3"
+                                                  VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
+                                        Margin="0, 2, 0, 0" 
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock IsEnabled="{Binding TrayIconUseTransparentBackground, Converter={StaticResource InverseBooleanConverter}}"
+                                           Text="{Binding Path=(local:Localizer.String).Background}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox IsEnabled="{Binding TrayIconUseTransparentBackground, Converter={StaticResource InverseBooleanConverter}}"
+                                          ItemsSource="{Binding Brushes}"
+                                          Margin="5, 0, 0, 0"
+                                          SelectedItem="{Binding TrayIconBackgroundColor, Mode=TwoWay}"
+                                          VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <CheckBox Content="{Binding Name}"
-                                                      IsChecked="{Binding Value, Mode=TwoWay}"
-                                                      IsEnabled="{Binding IsEnabled}"
-                                                      Margin="0, 0, 0, 3" />
+                                            <StackPanel Orientation="Horizontal" 
+                                                        VerticalAlignment="Center">
+                                                <Rectangle Fill="{Binding}"
+                                                           Height="16"
+                                                           RadiusX="3"
+                                                           RadiusY="3"
+                                                           VerticalAlignment="Center"
+                                                           Width="16" />
+                                                <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
+                                                           Margin="4, 0, 0, 0"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
                                         </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                                <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
-                                            Margin="0, 2, 0, 0" 
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center">
-                                    <TextBlock IsEnabled="{Binding TrayIconUseTransparentBackground, Converter={StaticResource InverseBooleanConverter}}"
-                                               Text="{Binding Path=(local:Localizer.String).Background}"
-                                               VerticalAlignment="Center" />
-                                    <ComboBox IsEnabled="{Binding TrayIconUseTransparentBackground, Converter={StaticResource InverseBooleanConverter}}"
-                                              ItemsSource="{Binding Brushes}"
-                                              Margin="5, 0, 0, 0"
-                                              SelectedItem="{Binding TrayIconBackgroundColor, Mode=TwoWay}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal" 
-                                                            VerticalAlignment="Center">
-                                                    <Rectangle Fill="{Binding}"
-                                                               Height="16"
-                                                               RadiusX="3"
-                                                               RadiusY="3"
-                                                               Width="16" />
-                                                    <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
-                                                               Margin="4, 0, 0, 0"
-                                                               VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </StackPanel>
-                                <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
-                                            Margin="0, 5, 0, 0" 
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Path=(local:Localizer.String).Text}"
-                                               VerticalAlignment="Center" />
-                                    <ComboBox ItemsSource="{Binding Brushes}"
-                                              Margin="5, 0, 0, 0"
-                                              SelectedItem="{Binding TrayIconTextColor, Mode=TwoWay}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal" 
-                                                            VerticalAlignment="Center">
-                                                    <Rectangle Fill="{Binding}"
-                                                               Height="16"
-                                                               RadiusX="3"
-                                                               RadiusY="3"
-                                                               Width="16" />
-                                                    <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
-                                                               Margin="4, 0, 0, 0"
-                                                               VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </StackPanel>
-                                <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
-                                            Margin="0, 5, 0, 0" 
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Path=(local:Localizer.String).WarningLevel}"
-                                               VerticalAlignment="Center" />
-                                    <ComboBox ItemsSource="{Binding MemoryUsageThresholds}"
-                                              Margin="5, 0, 0, 0"
-                                              SelectedItem="{Binding TrayIconWarningLevel, Mode=TwoWay}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding StringFormat={}{0:D2}}" />
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                    <ComboBox ItemsSource="{Binding Brushes}"
-                                              Margin="1, 0, 0, 0"
-                                              SelectedItem="{Binding TrayIconWarningColor, Mode=TwoWay}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal" 
-                                                            VerticalAlignment="Center">
-                                                    <Rectangle Fill="{Binding}"
-                                                               Height="16"
-                                                               RadiusX="3"
-                                                               RadiusY="3"
-                                                               Width="16" />
-                                                    <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
-                                                               Margin="4, 0, 0, 0"
-                                                               VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </StackPanel>
-                                <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
-                                            Margin="0, 5, 0, 0" 
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Path=(local:Localizer.String).DangerLevel}"
-                                               VerticalAlignment="Center" />
-                                    <ComboBox ItemsSource="{Binding MemoryUsageThresholds}"
-                                              Margin="5, 0, 0, 0"
-                                              SelectedItem="{Binding TrayIconDangerLevel, Mode=TwoWay}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding StringFormat={}{0:D2}}" />
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                    <ComboBox ItemsSource="{Binding Brushes}"
-                                              Margin="1, 0, 0, 0"
-                                              SelectedItem="{Binding TrayIconDangerColor, Mode=TwoWay}">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal" 
-                                                            VerticalAlignment="Center">
-                                                    <Rectangle Fill="{Binding}"
-                                                               Height="16"
-                                                               RadiusX="3"
-                                                               RadiusY="3"
-                                                               Width="16" />
-                                                    <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
-                                                               Margin="4, 0, 0, 0"
-                                                               VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </StackPanel>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
+                                        Margin="0, 5, 0, 0" 
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Path=(local:Localizer.String).Text}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding Brushes}"
+                                          Margin="5, 0, 0, 0"
+                                          SelectedItem="{Binding TrayIconTextColor, Mode=TwoWay}"
+                                          VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" 
+                                                        VerticalAlignment="Center">
+                                                <Rectangle Fill="{Binding}"
+                                                           Height="16"
+                                                           RadiusX="3"
+                                                           RadiusY="3"
+                                                           VerticalAlignment="Center"
+                                                           Width="16" />
+                                                <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
+                                                           Margin="4, 0, 0, 0"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
+                                        Margin="0, 5, 0, 0" 
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Path=(local:Localizer.String).WarningLevel}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding MemoryUsageThresholds}"
+                                          Margin="5, 0, 0, 0"
+                                          SelectedItem="{Binding TrayIconWarningLevel, Mode=TwoWay}"
+                                          VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StringFormat={}{0:D2}}"
+                                                       VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <ComboBox ItemsSource="{Binding Brushes}"
+                                          Margin="1, 0, 0, 0"
+                                          SelectedItem="{Binding TrayIconWarningColor, Mode=TwoWay}"
+                                          VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" 
+                                                        VerticalAlignment="Center">
+                                                <Rectangle Fill="{Binding}"
+                                                           Height="16"
+                                                           RadiusX="3"
+                                                           RadiusY="3"
+                                                           VerticalAlignment="Center"
+                                                           Width="16" />
+                                                <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
+                                                           Margin="4, 0, 0, 0"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
+                                        Margin="0, 5, 0, 0" 
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Path=(local:Localizer.String).DangerLevel}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding MemoryUsageThresholds}"
+                                          Margin="5, 0, 0, 0"
+                                          SelectedItem="{Binding TrayIconDangerLevel, Mode=TwoWay}"
+                                          VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StringFormat={}{0:D2}}"
+                                                       VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <ComboBox ItemsSource="{Binding Brushes}"
+                                          Margin="1, 0, 0, 0"
+                                          SelectedItem="{Binding TrayIconDangerColor, Mode=TwoWay}"
+                                          VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" 
+                                                        VerticalAlignment="Center">
+                                                <Rectangle Fill="{Binding}"
+                                                           Height="16"
+                                                           RadiusX="3"
+                                                           RadiusY="3"
+                                                           VerticalAlignment="Center"
+                                                           Width="16" />
+                                                <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
+                                                           Margin="4, 0, 0, 0"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </StackPanel>
                         </StackPanel>
                     </GroupBox>
@@ -468,7 +490,7 @@
                               Grid.Row="1"
                               Header="{Binding Path=(local:Localizer.String).ProcessExclusionList}"
                               Margin="5, 5, 0, 0">
-                        <Grid>
+                        <Grid VerticalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -483,13 +505,16 @@
                                           Grid.ColumnSpan="2"
                                           Grid.Row="0"
                                           Margin="0"
+                                          VerticalAlignment="Center"
                                           VerticalScrollBarVisibility="Auto">
                                 <ItemsControl ItemsSource="{Binding ProcessExclusionList}"
-                                              Name="ProcessExclusionList">
+                                              Name="ProcessExclusionList"
+                                              VerticalAlignment="Stretch">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Grid HorizontalAlignment="Stretch" 
-                                                  Margin="0, 0, 5, 0">
+                                                  Margin="0, 0, 5, 0"
+                                                  VerticalAlignment="Center">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
@@ -503,10 +528,12 @@
                                                         Grid.Column="0"
                                                         Padding="5, -3, 5, 0"
                                                         Margin="0, 2.5, 0, 2.5"
-                                                        ToolTip="{Binding Path=(local:Localizer.String).Remove}" />
+                                                        ToolTip="{Binding Path=(local:Localizer.String).Remove}"
+                                                        VerticalAlignment="Center" />
                                                 <Label Content="{Binding}"
                                                        Grid.Column="1" 
-                                                       Margin="5, 0, 0, 0" />
+                                                       Margin="5, 0, 0, 0"
+                                                       VerticalAlignment="Center" />
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
@@ -520,7 +547,7 @@
                                       MouseRightButtonUp="OnComboBoxMouseRightButtonUp"
                                       Name="Processes"
                                       SelectedValue="{Binding SelectedProcess}"
-                                      VerticalContentAlignment="Center" />
+                                      VerticalAlignment="Center" />
                             <Button Content="+"
                                     Command="{Binding AddProcessToExclusionListCommand}"
                                     CommandParameter="{Binding ElementName=Processes, Path=Text}"
@@ -528,7 +555,8 @@
                                     Grid.Row="1"
                                     Margin="5, 5, 0, 0"
                                     Padding="7, 0, 7, 0"
-                                    ToolTip="{Binding Path=(local:Localizer.String).Add}" />
+                                    ToolTip="{Binding Path=(local:Localizer.String).Add}"
+                                    VerticalAlignment="Stretch" />
                         </Grid>
                     </GroupBox>
                     <!-- Auto Optimization -->
@@ -536,14 +564,7 @@
                               Grid.Row="2"
                               Header="{Binding Path=(local:Localizer.String).AutoOptimization}"
                               Margin="5, 5, 0, 0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
+                        <StackPanel VerticalAlignment="Center">
                             <StackPanel Grid.Row="0">
                                 <TextBlock Text="{Binding AutoOptimizationMemoryIntervalDescription}" />
                                 <Slider IsSnapToTickEnabled="True"
@@ -552,7 +573,8 @@
                                         Minimum="0"
                                         Name="AutoOptimizationIntervalSlider" 
                                         TickFrequency="1"
-                                        Value="{Binding AutoOptimizationInterval}" />
+                                        Value="{Binding AutoOptimizationInterval}"
+                                        VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Row="1">
                                 <TextBlock Text="{Binding AutoOptimizationMemoryUsageDescription}" />
@@ -563,9 +585,10 @@
                                         Name="AutoOptimizationMemoryUsageSlider"
                                         TickFrequency="1"
                                         ToolTip="{Binding AutoOptimizationMemoryUsageWarning}"
-                                        Value="{Binding AutoOptimizationMemoryUsage}" />
+                                        Value="{Binding AutoOptimizationMemoryUsage}"
+                                        VerticalAlignment="Center" />
                             </StackPanel>
-                        </Grid>
+                        </StackPanel>
                     </GroupBox>
                 </Grid>
             </Grid>
@@ -585,7 +608,7 @@
                           Header="{Binding PhysicalMemoryHeader}"
                           KeyboardNavigation.TabNavigation="None"
                           Margin="0, 5, 0, 0">
-                    <Grid>
+                    <Grid VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
@@ -606,19 +629,22 @@
                                      Maximum="100" 
                                      Margin="0, 0, 0, 5"
                                      Minimum="0" 
-                                     Value="{Binding Computer.Memory.Physical.Used.Percentage}">
+                                     Value="{Binding Computer.Memory.Physical.Used.Percentage}"
+                                     VerticalAlignment="Center">
                             <ProgressBar.Template>
                                 <ControlTemplate>
-                                    <Grid>
+                                    <Grid VerticalAlignment="Stretch">
                                         <Border Background="{StaticResource DarkMemoryBarTrackBackground}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="3"
-                                                Name="PART_Track" />
+                                                Name="PART_Track"
+                                                VerticalAlignment="Stretch" />
                                         <Border Background="{StaticResource DarkMemoryBarIndicatorBackground}" 
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="3"
                                                 HorizontalAlignment="Left"
-                                                Name="PART_Indicator" />
+                                                Name="PART_Indicator"
+                                                VerticalAlignment="Stretch" />
                                     </Grid>
                                 </ControlTemplate>
                             </ProgressBar.Template>
@@ -630,18 +656,28 @@
                                 Grid.Row="1"
                                 Height="12" 
                                 Margin="0, 0, 5, 0"
+                                VerticalAlignment="Center"
                                 Width="12" />
                         <StackPanel Grid.Column="1"
                                     Grid.Row="1"
-                                    Orientation="Horizontal">
-                            <TextBlock Text="{Binding Path=(local:Localizer.String).Used}" />
-                            <TextBlock Text=" | " />
-                            <TextBlock Text="{Binding Computer.Memory.Physical.Used.Value, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:0.#}}" />
-                            <TextBlock Text=" " />
-                            <TextBlock Text="{Binding Computer.Memory.Physical.Used.Unit}" />
-                            <TextBlock Text=" (" />
-                            <TextBlock Text="{Binding Computer.Memory.Physical.Used.Percentage}" />
-                            <TextBlock Text="%)" />
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Path=(local:Localizer.String).Used}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" | "
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Physical.Used.Value, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:0.#}}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" "
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Physical.Used.Unit}" 
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" ("
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Physical.Used.Percentage}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="%)"
+                                       VerticalAlignment="Center" />
                         </StackPanel>
                         <Border Background="{StaticResource DarkMemoryBarTrackBackground}" 
                                 BorderThickness="0" 
@@ -650,18 +686,28 @@
                                 Grid.Row="1"
                                 Height="12" 
                                 Margin="20, 0, 5, 0"
+                                VerticalAlignment="Center"
                                 Width="12" />
                         <StackPanel Grid.Column="4"
                                     Grid.Row="1"
-                                    Orientation="Horizontal">
-                            <TextBlock Text="{Binding Path=(local:Localizer.String).Free}" />
-                            <TextBlock Text=" | " />
-                            <TextBlock Text="{Binding Computer.Memory.Physical.Free.Value, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:0.#}}" />
-                            <TextBlock Text=" " />
-                            <TextBlock Text="{Binding Computer.Memory.Physical.Free.Unit}" />
-                            <TextBlock Text=" (" />
-                            <TextBlock Text="{Binding Computer.Memory.Physical.Free.Percentage}" />
-                            <TextBlock Text="%)" />
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Path=(local:Localizer.String).Free}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" | "
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Physical.Free.Value, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:0.#}}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" "
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Physical.Free.Unit}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" ("
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Physical.Free.Percentage}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="%)"
+                                       VerticalAlignment="Center" />
                         </StackPanel>
                     </Grid>
                 </GroupBox>
@@ -670,8 +716,9 @@
                           Header="{Binding VirtualMemoryHeader}"
                           KeyboardNavigation.TabNavigation="None"
                           Margin="0, 5, 0, 0"
-                          Visibility="{Binding ShowVirtualMemory, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}">
-                    <Grid>
+                          Visibility="{Binding ShowVirtualMemory, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}"
+                          VerticalAlignment="Center">
+                    <Grid VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
@@ -692,19 +739,22 @@
                                      Maximum="100" 
                                      Margin="0, 0, 0, 5"
                                      Minimum="0" 
-                                     Value="{Binding Computer.Memory.Virtual.Used.Percentage}">
+                                     Value="{Binding Computer.Memory.Virtual.Used.Percentage}"
+                                     VerticalAlignment="Center">
                             <ProgressBar.Template>
                                 <ControlTemplate>
-                                    <Grid>
+                                    <Grid VerticalAlignment="Stretch">
                                         <Border Background="{StaticResource DarkMemoryBarTrackBackground}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="3"
-                                                Name="PART_Track" />
+                                                Name="PART_Track"
+                                                VerticalAlignment="Stretch" />
                                         <Border Background="{StaticResource DarkMemoryBarIndicatorBackground}" 
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="3"
                                                 HorizontalAlignment="Left"
-                                                Name="PART_Indicator" />
+                                                Name="PART_Indicator"
+                                                VerticalAlignment="Stretch" />
                                     </Grid>
                                 </ControlTemplate>
                             </ProgressBar.Template>
@@ -716,18 +766,28 @@
                                 Grid.Row="1"
                                 Height="12" 
                                 Margin="0, 0, 5, 0"
+                                VerticalAlignment="Center"
                                 Width="12" />
                         <StackPanel Grid.Column="1"
                                     Grid.Row="1"
-                                    Orientation="Horizontal">
-                            <TextBlock Text="{Binding Path=(local:Localizer.String).Used}" />
-                            <TextBlock Text=" | " />
-                            <TextBlock Text="{Binding Computer.Memory.Virtual.Used.Value, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:0.#}}" />
-                            <TextBlock Text=" " />
-                            <TextBlock Text="{Binding Computer.Memory.Virtual.Used.Unit}" />
-                            <TextBlock Text=" (" />
-                            <TextBlock Text="{Binding Computer.Memory.Virtual.Used.Percentage}" />
-                            <TextBlock Text="%)" />
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Path=(local:Localizer.String).Used}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" | "
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Virtual.Used.Value, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:0.#}}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" "
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Virtual.Used.Unit}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" ("
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Virtual.Used.Percentage}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="%)"
+                                       VerticalAlignment="Center" />
                         </StackPanel>
                         <Border Background="{StaticResource DarkMemoryBarTrackBackground}" 
                                 BorderThickness="0" 
@@ -736,18 +796,28 @@
                                 Grid.Row="1"
                                 Height="12" 
                                 Margin="20, 0, 5, 0"
+                                VerticalAlignment="Center"
                                 Width="12" />
                         <StackPanel Grid.Column="4"
                                     Grid.Row="1"
-                                    Orientation="Horizontal">
-                            <TextBlock Text="{Binding Path=(local:Localizer.String).Free}" />
-                            <TextBlock Text=" | " />
-                            <TextBlock Text="{Binding Computer.Memory.Virtual.Free.Value, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:0.#}}" />
-                            <TextBlock Text=" " />
-                            <TextBlock Text="{Binding Computer.Memory.Virtual.Free.Unit}" />
-                            <TextBlock Text=" (" />
-                            <TextBlock Text="{Binding Computer.Memory.Virtual.Free.Percentage}" />
-                            <TextBlock Text="%)" />
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Path=(local:Localizer.String).Free}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" | "
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Virtual.Free.Value, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:0.#}}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" "
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Virtual.Free.Unit}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text=" ("
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Computer.Memory.Virtual.Free.Percentage}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="%)"
+                                       VerticalAlignment="Center" />
                         </StackPanel>
                     </Grid>
                 </GroupBox>
@@ -760,12 +830,14 @@
                         Margin="0, 10, 0, 0"
                         Name="Optimize"
                         Padding="10, 5, 10, 5"
-                        TabIndex="0" />
+                        TabIndex="0"
+                        VerticalAlignment="Center" />
                 <Grid Grid.Column="0"
                       Grid.Row="2"
                       Height="Auto"
                       Margin="0, 10, 0, 0"
-                      Visibility="{Binding IsOptimizationRunning, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Hidden}}">
+                      Visibility="{Binding IsOptimizationRunning, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Hidden}}"
+                      VerticalAlignment="Stretch">
                     <ProgressBar BorderBrush="{StaticResource DarkBorderBrush}"
                                  BorderThickness="1"
                                  FontWeight="Normal"
@@ -773,21 +845,24 @@
                                  Maximum="{Binding OptimizationProgressTotal}"
                                  Minimum="0"
                                  Value="{Binding OptimizationProgressValue}"
+                                 VerticalAlignment="Stretch"
                                  VerticalContentAlignment="Center">
                         <ProgressBar.Template>
                             <ControlTemplate>
-                                <Grid>
+                                <Grid VerticalAlignment="Stretch">
                                     <Border Background="{StaticResource DarkBackground}"
                                             BorderBrush="{TemplateBinding BorderBrush}"
                                             BorderThickness="{TemplateBinding BorderThickness}"
                                             CornerRadius="3"
-                                            Name="PART_Track" />
+                                            Name="PART_Track"
+                                            VerticalAlignment="Stretch" />
                                     <Border Background="{StaticResource DarkOver}" 
                                             BorderBrush="{TemplateBinding BorderBrush}"
                                             BorderThickness="{TemplateBinding BorderThickness}"
                                             CornerRadius="3"
                                             HorizontalAlignment="Left"
-                                            Name="PART_Indicator" />
+                                            Name="PART_Indicator"
+                                            VerticalAlignment="Stretch" />
                                 </Grid>
                             </ControlTemplate>
                         </ProgressBar.Template>
@@ -802,12 +877,30 @@
                                 Orientation="Horizontal"
                                 Margin="5, 0, 10, 0"
                                 VerticalAlignment="Center">
-                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text="{Binding OptimizationProgressValue}" />
-                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text=" / " />
-                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text="{Binding OptimizationProgressTotal}" />
-                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text=" (" />
-                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text="{Binding OptimizationProgressPercentage}" />
-                        <TextBlock FontWeight="Normal" Foreground="{StaticResource DarkForeground}" Text="%)" />
+                        <TextBlock FontWeight="Normal"
+                                   Foreground="{StaticResource DarkForeground}"
+                                   Text="{Binding OptimizationProgressValue}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock FontWeight="Normal"
+                                   Foreground="{StaticResource DarkForeground}"
+                                   Text=" / "
+                                   VerticalAlignment="Center" />
+                        <TextBlock FontWeight="Normal"
+                                   Foreground="{StaticResource DarkForeground}"
+                                   Text="{Binding OptimizationProgressTotal}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock FontWeight="Normal"
+                                   Foreground="{StaticResource DarkForeground}"
+                                   Text=" ("
+                                   VerticalAlignment="Center" />
+                        <TextBlock FontWeight="Normal"
+                                   Foreground="{StaticResource DarkForeground}"
+                                   Text="{Binding OptimizationProgressPercentage}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock FontWeight="Normal"
+                                   Foreground="{StaticResource DarkForeground}"
+                                   Text="%)"
+                                   VerticalAlignment="Center" />
                     </StackPanel>
                 </Grid>
             </Grid>
