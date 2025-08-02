@@ -1,31 +1,35 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Media;
 using System.Windows.Threading;
 
-[assembly: CLSCompliant(true)]
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    /// Windows Memory Cleaner
     /// </summary>
     public partial class App : IDisposable
     {
         #region Fields
 
+        private static bool _isRunning;
         private static DateTimeOffset _lastAutoUpdate;
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
+        private static readonly List<ProcessStartInfo> _processes = new List<ProcessStartInfo>();
+        private static readonly List<string> _notifications = new List<string>();
         private static readonly object _showHidelock = new object();
-        private static ProcessStartInfo _updateProcess;
-        private static Version _version;
 
         #endregion
 
@@ -43,12 +47,43 @@ namespace WinMemoryCleaner
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             Dispatcher.UnhandledException += OnDispatcherUnhandledException;
-
-            // DI/IOC
-            DependencyInjection.Container.Register<IComputerService, ComputerService>();
-            DependencyInjection.Container.Register<IHotKeyService, HotKeyService>();
-            DependencyInjection.Container.Register<INotificationService, NotificationService>();
         }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the brushes.
+        /// </summary>
+        /// <value>
+        /// The brushes.
+        /// </value>
+        public static List<SolidColorBrush> Brushes { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is in design mode.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is in design mode; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsInDesignMode
+        {
+            get
+            {
+                return DesignerProperties.GetIsInDesignMode(new DependencyObject());
+            }
+        }
+
+        /// <summary>
+        /// App path
+        /// </summary>
+        public static string Path { get; private set; }
+
+        /// <summary>
+        /// App version
+        /// </summary>
+        public static Version Version { get; private set; }
 
         #endregion
 
@@ -112,6 +147,60 @@ namespace WinMemoryCleaner
 
         #region Methods
 
+        private void Initialize()
+        {
+            // Check if the app is secure to run
+            SecurityCheck();
+
+            // DI/IOC
+            DependencyInjection.Container.Register<IComputerService, ComputerService>();
+            DependencyInjection.Container.Register<IHotkeyService, HotkeyService>();
+            DependencyInjection.Container.Register<INotificationService, NotificationService>();
+
+            // App properties
+            Brushes = typeof(System.Drawing.Color)
+                .GetProperties(BindingFlags.Public | BindingFlags.Static)
+                .Where(property => property.PropertyType == typeof(System.Drawing.Color))
+                .Select(property => (System.Drawing.Color)property.GetValue(null, null))
+                .Where(color => color.A == 255)
+                .OrderBy(color => color.GetHue())
+                .ThenBy(color => color.GetSaturation())
+                .ThenBy(color => color.GetBrightness())
+                .Select(color => new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)))
+                .ToList();
+            Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+            Version = Assembly.GetExecutingAssembly().GetName().Version;
+
+            // Check if app is already running
+            bool createdNew;
+
+            _mutex = new Mutex(true, Constants.App.Id, out createdNew);
+            _isRunning = !createdNew;
+
+            // App Migration
+            if (!_isRunning)
+                Migrator.Run();
+
+            // App priority
+            SetPriority(Settings.RunOnPriority);
+        }
+
+        /// <summary>
+        /// Navigates the specified URI.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        public static void Navigate(Uri uri)
+        {
+            if (uri == null)
+                return;
+
+            using (Process.Start(new ProcessStartInfo
+            {
+                FileName = uri.AbsoluteUri,
+                UseShellExecute = true
+            })) { }
+        }
+
         /// <summary>
         /// Called when [dispatcher unhandled exception].
         /// </summary>
@@ -134,14 +223,16 @@ namespace WinMemoryCleaner
         {
             Dispose();
 
-            try
+            foreach (var process in _processes)
             {
-                if (_updateProcess != null)
-                    Process.Start(_updateProcess);
-            }
-            catch
-            {
-                // ignored
+                try
+                {
+                    Process.Start(process);
+                }
+                catch
+                {
+                    // ignored
+                }
             }
         }
 
@@ -159,6 +250,14 @@ namespace WinMemoryCleaner
                 // Show/Hide
                 if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
                 {
+                    if (MainWindow.OwnedWindows.Cast<View>().Where(window => window != null && window.IsDialog).Any())
+                    {
+                        MainWindow.Activate();
+                        MainWindow.Focus();
+
+                        return;
+                    }
+
                     switch (MainWindow.Visibility)
                     {
                         case Visibility.Collapsed:
@@ -188,118 +287,198 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Windows.Application.Startup" /> event.
+        /// Raises the <see cref="E:Startup" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:System.Windows.StartupEventArgs" /> that contains the event data.</param>
-        protected override void OnStartup(StartupEventArgs e)
+        /// <param name="startupEvent">The <see cref="StartupEventArgs" /> instance containing the event data.</param>
+        protected override void OnStartup(StartupEventArgs startupEvent)
         {
             try
             {
-                // Check if app is already running
-                bool createdNew;
+                Initialize();
 
-                _mutex = new Mutex(true, Constants.App.Id, out createdNew);
-
-                if (!createdNew)
-                {
-                    try
-                    {
-                        var appHandle = NativeMethods.FindWindow(null, Constants.App.Title);
-
-                        if (appHandle != IntPtr.Zero && NativeMethods.IsWindowVisible(appHandle))
-                        {
-                            int appId;
-
-                            if (NativeMethods.GetWindowThreadProcessId(appHandle, out appId) != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                                NativeMethods.AllowSetForegroundWindow(appId);
-
-                            NativeMethods.ShowWindowAsync(appHandle, Constants.Windows.ShowWindow.Restore);
-                            NativeMethods.SetForegroundWindow(appHandle);
-                        }
-
-                        _mutex.Dispose();
-                    }
-                    finally
-                    {
-                        Environment.Exit(0);
-                    }
-                }
-
-                // App priority
-                SetPriority(Settings.RunOnPriority);
-
-                // App Version
-                _version = Assembly.GetExecutingAssembly().GetName().Version;
-
+                var commandLineArguments = startupEvent != null ? new List<string>(startupEvent.Args.Select(arg => arg.Replace("-", "/").Trim())) : null;
                 var memoryAreas = Enums.Memory.Areas.None;
-                string updateNotification = null;
+                var startupType = Enums.StartupType.App;
 
-                if (e != null)
+                if (commandLineArguments != null)
                 {
                     // Update to the latest version
                     if (Settings.AutoUpdate)
-                        Update(e.Args);
+                        Update(commandLineArguments);
 
-                    // Process command line arguments
-                    foreach (var arg in e.Args)
+                    // Process command‑line arguments
+                    foreach (var argument in commandLineArguments.Select(arg => arg.Replace("/", string.Empty)))
                     {
-                        var value = arg.Replace("/", string.Empty).Replace("-", string.Empty);
-
                         // Memory areas to optimize
                         Enums.Memory.Areas area;
 
-                        if (Enum.TryParse(value, out area))
+                        if (Enum.TryParse(argument, out area))
                             memoryAreas |= area;
 
                         // Version (Update)
-                        if (value.Equals(_version.ToString()))
-                        {
-                            updateNotification = string.Format(Localizer.Culture, Localizer.String.UpdatedToVersion, string.Format(Localizer.Culture, "{0}.{1}", _version.Major, _version.Minor));
+                        if (argument.Equals(Version.ToString()))
+                            _notifications.Add(string.Format(Localizer.Culture, Localizer.String.UpdatedToVersion, string.Format(Localizer.Culture, Constants.App.VersionFormat, Version.Major, Version.Minor, Version.Build)));
 
-                            Logger.Information(updateNotification);
-                        }
+                        // Startup Type
+                        if (memoryAreas != Enums.Memory.Areas.None)
+                            startupType = Enums.StartupType.Silent;
+
+                        if (argument.Equals(Constants.App.CommandLineArgument.Install, StringComparison.OrdinalIgnoreCase))
+                            startupType = Enums.StartupType.Installation;
+
+                        if (argument.Equals(Constants.App.CommandLineArgument.Package, StringComparison.OrdinalIgnoreCase))
+                            startupType = Enums.StartupType.Package;
+
+                        if (argument.Equals(Constants.App.CommandLineArgument.Service, StringComparison.OrdinalIgnoreCase))
+                            startupType = Enums.StartupType.Service;
+
+                        if (argument.Equals(Constants.App.CommandLineArgument.Uninstall, StringComparison.OrdinalIgnoreCase))
+                            startupType = Enums.StartupType.Uninstallation;
                     }
+
+                    // Update app path setting
+                    if (startupType != Enums.StartupType.Package)
+                        Settings.Path = Path;
                 }
 
-                // GUI
-                if (memoryAreas == Enums.Memory.Areas.None)
+                switch (startupType)
                 {
-                    NativeMethods.AllowSetForegroundWindow(Process.GetCurrentProcess().Id);
+                    case Enums.StartupType.App:
+                        if (_isRunning)
+                        {
+                            try
+                            {
+                                var appHandle = NativeMethods.FindWindow(null, Constants.App.Title);
 
-                    // Run On Startup
-                    RunOnStartup(Settings.RunOnStartup);
+                                if (appHandle != IntPtr.Zero && NativeMethods.IsWindowVisible(appHandle))
+                                {
+                                    int appId;
 
-                    // Notification Areas
-                    _notifyIcon = new NotifyIcon();
-                    _notifyIcon.Click += OnNotifyIconClick;
+                                    if (NativeMethods.GetWindowThreadProcessId(appHandle, out appId) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                                        NativeMethods.AllowSetForegroundWindow(appId);
 
-                    // DI/IOC
-                    DependencyInjection.Container.Register(_notifyIcon);
+                                    NativeMethods.ShowWindowAsync(appHandle, Constants.Windows.ShowWindow.Restore);
+                                    NativeMethods.SetForegroundWindow(appHandle);
+                                }
+                            }
+                            finally
+                            {
+                                Shutdown(true);
+                            }
+                        }
 
-                    var mainWindow = new MainWindow();
+                        NativeMethods.AllowSetForegroundWindow(Process.GetCurrentProcess().Id);
 
-                    if (!Settings.StartMinimized)
-                        mainWindow.Show();
+                        // Run On Startup
+                        RunOnStartup(Settings.RunOnStartup);
 
-                    // Update notification
-                    if (!string.IsNullOrWhiteSpace(updateNotification))
-                        DependencyInjection.Container.Resolve<INotificationService>().Notify(updateNotification);
+                        // Notification Areas
+                        _notifyIcon = new NotifyIcon();
+                        _notifyIcon.Click += OnNotifyIconClick;
 
-                    ReleaseMemory();
-                }
-                else // NO GUI
-                {
-                    DependencyInjection.Container.Resolve<IComputerService>().Optimize(memoryAreas);
+                        // DI/IOC
+                        DependencyInjection.Container.Register(_notifyIcon);
 
-                    Shutdown();
+                        var mainWindow = new MainWindow();
+
+                        if (!Settings.StartMinimized)
+                            mainWindow.Show();
+
+                        // Process notifications
+                        foreach (var notification in _notifications)
+                        {
+                            Logger.Information(notification);
+                            DependencyInjection.Container.Resolve<INotificationService>().Notify(notification);
+                        }
+
+                        ReleaseMemory();
+                        break;
+
+                    case Enums.StartupType.Installation:
+                        WinServiceInstaller.Install();
+
+                        Shutdown();
+                        break;
+
+                    case Enums.StartupType.Package:
+                        var exe = AppDomain.CurrentDomain.FriendlyName;
+                        var sourcePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
+                        var targetPath = File.Exists(Settings.Path) ? Settings.Path : System.IO.Path.Combine(Constants.App.Defaults.Path, exe);
+
+                        try
+                        {
+                            foreach (var process in Process.GetProcessesByName(Constants.App.Name).Where(p => p != null && p.Id != Process.GetCurrentProcess().Id))
+                            {
+                                try
+                                {
+                                    targetPath = process.MainModule.FileName;
+                                }
+                                catch
+                                {
+                                    // ignored
+                                }
+
+                                try
+                                {
+                                    process.Kill();
+                                }
+                                catch
+                                {
+                                    // ignored
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+
+                        commandLineArguments.Remove(string.Format(Localizer.Culture, "/{0}", Constants.App.CommandLineArgument.Package));
+
+                        _processes.Add(new ProcessStartInfo
+                        {
+                            Arguments = string.Format(Localizer.Culture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, sourcePath, targetPath, Version, string.Join(" ", commandLineArguments)).Trim(),
+                            CreateNoWindow = true,
+                            FileName = "cmd",
+                            RedirectStandardError = false,
+                            RedirectStandardInput = false,
+                            RedirectStandardOutput = false,
+                            UseShellExecute = false,
+                            WindowStyle = ProcessWindowStyle.Hidden
+                        });
+
+                        Shutdown();
+                        break;
+
+                    case Enums.StartupType.Service:
+                        using (var service = new WinService())
+                        {
+                            if (Debugger.IsAttached)
+                                service.OnDebug(null);
+                            else
+                                ServiceBase.Run(service);
+                        }
+                        break;
+
+                    case Enums.StartupType.Silent:
+                        DependencyInjection.Container.Resolve<IComputerService>().Optimize(Enums.Memory.Optimization.Reason.Manual, memoryAreas);
+
+                        Shutdown();
+                        break;
+
+                    case Enums.StartupType.Uninstallation:
+                        WinServiceInstaller.Uninstall();
+
+                        Shutdown();
+                        break;
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Logger.Error(ex);
-                ShowDialog(ex);
+                Logger.Error(e);
+                ShowDialog(e);
 
-                Environment.Exit(0);
+                Shutdown(true);
             }
         }
 
@@ -320,24 +499,24 @@ namespace WinMemoryCleaner
         /// </summary>
         public static void ReleaseMemory()
         {
+            // Garbage Collector
+            try
+            {
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+                GC.WaitForPendingFinalizers();
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+            }
+            catch
+            {
+                // ignored
+            }
+
             // Optimize App Working Set
             try
             {
                 NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle);
             }
             catch (Exception)
-            {
-                // ignored
-            }
-
-            // Garbage Collector
-            try
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            }
-            catch
             {
                 // ignored
             }
@@ -351,37 +530,23 @@ namespace WinMemoryCleaner
         {
             try
             {
-                var startupPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
-
-                // Registry
-                try
+                using (Process.Start(new ProcessStartInfo
                 {
-                    using (var key = Registry.LocalMachine.CreateSubKey(Constants.App.Registry.Key.Startup))
-                    {
-                        if (key != null)
-                        {
-                            if (enable)
-                                key.SetValue(Constants.App.Title, string.Format(Localizer.Culture, @"""{0}""", startupPath));
-                            else
-                                key.DeleteValue(Constants.App.Title, false);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
+                    Arguments = string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title),
+                    CreateNoWindow = true,
+                    FileName = "schtasks",
+                    RedirectStandardError = false,
+                    RedirectStandardInput = false,
+                    RedirectStandardOutput = false,
+                    UseShellExecute = false,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                })) { }
 
-                // Scheduled Task
-                try
+                if (enable)
                 {
-                    var arguments = enable
-                        ? string.Format(Localizer.Culture, @"/CREATE /F /RL HIGHEST /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, startupPath)
-                        : string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title);
-
                     using (Process.Start(new ProcessStartInfo
                     {
-                        Arguments = arguments,
+                        Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT /RL HIGHEST /RU ADMINISTRATORS /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, Path),
                         CreateNoWindow = true,
                         FileName = "schtasks",
                         RedirectStandardError = false,
@@ -391,14 +556,32 @@ namespace WinMemoryCleaner
                         WindowStyle = ProcessWindowStyle.Hidden
                     })) { }
                 }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
             }
             catch (Exception e)
             {
                 Logger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Verify if the app is secure to run
+        /// </summary>
+        private void SecurityCheck()
+        {
+            if (Debugger.IsAttached)
+                return;
+
+            if (!Validator.IsCertificateValid())
+            {
+                try
+                {
+                    ShowDialog(Localizer.String.SecurityWarning, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Navigate(Constants.App.Repository.DownloadUri);
+                }
+                finally
+                {
+                    Shutdown(true);
+                }
             }
         }
 
@@ -503,9 +686,22 @@ namespace WinMemoryCleaner
         /// <param name="exception">Exception</param>
         private void ShowDialog(Exception exception)
         {
+            ShowDialog(exception.GetMessage(), MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="button">The button.</param>
+        /// <param name="icon">The icon.</param>
+        /// <param name="defaultResult">The default result.</param>
+        /// <param name="options">The options.</param>
+        private void ShowDialog(string message, MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None, MessageBoxResult defaultResult = MessageBoxResult.OK, System.Windows.MessageBoxOptions options = System.Windows.MessageBoxOptions.None)
+        {
             try
             {
-                System.Windows.MessageBox.Show(exception.GetMessage(), Constants.App.Title, MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(message, Constants.App.Title, button, icon, defaultResult, options);
             }
             catch
             {
@@ -514,12 +710,34 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Update to the latest version
+        /// Shuts down the app
         /// </summary>
-        public static void Update(params string[] args)
+        /// <param name="force">if set to <c>true</c> [force].</param>
+        public static void Shutdown(bool force = false)
         {
             try
             {
+                if (force)
+                    Environment.Exit(Constants.Windows.SystemErrorCode.ErrorSuccess);
+                else
+                    Current.Shutdown();
+            }
+            catch
+            {
+                Environment.Exit(Constants.Windows.SystemErrorCode.ErrorSuccess);
+            }
+        }
+
+        /// <summary>
+        /// Update to the latest version
+        /// </summary>
+        public static void Update(List<string> commandLineArguments = null)
+        {
+            try
+            {
+                if (commandLineArguments != null && commandLineArguments.Any(arg => arg.Replace("/", string.Empty).Equals(Constants.App.CommandLineArgument.Package, StringComparison.OrdinalIgnoreCase)))
+                    return;
+
                 if (DateTimeOffset.Now.Subtract(_lastAutoUpdate).TotalHours < Constants.App.AutoUpdateInterval)
                     return;
 
@@ -540,22 +758,22 @@ namespace WinMemoryCleaner
 
                     var newestVersion = Version.Parse(assemblyVersionMatch.Groups[1].Value);
 
-                    if (_version < newestVersion)
+                    if (Version < newestVersion)
                     {
                         var exe = AppDomain.CurrentDomain.FriendlyName;
-                        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
-                        var temp = Path.Combine(Path.GetTempPath(), exe);
+                        var sourcePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), exe);
+                        var targetPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
 
-                        if (File.Exists(temp))
-                            File.Delete(temp);
+                        if (File.Exists(sourcePath))
+                            File.Delete(sourcePath);
 
-                        client.DownloadFile(Constants.App.Repository.LatestExeUri, temp);
+                        client.DownloadFile(Constants.App.Repository.LatestExeUri, sourcePath);
 
-                        if (File.Exists(temp) && AssemblyName.GetAssemblyName(temp).Version.Equals(newestVersion))
+                        if (File.Exists(sourcePath) && AssemblyName.GetAssemblyName(sourcePath).Version.Equals(newestVersion))
                         {
-                            _updateProcess = new ProcessStartInfo
+                            _processes.Add(new ProcessStartInfo
                             {
-                                Arguments = string.Format(Localizer.Culture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, temp, path, newestVersion, string.Join(" ", args)),
+                                Arguments = string.Format(Localizer.Culture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, sourcePath, targetPath, newestVersion, string.Join(" ", commandLineArguments)).Trim(),
                                 CreateNoWindow = true,
                                 FileName = "cmd",
                                 RedirectStandardError = false,
@@ -563,9 +781,9 @@ namespace WinMemoryCleaner
                                 RedirectStandardOutput = false,
                                 UseShellExecute = false,
                                 WindowStyle = ProcessWindowStyle.Hidden
-                            };
+                            });
 
-                            Environment.Exit(0);
+                            Shutdown();
                         }
                     }
                 }

@@ -1,18 +1,20 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Linq;
+using System.Windows.Input;
 
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// HotKey
+    /// Hotkey
     /// </summary>
-    public class HotKey
+    public class Hotkey
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HotKey" /> class.
+        /// Initializes a new instance of the <see cref="Hotkey" /> class.
         /// </summary>
         /// <param name="modifiers">The modifiers.</param>
         /// <param name="key">The key.</param>
-        public HotKey(ModifierKeys modifiers, Key key)
+        public Hotkey(ModifierKeys modifiers, Key key)
         {
             Key = key;
             Modifiers = modifiers;
@@ -39,7 +41,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="hotKey">The hotkey.</param>
         /// <returns></returns>
-        public bool Equals(HotKey hotKey)
+        public bool Equals(Hotkey hotKey)
         {
             if (ReferenceEquals(null, hotKey))
                 return false;
@@ -51,11 +53,11 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// Determines whether the specified <see cref="object" />, is equal to this instance.
         /// </summary>
-        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <param name="obj">The <see cref="object" /> to compare with this instance.</param>
         /// <returns>
-        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
         public override bool Equals(object obj)
         {
@@ -65,7 +67,7 @@ namespace WinMemoryCleaner
             if (ReferenceEquals(this, obj))
                 return true;
 
-            return obj.GetType() == typeof(HotKey) && Equals((HotKey)obj);
+            return obj.GetType() == typeof(Hotkey) && Equals((Hotkey)obj);
         }
 
         /// <summary>
@@ -86,11 +88,16 @@ namespace WinMemoryCleaner
         /// Converts to string.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="string" /> that represents this instance.
         /// </returns>
         public override string ToString()
         {
-            return string.Format(Localizer.Culture, "{0}, {1}", Modifiers, Key);
+            var modifiers = Enum.GetValues(typeof(ModifierKeys))
+                .Cast<ModifierKeys>()
+                .Where(flag => Modifiers.HasFlag(flag) && flag != 0)
+                .OrderByDescending(flag => flag.ToString());
+
+            return string.Format(Localizer.Culture, "{0} + {1}", string.Join(" + ", modifiers), Key).ToUpper(Localizer.Culture);
         }
     }
 }

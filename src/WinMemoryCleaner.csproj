@@ -51,7 +51,8 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <NoWarn>CS3001, CS3003, IDE0079</NoWarn>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -91,58 +92,91 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="View\Window\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\Dialog\MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Window\DonationWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\Window\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="WindowsService\WinService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="WindowsService\WinServiceInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Attribute\CallerMemberNameAttribute.cs" />
     <Compile Include="Command\RelayCommand.cs" />
+    <Compile Include="Converters\BrushToHexConverter.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
+    <Compile Include="Converters\SumNumericConverter.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
-    <Compile Include="Interfaces\IHotKeyService.cs" />
-    <Compile Include="Service\HotKeyService.cs" />
+	<Compile Include="Core\GlobalSuppressions.cs" />
+    <Compile Include="Core\Helper.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\Migrator.cs" />
     <Compile Include="Core\NativeMethods.cs" />
+    <Compile Include="Core\ObservableObject.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Core\Structs.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Core\Validator.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
+    <Compile Include="Interfaces\IHotkeyService.cs" />
+    <Compile Include="Interfaces\ILogData.cs" />
     <Compile Include="Interfaces\IMemoryService.cs" />
     <Compile Include="Interfaces\INotificationService.cs" />
     <Compile Include="Interfaces\IOperatingSystem.cs" />
     <Compile Include="Model\Computer.cs" />
-    <Compile Include="Model\HotKey.cs" />
+    <Compile Include="Model\Hotkey.cs" />
     <Compile Include="Model\Language.cs" />
     <Compile Include="Model\Localization.cs" />
-    <Compile Include="Model\Log.cs" />
+    <Compile Include="Model\Log\Log.cs" />
+    <Compile Include="Model\Log\LogOptimizationData.cs" />
+    <Compile Include="Model\Log\LogOptimizationDataMemoryArea.cs" />
     <Compile Include="Model\Memory\Memory.cs" />
     <Compile Include="Model\Memory\MemorySize.cs" />
     <Compile Include="Model\Memory\MemoryStats.cs" />
+    <Compile Include="Model\ObservableItem.cs" />
     <Compile Include="Model\OperatingSystem.cs" />
     <Compile Include="Service\ComputerService.cs" />
+    <Compile Include="Service\HotkeyService.cs" />
     <Compile Include="Service\NotificationService.cs" />
-    <Compile Include="View\Control\ContextMenuStripControl.cs">
+    <Compile Include="View\Base\View.cs" />
+    <Compile Include="View\Control\TrayIconContextMenuControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ViewModel\Base\ObservableObject.cs" />
-    <Compile Include="ViewModel\Base\ViewModel.cs" />
-    <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\Dialog\MessageDialog.xaml.cs">
+      <DependentUpon>MessageDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Window\DonationWindow.xaml.cs">
+      <DependentUpon>DonationWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Window\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ViewModel\Base\ViewModel.cs" />
+    <Compile Include="ViewModel\DonationViewModel.cs" />
+    <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\MessageViewModel.cs" />
+    <Compile Include="ViewModel\ViewModelLocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -158,12 +192,15 @@
     <EmbeddedResource Include="Resources\Localization\French.json" />
     <EmbeddedResource Include="Resources\Localization\German.json" />
     <EmbeddedResource Include="Resources\Localization\Greek.json" />
+    <EmbeddedResource Include="Resources\Localization\Hebrew.json" />
+    <EmbeddedResource Include="Resources\Localization\Hungarian.json" />
     <EmbeddedResource Include="Resources\Localization\Indonesian.json" />
     <EmbeddedResource Include="Resources\Localization\Irish.json" />
     <EmbeddedResource Include="Resources\Localization\Italian.json" />
     <EmbeddedResource Include="Resources\Localization\Japanese.json" />
     <EmbeddedResource Include="Resources\Localization\Korean.json" />
     <EmbeddedResource Include="Resources\Localization\Macedonian.json" />
+    <EmbeddedResource Include="Resources\Localization\Norwegian.json" />
     <EmbeddedResource Include="Resources\Localization\Persian.json" />
     <EmbeddedResource Include="Resources\Localization\Polish.json" />
     <EmbeddedResource Include="Resources\Localization\Portuguese.json" />
@@ -171,6 +208,7 @@
     <EmbeddedResource Include="Resources\Localization\Serbian.json" />
     <EmbeddedResource Include="Resources\Localization\Slovenian.json" />
     <EmbeddedResource Include="Resources\Localization\Spanish.json" />
+    <EmbeddedResource Include="Resources\Localization\Thai.json" />
     <EmbeddedResource Include="Resources\Localization\Turkish.json" />
     <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
     <None Include="app.manifest" />
@@ -182,8 +220,10 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
@@ -195,9 +235,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\github.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\win-memory-cleaner.ico" />
@@ -241,4 +278,46 @@
   <Import Project="packages\Microsoft.NetFramework.Analyzers.3.3.2\build\Microsoft.NetFramework.Analyzers.targets" Condition="Exists('packages\Microsoft.NetFramework.Analyzers.3.3.2\build\Microsoft.NetFramework.Analyzers.targets')" />
   <Import Project="packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.2\build\Microsoft.CodeAnalysis.FxCopAnalyzers.targets" Condition="Exists('packages\Microsoft.CodeAnalysis.FxCopAnalyzers.3.3.2\build\Microsoft.CodeAnalysis.FxCopAnalyzers.targets')" />
   <Import Project="packages\Microsoft.NETFramework.ReferenceAssemblies.net40.1.0.3\build\Microsoft.NETFramework.ReferenceAssemblies.net40.targets" Condition="Exists('packages\Microsoft.NETFramework.ReferenceAssemblies.net40.1.0.3\build\Microsoft.NETFramework.ReferenceAssemblies.net40.targets')" />
+  <PropertyGroup>
+    <IsCI Condition=" '$(CI)' == 'true' ">true</IsCI>
+    <IsCI Condition=" '$(IsCI)' == '' ">false</IsCI>
+    <ProgramFilesX86>$([System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)'))</ProgramFilesX86>
+    <NetFramework40RootDir>$(ProgramFilesX86)\Reference Assemblies\Microsoft\Framework\.NETFramework</NetFramework40RootDir>
+    <NetFramework40ReferenceDir>$(NetFramework40RootDir)\v4.0</NetFramework40ReferenceDir>
+    <NetFramework40NuGetDir>$(SolutionDir)packages\Microsoft.NETFramework.ReferenceAssemblies.net40.1.0.3\build\.NETFramework\v4.0</NetFramework40NuGetDir>
+    <NetFramework40FlagFile>$(NetFramework40ReferenceDir)\.net40_reference_installed.flag</NetFramework40FlagFile>
+    <RestartFlag>$(NetFramework40ReferenceDir)\.net40_restart_required.flag</RestartFlag>
+  </PropertyGroup>
+  <Target Name="CheckAdministrator" BeforeTargets="BeforeBuild" Condition=" '$(IsCI)' != 'true' ">
+    <Exec Command="cmd /c echo test &gt; %windir%\temp\admin_check.txt" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="AdminCheckExitCode" />
+    </Exec>
+    <Exec Condition="'$(AdminCheckExitCode)' == '0'" Command="cmd /c del %windir%\temp\admin_check.txt" />
+    <Error Condition="'$(AdminCheckExitCode)' != '0'" Text="WinMemoryCleaner must be built as administrator. Restart Visual Studio as Administrator." />
+  </Target>
+  <Target Name="EnsureNet40ReferenceAssemblies" BeforeTargets="Build" DependsOnTargets="Restore" Condition=" '$(IsCI)' != 'true' ">
+    <PropertyGroup>
+      <_Net40JustInstalled>false</_Net40JustInstalled>
+    </PropertyGroup>
+    <MakeDir Condition="Exists('$(NetFramework40NuGetDir)\mscorlib.dll') AND !Exists('$(NetFramework40FlagFile)') AND !Exists('$(NetFramework40ReferenceDir)')" Directories="$(NetFramework40ReferenceDir)">
+      <Output TaskParameter="DirectoriesCreated" ItemName="CreatedDirs" />
+    </MakeDir>
+    <Exec Condition="Exists('$(NetFramework40NuGetDir)\mscorlib.dll') AND !Exists('$(NetFramework40FlagFile)')" Command="xcopy /E /I /Y /V /F &quot;$(NetFramework40NuGetDir)\*.*&quot; &quot;$(NetFramework40ReferenceDir)\&quot;">
+      <Output TaskParameter="ExitCode" PropertyName="XCopyExitCode" />
+    </Exec>
+    <PropertyGroup Condition="Exists('$(NetFramework40NuGetDir)\mscorlib.dll') AND !Exists('$(NetFramework40FlagFile)')">
+      <_Net40JustInstalled>true</_Net40JustInstalled>
+    </PropertyGroup>
+    <WriteLinesToFile Condition="'$(_Net40JustInstalled)' == 'true'" File="$(NetFramework40FlagFile)" Lines="Installed" />
+    <WriteLinesToFile Condition="'$(_Net40JustInstalled)' == 'true'" File="$(RestartFlag)" Lines="Restart required" Overwrite="true" />
+  </Target>
+  <Target Name="RequireRestartAfterCopy" BeforeTargets="Build" Condition="Exists('$(RestartFlag)') and '$(IsCI)' != 'true' ">
+    <Warning Text="The .NET Framework 4.0 reference assemblies were just installed. Please close and restart Visual Studio to load XAML properly, then rebuild. Build stopped intentionally." />
+  </Target>
+  <Target Name="CleanupRestartFlag" BeforeTargets="BeforeBuild" Condition="Exists('$(RestartFlag)')">
+    <Delete Files="$(RestartFlag)" />
+  </Target>
+  <ItemGroup>
+    <Reference Remove="Microsoft.VisualBasic" />
+  </ItemGroup>
 </Project>

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
@@ -12,21 +11,21 @@ namespace WinMemoryCleaner
     /// Hotkey Service
     /// </summary>
     /// <seealso cref="IDisposable" />
-    public class HotKeyService : IHotKeyService
+    public class HotkeyService : IHotkeyService
     {
         #region Fields
 
         private readonly bool _isSupported = Environment.OSVersion.Version.Major >= 6; // Minimum supported Windows Vista / Server 2003
-        private readonly Dictionary<HotKey, Action> _registered = new Dictionary<HotKey, Action>();
+        private readonly Dictionary<Hotkey, Action> _registered = new Dictionary<Hotkey, Action>();
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HotKeyService" /> class.
+        /// Initializes a new instance of the <see cref="HotkeyService" /> class.
         /// </summary>
-        public HotKeyService()
+        public HotkeyService()
         {
             if (!_isSupported)
                 return;
@@ -41,9 +40,9 @@ namespace WinMemoryCleaner
 
             Modifiers = new Dictionary<ModifierKeys, string>
             {
-                { ModifierKeys.Alt | ModifierKeys.Shift, "ALT + SHIFT" },
                 { ModifierKeys.Control | ModifierKeys.Alt, "CTRL + ALT" },
-                { ModifierKeys.Control | ModifierKeys.Shift, "CTRL + SHIFT" }
+                { ModifierKeys.Control | ModifierKeys.Shift, "CTRL + SHIFT" },
+                { ModifierKeys.Alt | ModifierKeys.Shift, "SHIFT + ALT" }
             };
 
             ComponentDispatcher.ThreadPreprocessMessage += OnThreadPreprocessMessage;
@@ -137,11 +136,11 @@ namespace WinMemoryCleaner
                 return;
 
             Action action;
-            HotKey hotKey = null;
+            Hotkey hotKey = null;
 
             try
             {
-                hotKey = new HotKey
+                hotKey = new Hotkey
                 (
                     key: KeyInterop.KeyFromVirtualKey(((int)msg.lParam >> 16) & 0xFFFF),
                     modifiers: (ModifierKeys)((int)msg.lParam & 0xFFFF)
@@ -149,7 +148,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                Logger.Debug(e.GetMessage());
+                Logger.Debug(e);
             }
 
             if (hotKey != null && _registered.TryGetValue(hotKey, out action))
@@ -162,7 +161,7 @@ namespace WinMemoryCleaner
         /// <param name="hotkey">The hotkey.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public bool Register(HotKey hotkey, Action action)
+        public bool Register(Hotkey hotkey, Action action)
         {
             var result = false;
 
@@ -173,10 +172,7 @@ namespace WinMemoryCleaner
 
                 Unregister(hotkey);
 
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    result = NativeMethods.RegisterHotKey(IntPtr.Zero, hotkey.GetHashCode(), (uint)hotkey.Modifiers, (uint)KeyInterop.VirtualKeyFromKey(hotkey.Key));
-                }));
+                result = NativeMethods.RegisterHotKey(IntPtr.Zero, hotkey.GetHashCode(), (uint)hotkey.Modifiers, (uint)KeyInterop.VirtualKeyFromKey(hotkey.Key));
 
                 if (!_registered.ContainsKey(hotkey))
                     _registered.Add(hotkey, action);
@@ -194,7 +190,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="hotkey">The hotkey.</param>
         /// <returns></returns>
-        public bool Unregister(HotKey hotkey)
+        public bool Unregister(Hotkey hotkey)
         {
             var result = false;
 
@@ -203,10 +199,7 @@ namespace WinMemoryCleaner
                 if (!_isSupported || hotkey == null)
                     return false;
 
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    result = NativeMethods.UnregisterHotKey(IntPtr.Zero, hotkey.GetHashCode());
-                }));
+                result = NativeMethods.UnregisterHotKey(IntPtr.Zero, hotkey.GetHashCode());
 
                 _registered.Remove(hotkey);
             }

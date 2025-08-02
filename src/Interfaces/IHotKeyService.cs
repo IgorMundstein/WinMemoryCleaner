@@ -5,9 +5,9 @@ using System.Windows.Input;
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// IHotKeyService
+    /// IHotkeyService
     /// </summary>
-    public interface IHotKeyService : IDisposable
+    public interface IHotkeyService : IDisposable
     {
         /// <summary>
         /// Gets the keys.
@@ -25,13 +25,13 @@ namespace WinMemoryCleaner
         /// <param name="hotkey">The hotkey.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        bool Register(HotKey hotkey, Action action);
+        bool Register(Hotkey hotkey, Action action);
 
         /// <summary>
         /// Unregisters the specified hotkey.
         /// </summary>
         /// <param name="hotkey">The hotkey.</param>
         /// <returns></returns>
-        bool Unregister(HotKey hotkey);
+        bool Unregister(Hotkey hotkey);
     }
 }

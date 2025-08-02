@@ -17,11 +17,6 @@ namespace WinMemoryCleaner
             private static readonly Dictionary<Type, Func<object>> _container = new Dictionary<Type, Func<object>>();
             private static readonly Dictionary<Type, object> _singleton = new Dictionary<Type, object>();
 
-            private static object Create(Type type)
-            {
-                return Activator.CreateInstance(type, type.GetConstructors().Single().GetParameters().Select(p => Resolve(p.ParameterType)).ToArray());
-            }
-
             /// <summary>
             /// Registers the specified instance.
             /// </summary>
@@ -76,7 +71,7 @@ namespace WinMemoryCleaner
                     instance = func();
 
                 if (!type.IsInterface && instance == null)
-                    instance = Create(type);
+                    instance = Activator.CreateInstance(type, type.GetConstructors().SingleOrDefault().GetParameters().Select(p => Resolve(p.ParameterType)).ToArray());
 
                 if (instance == null)
                     throw new InvalidOperationException(string.Format(Localizer.Culture, "{0} is not registered.", type.Name));

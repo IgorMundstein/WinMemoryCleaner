@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Windows;
 
 namespace WinMemoryCleaner
 {
@@ -17,17 +15,19 @@ namespace WinMemoryCleaner
         public ViewModelLocator()
         {
             IComputerService computerService = null;
-            IHotKeyService hotKeyService = null;
+            IHotkeyService hotKeyService = null;
             INotificationService notificationService = null;
 
-            if (!IsInDesignMode)
+            if (!App.IsInDesignMode)
             {
                 computerService = DependencyInjection.Container.Resolve<IComputerService>();
-                hotKeyService = DependencyInjection.Container.Resolve<IHotKeyService>();
+                hotKeyService = DependencyInjection.Container.Resolve<IHotkeyService>();
                 notificationService = DependencyInjection.Container.Resolve<INotificationService>();
             }
 
+            DonationViewModel = new DonationViewModel(notificationService);
             MainViewModel = new MainViewModel(computerService, hotKeyService, notificationService);
+            MessageViewModel = new MessageViewModel(notificationService);
         }
 
         #endregion
@@ -68,16 +68,17 @@ namespace WinMemoryCleaner
         #region Properties
 
         /// <summary>
-        /// Gets a value indicating whether this instance is in design mode.
+        /// Donation View Model
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is in design mode; otherwise, <c>false</c>.
-        /// </value>
-        private bool IsInDesignMode
+        public DonationViewModel DonationViewModel
         {
             get
             {
-                return DesignerProperties.GetIsInDesignMode(new DependencyObject());
+                return DependencyInjection.Container.Resolve<DonationViewModel>();
+            }
+            private set
+            {
+                DependencyInjection.Container.Register(value);
             }
         }
 
@@ -89,6 +90,21 @@ namespace WinMemoryCleaner
             get
             {
                 return DependencyInjection.Container.Resolve<MainViewModel>();
+            }
+            private set
+            {
+                DependencyInjection.Container.Register(value);
+            }
+        }
+
+        /// <summary>
+        /// Message View Model
+        /// </summary>
+        public MessageViewModel MessageViewModel
+        {
+            get
+            {
+                return DependencyInjection.Container.Resolve<MessageViewModel>();
             }
             private set
             {

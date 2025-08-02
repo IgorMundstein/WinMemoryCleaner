@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -20,15 +21,45 @@ namespace WinMemoryCleaner
             public const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization.";
             public const string Name = "WinMemoryCleaner";
             public const string Title = "Windows Memory Cleaner";
+            public const string VersionFormat = "{0}.{1}.{2}";
 
             public static class Author
             {
                 public const string Name = "Igor Mundstein";
             }
 
-            public static class Log
+            public static class CommandLineArgument
             {
-                public const string DatetimeFormat = "yyyy-MM-dd HH:mm:ss.fff";
+                public const string Install = "Install";
+                public const string Package = "Package";
+                public const string Service = "Service";
+                public const string Uninstall = "Uninstall";
+            }
+
+            public static class Certificate
+            {
+                public static class Release
+                {
+                    public const string Thumbprint = "9D201FB199626ABE7DA32FBE47013FC023670F9B";
+                }
+
+                public static class Test
+                {
+                    public const string Thumbprint = "2187092935C12F90727B29AD6913A7F89817B942";
+                }
+            }
+
+            public static class Defaults
+            {
+                public static readonly string Path = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            }
+
+            public static class Donation
+            {
+                public static readonly Uri BitcoinUri = new Uri("https://www.blockchain.com/explorer/addresses/btc/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap");
+                public static readonly Uri EthereumUri = new Uri("https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d");
+                public static readonly Uri GitHubSponsorUri = new Uri("https://github.com/sponsors/IgorMundstein");
+                public static readonly Uri KofiUri = new Uri("https://ko-fi.com/igormundstein");
             }
 
             public static class Registry
@@ -37,36 +68,19 @@ namespace WinMemoryCleaner
                 {
                     public const string ProcessExclusionList = @"SOFTWARE\WinMemoryCleaner\ProcessExclusionList";
                     public const string Settings = @"SOFTWARE\WinMemoryCleaner";
-                    public const string Startup = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run";
-                }
-
-                public static class Name
-                {
-                    public const string AlwaysOnTop = "AlwaysOnTop";
-                    public const string AutoOptimizationInterval = "AutoOptimizationInterval";
-                    public const string AutoOptimizationMemoryUsage = "AutoOptimizationMemoryUsage";
-                    public const string AutoUpdate = "AutoUpdate";
-                    public const string CloseAfterOptimization = "CloseAfterOptimization";
-                    public const string CloseToTheNotificationArea = "CloseToTheNotificationArea";
-                    public const string CompactMode = "CompactMode";
-                    public const string Language = "Language";
-                    public const string MemoryAreas = "MemoryAreas";
-                    public const string OptimizationKey = "OptimizationKey";
-                    public const string OptimizationModifiers = "OptimizationModifiers";
-                    public const string RunOnPriority = "RunOnPriority";
-                    public const string RunOnStartup = "RunOnStartup";
-                    public const string ShowOptimizationNotifications = "ShowOptimizationNotifications";
-                    public const string ShowVirtualMemory = "ShowVirtualMemory";
-                    public const string StartMinimized = "StartMinimized";
-                    public const string TrayIcon = "TrayIcon";
                 }
             }
 
             public static class Repository
             {
-                public static readonly Uri AssemblyInfoUri = new Uri("https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/master/src/Properties/AssemblyInfo.cs");
-                public static readonly Uri LatestExeUri = new Uri("https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe");
-                public static readonly Uri Uri = new Uri("https://github.com/IgorMundstein/WinMemoryCleaner/");
+                private const string GitHub = "https://github.com/IgorMundstein/WinMemoryCleaner";
+                private const string GitHubRaw = "https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main";
+
+                public static readonly Uri AboutUri = new Uri(GitHub + "?tab=readme-ov-file#windows-memory-cleaner");
+                public static readonly Uri AssemblyInfoUri = new Uri(Path.Combine(GitHubRaw, "src/Properties/AssemblyInfo.cs"));
+                public static readonly Uri DownloadUri = new Uri(GitHub + "?tab=readme-ov-file#-download");
+                public static readonly Uri LatestExeUri = new Uri(Path.Combine(GitHub, "releases/latest/download/WinMemoryCleaner.exe"));
+                public static readonly Uri Uri = new Uri(GitHub);
             }
         }
 
@@ -85,6 +99,17 @@ namespace WinMemoryCleaner
                 }
             }
 
+            public static class Drive
+            {
+                public const int FsctlDiscardVolumeCache = 589828; // 0x00090054 - FSCTL_DISCARD_VOLUME_CACHE
+                public const int IoControlResetWriteOrder = 589832; // 0x000900F8 - FSCTL_RESET_WRITE_ORDER
+            }
+
+            public static class File
+            {
+                public const int FlagsNoBuffering = 536870912; // 0x20000000 - FILE_FLAG_NO_BUFFERING
+            }
+
             public static class Keyboard
             {
                 public const int WmHotkey = 786; // 0x312
@@ -95,6 +120,8 @@ namespace WinMemoryCleaner
                 public static class Name
                 {
                     public const string English = "en";
+                    public const string SimplifiedChinese = "zh-Hans";
+                    public const string TraditionalChinese = "zh-Hant";
                 }
             }
 
@@ -126,10 +153,12 @@ namespace WinMemoryCleaner
                 public const int SystemCombinePhysicalMemoryInformation = 130; // 0x82
                 public const int SystemFileCacheInformation = 21; // 0x15
                 public const int SystemMemoryListInformation = 80; // 0x50
+                public const int SystemRegistryReconciliationInformation = 155; // 0x9B
             }
 
             public static class SystemMemoryListCommand
             {
+                public const int MemoryEmptyWorkingSets = 2;
                 public const int MemoryFlushModifiedList = 3;
                 public const int MemoryPurgeLowPriorityStandbyList = 5;
                 public const int MemoryPurgeStandbyList = 4;

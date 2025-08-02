@@ -6,10 +6,10 @@ using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// Context Menu Strip Control
+    /// Tray Icon Context Menu Control
     /// </summary>
     /// <seealso cref="ContextMenuStrip" />
-    public sealed class ContextMenuStripControl : ContextMenuStrip
+    public sealed class TrayIconContextMenuControl : ContextMenuStrip
     {
         private static readonly Color _darkBackground = ((SolidColorBrush)Application.Current.FindResource("DarkBackground")).ToColor();
         private static readonly Color _darkBorderBrush = ((SolidColorBrush)Application.Current.FindResource("DarkBorderBrush")).ToColor();
@@ -17,9 +17,9 @@ namespace WinMemoryCleaner
         private static readonly Color _darkOver = ((SolidColorBrush)Application.Current.FindResource("DarkOver")).ToColor();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContextMenuStripControl" /> class.
+        /// Initializes a new instance of the <see cref="TrayIconContextMenuControl" /> class.
         /// </summary>
-        public ContextMenuStripControl()
+        public TrayIconContextMenuControl()
         {
             BackColor = _darkBackground;
             ForeColor = _darkForeground;

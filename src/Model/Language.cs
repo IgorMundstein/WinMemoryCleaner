@@ -34,6 +34,30 @@ namespace WinMemoryCleaner
         public FlowDirection Direction { get; private set; }
 
         /// <summary>
+        /// Gets the display english name.
+        /// </summary>
+        /// <value>
+        /// The display english name.
+        /// </value>
+        public string DisplayEnglishName
+        {
+            get
+            {
+                switch (Name)
+                {
+                    case Constants.Windows.Locale.Name.SimplifiedChinese:
+                        return "Chinese (S)";
+
+                    case Constants.Windows.Locale.Name.TraditionalChinese:
+                        return "Chinese (T)";
+
+                    default:
+                        return EnglishName;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the english name.
         /// </summary>
         /// <value>
@@ -74,11 +98,11 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// Determines whether the specified <see cref="object" />, is equal to this instance.
         /// </summary>
-        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <param name="obj">The <see cref="object" /> to compare with this instance.</param>
         /// <returns>
-        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
         public override bool Equals(object obj)
         {
@@ -106,11 +130,11 @@ namespace WinMemoryCleaner
         /// Converts to string.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="string" /> that represents this instance.
         /// </returns>
         public override string ToString()
         {
-            return EnglishName == NativeName ? EnglishName : string.Format(Localizer.Culture, "{0} ({1})", EnglishName, NativeName);
+            return EnglishName == NativeName ? EnglishName : string.Format(Localizer.Culture, "{0} ({1})", DisplayEnglishName, NativeName);
         }
     }
 }

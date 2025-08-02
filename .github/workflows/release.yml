@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
 
       - name: Cache NuGet packages
         uses: actions/cache@v3
@@ -54,15 +56,19 @@ jobs:
           "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           Write-Host "New tag generated: $newTag"
 
-      - name: Restore and Build solution
+      - name: Restore NuGet packages
         shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /t:restore /m /p:Configuration=Release /p:Platform="Any CPU"
+        run: nuget restore src\WinMemoryCleaner.sln
+
+      - name: Build solution
+        shell: pwsh
+        run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Upload unsigned EXE for signing
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}-unsigned
+          name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}
           path: src\bin\Release\WinMemoryCleaner.exe
           if-no-files-found: error
 
@@ -76,14 +82,13 @@ jobs:
           project-slug: WinMemoryCleaner
           signing-policy-slug: release-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
-          output-artifact-name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}-signed
           wait-for-completion: true
-          output-artifact-directory: ./signed
+          output-artifact-directory: ./
 
       - name: Create ZIP archive
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         shell: pwsh
-        run: Compress-Archive -Path signed/WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
+        run: Compress-Archive -Path WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
       - name: Upload release artifacts
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
@@ -91,7 +96,7 @@ jobs:
         with:
           name: winmemorycleaner-release-${{ steps.bump.outputs.new_tag }}
           path: |
-            signed/WinMemoryCleaner.exe
+            WinMemoryCleaner.exe
             WinMemoryCleaner.zip
           retention-days: 30
 
@@ -123,7 +128,6 @@ jobs:
             git push origin $tag
           } else {
             Write-Host "Tag '$tag' already exists. Reusing..."
-          }
 
       - name: Check if release already exists
         id: check_release
@@ -178,7 +182,7 @@ jobs:
             # ${{ steps.commit_date.outputs.date }}
             ${{ steps.formatted_message.outputs.body }}
           files: |
-            release_artifacts/signed/WinMemoryCleaner.exe
+            release_artifacts/WinMemoryCleaner.exe
             release_artifacts/WinMemoryCleaner.zip
           draft: true
           generate_release_notes: false
