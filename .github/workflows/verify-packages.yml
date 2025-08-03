@@ -6,10 +6,14 @@ on:
     - cron: '0 */6 * * *'
 
 jobs:
-  check-packages:
-    runs-on: windows-latest
+  setup:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      release_version: ${{ steps.get_version.outputs.RELEASE_VERSION }}
+      cache-hit: ${{ steps.cache_check.outputs.cache-hit }}
+      cache-key: ${{ steps.cache_check.outputs.cache-primary-key }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -19,15 +23,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $latest_tag = gh release view --json tagName --jq .tagName
-          if (-not $latest_tag) {
+          latest_tag=$(gh release view --json tagName --jq .tagName)
+          if [ -z "$latest_tag" ]; then
             echo "❌ No releases found in this repository. Halting workflow."
             exit 1
-          }
-          $version = $latest_tag.replace('v', '')
-          echo "RELEASE_VERSION=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          fi
+          version=$(echo "$latest_tag" | sed 's/v//')
+          echo "RELEASE_VERSION=$version" >> "$GITHUB_OUTPUT"
           echo "Checking version $version"
-        shell: powershell
 
       - name: Check if Already Verified via Cache
         id: cache_check
@@ -36,80 +39,101 @@ jobs:
           path: ./.cache
           key: verification-flag-${{ steps.get_version.outputs.RELEASE_VERSION }}
 
+  verify-chocolatey:
+    runs-on: windows-latest
+    needs: setup
+    if: needs.setup.outputs.cache-hit != 'true'
+    steps:
       - name: Verify on Chocolatey 🍫
-        id: check_choco
-        if: steps.cache_check.outputs.cache-hit != 'true'
-        continue-on-error: true
         run: |
-          echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on Chocolatey..."
+          echo "Checking for version ${{ needs.setup.outputs.release_version }} on Chocolatey..."
           $choco_output = choco search winmemorycleaner --exact --all-versions -r
-          if ($choco_output -match "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
-            echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on Chocolatey."
+          if ($choco_output -match "${{ needs.setup.outputs.release_version }}") {
+            echo "✅ Success! Version ${{ needs.setup.outputs.release_version }} found on Chocolatey."
           } else {
             echo "❌ Failure! Version not found on Chocolatey."
             exit 1
           }
         shell: powershell
 
-      - name: Verify on Scoop 🍦
-        id: check_scoop
-        if: steps.cache_check.outputs.cache-hit != 'true'
-        continue-on-error: true
+  verify-winget:
+    runs-on: windows-latest
+    needs: setup
+    if: needs.setup.outputs.cache-hit != 'true'
+    steps:
+      - name: Verify on WinGet 📦
         run: |
-          echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on Scoop..."
+          echo "Checking for version ${{ needs.setup.outputs.release_version }} on WinGet..."
+          $packageId = "IgorMundstein.WinMemoryCleaner"
+          $winget_info = winget show --id $packageId --source winget --accept-source-agreements
+          $winget_version = ($winget_info | Select-String 'Version:').ToString().Split(':')[-1].Trim()
+          echo "Version found on WinGet: $winget_version"
+          if ($winget_version -eq "${{ needs.setup.outputs.release_version }}") {
+            echo "✅ Success! Version ${{ needs.setup.outputs.release_version }} found on WinGet."
+          } else {
+            echo "❌ Failure! Version mismatch on WinGet."
+            exit 1
+          }
+        shell: powershell
+
+  verify-scoop:
+    runs-on: windows-latest
+    needs: setup
+    if: needs.setup.outputs.cache-hit != 'true'
+    steps:
+      - name: Verify on Scoop 🍦
+        run: |
+          echo "Checking for version ${{ needs.setup.outputs.release_version }} on Scoop..."
           Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
           irm get.scoop.sh | iex
           $scoop_info = scoop info winmemorycleaner
+          if (-not $scoop_info) {
+            echo "❌ Failure! Scoop could not find a manifest for winmemorycleaner."
+            exit 1
+          }
           $scoop_version = ($scoop_info | Select-String 'Version:').ToString().Split(' ')[-1]
           echo "Version found on Scoop: $scoop_version"
-          if ($scoop_version -eq "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
-            echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on Scoop."
+          if ($scoop_version -eq "${{ needs.setup.outputs.release_version }}") {
+            echo "✅ Success! Version ${{ needs.setup.outputs.release_version }} found on Scoop."
           } else {
             echo "❌ Failure! Version mismatch on Scoop."
             exit 1
           }
         shell: powershell
 
-      - name: Verify on WinGet 📦
-        id: check_winget
-        if: steps.cache_check.outputs.cache-hit != 'true'
-        continue-on-error: true
+  summarize:
+    runs-on: ubuntu-latest
+    needs: [setup, verify-chocolatey, verify-winget, verify-scoop]
+    if: always()
+    steps:
+      - name: Report Final Status
         run: |
-          echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on WinGet..."
-          $packageId = "IgorMundstein.WinMemoryCleaner"
-          $winget_info = winget show --id $packageId --source winget --accept-source-agreements
-          $winget_version = ($winget_info | Select-String 'Version:').ToString().Split(':')[-1].Trim()
-          echo "Version found on WinGet: $winget_version"
-          if ($winget_version -eq "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
-            echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on WinGet."
-          } else {
-            echo "❌ Failure! Version mismatch on WinGet."
+          if [ "${{ needs.setup.outputs.cache-hit }}" == "true" ]; then
+            echo "✅ Version ${{ needs.setup.outputs.release_version }} is already verified (cache hit). Halting workflow."
+            exit 0
+          fi
+          
+          choco_outcome="${{ needs.verify-chocolatey.result }}"
+          winget_outcome="${{ needs.verify-winget.result }}"
+          scoop_outcome="${{ needs.verify-scoop.result }}"
+
+          echo "---"
+          echo "Verification Results:"
+          echo "Chocolatey: $choco_outcome"
+          echo "WinGet: $winget_outcome"
+          echo "Scoop: $scoop_outcome"
+          echo "---"
+
+          if [[ "$choco_outcome" == "success" && "$winget_outcome" == "success" && "$scoop_outcome" == "success" ]]; then
+            echo "All packages successfully verified."
+          else
+            echo "One or more package verification checks failed."
             exit 1
-          }
-        shell: powershell
-      
+          fi
+
       - name: Save Success Flag to Cache
-        if: steps.cache_check.outputs.cache-hit != 'true' && steps.check_choco.outcome == 'success' && steps.check_scoop.outcome == 'success' && steps.check_winget.outcome == 'success'
+        if: needs.setup.outputs.cache-hit != 'true' && needs.verify-chocolatey.result == 'success' && needs.verify-winget.result == 'success' && needs.verify-scoop.result == 'success'
         uses: actions/cache/save@v4
         with:
           path: ./.cache
-          key: ${{ steps.cache_check.outputs.cache-primary-key }}
-      
-      - name: Report Final Status
-        if: steps.cache_check.outputs.cache-hit != 'true' && always()
-        run: |
-          $choco_failed = "${{ steps.check_choco.outcome }}" -eq "failure"
-          $scoop_failed = "${{ steps.check_scoop.outcome }}" -eq "failure"
-          $winget_failed = "${{ steps.check_winget.outcome }}" -eq "failure"
-
-          if ($choco_failed -or $scoop_failed -or $winget_failed) {
-            echo "One or more package verification checks failed."
-            exit 1
-          } else {
-            echo "All packages successfully verified."
-          }
-        shell: powershell
-
-      - name: Report Already Verified
-        if: steps.cache_check.outputs.cache-hit == 'true'
-        run: echo "✅ Version ${{ steps.get_version.outputs.RELEASE_VERSION }} is already verified (cache hit). Halting workflow."
+          key: ${{ needs.setup.outputs.cache-key }}
