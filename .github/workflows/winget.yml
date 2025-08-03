@@ -141,7 +141,7 @@ jobs:
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
           ShortDescription: ${{ steps.metadata.outputs.desc }}
-          ManifestType: locale
+          ManifestType: defaultLocale
           ManifestVersion: 1.6.0
           EOF
           
