@@ -17,6 +17,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $latest_tag = gh release view --json tagName --jq .tagName
+          if (-not $latest_tag) {
+            echo "❌ No releases found in this repository. Halting workflow."
+            exit 1
+          }
           $version = $latest_tag.replace('v', '')
           echo "RELEASE_VERSION=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "Checking version $version"
@@ -91,7 +95,11 @@ jobs:
       - name: Report Final Status
         if: steps.cache_check.outputs.cache-hit != 'true' && always()
         run: |
-          if (("${{ steps.check_choco.outcome }}" == "failure") -or ("${{ steps.check_scoop.outcome }}" == "failure") -or ("${{ steps.check_winget.outcome }}" == "failure")) {
+          $choco_failed = "${{ steps.check_choco.outcome }}" -eq "failure"
+          $scoop_failed = "${{ steps.check_scoop.outcome }}" -eq "failure"
+          $winget_failed = "${{ steps.check_winget.outcome }}" -eq "failure"
+
+          if ($choco_failed -or $scoop_failed -or $winget_failed) {
             echo "One or more package verification checks failed."
             exit 1
           } else {
