@@ -6,7 +6,6 @@ contact_links:
   - name: "🌐 Translations"
     url: "https://github.com/yourrepo/discussions/categories/translations"
     about: "Help contribute translations and localization."
-
 issue_templates:
   - name: "⚠️ Bug report"
     description: "Report any error or feature that produces an incorrect or unexpected result."
@@ -16,10 +15,10 @@ issue_templates:
     description: "Suggest an idea for this project."
     labels: ["enhancement"]
     template: "feature_request.yml"
-  - name: "🛡️ Report a security vulnerability"
-    description: "Please review our security policy for more details."
-    url: "https://github.com/yourrepo/security/policy"
   - name: "❓ Question"
     description: "Ask a question about this project."
     labels: ["question"]
     template: "question.yml"
+  - name: "Report a security vulnerability"
+    description: "Please review our security policy for more details."
+    url: "https://github.com/yourrepo/security/policy"
