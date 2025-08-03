@@ -148,8 +148,8 @@ jobs:
           New-Item -ItemType Directory -Path $toolsDir -Force
 
           $nuspecContent = @"
-<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns='http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd'>
   <metadata>
     <id>winmemorycleaner</id>
     <version>$env:CHOCO_VERSION</version>
@@ -166,7 +166,7 @@ jobs:
     <description>${{ steps.metadata.outputs.desc }}</description>
   </metadata>
   <files>
-    <file src="tools\**" target="tools" />
+    <file src='tools\**' target='tools' />
   </files>
 </package>
 "@
