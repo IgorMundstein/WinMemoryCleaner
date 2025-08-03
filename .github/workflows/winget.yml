@@ -109,21 +109,36 @@ jobs:
           cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.yaml" <<EOF
           PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
           PackageVersion: ${{ steps.get_release.outputs.tag }}
+          DefaultLocale: en-US
+          ManifestType: version
+          ManifestVersion: 1.6.0
+          EOF
+
+          cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.installer.yaml" <<EOF
+          PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
+          PackageVersion: ${{ steps.get_release.outputs.tag }}
+          InstallerType: exe
+          Installers:
+          - Architecture: x64
+            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe
+            InstallerSha256: ${{ steps.download.outputs.sha256 }}
+            InstallerSwitches:
+              Silent: /Package
+              SilentWithProgress: /Package
+          ManifestType: installer
+          ManifestVersion: 1.6.0
+          EOF
+
+          cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.locale.en-US.yaml" <<EOF
+          PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
+          PackageVersion: ${{ steps.get_release.outputs.tag }}
           PackageLocale: en-US
           Publisher: Igor Mundstein
           PackageName: Windows Memory Cleaner
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
           ShortDescription: ${{ steps.metadata.outputs.desc }}
-          Installers:
-          - Architecture: x64
-            InstallerType: exe
-            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe
-            InstallerSha256: ${{ steps.download.outputs.sha256 }}
-            InstallerSwitches:
-              Silent: /Package
-              SilentWithProgress: /Package
-          ManifestType: singleton
+          ManifestType: locale
           ManifestVersion: 1.6.0
           EOF
           
