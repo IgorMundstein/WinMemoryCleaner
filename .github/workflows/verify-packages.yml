@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 */6 * * *'
+  release:
+    types: [published]
 
 jobs:
   setup:
