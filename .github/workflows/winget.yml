@@ -107,6 +107,7 @@ jobs:
           mkdir -p "$MANIFEST_DIR"
           
           cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.yaml" <<EOF
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
           PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
           PackageVersion: ${{ steps.get_release.outputs.tag }}
           DefaultLocale: en-US
@@ -115,6 +116,7 @@ jobs:
           EOF
 
           cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.installer.yaml" <<EOF
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
           PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
           PackageVersion: ${{ steps.get_release.outputs.tag }}
           InstallerType: exe
@@ -130,6 +132,7 @@ jobs:
           EOF
 
           cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.locale.en-US.yaml" <<EOF
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
           PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
           PackageVersion: ${{ steps.get_release.outputs.tag }}
           PackageLocale: en-US
