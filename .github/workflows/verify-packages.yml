@@ -29,75 +29,75 @@ jobs:
           path: ./.cache
           key: verification-flag-${{ steps.get_version.outputs.RELEASE_VERSION }}
 
-      - name: 3. Run Verification Checks
+      - name: Verify on Chocolatey 🍫
+        id: check_choco
         if: steps.cache_check.outputs.cache-hit != 'true'
-        steps:
-        - name: Verify on Chocolatey 🍫
-          id: check_choco
-          continue-on-error: true
-          run: |
-            echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on Chocolatey..."
-            $choco_output = choco search winmemorycleaner --exact --all-versions -r
-            if ($choco_output -match "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
-              echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on Chocolatey."
-            } else {
-              echo "❌ Failure! Version not found on Chocolatey."
-              exit 1
-            }
-          shell: powershell
+        continue-on-error: true
+        run: |
+          echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on Chocolatey..."
+          $choco_output = choco search winmemorycleaner --exact --all-versions -r
+          if ($choco_output -match "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
+            echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on Chocolatey."
+          } else {
+            echo "❌ Failure! Version not found on Chocolatey."
+            exit 1
+          }
+        shell: powershell
 
-        - name: Verify on Scoop 🍦
-          id: check_scoop
-          continue-on-error: true
-          run: |
-            echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on Scoop..."
-            Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-            irm get.scoop.sh | iex
-            $scoop_info = scoop info winmemorycleaner
-            $scoop_version = ($scoop_info | Select-String 'Version:').ToString().Split(' ')[-1]
-            echo "Version found on Scoop: $scoop_version"
-            if ($scoop_version -eq "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
-              echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on Scoop."
-            } else {
-              echo "❌ Failure! Version mismatch on Scoop."
-              exit 1
-            }
-          shell: powershell
+      - name: Verify on Scoop 🍦
+        id: check_scoop
+        if: steps.cache_check.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on Scoop..."
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          irm get.scoop.sh | iex
+          $scoop_info = scoop info winmemorycleaner
+          $scoop_version = ($scoop_info | Select-String 'Version:').ToString().Split(' ')[-1]
+          echo "Version found on Scoop: $scoop_version"
+          if ($scoop_version -eq "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
+            echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on Scoop."
+          } else {
+            echo "❌ Failure! Version mismatch on Scoop."
+            exit 1
+          }
+        shell: powershell
 
-        - name: Verify on WinGet 📦
-          id: check_winget
-          continue-on-error: true
-          run: |
-            echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on WinGet..."
-            $packageId = "IgorMundstein.WinMemoryCleaner"
-            $winget_info = winget show --id $packageId --source winget --accept-source-agreements
-            $winget_version = ($winget_info | Select-String 'Version:').ToString().Split(':')[-1].Trim()
-            echo "Version found on WinGet: $winget_version"
-            if ($winget_version -eq "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
-              echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on WinGet."
-            } else {
-              echo "❌ Failure! Version mismatch on WinGet."
-              exit 1
-            }
-          shell: powershell
-        
-        - name: Save Success Flag to Cache
-          if: ${{ steps.check_choco.outcome == 'success' && steps.check_scoop.outcome == 'success' && steps.check_winget.outcome == 'success' }}
-          uses: actions/cache/save@v4
-          with:
-            path: ./.cache
-            key: ${{ steps.cache_check.outputs.cache-primary-key }}
-        
-        - name: Report Final Status
-          if: always()
-          run: |
-            if (("${{ steps.check_choco.outcome }}" == "failure") -or ("${{ steps.check_scoop.outcome }}" == "failure") -or ("${{ steps.check_winget.outcome }}" == "failure")) {
-              echo "One or more package verification checks failed."
-              exit 1
-            } else {
-              echo "All packages successfully verified."
-            }
-          shell: powershell
+      - name: Verify on WinGet 📦
+        id: check_winget
+        if: steps.cache_check.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          echo "Checking for version ${{ steps.get_version.outputs.RELEASE_VERSION }} on WinGet..."
+          $packageId = "IgorMundstein.WinMemoryCleaner"
+          $winget_info = winget show --id $packageId --source winget --accept-source-agreements
+          $winget_version = ($winget_info | Select-String 'Version:').ToString().Split(':')[-1].Trim()
+          echo "Version found on WinGet: $winget_version"
+          if ($winget_version -eq "${{ steps.get_version.outputs.RELEASE_VERSION }}") {
+            echo "✅ Success! Version ${{ steps.get_version.outputs.RELEASE_VERSION }} found on WinGet."
+          } else {
+            echo "❌ Failure! Version mismatch on WinGet."
+            exit 1
+          }
+        shell: powershell
+      
+      - name: Save Success Flag to Cache
+        if: steps.cache_check.outputs.cache-hit != 'true' && steps.check_choco.outcome == 'success' && steps.check_scoop.outcome == 'success' && steps.check_winget.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: ./.cache
+          key: ${{ steps.cache_check.outputs.cache-primary-key }}
+      
+      - name: Report Final Status
+        if: steps.cache_check.outputs.cache-hit != 'true' && always()
+        run: |
+          if (("${{ steps.check_choco.outcome }}" == "failure") -or ("${{ steps.check_scoop.outcome }}" == "failure") -or ("${{ steps.check_winget.outcome }}" == "failure")) {
+            echo "One or more package verification checks failed."
+            exit 1
+          } else {
+            echo "All packages successfully verified."
+          }
+        shell: powershell
 
       - name: Report Already Verified
         if: steps.cache_check.outputs.cache-hit == 'true'
