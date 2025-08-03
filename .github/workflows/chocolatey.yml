@@ -142,22 +142,22 @@ jobs:
 
           $installScriptContent = @"
           `$ErrorActionPreference = 'Stop'
+          `$toolsDir = "`$(Split-Path -parent `$MyInvocation.MyCommand.Definition)"
           `$packageArgs = @{
             packageName    = 'winmemorycleaner'
             fileType       = 'EXE'
             url64bit       = 'https://github.com/${{ github.repository }}/releases/download/${env:RELEASE_TAG}/WinMemoryCleaner.exe'
             checksum64     = '${env:SHA256}'
             checksumType64 = 'sha256'
-            silentArgs     = '/Package'
-            validExitCodes = @(0)
           }
-          Install-ChocolateyPackage @packageArgs
+          Install-ChocolateyPackage @`$packageArgs -FileFullPath "`$toolsDir\WinMemoryCleaner.exe"
+          Install-BinFile -Name 'WinMemoryCleaner' -Path "`$toolsDir\WinMemoryCleaner.exe"
           "@
           Set-Content -Path (Join-Path $toolsDir "chocolateyinstall.ps1") -Value $installScriptContent -Encoding UTF8
 
           $uninstallScriptContent = @"
           `$ErrorActionPreference = 'Stop'
-          Uninstall-ChocolateyPackage -PackageName 'winmemorycleaner'
+          Uninstall-BinFile -Name 'WinMemoryCleaner'
           "@
           Set-Content -Path (Join-Path $toolsDir "chocolateyuninstall.ps1") -Value $uninstallScriptContent -Encoding UTF8
 
