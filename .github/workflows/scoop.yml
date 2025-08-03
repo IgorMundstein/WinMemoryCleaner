@@ -85,7 +85,7 @@ jobs:
               "autoupdate": {
                   "architecture": {
                       "64bit": {
-                          "url": "https://github.com/${{ github.repository }}/releases/download/v`$version/WinMemoryCleaner.exe"
+                          "url": "https://github.com/${{ github.repository }}/releases/download/`$version/WinMemoryCleaner.exe"
                       }
                   }
               }
