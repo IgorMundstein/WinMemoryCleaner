@@ -83,16 +83,15 @@ jobs:
         shell: pwsh
         run: |
           $assetName = "WinMemoryCleaner.exe"
-          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$($env:RELEASE_TAG)/$($assetName)"
-          $outputFile = ".\$($assetName)"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $outputFile -UseBasicParsing
-          if (!(Test-Path $outputFile) -or (Get-Item $outputFile).Length -lt 10000) {
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.full_tag }}/$assetName"
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $assetName -UseBasicParsing
+          if (!(Test-Path $assetName) -or (Get-Item $assetName).Length -lt 10000) {
             Write-Host "::error::Downloaded file is missing or too small."
             exit 1
           }
-          $hash = Get-FileHash -Path $outputFile -Algorithm SHA256
+          $hash = Get-FileHash -Path $assetName -Algorithm SHA256
           $sha256 = $hash.Hash.ToLower()
-          echo "SHA256=$($sha256)" >> $env:GITHUB_ENV
+          echo "SHA256=$sha256" >> $env:GITHUB_ENV
 
       - name: Fetch repository metadata
         if: steps.check_chocolatey.outputs.skip == 'false'
@@ -116,48 +115,51 @@ jobs:
           $toolsDir = Join-Path $packageDir "tools"
           New-Item -ItemType Directory -Path $toolsDir -Force
 
-          @"
-<?xml version='1.0' encoding='utf-8'?>
-<package xmlns='http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd'>
-  <metadata>
-    <id>winmemorycleaner</id>
-    <version>$($env:CHOCO_VERSION)</version>
-    <owners>Igor Mundstein</owners>
-    <title>Windows Memory Cleaner</title>
-    <authors>Igor Mundstein</authors>
-    <projectUrl>${{ steps.metadata.outputs.homepage }}</projectUrl>
-    <packageSourceUrl>https://github.com/${{ github.repository }}</packageSourceUrl>
-    <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/$($env:RELEASE_TAG)</releaseNotes>
-    <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
-    <bugTrackerUrl>https://github.com/${{ github.repository }}/issues</bugTrackerUrl>
-    <tags>memory cleaner ram optimization windows portable admin</tags>
-    <summary>${{ steps.metadata.outputs.desc }}</summary>
-    <description>${{ steps.metadata.outputs.desc }}</description>
-  </metadata>
-  <files>
-    <file src='tools\**' target='tools' />
-  </files>
-</package>
-"@ | Out-File -FilePath (Join-Path $packageDir "winmemorycleaner.nuspec") -Encoding UTF8
+          $nuspecContent = @"
+          <?xml version='1.0' encoding='utf-8'?>
+          <package xmlns='http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd'>
+            <metadata>
+              <id>winmemorycleaner</id>
+              <version>${env:CHOCO_VERSION}</version>
+              <owners>Igor Mundstein</owners>
+              <title>Windows Memory Cleaner</title>
+              <authors>Igor Mundstein</authors>
+              <projectUrl>${{ steps.metadata.outputs.homepage }}</projectUrl>
+              <packageSourceUrl>https://github.com/${{ github.repository }}</packageSourceUrl>
+              <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/${env:RELEASE_TAG}</releaseNotes>
+              <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
+              <bugTrackerUrl>https://github.com/${{ github.repository }}/issues</bugTrackerUrl>
+              <tags>memory cleaner ram optimization windows portable admin</tags>
+              <summary>${{ steps.metadata.outputs.desc }}</summary>
+              <description>${{ steps.metadata.outputs.desc }}</description>
+            </metadata>
+            <files>
+              <file src='tools\**' target='tools' />
+            </files>
+          </package>
+          "@
+          Set-Content -Path (Join-Path $packageDir "winmemorycleaner.nuspec") -Value $nuspecContent -Encoding UTF8
 
-          @"
-`$ErrorActionPreference = 'Stop'
-`$toolsDir = "`$(Split-Path -parent `$MyInvocation.MyCommand.Definition)"
-`$file = Join-Path `$toolsDir "WinMemoryCleaner.exe"
+          $installScriptContent = @"
+          `$ErrorActionPreference = 'Stop'
+          `$packageArgs = @{
+            packageName    = 'winmemorycleaner'
+            fileType       = 'EXE'
+            url64bit       = 'https://github.com/${{ github.repository }}/releases/download/${env:RELEASE_TAG}/WinMemoryCleaner.exe'
+            checksum64     = '${env:SHA256}'
+            checksumType64 = 'sha256'
+            silentArgs     = '/Package'
+            validExitCodes = @(0)
+          }
+          Install-ChocolateyPackage @packageArgs
+          "@
+          Set-Content -Path (Join-Path $toolsDir "chocolateyinstall.ps1") -Value $installScriptContent -Encoding UTF8
 
-`$packageArgs = @{
-  packageName   = 'winmemorycleaner'
-  url64bit      = 'https://github.com/${{ github.repository }}/releases/download/$($env:RELEASE_TAG)/WinMemoryCleaner.exe'
-  checksum64    = '$($env:SHA256)'
-  checksumType64= 'sha256'
-}
-
-Get-ChocolateyWebFile -PackageName `$packageArgs.packageName -FileFullPath `$file -Url64bit `$packageArgs.url64bit -Checksum64 `$packageArgs.checksum64 -ChecksumType64 `$packageArgs.checksumType64
-"@ | Out-File -FilePath (Join-Path $toolsDir "chocolateyinstall.ps1") -Encoding UTF8
-
-          @"
-# This is a portable package. The package directory will be removed automatically by Chocolatey on uninstall.
-"@ | Out-File -FilePath (Join-Path $toolsDir "chocolateyuninstall.ps1") -Encoding UTF8
+          $uninstallScriptContent = @"
+          `$ErrorActionPreference = 'Stop'
+          Uninstall-ChocolateyPackage -PackageName 'winmemorycleaner'
+          "@
+          Set-Content -Path (Join-Path $toolsDir "chocolateyuninstall.ps1") -Value $uninstallScriptContent -Encoding UTF8
 
       - name: Build and Push Chocolatey package
         if: steps.check_chocolatey.outputs.skip == 'false'
