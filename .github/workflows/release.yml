@@ -115,6 +115,16 @@ jobs:
           name: winmemorycleaner-release-${{ needs.build.outputs.new_tag }}
           path: release_artifacts
 
+      - name: Create Checksums
+        shell: pwsh
+        working-directory: release_artifacts
+        run: |
+          Get-FileHash -Algorithm SHA256 -Path "WinMemoryCleaner.exe", "WinMemoryCleaner.zip" | ForEach-Object {
+            $_.Hash.ToLower() + "  " + (Split-Path -Leaf $_.Path)
+          } | Out-File -FilePath "checksums.txt" -Encoding utf8
+          Write-Host "Generated checksums.txt:"
+          cat checksums.txt
+
       - name: Create or reuse version tag
         shell: pwsh
         run: |
@@ -185,5 +195,6 @@ jobs:
           files: |
             release_artifacts/WinMemoryCleaner.exe
             release_artifacts/WinMemoryCleaner.zip
+            release_artifacts/checksums.txt
           draft: true
           generate_release_notes: false
