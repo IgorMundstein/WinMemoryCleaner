@@ -1,9 +1,25 @@
 blank_issues_enabled: false
 contact_links:
   - name: "💡 Suggestions"
-    url: https://github.com/IgorMundstein/WinMemoryCleaner/discussions/11
+    url: "https://github.com/yourrepo/discussions/categories/ideas"
     about: "Share your suggestions and ideas in Discussions."
-
   - name: "🌐 Translations"
-    url: https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14
+    url: "https://github.com/yourrepo/discussions/categories/translations"
     about: "Help contribute translations and localization."
+
+issue_templates:
+  - name: "⚠️ Bug report"
+    description: "Report any error or feature that produces an incorrect or unexpected result."
+    labels: ["bug"]
+    template: "bug_report.yml"
+  - name: "🎉 Feature request"
+    description: "Suggest an idea for this project."
+    labels: ["enhancement"]
+    template: "feature_request.yml"
+  - name: "🛡️ Report a security vulnerability"
+    description: "Please review our security policy for more details."
+    url: "https://github.com/yourrepo/security/policy"
+  - name: "❓ Question"
+    description: "Ask a question about this project."
+    labels: ["question"]
+    template: "question.yml"
