@@ -152,13 +152,19 @@ jobs:
             core.setOutput('desc', repo.description?.trim() || 'No description found.');
             core.setOutput('homepage', repo.homepage || repo.html_url);
 
-      - name: Install Chocolatey and dependencies
+      - name: Install or Upgrade Chocolatey
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: powershell
         run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          if (Get-Command choco -ErrorAction SilentlyContinue) {
+            Write-Host "Chocolatey is already installed. Upgrading..."
+            choco upgrade chocolatey -y
+          } else {
+            Write-Host "Chocolatey not found. Installing..."
+            Set-ExecutionPolicy Bypass -Scope Process -Force
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+            iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          }
           refreshenv
 
       - name: Generate Chocolatey package files
