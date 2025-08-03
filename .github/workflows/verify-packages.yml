@@ -17,6 +17,10 @@ jobs:
       cache-hit: ${{ steps.cache_check.outputs.cache-hit }}
       cache-key: ${{ steps.cache_check.outputs.cache-primary-key }}
     steps:
+      - name: Delay 6 hours after release
+        if: github.event_name == 'release'
+        run: sleep 21600
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
