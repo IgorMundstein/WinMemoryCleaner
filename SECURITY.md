@@ -6,9 +6,12 @@ Hey there! Thanks for checking out WinMemoryCleaner and caring about security.
 
 Even if you’re not sure it’s a real vulnerability, I’d rather hear from you than miss something important.
 
-If you notice a potential security problem, please let me know! You can:
-- Open an issue on this repo (mark it as security if you like), or
-- Contact me directly at [igor.mundstein@gmail.com](mailto:igor.mundstein@gmail.com)
+**If you notice a potential security problem, please:**
+- **Email me directly at [igor.mundstein@gmail.com](mailto:igor.mundstein@gmail.com) for sensitive issues.**  
+- You may also [use the “Report a security vulnerability” button on GitHub](../../security/advisories/new) if available, or
+- As a last resort, open an issue on this repo (please do **not** include sensitive details in public issues).
+
+I aim to respond to security reports within **72 hours**.
 
 ## Supported Versions
 
