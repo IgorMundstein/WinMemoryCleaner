@@ -11,7 +11,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: 1. Get Latest Release Version
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Latest Release Version
         id: get_version
         env:
           GH_TOKEN: ${{ github.token }}
@@ -26,7 +29,7 @@ jobs:
           echo "Checking version $version"
         shell: powershell
 
-      - name: 2. Check if Already Verified via Cache
+      - name: Check if Already Verified via Cache
         id: cache_check
         uses: actions/cache/restore@v4
         with:
