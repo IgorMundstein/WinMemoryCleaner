@@ -20,7 +20,7 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: Get latest release tag
+      - name: Get latest release info
         id: get_release
         uses: actions/github-script@v7
         with:
@@ -30,16 +30,19 @@ jobs:
               repo: context.repo.repo
             });
             
-            // Strip any 'v' prefix from the tag for cleaner versioning
-            const tag = release.tag_name.startsWith('v') ? release.tag_name.substring(1) : release.tag_name;
+            const full_tag = release.tag_name;
+            const version_tag = full_tag.startsWith('v') ? full_tag.substring(1) : full_tag;
 
-            core.setOutput('tag', tag);
-            console.log(`Latest release version: ${tag}`);
-            return tag;
+            core.setOutput('full_tag', full_tag);
+            core.setOutput('version_tag', version_tag);
+            console.log(`Full release tag: ${full_tag}`);
+            console.log(`Chocolatey version: ${version_tag}`);
 
-      - name: Set Release Version Environment Variable
+      - name: Set Release Version Environment Variables
         shell: powershell
-        run: echo "RELEASE_TAG=${{ steps.get_release.outputs.tag }}" >> $env:GITHUB_ENV
+        run: |
+          echo "CHOCO_VERSION=${{ steps.get_release.outputs.version_tag }}" >> $env:GITHUB_ENV
+          echo "RELEASE_TAG=${{ steps.get_release.outputs.full_tag }}" >> $env:GITHUB_ENV
 
       - name: Validate inputs and environment
         shell: powershell
@@ -49,9 +52,8 @@ jobs:
             exit 1
           }
           
-          # Corrected regex to match Major.Minor.Patch (e.g., 1.0.0)
-          if (-not ("$env:RELEASE_TAG" -match "^[0-9]+\.[0-9]+\.[0-9]+$")) {
-            Write-Host "::error::Version format must be Major.Minor.Patch (e.g., 1.0.0, 1.1.2, 2.8.3). Found: $env:RELEASE_TAG"
+          if (-not ("$env:CHOCO_VERSION" -match "^[0-9]+\.[0-9]+\.[0-9]+$")) {
+            Write-Host "::error::Version format must be Major.Minor.Patch (e.g., 1.0.0). Found: $env:CHOCO_VERSION"
             exit 1
           }
 
@@ -65,11 +67,11 @@ jobs:
             $response = Invoke-RestMethod -Uri "https://community.chocolatey.org/api/v2/Packages()?`$filter=Id%20eq%20'winmemorycleaner'" -Method Get
             $existingVersions = $response.entry.properties.Version.'#text'
             
-            if ($existingVersions -contains "$env:RELEASE_TAG") {
-              Write-Host "::notice::Version $env:RELEASE_TAG already exists on Chocolatey. Skipping submission."
+            if ($existingVersions -contains "$env:CHOCO_VERSION") {
+              Write-Host "::notice::Version $env:CHOCO_VERSION already exists on Chocolatey. Skipping submission."
               echo "skip=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             } else {
-              Write-Host "::notice::Version $env:RELEASE_TAG not found, proceeding with submission."
+              Write-Host "::notice::Version $env:CHOCO_VERSION not found, proceeding with submission."
               echo "skip=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             }
           }
@@ -86,7 +88,7 @@ jobs:
         run: |
           Write-Host "::group::Verifying release assets"
           
-          $releaseUrl = "https://api.github.com/repos/${{ github.repository }}/releases/tags/v$env:RELEASE_TAG"
+          $releaseUrl = "https://api.github.com/repos/${{ github.repository }}/releases/tags/$env:RELEASE_TAG"
           
           try {
             $release = Invoke-RestMethod -Uri $releaseUrl -Method Get
@@ -100,7 +102,7 @@ jobs:
             Write-Host "::notice::Release verification successful"
           }
           catch {
-            Write-Host "::error::Release v$env:RELEASE_TAG not found"
+            Write-Host "::error::Release $env:RELEASE_TAG not found"
             exit 1
           }
           
@@ -112,7 +114,7 @@ jobs:
         run: |
           Write-Host "::group::Downloading release asset"
           
-          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/v$env:RELEASE_TAG/WinMemoryCleaner.exe"
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe"
           $outputFile = "WinMemoryCleaner.exe"
           
           Invoke-WebRequest -Uri $downloadUrl -OutFile $outputFile -UseBasicParsing
@@ -173,13 +175,13 @@ jobs:
           <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
             <metadata>
               <id>winmemorycleaner</id>
-              <version>$env:RELEASE_TAG</version>
+              <version>$env:CHOCO_VERSION</version>
               <owners>Igor Mundstein</owners>
               <title>Windows Memory Cleaner</title>
               <authors>Igor Mundstein</authors>
               <projectUrl>${{ steps.metadata.outputs.homepage }}</projectUrl>
               <packageSourceUrl>https://github.com/${{ github.repository }}</packageSourceUrl>
-              <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/v$env:RELEASE_TAG</releaseNotes>
+              <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/$env:RELEASE_TAG</releaseNotes>
               <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
               <bugTrackerUrl>https://github.com/${{ github.repository }}/issues</bugTrackerUrl>
               <tags>memory cleaner ram optimization windows portable</tags>
@@ -199,7 +201,7 @@ jobs:
           `$packageArgs = @{
             packageName    = 'winmemorycleaner'
             fileType       = 'EXE'
-            url64bit       = 'https://github.com/${{ github.repository }}/releases/download/v$env:RELEASE_TAG/WinMemoryCleaner.exe'
+            url64bit       = 'https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe'
             checksum64     = '$env:SHA256'
             checksumType64 = 'sha256'
           }
