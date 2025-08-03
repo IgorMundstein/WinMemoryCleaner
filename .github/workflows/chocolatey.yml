@@ -152,18 +152,15 @@ jobs:
             core.setOutput('desc', repo.description?.trim() || 'No description found.');
             core.setOutput('homepage', repo.homepage || repo.html_url);
 
-      - name: Install or Upgrade Chocolatey
+      - name: Set up Chocolatey
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: powershell
         run: |
-          if (Get-Command choco -ErrorAction SilentlyContinue) {
-            Write-Host "Chocolatey is already installed. Upgrading..."
-            choco upgrade chocolatey -y
-          } else {
-            Write-Host "Chocolatey not found. Installing..."
-            Set-ExecutionPolicy Bypass -Scope Process -Force
-            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-            iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          Write-Host "Ensuring Chocolatey is available..."
+          try {
+            choco upgrade chocolatey -y --no-progress
+          } catch {
+            Write-Host "Could not upgrade Chocolatey. This is common on hosted runners and can be ignored. Continuing..."
           }
           echo "C:\ProgramData\Chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
