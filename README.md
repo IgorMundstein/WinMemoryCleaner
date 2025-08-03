@@ -10,23 +10,21 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
   [![](./.github/images/main-window.png)](#windows-memory-cleaner)
 
-## 📦 Download
+## ⬇️ Download
 
-- **GitHub**
+[![](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FIgorMundstein%2FWinMemoryCleaner%2Freleases%2Flatest&query=%24.tag_name&label=Release&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
-  [![](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FIgorMundstein%2FWinMemoryCleaner%2Freleases%2Flatest&query=%24.tag_name&label=Release&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
-
-- **Chocolatey**  
+### 🍫 Chocolatey
   ```powershell
   choco install winmemorycleaner
   ```
 
-- **Scoop**  
+### 🍦 Scoop
   ```powershell
   scoop install winmemorycleaner
   ```
 
-- **WinGet**  
+### 📦 WinGet
   ```powershell
   winget install IgorMundstein.WinMemoryCleaner
   ```
