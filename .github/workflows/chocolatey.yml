@@ -35,8 +35,6 @@ jobs:
 
             core.setOutput('full_tag', full_tag);
             core.setOutput('version_tag', version_tag);
-            console.log(`Full release tag: ${full_tag}`);
-            console.log(`Chocolatey version: ${version_tag}`);
 
       - name: Set Release Version Environment Variables
         shell: powershell
@@ -61,8 +59,6 @@ jobs:
         id: check_chocolatey
         shell: powershell
         run: |
-          Write-Host "::group::Checking existing versions on Chocolatey"
-          
           try {
             $response = Invoke-RestMethod -Uri "https://community.chocolatey.org/api/v2/Packages()?`$filter=Id%20eq%20'winmemorycleaner'" -Method Get
             $existingVersions = $response.entry.properties.Version.'#text'
@@ -79,15 +75,11 @@ jobs:
             Write-Host "::notice::Could not check existing versions, proceeding with submission just in case."
             echo "skip=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           }
-          
-          Write-Host "::endgroup::"
 
       - name: Verify release assets
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: powershell
         run: |
-          Write-Host "::group::Verifying release assets"
-          
           $releaseUrl = "https://api.github.com/repos/${{ github.repository }}/releases/tags/$env:RELEASE_TAG"
           
           try {
@@ -98,22 +90,16 @@ jobs:
               Write-Host "::error::WinMemoryCleaner.exe not found in release assets"
               exit 1
             }
-            
-            Write-Host "::notice::Release verification successful"
           }
           catch {
             Write-Host "::error::Release $env:RELEASE_TAG not found"
             exit 1
           }
-          
-          Write-Host "::endgroup::"
 
       - name: Download and verify release asset
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: powershell
         run: |
-          Write-Host "::group::Downloading release asset"
-          
           $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe"
           $outputFile = "WinMemoryCleaner.exe"
           
@@ -123,9 +109,6 @@ jobs:
             Write-Host "::error::Downloaded file is missing or too small."
             exit 1
           }
-          
-          Write-Host "::notice::Downloaded WinMemoryCleaner.exe"
-          Write-Host "::endgroup::"
 
       - name: Calculate and verify SHA256
         if: steps.check_chocolatey.outputs.skip == 'false'
@@ -137,7 +120,6 @@ jobs:
           
           echo "SHA256=$sha256" >> $env:GITHUB_ENV
           echo "sha256=$sha256" >> $env:GITHUB_OUTPUT
-          Write-Host "::notice::SHA256: $sha256"
 
       - name: Fetch repository metadata
         if: steps.check_chocolatey.outputs.skip == 'false'
@@ -156,7 +138,6 @@ jobs:
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: powershell
         run: |
-          Write-Host "Ensuring Chocolatey is available..."
           try {
             choco upgrade chocolatey -y --no-progress
           } catch {
