@@ -25,7 +25,7 @@ jobs:
         run: |
           latest_tag=$(gh release view --json tagName --jq .tagName)
           if [ -z "$latest_tag" ]; then
-            echo "❌ No releases found in this repository. Halting workflow."
+            echo "No releases found in this repository. Halting workflow."
             exit 1
           fi
           version=$(echo "$latest_tag" | sed 's/v//')
@@ -49,9 +49,9 @@ jobs:
           $version_to_check = "${{ needs.setup.outputs.release_version }}"
           $choco_output = choco search winmemorycleaner --exact --all-versions -r
           if ($choco_output -match "$version_to_check") {
-            echo "✅ Success! Version $version_to_check found on Chocolatey."
+            echo "Version $version_to_check found on Chocolatey."
           } else {
-            echo "❌ Failure! Version $version_to_check not found on Chocolatey."
+            echo "Version $version_to_check not found on Chocolatey."
             exit 1
           }
         shell: powershell
@@ -70,9 +70,9 @@ jobs:
           try { $scoop_output = scoop info winmemorycleaner -ErrorAction Stop } catch {}
 
           if ($scoop_output -match "Version:\s*$version_to_check") {
-            echo "✅ Success! Version $version_to_check found on Scoop."
+            echo "Version $version_to_check found on Scoop."
           } else {
-            echo "❌ Failure! Version $version_to_check not found on Scoop."
+            echo "Version $version_to_check not found on Scoop."
             exit 1
           }
         shell: powershell
@@ -90,9 +90,9 @@ jobs:
           try { $winget_output = winget show --id "IgorMundstein.WinMemoryCleaner" --source winget --accept-source-agreements -ErrorAction Stop } catch {}
           
           if ($winget_output -match "Version:\s*$version_to_check") {
-            echo "✅ Success! Version $version_to_check found on WinGet."
+            echo "Version $version_to_check found on WinGet."
           } else {
-            echo "❌ Failure! Version $version_to_check not found on WinGet."
+            echo "Version $version_to_check not found on WinGet."
             exit 1
           }
         shell: powershell
@@ -121,18 +121,10 @@ jobs:
           scoop_outcome="${{ needs.verify-scoop.result }}"
           winget_outcome="${{ needs.verify-winget.result }}"
 
-          echo "---"
           echo "Verification Results:"
           echo "$(get_icon "$choco_outcome") Chocolatey"
           echo "$(get_icon "$scoop_outcome") Scoop"
           echo "$(get_icon "$winget_outcome") WinGet"
-          echo "---"
-
-          if [[ "$choco_outcome" == "success" && "$scoop_outcome" == "success" && "$winget_outcome" == "success" ]]; then
-            echo "All packages successfully verified."
-          else
-            echo "One or more package verification checks failed."
-          fi
 
       - name: Save Success Flag to Cache
         if: needs.setup.outputs.cache-hit != 'true' && needs.verify-chocolatey.result == 'success' && needs.verify-scoop.result == 'success' && needs.verify-winget.result == 'success'
