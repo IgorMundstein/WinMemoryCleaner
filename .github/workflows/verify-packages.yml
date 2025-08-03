@@ -1,4 +1,4 @@
-name: Check Package Publication Status
+name: Verify Packages Publication Statuses
 
 on:
   workflow_dispatch:
