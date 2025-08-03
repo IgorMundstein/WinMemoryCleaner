@@ -13,7 +13,7 @@ jobs:
     name: Submit to Chocolatey Community
     runs-on: windows-latest
     timeout-minutes: 30
-    
+
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@v2
@@ -147,9 +147,9 @@ jobs:
           $toolsDir = Join-Path $packageDir "tools"
           New-Item -ItemType Directory -Path $toolsDir -Force
 
-          $nuspecContent = @"
-<?xml version='1.0' encoding='utf-8'?>
-<package xmlns='http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd'>
+          $nuspecContent = @'
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>winmemorycleaner</id>
     <version>$env:CHOCO_VERSION</version>
@@ -166,30 +166,30 @@ jobs:
     <description>${{ steps.metadata.outputs.desc }}</description>
   </metadata>
   <files>
-    <file src='tools\**' target='tools' />
+    <file src="tools\**" target="tools" />
   </files>
 </package>
-"@
+'@
           $nuspecContent | Out-File -FilePath (Join-Path $packageDir "winmemorycleaner.nuspec") -Encoding UTF8
 
-          $installScript = @"
-`$ErrorActionPreference = 'Stop'
-`$toolsDir = "`$(Split-Path -parent `$MyInvocation.MyCommand.Definition)"
-`$packageArgs = @{
-  packageName    = 'winmemorycleaner'
-  fileType       = 'EXE'
-  url64bit       = 'https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe'
-  checksum64     = '$env:SHA256'
-  checksumType64 = 'sha256'
+          $installScript = @'
+$ErrorActionPreference = "Stop"
+$toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
+$packageArgs = @{
+  packageName    = "winmemorycleaner"
+  fileType       = "EXE"
+  url64bit       = "https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe"
+  checksum64     = "$env:SHA256"
+  checksumType64 = "sha256"
 }
 Install-ChocolateyPackage @packageArgs
-"@
+'@
           $installScript | Out-File -FilePath (Join-Path $toolsDir "chocolateyinstall.ps1") -Encoding UTF8
 
-          $uninstallScript = @"
-`$ErrorActionPreference = 'Continue'
-Uninstall-ChocolateyPackage 'winmemorycleaner'
-"@
+          $uninstallScript = @'
+$ErrorActionPreference = "Continue"
+Uninstall-ChocolateyPackage "winmemorycleaner"
+'@
           $uninstallScript | Out-File -FilePath (Join-Path $toolsDir "chocolateyuninstall.ps1") -Encoding UTF8
 
       - name: Build and Push Chocolatey package
