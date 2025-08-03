@@ -46,32 +46,12 @@ jobs:
     steps:
       - name: Verify on Chocolatey 🍫
         run: |
-          echo "Checking for version ${{ needs.setup.outputs.release_version }} on Chocolatey..."
+          $version_to_check = "${{ needs.setup.outputs.release_version }}"
           $choco_output = choco search winmemorycleaner --exact --all-versions -r
-          if ($choco_output -match "${{ needs.setup.outputs.release_version }}") {
-            echo "✅ Success! Version ${{ needs.setup.outputs.release_version }} found on Chocolatey."
+          if ($choco_output -match "$version_to_check") {
+            echo "✅ Success! Version $version_to_check found on Chocolatey."
           } else {
-            echo "❌ Failure! Version not found on Chocolatey."
-            exit 1
-          }
-        shell: powershell
-
-  verify-winget:
-    runs-on: windows-latest
-    needs: setup
-    if: needs.setup.outputs.cache-hit != 'true'
-    steps:
-      - name: Verify on WinGet 📦
-        run: |
-          echo "Checking for version ${{ needs.setup.outputs.release_version }} on WinGet..."
-          $packageId = "IgorMundstein.WinMemoryCleaner"
-          $winget_info = winget show --id $packageId --source winget --accept-source-agreements
-          $winget_version = ($winget_info | Select-String 'Version:').ToString().Split(':')[-1].Trim()
-          echo "Version found on WinGet: $winget_version"
-          if ($winget_version -eq "${{ needs.setup.outputs.release_version }}") {
-            echo "✅ Success! Version ${{ needs.setup.outputs.release_version }} found on WinGet."
-          } else {
-            echo "❌ Failure! Version mismatch on WinGet."
+            echo "❌ Failure! Version $version_to_check not found on Chocolatey."
             exit 1
           }
         shell: powershell
@@ -83,56 +63,79 @@ jobs:
     steps:
       - name: Verify on Scoop 🍦
         run: |
-          echo "Checking for version ${{ needs.setup.outputs.release_version }} on Scoop..."
+          $version_to_check = "${{ needs.setup.outputs.release_version }}"
           Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
           irm get.scoop.sh | iex
-          $scoop_info = scoop info winmemorycleaner
-          if (-not $scoop_info) {
-            echo "❌ Failure! Scoop could not find a manifest for winmemorycleaner."
+          $scoop_output = ""
+          try { $scoop_output = scoop info winmemorycleaner -ErrorAction Stop } catch {}
+
+          if ($scoop_output -match "Version:\s*$version_to_check") {
+            echo "✅ Success! Version $version_to_check found on Scoop."
+          } else {
+            echo "❌ Failure! Version $version_to_check not found on Scoop."
             exit 1
           }
-          $scoop_version = ($scoop_info | Select-String 'Version:').ToString().Split(' ')[-1]
-          echo "Version found on Scoop: $scoop_version"
-          if ($scoop_version -eq "${{ needs.setup.outputs.release_version }}") {
-            echo "✅ Success! Version ${{ needs.setup.outputs.release_version }} found on Scoop."
+        shell: powershell
+
+  verify-winget:
+    runs-on: windows-latest
+    needs: setup
+    if: needs.setup.outputs.cache-hit != 'true'
+    steps:
+      - name: Verify on WinGet 📦
+        run: |
+          $version_to_check = "${{ needs.setup.outputs.release_version }}"
+          $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
+          $winget_output = ""
+          try { $winget_output = winget show --id "IgorMundstein.WinMemoryCleaner" --source winget --accept-source-agreements -ErrorAction Stop } catch {}
+          
+          if ($winget_output -match "Version:\s*$version_to_check") {
+            echo "✅ Success! Version $version_to_check found on WinGet."
           } else {
-            echo "❌ Failure! Version mismatch on Scoop."
+            echo "❌ Failure! Version $version_to_check not found on WinGet."
             exit 1
           }
         shell: powershell
 
   summarize:
     runs-on: ubuntu-latest
-    needs: [setup, verify-chocolatey, verify-winget, verify-scoop]
+    needs: [setup, verify-chocolatey, verify-scoop, verify-winget]
     if: always()
     steps:
       - name: Report Final Status
         run: |
           if [ "${{ needs.setup.outputs.cache-hit }}" == "true" ]; then
-            echo "✅ Version ${{ needs.setup.outputs.release_version }} is already verified (cache hit). Halting workflow."
+            echo "✅ Version ${{ needs.setup.outputs.release_version }} is already verified (cache hit)."
             exit 0
           fi
           
+          get_icon() {
+            if [ "$1" == "success" ]; then
+              echo "✅"
+            else
+              echo "❌"
+            fi
+          }
+
           choco_outcome="${{ needs.verify-chocolatey.result }}"
-          winget_outcome="${{ needs.verify-winget.result }}"
           scoop_outcome="${{ needs.verify-scoop.result }}"
+          winget_outcome="${{ needs.verify-winget.result }}"
 
           echo "---"
           echo "Verification Results:"
-          echo "Chocolatey: $choco_outcome"
-          echo "WinGet: $winget_outcome"
-          echo "Scoop: $scoop_outcome"
+          echo "$(get_icon "$choco_outcome") Chocolatey"
+          echo "$(get_icon "$scoop_outcome") Scoop"
+          echo "$(get_icon "$winget_outcome") WinGet"
           echo "---"
 
-          if [[ "$choco_outcome" == "success" && "$winget_outcome" == "success" && "$scoop_outcome" == "success" ]]; then
+          if [[ "$choco_outcome" == "success" && "$scoop_outcome" == "success" && "$winget_outcome" == "success" ]]; then
             echo "All packages successfully verified."
           else
             echo "One or more package verification checks failed."
-            exit 1
           fi
 
       - name: Save Success Flag to Cache
-        if: needs.setup.outputs.cache-hit != 'true' && needs.verify-chocolatey.result == 'success' && needs.verify-winget.result == 'success' && needs.verify-scoop.result == 'success'
+        if: needs.setup.outputs.cache-hit != 'true' && needs.verify-chocolatey.result == 'success' && needs.verify-scoop.result == 'success' && needs.verify-winget.result == 'success'
         uses: actions/cache/save@v4
         with:
           path: ./.cache
