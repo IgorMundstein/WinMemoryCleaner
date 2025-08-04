@@ -42,29 +42,17 @@ jobs:
           echo "sha256=$sha256" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
-      - name: Create Manifest & PR
+      - name: Create Manifest File
+        id: create_manifest
         env:
-          GH_TOKEN: ${{ secrets.SCOOP_TOKEN }}
           RELEASE_TAG: ${{ steps.get_release.outputs.tag }}
           SHA256: ${{ steps.download.outputs.sha256 }}
-          FORK_OWNER: ${{ github.repository_owner }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" scoop-bucket-clone
-          cd scoop-bucket-clone
-
-          git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
-          git fetch upstream master --depth=1
-          
-          $branchName = "update/WinMemoryCleaner-$env:RELEASE_TAG"
-          git checkout -b "$branchName" upstream/master
-          
-          $manifestDir = "bucket"
+          $manifestDir = "scoop-manifest"
+          New-Item -ItemType Directory -Path $manifestDir -Force
           $manifestContent = @"
           {
-              "version": "$($env:RELEASE_TAG.TrimStart('v'))",
+              "version": "$(${env:RELEASE_TAG}.TrimStart('v'))",
               "description": "This free RAM cleaner uses native Windows features to clear memory areas.",
               "homepage": "https://github.com/IgorMundstein/WinMemoryCleaner/",
               "license": "GPL-3.0",
@@ -91,12 +79,37 @@ jobs:
               }
           }
           "@
-          $manifestContent | Out-File -FilePath "$manifestDir/winmemorycleaner.json" -Encoding UTF8
-          
+          $manifestFile = "$manifestDir/winmemorycleaner.json"
+          $manifestContent | Out-File -FilePath $manifestFile -Encoding UTF8
+          echo "manifest_path=$manifestFile" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Validate Scoop manifest
+        run: |
+          choco install jq -y
+          jq . "$(echo ${{ steps.create_manifest.outputs.manifest_path }})"
+        shell: pwsh
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.SCOOP_TOKEN }}
+          RELEASE_TAG: ${{ steps.get_release.outputs.tag }}
+          SHA256: ${{ steps.download.outputs.sha256 }}
+          FORK_OWNER: ${{ github.repository_owner }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" scoop-bucket-clone
+          cd scoop-bucket-clone
+          git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
+          git fetch upstream master --depth=1
+          $branchName = "update/WinMemoryCleaner-$env:RELEASE_TAG"
+          git checkout -b "$branchName" upstream/master
+          $manifestDir = "bucket"
+          cp ../scoop-manifest/winmemorycleaner.json "$manifestDir/winmemorycleaner.json"
           git add .
           git commit -m "WinMemoryCleaner: Add version $env:RELEASE_TAG"
           git push --force origin "$branchName"
-          
           gh pr create `
             --repo "${{ env.UPSTREAM_REPO }}" `
             --head "$env:FORK_OWNER`:$branchName" `
