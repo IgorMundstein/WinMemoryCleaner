@@ -46,12 +46,12 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 The application provides quick access and information directly from the system tray.
 
 - **Menu**: A right-click menu offers quick access to trigger an optimization or exit the application.
-
-  [![](./docs/images/system-tray.png)](#system-tray-notification-area)
-
+  
+  [![](./docs/images/system-tray.png)](#system-tray-notification-area)
+  
 - **Notification**: After an optimization, a notification appears showing the reason and the approximate amount of memory that was freed.
 
-  [![](./docs/images/notification.png)](#system-tray-notification-area)
+  [![](./docs/images/notification.png)](#system-tray-notification-area)
 
 - **Tray Icon Customization**: The tray icon can be configured to display real-time physical memory usage instead of the app logo. You can customize the background and text colors, as well as set warning and danger level thresholds that change the icon's color based on current memory pressure.
 
