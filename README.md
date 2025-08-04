@@ -13,13 +13,19 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 [![](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FIgorMundstein%2FWinMemoryCleaner%2Freleases%2Flatest&query=%24.tag_name&label=Release&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
 ### 🍫 Chocolatey
-    choco install winmemorycleaner
+```cmd
+choco install winmemorycleaner
+```
 
 ### 🍦 Scoop
-    scoop install winmemorycleaner
+```cmd
+scoop install winmemorycleaner
+```
 
 ### 📦 WinGet
-    winget install IgorMundstein.WinMemoryCleaner
+```cmd
+winget install IgorMundstein.WinMemoryCleaner
+```
 
 ---
 
@@ -32,7 +38,6 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 | **Auto&nbsp;Update** | Automatically checks for new versions every 24 hours to keep the application up to date. |
 | **Close&nbsp;after&nbsp;Optimization**| The application will automatically close after a memory optimization is completed. |
 | **Close&nbsp;to&nbsp;Notification&nbsp;Area**| Minimizes the app to the system tray instead of closing when the 'X' button is clicked. |
-| **Compact&nbsp;Mode** | Collapse the UI to a minimal view for at-a-glance monitoring using the arrow next to the minimize button. |
 | **Global&nbsp;Hotkey** | Trigger an optimization instantly from anywhere with a customizable hotkey (default `CTRL+SHIFT+M`). |
 | **Multi-Language&nbsp;Support** | Albanian, Arabic, Bulgarian, Chinese (Simplified), Chinese (Traditional), Dutch, English, French, German, Greek, Hebrew, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Macedonian, Norwegian, Persian, Polish, Portuguese, Russian, Serbian, Slovenian, Spanish, Thai, Turkish, and Ukrainian. |
 | **Process&nbsp;Exclusion&nbsp;List** | Build a list of processes to ignore during memory optimization, protecting critical applications. |
@@ -40,6 +45,12 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 | **Run&nbsp;on&nbsp;Startup** | Automatically starts the application when Windows boots by creating a task in the Windows Task Scheduler. |
 | **Show&nbsp;Virtual&nbsp;Memory**| Displays virtual memory (page file) usage in the main window and system tray text. |
 | **Start&nbsp;Minimized**| The application will start minimized directly to the system tray. A single-click on the tray icon restores it. |
+
+### Compact Mode
+
+The Compact Mode feature allows you to collapse the main window into a minimal view for at-a-glance monitoring. By clicking the arrow next to the minimize button, the UI shrinks to show only the most essential memory statistics and controls. This mode is ideal for users who want to keep an eye on their system’s memory usage without occupying much screen space. Toggle Compact Mode on or off at any time to suit your workflow.
+
+[![](./docs/images/main-window-compact.png)](#compact-Mode)
 
 ### System Tray (Notification area)
 
@@ -154,19 +165,23 @@ Run optimizations silently for scripting and automation. Use any combination of 
 
 **Shortcut target example:**
 
-    {path}\WinMemoryCleaner.exe /WorkingSet /StandbyList /SystemFileCache
+```cmd
+{path}\WinMemoryCleaner.exe /WorkingSet /StandbyList /SystemFileCache
+```
 
 ### Windows Service Mode
 
 For continuous, hands-off optimization, install the application as a background service. Run these commands from an administrator command prompt:
 
 **Install Service:**
-
-    {path}\WinMemoryCleaner.exe /Install
+```cmd
+{path}\WinMemoryCleaner.exe /Install
+```
 
 **Uninstall Service:**
-
-    {path}\WinMemoryCleaner.exe /Uninstall
+```cmd
+{path}\WinMemoryCleaner.exe /Uninstall
+```
 
 ---
 
