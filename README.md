@@ -4,7 +4,7 @@
 
 This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run.
 
-[![](./.github/images/main-window.png)](#windows-memory-cleaner)
+[![](./docs/images/main-window.png)](#windows-memory-cleaner)
 
 ## ⬇️ Download
 
@@ -43,7 +43,7 @@ We understand that users are rightfully skeptical of system utilities. This proj
 
 ### Automated & Secure Builds (CI/CD)
 
-Every official release of WinMemoryCleaner is built, signed, and published automatically by a **CI/CD pipeline using GitHub Actions**. The entire process is defined in the public [`release.yml`](/.github/workflows/release.yml) workflow file in this repository. This ensures that the distributed executables are compiled directly from the source code you see here, eliminating the potential for manual error or intervention.
+Every official release of WinMemoryCleaner is built, signed, and published automatically by a **CI/CD pipeline using GitHub Actions**. The entire process is defined in the public [release.yml](/.github/workflows/release.yml) workflow file in this repository. This ensures that the distributed executables are compiled directly from the source code you see here, eliminating the potential for manual error or intervention.
 
 ### Verifiable Code Signing
 
@@ -55,13 +55,13 @@ A digital signature proves two things:
 
 You can verify the signature by right-clicking the `.exe` -> `Properties` -> `Digital Signatures`
 
-[![](./.github/images/digital-signature.png)](#-trust--integrity)
+[![](./docs/images/digital-signature.png)](#-trust--integrity)
 
 ### Microsoft Defender SmartScreen
 
 Even with a valid digital signature, Microsoft Defender SmartScreen may initially flag a new release with a "Windows protected your PC" warning.
 
-[![](./.github/images/microsoft-defender-smart-screen.png)](#-microsoft-defender-smartscreen)
+[![](./docs/images/microsoft-defender-smart-screen.png)](#-microsoft-defender-smartscreen)
 
 This happens because the application is new and has not yet built a strong reputation with Microsoft. This is a standard, reputation-based security measure. By running the app, you help it build a positive reputation, which will cause this warning to disappear more quickly for other users. We appreciate your trust and understanding.
 
@@ -71,7 +71,7 @@ Each new version is automatically submitted for analysis to leading security pla
 
 ## 🚀 Key Features
 
-| Feature | Description |
+| **Feature** | **Description** |
 |:---|:---|
 | **Always&nbsp;on&nbsp;Top** | Pins the main application window so it is always visible above other windows. |
 | **Auto&nbsp;Optimization** | Set the app to clean memory automatically, either by period (`Every X hours`) or when free RAM drops below a specified percentage (`When free memory is below X percent`). |
@@ -93,11 +93,11 @@ The application provides quick access and information directly from the system t
 
 - **Menu**: A right-click menu offers quick access to trigger an optimization or exit the application.
 
-  [![](./.github/images/system-tray.png)](#system-tray-notification-area)
+  [![](./docs/images/system-tray.png)](#system-tray-notification-area)
 
 - **Notification**: After an optimization, a notification appears showing the reason and the approximate amount of memory that was freed.
 
-  [![](./.github/images/notification.png)](#system-tray-notification-area)
+  [![](./docs/images/notification.png)](#system-tray-notification-area)
 
 - **Tray Icon Customization**: The tray icon can be configured to display real-time physical memory usage instead of the app logo. You can customize the background and text colors, as well as set warning and danger level thresholds that change the icon's color based on current memory pressure.
 
@@ -119,7 +119,7 @@ WinMemoryCleaner provides a user-friendly interface for powerful, documented Win
 
 Here’s a breakdown of what each function does and the minimum supported Windows version required to use it:
 
-| Memory Areas | Description | Windows | Server |
+| **Memory Areas** | **Description** | **Windows** | **Server** |
 | :--- | :--- | :---: | :---: |
 | **Combined&nbsp;Page&nbsp;List** | Flushes memory blocks from the page-combining list (a memory-saving feature in modern Windows that merges identical pages of memory). | 8+ | 2012+ |
 | **Modified&nbsp;File&nbsp;Cache** | Flushes the volume file cache to disk for all fixed drives, ensuring all pending writes are committed. | XP+ | 2003+ |
@@ -166,9 +166,9 @@ All optimization activities are logged to the Windows Event Viewer for a transpa
 
 1. Press **Win + R**, type **eventvwr**, and press Enter.
 2. Navigate to `Windows Logs > Application`
-3. Look for events with the source name **WinMemoryCleaner**
+3. Look for events with the source name **Windows Memory Cleaner**
 
-[![](./.github/images/windows-event-log.png)](#-logs)
+[![](./docs/images/windows-event-log.png)](#-logs)
 
 ## ❓ Frequently Asked Questions (FAQ)
 
@@ -240,7 +240,7 @@ If you are a native speaker of any language other than English, you can contribu
 
 💡 AI translation tools will be utilized when a new version requires changes to the translated text. The contributor's efforts to submit updates are always appreciated.
 
-| Language | Contributor(s) | Language | Contributor(s) |
+| **Language** | **Contributor(s)** | **Language** | **Contributor(s)** |
 |:---|:---|:---|:---|
 | 🇦🇱&nbsp;Albanian | [Omer Rustemi](https://github.com/omerrustemicode) | 🇯🇵&nbsp;Japanese | [dai](https://github.com/dai) |
 | 🇸🇦&nbsp;Arabic | [Abdulmajeed Al-Rajhi](https://github.com/Abdulmajeed-Alrajhi) | 🇰🇷&nbsp;Korean | [VenusGirl](https://github.com/VenusGirl) |
