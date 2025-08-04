@@ -217,10 +217,7 @@ jobs:
           summary_row "WinGet"     "📦" "${{ needs.winget.outputs.published }}"     "${{ needs.winget.outputs.e2e_result }}"
 
       - name: Save Success Flag to Cache
-        if: needs.setup.outputs.cache-hit != 'true' \
-          && needs.chocolatey.outputs.published == 'true' && needs.chocolatey.outputs.e2e_result == 'success' \
-          && needs.scoop.outputs.published == 'true' && needs.scoop.outputs.e2e_result == 'success' \
-          && needs.winget.outputs.published == 'true' && needs.winget.outputs.e2e_result == 'success'
+        if: needs.setup.outputs.cache-hit != 'true' && needs.chocolatey.outputs.published == 'true' && needs.chocolatey.outputs.e2e_result == 'success' && needs.scoop.outputs.published == 'true' && needs.scoop.outputs.e2e_result == 'success' && needs.winget.outputs.published == 'true' && needs.winget.outputs.e2e_result == 'success'
         uses: actions/cache/save@v4
         with:
           path: ./.cache
