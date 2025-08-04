@@ -49,12 +49,14 @@ jobs:
           MSRC_CLIENT_SECRET: ${{ env.MSRC_CLIENT_SECRET }}
           MSRC_TENANT_ID: ${{ env.MSRC_TENANT_ID }}
         run: |
-          TOKEN=$(curl -s -X POST \
+          RESPONSE=$(curl -s -X POST \
             -d "client_id=$MSRC_CLIENT_ID" \
             -d "scope=api://api.msrc.microsoft.com/.default" \
             -d "client_secret=$MSRC_CLIENT_SECRET" \
             -d "grant_type=client_credentials" \
-            "https://login.microsoftonline.com/$MSRC_TENANT_ID/oauth2/v2.0/token" | jq -r '.access_token')
+            "https://login.microsoftonline.com/$MSRC_TENANT_ID/oauth2/v2.0/token")
+          echo "Raw token response: $RESPONSE"
+          TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
           if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
             echo "::error::Failed to obtain token"
             exit 1
