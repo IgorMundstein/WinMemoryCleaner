@@ -1,6 +1,6 @@
 # Windows Memory Cleaner
 
-![](https://img.shields.io/badge/WINDOWS-XP%20–%2011-blue?style=for-the-badge) ![](https://img.shields.io/badge/SERVER-2003%20–%202026-blue?style=for-the-badge) [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE) [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
+![](https://img.shields.io/badge/WINDOWS-XP%20%E2%80%93%2011-blue?style=for-the-badge) ![](https://img.shields.io/badge/SERVER-2003%20%E2%80%93%202026-blue?style=for-the-badge) [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE) [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
 This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run.
 
@@ -32,7 +32,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 | **Auto&nbsp;Update** | Automatically checks for new versions every 24 hours to keep the application up to date. |
 | **Close&nbsp;after&nbsp;Optimization**| The application will automatically close after a memory optimization is completed. |
 | **Close&nbsp;to&nbsp;Notification&nbsp;Area**| Minimizes the app to the system tray instead of closing when the 'X' button is clicked. |
-| **Compact&nbsp;Mode** | Collapse the UI to a minimal view for at-a-glance monitoring using the arrow next to the minimize button. |
+| **Compact&nbsp;Mode** | Collapse the UI to a minimal view for at-a-alance monitoring using the arrow next to the minimize button. |
 | **Global&nbsp;Hotkey** | Trigger an optimization instantly from anywhere with a customizable hotkey (default `CTRL+SHIFT+M`). |
 | **Multi-Language&nbsp;Support** | Albanian, Arabic, Bulgarian, Chinese (Simplified), Chinese (Traditional), Dutch, English, French, German, Greek, Hebrew, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Macedonian, Norwegian, Persian, Polish, Portuguese, Russian, Serbian, Slovenian, Spanish, Thai, Turkish, and Ukrainian. |
 | **Process&nbsp;Exclusion&nbsp;List** | Build a list of processes to ignore during memory optimization, protecting critical applications. |
@@ -47,11 +47,11 @@ The application provides quick access and information directly from the system t
 
 - **Menu**: A right-click menu offers quick access to trigger an optimization or exit the application.
 
-  [![](./docs/images/system-tray.png)](#system-tray-notification-area)
+  [![](./docs/images/system-tray.png)](#system-tray-notification-area)
 
 - **Notification**: After an optimization, a notification appears showing the reason and the approximate amount of memory that was freed.
 
-  [![](./docs/images/notification.png)](#system-tray-notification-area)
+  [![](./docs/images/notification.png)](#system-tray-notification-area)
 
 - **Tray Icon Customization**: The tray icon can be configured to display real-time physical memory usage instead of the app logo. You can customize the background and text colors, as well as set warning and danger level thresholds that change the icon's color based on current memory pressure.
 
@@ -77,7 +77,7 @@ Don't take our word for it. You can verify the effects of this tool using Window
 
 1. Open Resource Monitor (search `resmon.exe` in the Start Menu).
 2. Go to the **Memory** tab. Observe the blue "Standby" portion of the bar. This is RAM used for caching files from closed programs.
-3. Open and close a few large applications (a game, a browser, Photoshop). Watch the blue "Standby" section grow.
+3. Now, open and close a few large applications (a game, a browser, Photoshop). Watch the blue "Standby" section grow.
 4. In WinMemoryCleaner, select **only the `Standby List`** and click `Optimize`
 5. Watch the Resource Monitor again. The blue "Standby" memory will instantly drop, and the light green "Free" memory will increase by the same amount.
 
@@ -251,21 +251,28 @@ Meanwhile, as a workaround, you can [add an exclusion to Windows Security](https
 
 ## 🌐 Translation
 
-If you are a native speaker of any language other than English, you can contribute by translating the file: [English.json](/src/Resources/Localization/English.json)
+If you're a native speaker of a language other than English, you can contribute by translating the [English.json](/src/Resources/Localization/English.json) file.
 
-💡 You can test any translation by creating a file alongside the executable
-1. Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the **locale description** of the language
-2. Save it as **{locale-description}.json** using **UTF-8** as character encoding
-3. Launch the application. If successful, the new language and changes will be visible
-4. Either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14)
+**Please note:** Translated texts should be provided in **lowercase**. The application will automatically handle capitalization as needed for the user interface.
 
-💡 If you are a .NET developer
+### How to Test Your Translation
 
-1. You can add the new file to the Resources\Localization folder
-2. Change the file build action property to Embedded Resource
-3. Rebuild and run the WinMemoryCleaner project
+You can test any translation by creating a file alongside the executable:
 
-💡 AI translation tools will be utilized when a new version requires changes to the translated text. The contributor's efforts to submit updates are always appreciated.
+1.  Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the **locale description** for your language.
+2.  Save your translation as **{locale-description}.json** using **UTF-8** character encoding.
+3.  Launch the application. If successful, the new language and your changes will be visible.
+4.  Once tested, please either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14).
+
+### For .NET Developers
+
+If you are a .NET developer, you can integrate the new file directly into the project:
+
+1.  Add the new file to the `Resources\Localization` folder.
+2.  Change the file's **Build Action** property to `Embedded Resource`.
+3.  Rebuild and run the `WinMemoryCleaner` project.
+
+We appreciate all contributions! Please note that AI translation tools will be utilized when a new version requires changes to the translated text. Your efforts to submit updates are always valued.
 
 | **Language** | **Contributor(s)** | **Language** | **Contributor(s)** |
 |:---|:---|:---|:---|
