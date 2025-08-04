@@ -85,27 +85,13 @@ jobs:
             core.setOutput('homepage', repo.homepage || repo.html_url);
             core.setOutput('license', repo.license.spdx_id);
 
-      - name: Create Manifest and Pull Request
+      - name: Create Manifest Files
         if: steps.check_winget.outputs.skip == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        id: create_manifest
         run: |
           set -e
-          
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" winget-fork
-          cd winget-fork
-          git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
-          git fetch upstream master --depth=1
-          
-          BRANCH_NAME="add/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
-          git checkout -b "$BRANCH_NAME" upstream/master
-          
-          MANIFEST_DIR="manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
+          MANIFEST_DIR="winget-manifest"
           mkdir -p "$MANIFEST_DIR"
-          
           cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
           PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
@@ -144,6 +130,37 @@ jobs:
           ManifestType: defaultLocale
           ManifestVersion: 1.6.0
           EOF
+          echo "manifest_dir=$MANIFEST_DIR" >> $GITHUB_OUTPUT
+
+      - name: Validate WinGet Manifest
+        if: steps.check_winget.outputs.skip == 'false'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          wget https://github.com/microsoft/winget-cli/releases/download/v1.7.10861/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
+          pip install yamllint
+          yamllint ${{ steps.create_manifest.outputs.manifest_dir }}/*.yaml
+
+      - name: Create Pull Request
+        if: steps.check_winget.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          set -e
+          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" winget-fork
+          cd winget-fork
+          git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
+          git fetch upstream master --depth=1
+          
+          BRANCH_NAME="add/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
+          git checkout -b "$BRANCH_NAME" upstream/master
+          
+          mkdir -p "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
+          cp ../winget-manifest/*.yaml "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}/"
           
           git add .
           git commit -m "Add ${{ github.repository_owner }}.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}"
