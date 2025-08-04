@@ -84,10 +84,36 @@ jobs:
           echo "manifest_path=$manifestFile" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
 
-      - name: Validate Scoop manifest
+      - name: Lint JSON manifest
         run: |
           choco install jq -y
-          jq . "$(echo ${{ steps.create_manifest.outputs.manifest_path }})"
+          jq . "$(echo ${{ steps.create_manifest.outputs.manifest_path }})" >nul
+        shell: pwsh
+
+      - name: Quality check Scoop manifest
+        run: |
+          $manifestPath = "$(echo ${{ steps.create_manifest.outputs.manifest_path }})"
+          $json = Get-Content $manifestPath | ConvertFrom-Json
+          $errors = @()
+          if (-not $json.version -or $json.version -notmatch '^\d+\.\d+\.\d+$') {
+            $errors += "Version must be present and follow semantic versioning (e.g., 1.2.3)."
+          }
+          if (-not $json.description -or $json.description.Length -lt 10) {
+            $errors += "Description must be at least 10 characters."
+          }
+          if (-not $json.homepage) {
+            $errors += "Homepage must be present."
+          }
+          if (-not $json.license) {
+            $errors += "License must be present."
+          }
+          if (-not $json.architecture.'64bit'.url -or -not $json.architecture.'64bit'.hash) {
+            $errors += "64bit architecture url and hash must be present."
+          }
+          if ($errors.Count -gt 0) {
+            Write-Host "::error::Manifest quality check failed:`n$($errors -join "`n")"
+            exit 1
+          }
         shell: pwsh
 
       - name: Create Pull Request
