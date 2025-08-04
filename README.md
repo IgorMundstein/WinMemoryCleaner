@@ -6,6 +6,8 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 [![](./docs/images/main-window.png)](#windows-memory-cleaner)
 
+---
+
 ## ⬇️ Download
 
 [![](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FIgorMundstein%2FWinMemoryCleaner%2Freleases%2Flatest&query=%24.tag_name&label=Release&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
@@ -19,55 +21,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 ### 📦 WinGet
     winget install IgorMundstein.WinMemoryCleaner
 
-## ✍️ A Note From the Developer
-
-In the past, I struggled with having the hardware and software to enjoy the best of technology and gaming. It was a constant battle to squeeze every last drop of performance out of a limited machine.
-
-Although today I might not need this tool for my own use, I maintain it in my free time for a simple reason: to help others who still face that struggle. I see this project as a form of social work—a contribution to the art of technology and a thank you to the beautiful open-source community that empowers us all.
-
-This tool is for you. Knowing that it helps someone get a smoother experience, load a game faster, or simply feel less frustration with their computer is what motivates me. Real, true comments on how this tool helps you make my day.
-
-## 🔴 The Problem: Inefficient Memory Management
-
-Modern operating systems are good at managing memory, but they aren't perfect. Over time, RAM can become cluttered with cached data from closed applications (**Standby List**) or held unnecessarily by running processes (**Working Set**). This leads to system slowdowns, stuttering in applications, and reduced responsiveness, especially on systems with limited RAM.
-
-The market for PC utilities is plagued by "RAM boosters" that use deceptive tricks and offer no real, verifiable benefits, creating deep-seated skepticism among users.
-
-## ✅ The Solution: A Transparent, Evidence-Based Tool
-
-WinMemoryCleaner is the antidote to "snake oil" utilities. It does not use undocumented hacks or harmful tricks. Instead, it provides a clean, user-friendly interface to powerful, **native Windows API functions** that give you direct control over your system's memory. It is a tool built on transparency, proof, and respect for the user.
-
-## 🔐 Trust & Integrity
-
-We understand that users are rightfully skeptical of system utilities. This project is built on a foundation of verifiable trust and transparency.
-
-### Automated & Secure Builds (CI/CD)
-
-Every official release of WinMemoryCleaner is built, signed, and published automatically by a **CI/CD pipeline using GitHub Actions**. The entire process is defined in the public [release.yml](/.github/workflows/release.yml) workflow file in this repository. This ensures that the distributed executables are compiled directly from the source code you see here, eliminating the potential for manual error or intervention.
-
-### Verifiable Code Signing
-
-Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with.
-
-A digital signature proves two things:
-* **Authenticity:** The publisher of the file is who they say they are.
-* **Integrity:** The file has not been altered or tampered with since it was signed.
-
-You can verify the signature by right-clicking the `.exe` -> `Properties` -> `Digital Signatures`
-
-[![](./docs/images/digital-signature.png)](#-trust--integrity)
-
-### Microsoft Defender SmartScreen
-
-Even with a valid digital signature, Microsoft Defender SmartScreen may initially flag a new release with a "Windows protected your PC" warning.
-
-[![](./docs/images/microsoft-defender-smart-screen.png)](#-microsoft-defender-smartscreen)
-
-This happens because the application is new and has not yet built a strong reputation with Microsoft. This is a standard, reputation-based security measure. By running the app, you help it build a positive reputation, which will cause this warning to disappear more quickly for other users. We appreciate your trust and understanding.
-
-### Independent Security Scans
-
-Each new version is automatically submitted for analysis to leading security platforms, including VirusTotal and Hybrid Analysis, to ensure it is free from threats.
+---
 
 ## 🚀 Key Features
 
@@ -101,17 +55,69 @@ The application provides quick access and information directly from the system t
 
 - **Tray Icon Customization**: The tray icon can be configured to display real-time physical memory usage instead of the app logo. You can customize the background and text colors, as well as set warning and danger level thresholds that change the icon's color based on current memory pressure.
 
+---
+
+## 🔴 The Problem: Inefficient Memory Management
+
+Modern operating systems are good at managing memory, but they aren't perfect. Over time, RAM can become cluttered with cached data from closed applications (**Standby List**) or held unnecessarily by running processes (**Working Set**). This leads to system slowdowns, stuttering in applications, and reduced responsiveness, especially on systems with limited RAM.
+
+The market for PC utilities is plagued by "RAM boosters" that use deceptive tricks and offer no real, verifiable benefits, creating deep-seated skepticism among users.
+
+---
+
+## ✅ The Solution: A Transparent, Evidence-Based Tool
+
+WinMemoryCleaner is the antidote to "snake oil" utilities. It does not use undocumented hacks or harmful tricks. Instead, it provides a clean, user-friendly interface to powerful, **native Windows API functions** that give you direct control over your system's memory. It is a tool built on transparency, proof, and respect for the user.
+
+---
+
 ## 🔬 Proof of Concept: See It Work Yourself
 
 Don't take our word for it. You can verify the effects of this tool using Windows' own **Resource Monitor**.
 
-1.  Open Resource Monitor (search `resmon.exe` in the Start Menu).
-2.  Go to the **Memory** tab. Observe the blue "Standby" portion of the bar. This is RAM used for caching files from closed programs.
-3.  Open and close a few large applications (a game, a browser, Photoshop). Watch the blue "Standby" section grow.
-4.  In WinMemoryCleaner, select **only the `Standby List`** and click `Optimize`
-5.  Watch the Resource Monitor again. The blue "Standby" memory will instantly drop, and the light green "Free" memory will increase by the same amount.
+1. Open Resource Monitor (search `resmon.exe` in the Start Menu).
+2. Go to the **Memory** tab. Observe the blue "Standby" portion of the bar. This is RAM used for caching files from closed programs.
+3. Open and close a few large applications (a game, a browser, Photoshop). Watch the blue "Standby" section grow.
+4. In WinMemoryCleaner, select **only the `Standby List`** and click `Optimize`
+5. Watch the Resource Monitor again. The blue "Standby" memory will instantly drop, and the light green "Free" memory will increase by the same amount.
 
 This is a direct, verifiable demonstration that the application converts cached memory into truly free memory, ready for your next task.
+
+---
+
+## 🔐 Trust & Integrity
+
+We understand that users are rightfully skeptical of system utilities. This project is built on a foundation of verifiable trust and transparency.
+
+### Automated & Secure Builds (CI/CD)
+
+Every official release of WinMemoryCleaner is built, signed, and published automatically by a **CI/CD pipeline using GitHub Actions**. The entire process is defined in the public [release.yml](/.github/workflows/release.yml) workflow file in this repository. This ensures that the distributed executables are compiled directly from the source code you see here, eliminating the potential for manual error or intervention.
+
+### Verifiable Code Signing
+
+Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with.
+
+A digital signature proves two things:
+* **Authenticity:** The publisher of the file is who they say they are.
+* **Integrity:** The file has not been altered or tampered with since it was signed.
+
+You can verify the signature by right-clicking the `.exe` -> `Properties` -> `Digital Signatures`
+
+[![](./docs/images/digital-signature.png)](#-trust--integrity)
+
+### Microsoft Defender SmartScreen
+
+Even with a valid digital signature, Microsoft Defender SmartScreen may initially flag a new release with a "Windows protected your PC" warning.
+
+[![](./docs/images/microsoft-defender-smart-screen.png)](#-microsoft-defender-smartscreen)
+
+This happens because the application is new and has not yet built a strong reputation with Microsoft. This is a standard, reputation-based security measure. By running the app, you help it build a positive reputation, which will cause this warning to disappear more quickly for other users. We appreciate your trust and understanding.
+
+### Independent Security Scans
+
+Each new version is automatically submitted for analysis to leading security platforms, including VirusTotal and Hybrid Analysis, to ensure it is free from threats.
+
+---
 
 ## 🔧 Technical Deep Dive: How It Works
 
@@ -126,9 +132,11 @@ Here’s a breakdown of what each function does and the minimum supported Window
 | **Modified&nbsp;Page&nbsp;List** | Writes unsaved data ("dirty pages") from RAM to disk and moves the now-saved pages to the standby list. | Vista+ | 2008+ |
 | **Registry&nbsp;Cache** | Flushes registry hives from memory. Hives are logical groups of keys and values that are loaded into memory when the OS starts or a user logs in. | 8.1+ | 2012+ |
 | **Standby&nbsp;List** | Clears the entire Standby List, which contains cached data from closed applications. This is an aggressive method that frees the maximum amount of cached RAM for a demanding task. | Vista+ | 2008+ |
-| **Standby&nbsp;List&nbsp;(low&nbsp;priority)** | Clears only the lowest-priority pages from the Standby List. This is a gentle method that frees some cached RAM without removing data Windows considers more important. | Vista+ | 2008+ |
+| **Standby&nbsp;List&nbsp;(low&nbsp;priority)** | Clears only the lowest-priority pages from the Standby List. This is a gentle method that frees some cached RAM without removing data that Windows considers more important. | Vista+ | 2008+ |
 | **System&nbsp;File&nbsp;Cache** | Flushes the cache Windows uses for its own system files. This can be useful for refreshing the system's state before launching a memory-intensive application. | XP+ | 2003+ |
 | **Working&nbsp;Set** | Removes memory from all user-mode and system working sets. This forces processes (like games or browsers that hoard memory) to release non-essential RAM, which can reduce stutter and improve responsiveness. | XP+ | 2003+ |
+
+---
 
 ## 🔳 Advanced Usage
 
@@ -160,6 +168,8 @@ For continuous, hands-off optimization, install the application as a background 
 
     C:\WinMemoryCleaner.exe /Uninstall
 
+---
+
 ## 📖 Logs
 
 All optimization activities are logged to the Windows Event Viewer for a transparent audit trail.
@@ -170,16 +180,18 @@ All optimization activities are logged to the Windows Event Viewer for a transpa
 
 [![](./docs/images/windows-event-log.png)](#-logs)
 
+---
+
 ## ❓ Frequently Asked Questions (FAQ)
 
 ### How can I see the results for myself (Proof of Concept)?
 The easiest effect to observe is clearing the **Standby List**. The Standby List is memory that Windows has cached from previously closed applications. While it's technically "available," it's not "free." You can see this for yourself:
 
-1.  Open the **Resource Monitor** in Windows (you can search for `resmon.exe`).
-2.  Go to the **Memory** tab. The blue "Standby" portion of the bar represents this cached memory.
-3.  Now, open and close a few large applications (like a web browser, a game, or a document editor). You will see the blue "Standby" section grow as Windows caches those files.
-4.  Run WinMemoryCleaner and select only the **Standby List** for optimization.
-5.  Watch the Resource Monitor. The blue "Standby" memory will drop significantly, and the light green "Free" memory will increase by the same amount.
+1. Open the **Resource Monitor** in Windows (you can search for `resmon.exe`).
+2. Go to the **Memory** tab. The blue "Standby" portion of the bar represents this cached memory.
+3. Now, open and close a few large applications (like a web browser, a game, or a document editor). You will see the blue "Standby" section grow as Windows caches those files.
+4. Run WinMemoryCleaner and select only the **Standby List** for optimization.
+5. Watch the Resource Monitor. The blue "Standby" memory will drop significantly, and the light green "Free" memory will increase by the same amount.
 
 This is tangible proof that the application is directly manipulating these memory areas as advertised, converting cached (Standby) memory into truly Free memory.
 
@@ -200,7 +212,7 @@ WinMemoryCleaner is the **antivirus serum**. It's not a magical cure-all, but a 
 This project exists to serve the users who were left behind by the march of technology, and to restore faith that a utility can be both effective and honest.
 
 ### What are the project requirements?
-- Minimalistic user interface using (WPF) and single-page application (SPA) architecture
+- Minimalistic user interface using Windows Presentation Foundation (WPF) and single-page application (SPA) architecture
 - Model-View-ViewModel (MVVM) design pattern
 - No third-party dependencies
 - Portable (Single executable file)
@@ -221,6 +233,8 @@ That's a common issue that persists with every new app version. I constantly sub
 It helps if more users [submit the app for malware analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
 
 Meanwhile, as a workaround, you can [add an exclusion to Windows Security](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
+
+---
 
 ## 🌐 Translation
 
@@ -256,6 +270,18 @@ If you are a native speaker of any language other than English, you can contribu
 | 🇮🇩&nbsp;Indonesian | [Mochammad Misbahus Surur](https://github.com/Eskeyz), [Minids](https://github.com/tdnphantom) | 🇹🇭&nbsp;Thai | [nongice](https://github.com/21icepril) |
 | 🇮🇪&nbsp;Irish | [Happygolucky254](https://github.com/Happygolucky254) | 🇹🇷&nbsp;Turkish | [Rıza Emet](https://github.com/rizaemet), [Viollje](https://github.com/Viollje) |
 | 🇮🇹&nbsp;Italian | [Michele](https://github.com/wintrymichi) | 🇺🇦&nbsp;Ukrainian | [Riebi](https://github.com/RieBi), [Oleksandr](https://github.com/Mariachi1231) |
+
+---
+
+## ✍️ A Note From the Developer
+
+In the past, I struggled with having the hardware and software to enjoy the best of technology and gaming. It was a constant battle to squeeze every last drop of performance out of a limited machine.
+
+Although today I might not need this tool for my use as before, I maintain it in my free time for a simple reason: to help others who still face that struggle. I see this project as a form of social work—a contribution to the art of technology and a thank you to the beautiful open-source community that empowers us all.
+
+This tool is for you. Knowing that it helps someone get a smoother experience, load a game faster, or feel less frustrated with their computer is what motivates me—real, true comments on how this tool helps you make my day.
+
+---
 
 ## ❤️ Support the Project
 
