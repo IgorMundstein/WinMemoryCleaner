@@ -299,11 +299,11 @@ When new versions require translation updates, we may use AI tools to provide a 
 
 ## ✍️ A Note From the Developer
 
-In the past, I struggled with having the hardware and software to enjoy the best of technology and gaming. It was a constant battle to squeeze every last drop of performance out of a limited machine.
+In the past, I faced challenges with having the proper hardware and software to enjoy technology and gaming fully. It was a constant battle to squeeze every last drop of performance out of a limited machine.
 
-Although I may not need this tool for my own use as I once did, I maintain it in my free time for a simple reason: to help others who still face that struggle. I see this project as a form of social work—a contribution to the art of technology and a thank you to the beautiful open-source community that empowers us all.
+Even though I may not need this tool for my tasks as much as I once did, I continue to maintain it in my free time for a simple reason: to assist others who still encounter similar struggles. This project is a contribution to the field of technology and a tribute to the wonderful open-source community that supports us all. 
 
-This tool is for you. Hearing from users like you about how this tool helps is what truly makes my day.
+This tool is for you. Hearing from users like you about how this tool has helped someone truly makes my day. Enjoy!
 
 ---
 
