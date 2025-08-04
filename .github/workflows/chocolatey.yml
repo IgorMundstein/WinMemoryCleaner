@@ -161,12 +161,34 @@ jobs:
           "@
           Set-Content -Path (Join-Path $toolsDir "chocolateyuninstall.ps1") -Value $uninstallScriptContent -Encoding UTF8
 
-      - name: Validate Chocolatey nuspec
+      - name: Lint and quality check nuspec
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: pwsh
         run: |
           choco install chocolatey-verify.extension -y
           choco verify .\chocolatey-package\winmemorycleaner.nuspec
+          [xml]$nuspec = Get-Content .\chocolatey-package\winmemorycleaner.nuspec
+          $errors = @()
+          $meta = $nuspec.package.metadata
+          if (-not $meta.version -or $meta.version -notmatch '^\d+\.\d+\.\d+$') {
+            $errors += "Version must be present and follow semantic versioning (e.g., 1.2.3)."
+          }
+          if (-not $meta.description -or $meta.description.Length -lt 10) {
+            $errors += "Description must be at least 10 characters."
+          }
+          if (-not $meta.projectUrl) {
+            $errors += "projectUrl must be present."
+          }
+          if (-not $meta.licenseUrl) {
+            $errors += "licenseUrl must be present."
+          }
+          if (-not $meta.owners) {
+            $errors += "owners must be present."
+          }
+          if ($errors.Count -gt 0) {
+            Write-Host "::error::Nuspec quality check failed:`n$($errors -join "`n")"
+            exit 1
+          }
 
       - name: Build and Push Chocolatey package
         if: steps.check_chocolatey.outputs.skip == 'false'
