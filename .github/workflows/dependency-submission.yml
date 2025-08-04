@@ -1,0 +1,23 @@
+name: 'Dependency Submission'
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/**'
+
+jobs:
+  submit-dependency:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Submit Dependency'
+        uses: github/dependency-submission-action@v3
+        with:
+          manifest-path: src/WinMemoryCleaner.sln
