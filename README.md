@@ -119,7 +119,7 @@ Each new version is automatically submitted for analysis to leading security pla
 
 ---
 
-## 🔧 Technical Deep Dive: How It Works
+## ⚙️ Technical Deep Dive: How It Works
 
 WinMemoryCleaner provides a user-friendly interface for powerful, documented Windows API functions. There are no tricks or secrets—just direct access to the tools needed to manage your system's memory effectively. Each cleaning function targets a specific memory area, and its availability depends on your Windows version.
 
@@ -182,6 +182,20 @@ All optimization activities are logged to the Windows Event Viewer for a transpa
 
 ---
 
+## 🛠️ Complementary Tools
+
+While **Windows Memory Cleaner** excels at efficiently managing and freeing up memory, the following tools can provide even deeper insights into your system's memory usage and help with advanced troubleshooting:
+
+### 🔧 [Process Explorer](https://learn.microsoft.com/en-us/sysinternals/downloads/process-explorer)
+
+An advanced task manager from Microsoft Sysinternals that goes beyond what's available in Windows Task Manager. It provides comprehensive information about processes, including their memory usage, handles, and DLLs. Useful for identifying specific applications or services that might be consuming excessive memory.
+
+### 🔧 [RAMMap](https://learn.microsoft.com/en-us/sysinternals/downloads/rammap)
+
+A powerful physical memory usage analysis utility from Microsoft Sysinternals. RAMMap provides detailed, real-time information about how Windows is allocating physical memory, including how much is in use by processes, drivers, the kernel, and various cached data. **It also contains some cleaning features that address certain memory areas similar to Windows Memory Cleaner.** It's an excellent tool to use alongside WinMemoryCleaner to understand precisely *where* memory is being used before and after an optimization.
+
+---
+
 ## ❓ Frequently Asked Questions (FAQ)
 
 ### How can I see the results for myself (Proof of Concept)?
@@ -220,7 +234,6 @@ This project exists to serve the users who were left behind by the march of tech
 - Use of S.O.L.I.D. principles in object-oriented programming (limited due to the legacy .NET 4.0 framework)
 - Use of Windows native methods for memory management
 - Windows Event to save logs
-- Windows Presentation Foundation (WPF) for user interface
 - Windows retro compatibility (Windows XP, Server 2003, and later)
 
 ### Where does the app save the settings?
