@@ -132,14 +132,48 @@ jobs:
           EOF
           echo "manifest_dir=$MANIFEST_DIR" >> $GITHUB_OUTPUT
 
-      - name: Validate WinGet Manifest
+      - name: Lint and quality check manifests
         if: steps.check_winget.outputs.skip == 'false'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget https://github.com/microsoft/winget-cli/releases/download/v1.7.10861/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
           pip install yamllint
           yamllint ${{ steps.create_manifest.outputs.manifest_dir }}/*.yaml
+          errors=0
+          for file in ${{ steps.create_manifest.outputs.manifest_dir }}/*.yaml; do
+            if ! grep -q '^PackageIdentifier:' "$file"; then
+              echo "::error::$file missing PackageIdentifier"
+              errors=1
+            fi
+            if ! grep -q '^PackageVersion:' "$file"; then
+              echo "::error::$file missing PackageVersion"
+              errors=1
+            fi
+            if ! grep -q '^ManifestType:' "$file"; then
+              echo "::error::$file missing ManifestType"
+              errors=1
+            fi
+            if ! grep -q '^ManifestVersion:' "$file"; then
+              echo "::error::$file missing ManifestVersion"
+              errors=1
+            fi
+            if [[ $file == *.locale.en-US.yaml ]]; then
+              if ! grep -q '^License:' "$file"; then
+                echo "::error::$file missing License"
+                errors=1
+              fi
+              if ! grep -q '^PackageUrl:' "$file"; then
+                echo "::error::$file missing PackageUrl"
+                errors=1
+              fi
+              if ! grep -q '^ShortDescription:' "$file"; then
+                echo "::error::$file missing ShortDescription"
+                errors=1
+              fi
+            fi
+          done
+          if [ $errors -ne 0 ]; then
+            echo "::error::Manifest quality check failed"
+            exit 1
+          fi
 
       - name: Create Pull Request
         if: steps.check_winget.outputs.skip == 'false'
