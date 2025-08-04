@@ -1,0 +1,104 @@
+name: Submit to Microsoft Security Response Center (MSRC)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MSRC_CLIENT_ID: ${{ secrets.MSRC_CLIENT_ID }}
+  MSRC_CLIENT_SECRET: ${{ secrets.MSRC_CLIENT_SECRET }}
+  MSRC_TENANT_ID: ${{ secrets.MSRC_TENANT_ID }}
+
+jobs:
+  submit-msrc:
+    name: Submit to Microsoft Security Response Center (MSRC)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Get latest release tag
+        id: release_tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: release } = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            core.setOutput('tag', release.tag_name);
+
+      - name: Download artifact
+        run: |
+          TAG=${{ steps.release_tag.outputs.tag }}
+          curl -fL --retry 3 --retry-delay 5 -o WinMemoryCleaner.exe \
+            "https://github.com/${{ github.repository }}/releases/download/${TAG}/WinMemoryCleaner.exe"
+
+      - name: Acquire MSRC token
+        id: msrc_token
+        env:
+          MSRC_CLIENT_ID: ${{ env.MSRC_CLIENT_ID }}
+          MSRC_CLIENT_SECRET: ${{ env.MSRC_CLIENT_SECRET }}
+          MSRC_TENANT_ID: ${{ env.MSRC_TENANT_ID }}
+        run: |
+          TOKEN=$(curl -s -X POST \
+            -d "client_id=$MSRC_CLIENT_ID" \
+            -d "scope=api://api.msrc.microsoft.com/.default" \
+            -d "client_secret=$MSRC_CLIENT_SECRET" \
+            -d "grant_type=client_credentials" \
+            "https://login.microsoftonline.com/$MSRC_TENANT_ID/oauth2/v2.0/token" | jq -r '.access_token')
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "::error::Failed to obtain token"
+            exit 1
+          fi
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Submit to Microsoft Security Response Center (MSRC)
+        id: msrc_submit
+        env:
+          MSRC_TOKEN: ${{ steps.msrc_token.outputs.token }}
+        run: |
+          RESPONSE=$(curl --silent -w "HTTPSTATUS:%{http_code}" -X POST \
+            "https://api.msrc.microsoft.com/report/v3.0/report/file" \
+            -H "Authorization: Bearer $MSRC_TOKEN" \
+            -F "file=@WinMemoryCleaner.exe" \
+            -F "comment=Automated release submission via GitHub Actions")
+          
+          BODY=$(echo "$RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
+          STATUS=$(echo "$RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+
+          echo "$BODY" > msrc_response.json
+
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 300 ]; then
+            echo "::notice::Submission successful."
+            REPORT_ID=$(jq -r '.id // empty' msrc_response.json)
+            if [ -n "$REPORT_ID" ]; then
+              echo "report_id=$REPORT_ID" >> $GITHUB_OUTPUT
+              echo "::notice::Report ID: $REPORT_ID"
+            fi
+          else
+            echo "::error::MSRC response error (status $STATUS):"
+            cat msrc_response.json
+            exit 1
+          fi
+
+      - name: Output response summary
+        run: |
+          if [ -f msrc_response.json ]; then
+            echo '### MSRC Response' >> $GITHUB_STEP_SUMMARY
+            jq . msrc_response.json >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f WinMemoryCleaner.exe msrc_response.json
+          echo "::notice::Cleanup complete"
