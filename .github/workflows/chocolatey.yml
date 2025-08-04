@@ -161,6 +161,13 @@ jobs:
           "@
           Set-Content -Path (Join-Path $toolsDir "chocolateyuninstall.ps1") -Value $uninstallScriptContent -Encoding UTF8
 
+      - name: Validate Chocolatey nuspec
+        if: steps.check_chocolatey.outputs.skip == 'false'
+        shell: pwsh
+        run: |
+          choco install chocolatey-verify.extension -y
+          choco verify .\chocolatey-package\winmemorycleaner.nuspec
+
       - name: Build and Push Chocolatey package
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: pwsh
