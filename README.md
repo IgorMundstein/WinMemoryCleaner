@@ -1,6 +1,6 @@
 # Windows Memory Cleaner
 
-![](https://img.shields.io/badge/WINDOWS-XP%20%E2%80%93%2011-blue?style=for-the-badge) ![](https://img.shields.io/badge/SERVER-2003%20%E2%80%93%202026-blue?style=for-the-badge) [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE) [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
+![](https://img.shields.io/badge/WINDOWS-XP%20%E2%8O%93%2011-blue?style=for-the-badge) ![](https://img.shields.io/badge/SERVER-2003%20%E2%80%93%202026-blue?style=for-the-badge) [![](https://img.shields.io/github/license/IgorMundstein/WinMemoryCleaner?style=for-the-badge)](/LICENSE) [![](https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/)
 
 This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run.
 
@@ -25,14 +25,14 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 ## 🚀 Key Features
 
-| **Feature** | **Description** |
+| Feature | Description |
 |:---|:---|
 | **Always&nbsp;on&nbsp;Top** | Pins the main application window so it is always visible above other windows. |
 | **Auto&nbsp;Optimization** | Set the app to clean memory automatically, either by period (`Every X hours`) or when free RAM drops below a specified percentage (`When free memory is below X percent`). |
 | **Auto&nbsp;Update** | Automatically checks for new versions every 24 hours to keep the application up to date. |
 | **Close&nbsp;after&nbsp;Optimization**| The application will automatically close after a memory optimization is completed. |
 | **Close&nbsp;to&nbsp;Notification&nbsp;Area**| Minimizes the app to the system tray instead of closing when the 'X' button is clicked. |
-| **Compact&nbsp;Mode** | Collapse the UI to a minimal view for at-a-alance monitoring using the arrow next to the minimize button. |
+| **Compact&nbsp;Mode** | Collapse the UI to a minimal view for at-a-glance monitoring using the arrow next to the minimize button. |
 | **Global&nbsp;Hotkey** | Trigger an optimization instantly from anywhere with a customizable hotkey (default `CTRL+SHIFT+M`). |
 | **Multi-Language&nbsp;Support** | Albanian, Arabic, Bulgarian, Chinese (Simplified), Chinese (Traditional), Dutch, English, French, German, Greek, Hebrew, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Macedonian, Norwegian, Persian, Polish, Portuguese, Russian, Serbian, Slovenian, Spanish, Thai, Turkish, and Ukrainian. |
 | **Process&nbsp;Exclusion&nbsp;List** | Build a list of processes to ignore during memory optimization, protecting critical applications. |
@@ -78,7 +78,7 @@ Don't take our word for it. You can verify the effects of this tool using Window
 1. Open Resource Monitor (search `resmon.exe` in the Start Menu).
 2. Go to the **Memory** tab. Observe the blue "Standby" portion of the bar. This is RAM used for caching files from closed programs.
 3. Now, open and close a few large applications (a game, a browser, Photoshop). Watch the blue "Standby" section grow.
-4. In WinMemoryCleaner, select **only the `Standby List`** and click `Optimize`
+4. In WinMemoryCleaner, select **only the `Standby List`** and click `Optimize`.
 5. Watch the Resource Monitor again. The blue "Standby" memory will instantly drop, and the light green "Free" memory will increase by the same amount.
 
 This is a direct, verifiable demonstration that the application converts cached memory into truly free memory, ready for your next task.
@@ -125,7 +125,7 @@ WinMemoryCleaner provides a user-friendly interface for powerful, documented Win
 
 Here’s a breakdown of what each function does and the minimum supported Windows version required to use it:
 
-| **Memory Area** | **Description** | **Windows** | **Server** |
+| Memory Area | Description | Windows | Server |
 | :--- | :--- | :---: | :---: |
 | **Combined&nbsp;Page&nbsp;List** | Flushes memory blocks from the page-combining list (a memory-saving feature in modern Windows that merges identical pages of memory). | 8+ | 2012+ |
 | **Modified&nbsp;File&nbsp;Cache** | Flushes the volume file cache to disk for all fixed drives, ensuring all pending writes are committed. | XP+ | 2003+ |
@@ -154,7 +154,7 @@ Run optimizations silently for scripting and automation. Use any combination of 
 
 **Shortcut target example:**
 
-    C:\WinMemoryCleaner.exe /WorkingSet /StandbyList /SystemFileCache
+    {path}\WinMemoryCleaner.exe /WorkingSet /StandbyList /SystemFileCache
 
 ### Windows Service Mode
 
@@ -162,11 +162,11 @@ For continuous, hands-off optimization, install the application as a background 
 
 **Install Service:**
 
-    C:\WinMemoryCleaner.exe /Install
+    {path}\WinMemoryCleaner.exe /Install
 
 **Uninstall Service:**
 
-    C:\WinMemoryCleaner.exe /Uninstall
+    {path}\WinMemoryCleaner.exe /Uninstall
 
 ---
 
@@ -198,17 +198,6 @@ A powerful physical memory usage analysis utility from Microsoft Sysinternals. R
 
 ## ❓ Frequently Asked Questions (FAQ)
 
-### How can I see the results for myself (Proof of Concept)?
-The easiest effect to observe is clearing the **Standby List**. The Standby List is memory that Windows has cached from previously closed applications. While it's technically "available," it's not "free." You can see this for yourself:
-
-1. Open the **Resource Monitor** in Windows (you can search for `resmon.exe`).
-2. Go to the **Memory** tab. The blue "Standby" portion of the bar represents this cached memory.
-3. Now, open and close a few large applications (like a web browser, a game, or a document editor). You will see the blue "Standby" section grow as Windows caches those files.
-4. Run WinMemoryCleaner and select only the **Standby List** for optimization.
-5. Watch the Resource Monitor. The blue "Standby" memory will drop significantly, and the light green "Free" memory will increase by the same amount.
-
-This is tangible proof that the application is directly manipulating these memory areas as advertised, converting cached (Standby) memory into truly Free memory.
-
 ### Is this app still useful on modern PCs, and how is it not 'snake oil'?
 This is an excellent question that gets to the core of this project's philosophy.
 
@@ -226,6 +215,7 @@ WinMemoryCleaner is the **antivirus serum**. It's not a magical cure-all, but a 
 This project exists to serve the users who were left behind by the march of technology, and to restore faith that a utility can be both effective and honest.
 
 ### What are the project requirements?
+- Logging to Windows Event Viewer
 - Minimalistic user interface using Windows Presentation Foundation (WPF) and single-page application (SPA) architecture
 - Model-View-ViewModel (MVVM) design pattern
 - No third-party dependencies
@@ -233,14 +223,13 @@ This project exists to serve the users who were left behind by the march of tech
 - Right-to-left language support and bidirectional text
 - Use of S.O.L.I.D. principles in object-oriented programming (limited due to the legacy .NET 4.0 framework)
 - Use of Windows native methods for memory management
-- Windows Event to save logs
-- Windows retro compatibility (Windows XP, Server 2003, and later)
+- Windows retro-compatibility (Windows XP, Server 2003, and later)
 
 ### Where does the app save the settings?
 They are saved in the Windows registry path `Computer\HKEY_LOCAL_MACHINE\Software\WinMemoryCleaner`
 
 ### Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
-One of the reasons for this **false alarm** is that the application adds entries to the registry and creates a scheduled task to run at startup. Windows doesn't suggest letting applications with administrator privileges run at startup. I understand that, but this is the way to do it. I apologize, but the application cannot perform a deep memory clean without administrator privileges.
+One of the reasons for this **false alarm** is that the application adds entries to the registry and creates a scheduled task to run at startup. Windows doesn't suggest letting applications with administrator privileges run at startup. I understand that, but this is the required method for this functionality. I apologize, but the application cannot perform a deep memory clean without administrator privileges.
 
 That's a common issue that persists with every new app version. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
 It helps if more users [submit the app for malware analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
@@ -259,22 +248,22 @@ If you're a native speaker of a language other than English, you can contribute 
 
 You can test any translation by creating a file alongside the executable:
 
-1.  Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the **locale description** for your language.
-2.  Save your translation as **{locale-description}.json** using **UTF-8** character encoding.
-3.  Launch the application. If successful, the new language and your changes will be visible.
-4.  Once tested, please either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14).
+1. Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the **locale description** for your language.
+2. Save your translation as **{locale-description}.json** using **UTF-8** character encoding.
+3. Launch the application. If successful, the new language and your changes will be visible.
+4. Once tested, please either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14).
 
 ### For .NET Developers
 
 If you are a .NET developer, you can integrate the new file directly into the project:
 
-1.  Add the new file to the `Resources\Localization` folder.
-2.  Change the file's **Build Action** property to `Embedded Resource`.
-3.  Rebuild and run the `WinMemoryCleaner` project.
+1. Add the new file to the `Resources\Localization` folder.
+2. Change the file's **Build Action** property to `Embedded Resource`.
+3. Rebuild and run the `WinMemoryCleaner` project.
 
-We appreciate all contributions! Please note that AI translation tools will be utilized when a new version requires changes to the translated text. Your efforts to submit updates are always valued.
+When new versions require translation updates, we may use AI tools to provide a baseline. We always value and encourage contributions from native speakers to refine and perfect these translations.
 
-| **Language** | **Contributor(s)** | **Language** | **Contributor(s)** |
+| Language | Contributor(s) | Language | Contributor(s) |
 |:---|:---|:---|:---|
 | 🇦🇱&nbsp;Albanian | [Omer Rustemi](https://github.com/omerrustemicode) | 🇯🇵&nbsp;Japanese | [dai](https://github.com/dai) |
 | 🇸🇦&nbsp;Arabic | [Abdulmajeed Al-Rajhi](https://github.com/Abdulmajeed-Alrajhi) | 🇰🇷&nbsp;Korean | [VenusGirl](https://github.com/VenusGirl) |
@@ -297,9 +286,9 @@ We appreciate all contributions! Please note that AI translation tools will be u
 
 In the past, I struggled with having the hardware and software to enjoy the best of technology and gaming. It was a constant battle to squeeze every last drop of performance out of a limited machine.
 
-Although today I might not need this tool for my use as before, I maintain it in my free time for a simple reason: to help others who still face that struggle. I see this project as a form of social work—a contribution to the art of technology and a thank you to the beautiful open-source community that empowers us all.
+Although I may not need this tool for my own use as I once did, I maintain it in my free time for a simple reason: to help others who still face that struggle. I see this project as a form of social work—a contribution to the art of technology and a thank you to the beautiful open-source community that empowers us all.
 
-This tool is for you. Knowing that it helps someone get a smoother experience, load a game faster, or feel less frustrated with their computer is what motivates me—real, true comments on how this tool helps you make my day.
+This tool is for you. Hearing from users like you about how this tool helps is what truly makes my day.
 
 ---
 
