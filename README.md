@@ -128,13 +128,13 @@ Here’s a breakdown of what each function does and the minimum supported Window
 | Memory Area | Description | Windows | Server |
 | :--- | :--- | :---: | :---: |
 | **Combined&nbsp;Page&nbsp;List** | Flushes memory blocks from the page-combining list, a memory-saving feature in modern Windows that merges identical pages of memory. | 8+ | 2012+ |
-| **Modified&nbsp;File&nbsp;Cache** | Flushes the volume file cache to disk for all fixed drives, ensuring all pending writes are committed. This operation forces the system's file cache to write its data to disk. | XP+ | 2003+ |
-| **Modified&nbsp;Page&nbsp;List** | Writes unsaved data ("dirty pages") from RAM to disk and moves the now-saved pages to the standby list. | Vista+ | 2008+ |
-| **Registry&nbsp;Cache** | Flushes registry hives from memory. Hives are logical groups of keys and values that are loaded into memory when the OS starts or a user logs in. This API writes all attributes of a specified open registry key into the registry hive on disk, ensuring any cached data is persisted. | 8.1+ | 2012+ |
-| **Standby&nbsp;List** | Clears the entire Standby List, which contains cached data from closed applications. This is an aggressive method that frees the maximum amount of cached RAM for a demanding task. | Vista+ | 2008+ |
-| **Standby&nbsp;List&nbsp;(low&nbsp;priority)** | Clears only the lowest-priority pages from the Standby List. This is a gentle method that frees some cached RAM without removing data that Windows considers more important. | Vista+ | 2008+ |
-| **System&nbsp;File&nbsp;Cache** | Flushes the cache Windows uses for its own system files. This can be useful for refreshing the system’s state before launching a memory-intensive application. It  trims the system file cache, forcing it to release memory. | XP+ | 2003+ |
-| **Working&nbsp;Set** | Removes memory from all user-mode and system working sets. This forces processes (like games or browsers that hoard memory) to release non-essential RAM, which can reduce stutter and improve responsiveness. It removes as many pages as possible from a process’s working set. | XP+ | 2003+ |
+| **Modified&nbsp;File&nbsp;Cache** | Flushes the volume file cache to disk for all fixed drives, ensuring all pending writes are committed. | XP+ | 2003+ |
+| **Modified&nbsp;Page&nbsp;List** | Writes unsaved ("dirty") pages from RAM to disk and moves the now-saved pages to the standby list. | Vista+ | 2008+ |
+| **Registry&nbsp;Cache** | Flushes registry hives from memory. Hives are logical groups of keys and values that are loaded into memory when the OS starts or a user logs in. | 8.1+ | 2012+ |
+| **Standby&nbsp;List** | Clears the entire Standby List, which contains cached data from closed applications. This aggressive method frees the maximum amount of cached RAM for demanding tasks. | Vista+ | 2008+ |
+| **Standby&nbsp;List&nbsp;(low&nbsp;priority)** | Clears only the lowest-priority pages from the Standby List. This gentle method frees some cached RAM without removing data that Windows considers more important. | Vista+ | 2008+ |
+| **System&nbsp;File&nbsp;Cache** | Flushes the cache Windows uses for its system files, trimming it to release memory. Useful for refreshing the system’s state before launching a memory-intensive application. | XP+ | 2003+ |
+| **Working&nbsp;Set** | Removes memory from all user-mode and system working sets, forcing processes (like games or browsers that hoard memory) to release non-essential RAM. This can reduce stutter and improve responsiveness. | XP+ | 2003+ |
 
 ---
 
