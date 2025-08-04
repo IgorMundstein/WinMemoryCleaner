@@ -119,7 +119,7 @@ WinMemoryCleaner provides a user-friendly interface for powerful, documented Win
 
 Here’s a breakdown of what each function does and the minimum supported Windows version required to use it:
 
-| **Memory Areas** | **Description** | **Windows** | **Server** |
+| **Memory Area** | **Description** | **Windows** | **Server** |
 | :--- | :--- | :---: | :---: |
 | **Combined&nbsp;Page&nbsp;List** | Flushes memory blocks from the page-combining list (a memory-saving feature in modern Windows that merges identical pages of memory). | 8+ | 2012+ |
 | **Modified&nbsp;File&nbsp;Cache** | Flushes the volume file cache to disk for all fixed drives, ensuring all pending writes are committed. | XP+ | 2003+ |
@@ -192,7 +192,7 @@ This is an excellent question that gets to the core of this project's philosophy
 
 WinMemoryCleaner is the **antivirus serum**. It's not a magical cure-all, but a targeted, clean, and honest tool. Here's why it's different and still relevant:
 
-* **It's for the Majority, Not Just the Elite:** While a brand-new PC with 64GB of RAM and Windows 11 might not see a dramatic difference, that's not the reality for most. The most common amount of RAM on Steam is still just **16GB**. This tool is for the student with an 8GB laptop, the gamer on a budget, and the developer running multiple VMs who needs to reclaim every last megabyte.
+* **It's for the Majority, Not Just the Elite:** While a brand-new PC with 64GB of RAM might not see a dramatic difference, that's not the reality for the average user. To understand what typical PCs look like, we can look at the Steam Hardware & Software Survey, which collects data from millions of gamers worldwide. According to this survey, the most common amount of RAM is just 16GB. This tool is built for that majority: the student with an 8GB laptop, the gamer on a budget with 16GB, and the developer running multiple virtual machines who needs to reclaim every last megabyte to keep their system running smoothly.
 * **It Gives You Control:** Modern Windows is good at memory management, but it's automated. It doesn't know you're about to launch a massive game and need all available RAM *right now*. This tool lets you make that decision yourself by clearing cached memory (the Standby List) on demand.
 * **It's Verifiable:** As shown in the "Proof of Concept" section, you don't have to trust us blindly. You can use Windows' own tools to see the app working in real-time. We're not hiding anything.
 * **It's Built on Honesty:** The code is open-source, and every function it performs is a documented, native Windows API call. We are simply providing a safe and easy-to-use interface for powerful system maintenance tasks that already exist.
