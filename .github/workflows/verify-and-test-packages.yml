@@ -34,7 +34,7 @@ jobs:
             echo "No releases found. Halting workflow."
             exit 1
           fi
-          version=$(echo "$latest_tag" | sed 's/^v//')
+          version="$latest_tag"
           echo "RELEASE_VERSION=$version" >> "$GITHUB_OUTPUT"
           echo "Checking for version: $version"
 
@@ -263,7 +263,7 @@ jobs:
       - name: "📝 Publication Summary"
         run: |
           VERSION="${{ needs.setup.outputs.release_version }}"
-          echo "### Publication Verification for v$VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "### Publication Verification for $VERSION" >> $GITHUB_STEP_SUMMARY
           echo "| Package Manager | Publication Status | E2 Test |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|-------------------|----------|" >> $GITHUB_STEP_SUMMARY
 
@@ -301,6 +301,9 @@ jobs:
             WG_MANIFEST_STATUS="❌ Manifest Not Published"
           fi
           echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | Not Available |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Ensure cache directory exists
+        run: mkdir -p .cache
 
       - name: "💾 Save Success Flag to Cache"
         if: needs.choco.outputs.cache-hit != 'true'
