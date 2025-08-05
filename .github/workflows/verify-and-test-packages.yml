@@ -208,12 +208,6 @@ jobs:
           echo "found=$found" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "path=$wingetPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: "❌ Fail if WinGet CLI not found"
-        if: steps.detect_winget.outputs.found != 'true'
-        run: |
-          echo "WinGet CLI was not found on the runner. Failing job."
-          exit 1
-
       - name: "📦 WinGet CLI Verify and Test"
         id: winget
         if: steps.detect_winget.outputs.found == 'true'
