@@ -128,20 +128,21 @@ jobs:
       published: ${{ steps.verify.outputs.published }}
       e2e_result: ${{ steps.verify.outputs.e2e_result }}
     steps:
-      - name: Install WinGet client
-        uses: crazy-max/ghaction-setup-winget@v3
-
       - name: 📦 Verify and Test on WinGet
         id: verify
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
+
           $version = "${{ needs.setup.outputs.release_version }}"
           $packageId = "IgorMundstein.WinMemoryCleaner"
           $e2e_result = "fail"
           $published = "false"
+          
           Write-Host "Updating WinGet source..."
           winget source update
+
           Write-Host "Verifying '$packageId' version '$version' on WinGet..."
           $winget_output = winget show --id $packageId --source winget --accept-source-agreements
           if ($winget_output -match "Version:\s*$version") {
