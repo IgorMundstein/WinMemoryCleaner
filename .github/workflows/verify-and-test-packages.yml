@@ -136,44 +136,32 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
           
-          $wingetPath = "${env:LOCALAPPDATA}\Microsoft\WindowsApps"
-          Write-Host "DEBUG: Initial PATH is $($env:PATH)"
-          Write-Host "DEBUG: Checking for expected winget directory at '$wingetPath'"
-
-          if (Test-Path $wingetPath) {
-              Write-Host "✅ Winget directory found. Prepending it to PATH."
-              $env:PATH = "$wingetPath;" + $env:PATH
-              Write-Host "DEBUG: Modified PATH is $($env:PATH)"
-          } else {
-              Write-Host "❌ Expected winget directory not found at '$wingetPath'."
-          }
-
-          $wingetCmd = Get-Command winget -ErrorAction SilentlyContinue
-          if ($wingetCmd) {
-              Write-Host "✅ Successfully resolved winget command: $($wingetCmd.Source)"
-          } else {
-              Write-Host "❌ FATAL: Could not find 'winget' after modifying PATH. The runner environment may be misconfigured."
-              exit 1
-          }
-
           $version = "${{ needs.setup.outputs.release_version }}"
           $packageId = "IgorMundstein.WinMemoryCleaner"
           $e2e_result = "fail"
           $published = "false"
 
-          Write-Host "Updating WinGet source..."
-          winget source update
+          Write-Host "Running initial 'winget show' to safely initialize and refresh the source..."
+          winget show --id Microsoft.PowerShell --source winget --accept-source-agreements | Out-Null
+          
+          Write-Host "Attempting explicit 'winget source update'..."
+          winget source update -ErrorAction SilentlyContinue
 
           Write-Host "Verifying '$packageId' version '$version' on WinGet..."
           $winget_output = winget show --id $packageId --source winget --accept-source-agreements
+          
           if ($winget_output -match "Version:\s*$version") {
             Write-Host "✅ Version found."
             $published = "true"
+            
             Write-Host "Performing install and smoke test..."
             winget install --id $packageId --accept-source-agreements --accept-package-agreements
+            
             $searchPaths = @("C:\Program Files", "C:\Program Files (x86)")
             $exe = Get-ChildItem -Path $searchPaths -Recurse -Filter "WinMemoryCleaner.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            
             if ($exe) {
                 & $exe.FullName --version
                 $e2e_result = "success"
@@ -185,6 +173,7 @@ jobs:
           } else {
             Write-Host "❌ Version not found."
           }
+          
           echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           if ($published -ne "true") { exit 1 }
