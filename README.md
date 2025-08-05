@@ -26,9 +26,6 @@ scoop install winmemorycleaner
 ```cmd
 winget install IgorMundstein.WinMemoryCleaner
 ```
-
----
-
 ## 🚀 Key Features
 
 | Feature | Description |
@@ -68,6 +65,25 @@ The application provides quick access and information directly from the system t
 
 ---
 
+## 🧬 Technical Deep Dive: How It Works
+
+WinMemoryCleaner provides a user-friendly interface for powerful, documented Windows API functions. There are no tricks or secrets—just direct access to the tools needed to manage your system's memory effectively. Each cleaning function targets a specific memory area, and its availability depends on your Windows version.
+
+Here’s a breakdown of what each function does and the minimum supported Windows version required to use it:
+
+| Memory Area | Description | Windows | Server |
+| :--- | :--- | :---: | :---: |
+| **Combined&nbsp;Page&nbsp;List** | Flushes memory blocks from the page-combining list, a memory-saving feature in modern Windows that merges identical pages of memory. | 8+ | 2012+ |
+| **Modified&nbsp;File&nbsp;Cache** | Flushes the volume file cache to disk for all fixed drives, ensuring all pending writes are committed. | XP+ | 2003+ |
+| **Modified&nbsp;Page&nbsp;List** | Writes unsaved pages from RAM to disk and moves the now-saved pages to the standby list. | Vista+ | 2008+ |
+| **Registry&nbsp;Cache** | Flushes registry hives from memory. Hives are logical groups of keys and values that are loaded into memory when the OS starts or a user logs in. | 8.1+ | 2012+ |
+| **Standby&nbsp;List** | Clears the entire Standby List, which contains cached data from closed applications. This aggressive method frees the maximum amount of cached RAM for demanding tasks. | Vista+ | 2008+ |
+| **Standby&nbsp;List&nbsp;(low&nbsp;priority)** | Clears only the lowest-priority pages from the Standby List. This gentle method frees some cached RAM without removing data that Windows considers more important. | Vista+ | 2008+ |
+| **System&nbsp;File&nbsp;Cache** | Flushes the cache Windows uses for its system files, trimming it to release memory. Useful for refreshing the system’s state before launching a memory-intensive application. | XP+ | 2003+ |
+| **Working&nbsp;Set** | Removes memory from all user-mode and system working sets, forcing processes (like games or browsers that hoard memory) to release non-essential RAM. This can reduce stutter and improve responsiveness. | XP+ | 2003+ |
+
+---
+
 ## 🔴 The Problem: Inefficient Memory Management
 
 Modern operating systems are good at managing memory, but they aren't perfect. Over time, RAM can become cluttered with cached data from closed applications (**Standby List**) or held unnecessarily by running processes (**Working Set**). This leads to system slowdowns, stuttering in applications, and reduced responsiveness, especially on systems with limited RAM.
@@ -93,6 +109,18 @@ Don't take our word for it. You can verify the effects of this tool using Window
 5. Watch the Resource Monitor again. The blue "Standby" memory will instantly drop, and the light green "Free" memory will increase by the same amount.
 
 This is a direct, verifiable demonstration that the application converts cached memory into truly free memory, ready for your next task.
+
+---
+
+## 📖 Logs
+
+All optimization activities are logged to the Windows Event Viewer for a transparent audit trail.
+
+1. Press **Win + R**, type **eventvwr**, and press Enter.
+2. Navigate to `Windows Logs > Application`
+3. Look for events with the source name **Windows Memory Cleaner**
+
+[![](./docs/images/windows-event-log.png)](#-logs)
 
 ---
 
@@ -128,32 +156,13 @@ This happens because the application is new and has not yet built a strong reput
 
 Each new version is automatically submitted for analysis to leading security platforms, including VirusTotal and Hybrid Analysis, to ensure it is free from threats.
 
----
+## 🤖 Automation & Deployment
 
-## ⚙️ Technical Deep Dive: How It Works
+⚠️ **Note:** You must run these headless operations with administrator privileges.
 
-WinMemoryCleaner provides a user-friendly interface for powerful, documented Windows API functions. There are no tricks or secrets—just direct access to the tools needed to manage your system's memory effectively. Each cleaning function targets a specific memory area, and its availability depends on your Windows version.
+### 🔳 Console Mode
 
-Here’s a breakdown of what each function does and the minimum supported Windows version required to use it:
-
-| Memory Area | Description | Windows | Server |
-| :--- | :--- | :---: | :---: |
-| **Combined&nbsp;Page&nbsp;List** | Flushes memory blocks from the page-combining list, a memory-saving feature in modern Windows that merges identical pages of memory. | 8+ | 2012+ |
-| **Modified&nbsp;File&nbsp;Cache** | Flushes the volume file cache to disk for all fixed drives, ensuring all pending writes are committed. | XP+ | 2003+ |
-| **Modified&nbsp;Page&nbsp;List** | Writes unsaved ("dirty") pages from RAM to disk and moves the now-saved pages to the standby list. | Vista+ | 2008+ |
-| **Registry&nbsp;Cache** | Flushes registry hives from memory. Hives are logical groups of keys and values that are loaded into memory when the OS starts or a user logs in. | 8.1+ | 2012+ |
-| **Standby&nbsp;List** | Clears the entire Standby List, which contains cached data from closed applications. This aggressive method frees the maximum amount of cached RAM for demanding tasks. | Vista+ | 2008+ |
-| **Standby&nbsp;List&nbsp;(low&nbsp;priority)** | Clears only the lowest-priority pages from the Standby List. This gentle method frees some cached RAM without removing data that Windows considers more important. | Vista+ | 2008+ |
-| **System&nbsp;File&nbsp;Cache** | Flushes the cache Windows uses for its system files, trimming it to release memory. Useful for refreshing the system’s state before launching a memory-intensive application. | XP+ | 2003+ |
-| **Working&nbsp;Set** | Removes memory from all user-mode and system working sets, forcing processes (like games or browsers that hoard memory) to release non-essential RAM. This can reduce stutter and improve responsiveness. | XP+ | 2003+ |
-
----
-
-## 🔳 Advanced Usage
-
-### Command-Line Arguments
-
-Run optimizations silently for scripting and automation. Use any combination of the following flags:
+Run optimizations silently for scripting and automation. Use any combination of the following arguments:
 
 - `/CombinedPageList`
 - `/ModifiedFileCache`
@@ -163,15 +172,15 @@ Run optimizations silently for scripting and automation. Use any combination of 
 - `/SystemFileCache`
 - `/WorkingSet`
 
-**Shortcut target example:**
+**Command-line example:**
 
 ```cmd
 {path}\WinMemoryCleaner.exe /WorkingSet /StandbyList /SystemFileCache
 ```
 
-### Windows Service Mode
+### ⚙️ Windows Service Mode
 
-For continuous, hands-off optimization, install the application as a background service. Run these commands from an administrator command prompt:
+For continuous, hands-off optimization, install the application as a background service. The installation will close some processes to install or uninstall the service without requiring a system restart, and log files will be generated along with the .exe file. Some application settings will be modified based on recommendations. You can still open the application (GUI) and configure it as desired. The service will utilize these settings.
 
 **Install Service:**
 ```cmd
@@ -182,18 +191,6 @@ For continuous, hands-off optimization, install the application as a background 
 ```cmd
 {path}\WinMemoryCleaner.exe /Uninstall
 ```
-
----
-
-## 📖 Logs
-
-All optimization activities are logged to the Windows Event Viewer for a transparent audit trail.
-
-1. Press **Win + R**, type **eventvwr**, and press Enter.
-2. Navigate to `Windows Logs > Application`
-3. Look for events with the source name **Windows Memory Cleaner**
-
-[![](./docs/images/windows-event-log.png)](#-logs)
 
 ---
 
@@ -286,7 +283,7 @@ When new versions require translation updates, we may use AI tools to provide a 
 | 🇨🇳&nbsp;Chinese&nbsp;(Simplified) | [KaiHuaDou](https://github.com/KaiHuaDou), [Kun Zhao](https://github.com/kzhdev), [Rayden](https://github.com/raydenake22) | 🇳🇴&nbsp;Norwegian | [Dan](https://github.com/danorse) |
 | 🇨🇳&nbsp;Chinese&nbsp;(Traditional) | [Rayden](https://github.com/raydenake22), [rtyrtyrtyqw](https://github.com/rtyrtyrtyqw) | 🇮🇷&nbsp;Persian | [Kavian](https://github.com/KavianK) |
 | 🇳🇱&nbsp;Dutch | [Jesse](https://github.com/dragonhuntermc), [hax4dazy](https://github.com/hax4dazy) | 🇵🇱&nbsp;Polish | [Patryk](https://github.com/Fresta56) |
-| 🇫🇷&nbsp;French | [William VINCENT](https://github.com/wixaw) | 🇧🇷&nbsp;Portuguese | Owner |
+| 🇫🇷&nbsp;French | [William VINCENT](https://github.com/wixaw) | 🇧🇷&nbsp;Portuguese | [Igor Mundstein](https://github.com/IgorMundstein) |
 | 🇩🇪&nbsp;German | [Calvin](https://github.com/Slluxx), [Niklas Englmeier](https://github.com/iamniklas), [Steve](https://github.com/uDEV2019) | 🇷🇺&nbsp;Russian | [Ruslan](https://github.com/ruslooob) |
 | 🇬🇷&nbsp;Greek | [Theodoros Katsageorgis](https://github.com/tkatsageorgis) | 🇷🇸&nbsp;Serbian | [Dragoš Milošević](https://github.com/DragorMilos) |
 | 🇮🇱&nbsp;Hebrew | [Eliezer Bloy](https://github.com/eliezerbloy) | 🇸🇮&nbsp;Slovenian | [Jadran Rudec](https://github.com/JadranR) |
