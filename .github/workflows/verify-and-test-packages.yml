@@ -14,8 +14,8 @@ jobs:
       contents: read
     outputs:
       release_version: ${{ steps.get_version.outputs.RELEASE_VERSION }}
-      cache-hit: ${{ steps.cache_check.outputs.cache-hit }}
       cache-key: ${{ steps.cache_check.outputs.cache-primary-key }}
+      cache-hit: ${{ steps.cache_restore.outputs.cache-hit }}
     steps:
       - name: "⏳ Add grace period after release publication"
         if: github.event_name == 'release'
@@ -38,8 +38,13 @@ jobs:
           echo "RELEASE_VERSION=$version" >> "$GITHUB_OUTPUT"
           echo "Checking for version: $version"
 
-      - name: "🗄️ Check if Already Verified via Cache"
+      - name: "🗄️ Set cache key"
         id: cache_check
+        run: |
+          echo "cache-primary-key=verification-flag-v${{ steps.get_version.outputs.RELEASE_VERSION }}" >> $GITHUB_OUTPUT
+
+      - name: "🗄️ Restore Publication Success Cache"
+        id: cache_restore
         uses: actions/cache/restore@v4
         with:
           path: ./.cache
@@ -289,6 +294,7 @@ jobs:
           } catch {
             Write-Host "❌ Manifest for $id $ver NOT found in winget-pkgs."
             echo "published=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 1
           }
 
   summarize:
@@ -338,11 +344,27 @@ jobs:
           fi
           echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | Not Available |" >> $GITHUB_STEP_SUMMARY
 
-      - name: Ensure cache directory exists
-        run: mkdir -p .cache
+      - name: "Set cache flag if all published"
+        id: allpublished
+        run: |
+          ALL_PUBLISHED=true
+          if [ "${{ needs.choco.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
+          if [ "${{ needs.scoop.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
+          if [ "${{ needs.winget_cli.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
+          if [ "${{ needs.winget_manifest.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
+
+          echo "ALL_PUBLISHED=$ALL_PUBLISHED" >> $GITHUB_ENV
+
+          if [ "$ALL_PUBLISHED" = "true" ]; then
+            mkdir -p .cache
+            echo "all-published" > .cache/success.flag
+            echo "All package managers published. Cache will be saved."
+          else
+            echo "Not all package managers published. Cache will NOT be saved."
+          fi
 
       - name: "💾 Save Success Flag to Cache"
-        if: needs.choco.outputs.cache-hit != 'true'
+        if: env.ALL_PUBLISHED == 'true'
         uses: actions/cache/save@v4
         with:
           path: ./.cache
