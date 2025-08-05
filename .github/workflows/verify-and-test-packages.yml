@@ -128,8 +128,17 @@ jobs:
       published: ${{ steps.verify.outputs.published }}
       e2e_result: ${{ steps.verify.outputs.e2e_result }}
     steps:
-      - name: Install WinGet
-        uses: crazy-max/ghaction-setup-winget@v4
+      - name: Ensure WinGet is installed
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            Write-Host "winget not found, attempting install..."
+            $msixbundle = "$env:TEMP\winget.msixbundle"
+            Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $msixbundle
+            Add-AppxPackage -Path $msixbundle
+          }
+          winget --version
 
       - name: 📦 Verify and Test on WinGet
         id: verify
