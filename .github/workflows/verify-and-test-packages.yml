@@ -34,7 +34,7 @@ jobs:
             echo "No releases found. Halting workflow."
             exit 1
           fi
-          version=$(echo "$latest_tag" | sed 's/v//')
+          version=$(echo "$latest_tag" | sed 's/^v//')
           echo "RELEASE_VERSION=$version" >> "$GITHUB_OUTPUT"
           echo "Checking for version: $version"
 
@@ -256,14 +256,15 @@ jobs:
           }
 
   summarize:
-    needs: [choco, scoop, winget_cli, winget_manifest]
+    needs: [setup, choco, scoop, winget_cli, winget_manifest]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: "📝 Publication Summary"
         run: |
-          echo "### Publication Verification for v${{ needs.choco.outputs.release_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "| Package Manager | Publication Status | E2E Test |" >> $GITHUB_STEP_SUMMARY
+          VERSION="${{ needs.setup.outputs.release_version }}"
+          echo "### Publication Verification for v$VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "| Package Manager | Publication Status | E2 Test |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|-------------------|----------|" >> $GITHUB_STEP_SUMMARY
 
           # Chocolatey
@@ -299,7 +300,7 @@ jobs:
           else
             WG_MANIFEST_STATUS="❌ Manifest Not Published"
           fi
-          echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | Not Available |" >> $GITHUB_STEP_SUMMARY
 
       - name: "💾 Save Success Flag to Cache"
         if: needs.choco.outputs.cache-hit != 'true'
