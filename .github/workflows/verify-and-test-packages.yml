@@ -276,29 +276,20 @@ jobs:
     steps:
       - name: "🌐 Check WinGet Manifest in winget-pkgs repo (API)"
         id: check_manifest
-        shell: pwsh
+        shell: bash
         env:
-          PKG_ID: IgorMundstein.WinMemoryCleaner
           RELEASE_VERSION: ${{ needs.setup.outputs.release_version }}
         run: |
-          $ErrorActionPreference = 'Stop'
-          $owner = "microsoft"
-          $repo = "winget-pkgs"
-          $id = "${env:PKG_ID}"
-          $ver = "${env:RELEASE_VERSION}"
-          $verPath = $ver -replace '\.', '_'
-          $manifestPath = "$($id -replace '\.', '/')/$verPath"
-          $url = "https://api.github.com/repos/$owner/$repo/contents/manifests/$manifestPath"
-          Write-Host "Checking manifest existence: $url"
-          try {
-            $response = Invoke-RestMethod -Uri $url -Method Get
-            Write-Host "✅ Manifest for $id $ver found in winget-pkgs!"
-            echo "published=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } catch {
-            Write-Host "❌ Manifest for $id $ver NOT found in winget-pkgs."
-            echo "published=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            exit 1
-          }
+          file_path="manifests/i/IgorMundstein/WinMemoryCleaner/${RELEASE_VERSION}/IgorMundstein.WinMemoryCleaner.installer.yaml"
+          url="https://api.github.com/repos/microsoft/winget-pkgs/contents/${file_path}"
+          echo "Checking manifest existence: $url"
+          if curl --fail -s "$url" > /dev/null; then
+            echo "published=true" >> $GITHUB_OUTPUT
+            echo "✅ Manifest found at $url"
+          else
+            echo "published=false" >> $GITHUB_OUTPUT
+            echo "❌ Manifest NOT found at $url"
+          fi
 
       - name: "🌐 Check WinGet Manifest in winget-pkgs repo (raw URL, non-blocking)"
         id: check_manifest_url
@@ -307,13 +298,11 @@ jobs:
         env:
           RELEASE_VERSION: ${{ needs.setup.outputs.release_version }}
         run: |
-          version="${RELEASE_VERSION}"
-          manifest_url="https://raw.githubusercontent.com/microsoft/winget-pkgs/master/manifests/I/IgorMundstein/WinMemoryCleaner/${version//./_}/WinMemoryCleaner.yaml"
+          file_path="manifests/i/IgorMundstein/WinMemoryCleaner/${RELEASE_VERSION}/IgorMundstein.WinMemoryCleaner.installer.yaml"
+          manifest_url="https://raw.githubusercontent.com/microsoft/winget-pkgs/master/${file_path}"
           if curl --fail -s "$manifest_url" > /dev/null; then
-            echo "Manifest found at $manifest_url"
             echo "manifest_found=true" >> $GITHUB_OUTPUT
           else
-            echo "Manifest NOT found at $manifest_url"
             echo "manifest_found=false" >> $GITHUB_OUTPUT
           fi
 
