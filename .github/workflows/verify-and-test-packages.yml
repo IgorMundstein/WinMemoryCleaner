@@ -136,7 +136,27 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
+          
+          $wingetPath = "${env:LOCALAPPDATA}\Microsoft\WindowsApps"
+          Write-Host "DEBUG: Initial PATH is $($env:PATH)"
+          Write-Host "DEBUG: Checking for expected winget directory at '$wingetPath'"
+
+          if (Test-Path $wingetPath) {
+              Write-Host "✅ Winget directory found. Prepending it to PATH."
+              $env:PATH = "$wingetPath;" + $env:PATH
+              Write-Host "DEBUG: Modified PATH is $($env:PATH)"
+          } else {
+              Write-Host "❌ Expected winget directory not found at '$wingetPath'."
+          }
+
+          $wingetCmd = Get-Command winget -ErrorAction SilentlyContinue
+          if ($wingetCmd) {
+              Write-Host "✅ Successfully resolved winget command: $($wingetCmd.Source)"
+          } else {
+              Write-Host "❌ FATAL: Could not find 'winget' after modifying PATH. The runner environment may be misconfigured."
+              exit 1
+          }
+
           $version = "${{ needs.setup.outputs.release_version }}"
           $packageId = "IgorMundstein.WinMemoryCleaner"
           $e2e_result = "fail"
