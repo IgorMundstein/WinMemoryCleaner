@@ -120,86 +120,62 @@ jobs:
           echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           if ($published -ne "true") { exit 1 }
 
-  winget:
+  winget-diagnostics:
     runs-on: windows-latest
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
-    outputs:
-      published: ${{ steps.verify.outputs.published }}
-      e2e_result: ${{ steps.verify.outputs.e2e_result }}
     steps:
-      - name: 📦 Verify and Test on WinGet
-        id: verify
+      - name: 🕵️‍♂️ Explore the Runner Environment for Winget
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
-
-          $version = "${{ needs.setup.outputs.release_version }}"
-          $packageId = "IgorMundstein.WinMemoryCleaner"
-          $e2e_result = "fail"
-          $published = "false"
+          Write-Host "--- Starting Environment Diagnostics ---"
           
-          Write-Host "Updating WinGet source..."
-          winget source update
-
-          Write-Host "Verifying '$packageId' version '$version' on WinGet..."
-          $winget_output = winget show --id $packageId --source winget --accept-source-agreements
-          if ($winget_output -match "Version:\s*$version") {
-            Write-Host "✅ Version found."
-            $published = "true"
-            Write-Host "Performing install and smoke test..."
-            winget install --id $packageId --accept-source-agreements --accept-package-agreements
-            $searchPaths = @("C:\Program Files", "C:\Program Files (x86)")
-            $exe = Get-ChildItem -Path $searchPaths -Recurse -Filter "WinMemoryCleaner.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($exe) {
-                & $exe.FullName --version
-                $e2e_result = "success"
-                Write-Host "✅ E2E Test successful."
-            } else {
-                Write-Host "❌ E2E Test Failed: Could not find WinMemoryCleaner.exe after install."
-                $e2e_result = "fail"
-            }
+          Write-Host "`n--- 1. Environment Variables ---"
+          Write-Host "LOCALAPPDATA: ${env:LOCALAPPDATA}"
+          Write-Host "PATH: $($env:PATH)"
+          
+          $wingetDir = "${env:LOCALAPPDATA}\Microsoft\WindowsApps"
+          Write-Host "`n--- 2. Exploring Expected Winget Directory: $wingetDir ---"
+          if (Test-Path $wingetDir) {
+              Write-Host "✅ Directory exists. Listing contents and properties..."
+              try {
+                $items = Get-ChildItem -Path $wingetDir -ErrorAction Stop
+                if ($items) {
+                    $items | ForEach-Object { Get-Item -Path $_.FullName | Format-List Name, FullName, LinkType, Target, Attributes, Length }
+                } else {
+                    Write-Host "Directory is empty."
+                }
+              } catch {
+                Write-Host "##[error]Could not list contents of $wingetDir. Error: $($_.Exception.Message)"
+              }
           } else {
-            Write-Host "❌ Version not found."
+              Write-Host "❌ Directory does not exist."
           }
-          echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          if ($published -ne "true") { exit 1 }
+
+          Write-Host "`n--- 3. Searching for winget.exe on C: drive ---"
+          Write-Host "This may take a few minutes..."
+          $foundFiles = Get-ChildItem -Path C:\ -Recurse -Filter "winget.exe" -ErrorAction SilentlyContinue
+          
+          if ($foundFiles) {
+              Write-Host "🔥🔥🔥 FOUND winget.exe! 🔥🔥🔥"
+              $foundFiles | ForEach-Object {
+                  Write-Host "Found at: $($_.FullName)"
+                  Get-Item -Path $_.FullName | Format-List Name, FullName, LinkType, Target, Attributes, Length
+              }
+          } else {
+              Write-Host "❌❌❌ SEARCH COMPLETE. winget.exe was NOT found anywhere on the C: drive. ❌❌❌"
+          }
+
+          Write-Host "`n--- Diagnostics Complete ---"
+          Write-Host "##[error]This job is designed to fail to provide diagnostic logs. Please review the output above."
+          exit 1
 
   summarize:
     runs-on: ubuntu-latest
-    needs: [setup, chocolatey, scoop, winget]
+    # Note: This will not run until the diagnostics job is replaced with the final working job.
+    needs: [setup, chocolatey, scoop, winget-diagnostics]
     if: always()
     steps:
       - name: 📝 Report Final Status
         run: |
-          if [ "${{ needs.setup.outputs.cache-hit }}" == "true" ]; then
-            echo "✅ Version ${{ needs.setup.outputs.release_version }} was already verified. No new report generated."
-            exit 0
-          fi
-          summary_row() {
-            pm="$1"; emoji="$2"; status="$3"; test_result="$4"
-            if [ "$status" == "true" ]; then pub_icon="✅ Published"; else pub_icon="❌ Not Published"; fi
-            if [ "$test_result" == "success" ]; then e2e_icon="✅ Passed";
-            elif [ "$status" == "true" ]; then e2e_icon="❌ Failed";
-            else e2e_icon="⚠️ Skipped"; fi
-            echo "| $emoji $pm | $pub_icon | $e2e_icon |" >> $GITHUB_STEP_SUMMARY
-          }
-          echo "### Publication Verification for v${{ needs.setup.outputs.release_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "| Package Manager | Publication Status | E2E Test |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|---|" >> $GITHUB_STEP_SUMMARY
-          summary_row "Chocolatey" "🍫" "${{ needs.chocolatey.outputs.published }}" "${{ needs.chocolatey.outputs.e2e_result }}"
-          summary_row "Scoop"      "🍦" "${{ needs.scoop.outputs.published }}"      "${{ needs.scoop.outputs.e2e_result }}"
-          summary_row "WinGet"     "📦" "${{ needs.winget.outputs.published }}"      "${{ needs.winget.outputs.e2e_result }}"
-
-      - name: 💾 Save Success Flag to Cache
-        if: |
-          needs.setup.outputs.cache-hit != 'true' &&
-          needs.chocolatey.outputs.published == 'true' && needs.chocolatey.outputs.e2e_result == 'success' &&
-          needs.scoop.outputs.published == 'true' && needs.scoop.outputs.e2e_result == 'success' &&
-          needs.winget.outputs.published == 'true' && needs.winget.outputs.e2e_result == 'success'
-        uses: actions/cache/save@v4
-        with:
-          path: ./.cache
-          key: ${{ needs.setup.outputs.cache-key }}
+          echo "Workflow paused for diagnostics. Summary will be generated after a fix is implemented."
