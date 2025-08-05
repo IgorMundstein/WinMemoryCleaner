@@ -294,19 +294,13 @@ When new versions require translation updates, we may use AI tools to provide a 
 
 ---
 
-## ✍️ A Note From the Developer
-
-In the past, I faced challenges with having the proper hardware and software to enjoy technology and gaming fully. It was a constant battle to squeeze every last drop of performance out of a limited machine.
-
-Even though I may not need this tool for my tasks as much as I once did, I continue to maintain it in my free time for a simple reason: to assist others who still encounter similar struggles. This project is a contribution to the field of technology and a tribute to the wonderful open-source community that supports us all. 
-
-This tool is for you. Hearing from users like you about how this tool has helped someone truly makes my day. Enjoy!
-
----
-
 ## ❤️ Support the Project
 
-If you find this app helpful, consider donating. Your donation helps keep the project alive, optimized, and free for everyone.
+In the past, I faced challenges with the proper hardware and software needed to fully enjoy technology and gaming. It was a constant battle to squeeze every last drop of performance out of a limited machine.
+
+Although I may not rely on this tool as much as I once did, I continue to maintain it in my free time for a simple reason: to assist others who still encounter similar challenges. This project is a contribution to the field of technology and a tribute to the wonderful open-source community that supports us all.
+
+If you find this app helpful, please consider donating. Your contribution helps keep the project alive, optimized, and free for everyone.
 
 - [Sponsor on GitHub](https://github.com/sponsors/IgorMundstein)
 - [Buy me a coffee on Ko-fi](https://ko-fi.com/igormundstein)
