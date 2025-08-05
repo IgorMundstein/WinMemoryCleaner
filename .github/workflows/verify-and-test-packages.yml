@@ -77,6 +77,9 @@ jobs:
               if ($null -eq $exe) {
                 Write-Host "[Chocolatey] ❌ WinMemoryCleaner.exe not found after install"
                 $e2e_result = "fail"
+                echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                exit 1
               } else {
                 Write-Host "[Chocolatey] Running version command..."
                 & $exe.Source --version | Write-Host
@@ -85,10 +88,19 @@ jobs:
               }
             } else {
               Write-Host "[Chocolatey] ❌ Version not found."
+              $published = "false"
+              $e2e_result = "skipped"
+              echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              exit 1
             }
           } catch {
             Write-Host "[Chocolatey] ❌ Error: $($_.Exception.Message)"
-            $e2e_result = "fail"
+            $published = "false"
+            $e2e_result = "skipped"
+            echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 1
           }
           echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -132,6 +144,9 @@ jobs:
               if (-not (Test-Path $exe)) {
                 Write-Host "[Scoop] ❌ WinMemoryCleaner.exe not found after install"
                 $e2e_result = "fail"
+                echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                exit 1
               } else {
                 Write-Host "[Scoop] Running version command..."
                 & $exe --version | Write-Host
@@ -140,10 +155,19 @@ jobs:
               }
             } else {
               Write-Host "[Scoop] ❌ Version not found."
+              $published = "false"
+              $e2e_result = "skipped"
+              echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              exit 1
             }
           } catch {
             Write-Host "[Scoop] ❌ Error: $($_.Exception.Message)"
-            $e2e_result = "fail"
+            $published = "false"
+            $e2e_result = "skipped"
+            echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 1
           }
           echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -207,6 +231,9 @@ jobs:
               if (-not (Test-Path ".\WinMemoryCleaner.exe")) {
                 Write-Host "[WinGet] ❌ WinMemoryCleaner.exe not found after install"
                 $e2e_result = "fail"
+                echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                exit 1
               } else {
                 Write-Host "[WinGet] Running version command..."
                 .\WinMemoryCleaner.exe --version | Write-Host
@@ -215,10 +242,19 @@ jobs:
               }
             } else {
               Write-Host "[WinGet] ❌ Version not found."
+              $published = "false"
+              $e2e_result = "skipped"
+              echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              exit 1
             }
           } catch {
             Write-Host "[WinGet] ❌ Error: $($_.Exception.Message)"
-            $e2e_result = "fail"
+            $published = "false"
+            $e2e_result = "skipped"
+            echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 1
           }
           echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
