@@ -128,29 +128,27 @@ jobs:
       published: ${{ steps.verify.outputs.published }}
       e2e_result: ${{ steps.verify.outputs.e2e_result }}
     steps:
+      - name: Install WinGet client
+        uses: crazy-max/ghaction-setup-winget@v3
+
       - name: 📦 Verify and Test on WinGet
         id: verify
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $wingetExe = "${env:LOCALAPPDATA}\Microsoft\WindowsApps\winget.exe"
-          if (-not (Test-Path $wingetExe)) {
-            Write-Host "##[error]FATAL: winget.exe not found at the expected path: $wingetExe"
-            exit 1
-          }
           $version = "${{ needs.setup.outputs.release_version }}"
           $packageId = "IgorMundstein.WinMemoryCleaner"
           $e2e_result = "fail"
           $published = "false"
           Write-Host "Updating WinGet source..."
-          & $wingetExe source update
+          winget source update
           Write-Host "Verifying '$packageId' version '$version' on WinGet..."
-          $winget_output = & $wingetExe show --id $packageId --source winget --accept-source-agreements
+          $winget_output = winget show --id $packageId --source winget --accept-source-agreements
           if ($winget_output -match "Version:\s*$version") {
             Write-Host "✅ Version found."
             $published = "true"
             Write-Host "Performing install and smoke test..."
-            & $wingetExe install --id $packageId --accept-source-agreements --accept-package-agreements
+            winget install --id $packageId --accept-source-agreements --accept-package-agreements
             $searchPaths = @("C:\Program Files", "C:\Program Files (x86)")
             $exe = Get-ChildItem -Path $searchPaths -Recurse -Filter "WinMemoryCleaner.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($exe) {
