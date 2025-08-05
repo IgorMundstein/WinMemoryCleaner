@@ -154,7 +154,6 @@ jobs:
     runs-on: windows-latest
     outputs:
       found: ${{ steps.detect_winget.outputs.found }}
-      version: ${{ steps.detect_winget.outputs.version }}
       published: ${{ steps.winget.outputs.published }}
       e2e: ${{ steps.winget.outputs.e2e_result }}
     steps:
@@ -164,26 +163,21 @@ jobs:
         run: |
           $found = 'false'
           $wingetPath = ''
-          $wingetVersion = ''
           try {
             $wingetCmd = Get-Command winget -ErrorAction Stop
             $found = 'true'
             $wingetPath = $wingetCmd.Source
-            $wingetVersion = winget --version
           } catch {
             $possiblePath = "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe"
             if (Test-Path $possiblePath) {
               $found = 'true'
               $wingetPath = $possiblePath
-              $wingetVersion = & $possiblePath --version
             }
           }
           Write-Host "===[WinGet] Found: $found"
           Write-Host "===[WinGet] Path: $wingetPath"
-          Write-Host "===[WinGet] Version: $wingetVersion"
           echo "found=$found" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "path=$wingetPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          echo "version=$wingetVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: "📦 WinGet CLI Verify and Test"
         id: winget
@@ -269,34 +263,33 @@ jobs:
       - name: "📝 Publication Summary"
         run: |
           echo "### Publication Verification for v${{ needs.choco.outputs.release_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "| Package Manager | Publication Status | E2E Test | WinGet Version |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------------------|----------|----------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Package Manager | Publication Status | E2E Test |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------------|-------------------|----------|" >> $GITHUB_STEP_SUMMARY
 
           # Chocolatey
           CH_PUB="${{ needs.choco.outputs.published }}"
           CH_E2E="${{ needs.choco.outputs.e2e }}"
           if [ "$CH_PUB" == "true" ]; then CH_STATUS="✅ Published"; else CH_STATUS="❌ Not Published"; fi
           if [ "$CH_E2E" == "success" ]; then CH_E2E_STATUS="✅ Passed"; elif [ "$CH_PUB" == "true" ]; then CH_E2E_STATUS="❌ Failed"; else CH_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍫 Chocolatey | $CH_STATUS | $CH_E2E_STATUS | |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🍫 Chocolatey | $CH_STATUS | $CH_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
 
           # Scoop
           SC_PUB="${{ needs.scoop.outputs.published }}"
           SC_E2E="${{ needs.scoop.outputs.e2e }}"
           if [ "$SC_PUB" == "true" ]; then SC_STATUS="✅ Published"; else SC_STATUS="❌ Not Published"; fi
           if [ "$SC_E2E" == "success" ]; then SC_E2E_STATUS="✅ Passed"; elif [ "$SC_PUB" == "true" ]; then SC_E2E_STATUS="❌ Failed"; else SC_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍦 Scoop      | $SC_STATUS | $SC_E2E_STATUS | |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🍦 Scoop      | $SC_STATUS | $SC_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
 
           # WinGet CLI
           WG_CLI_FOUND="${{ needs.winget_cli.outputs.found }}"
-          WG_CLI_VER="${{ needs.winget_cli.outputs.version }}"
           WG_CLI_PUB="${{ needs.winget_cli.outputs.published }}"
           WG_CLI_E2E="${{ needs.winget_cli.outputs.e2e }}"
           if [ "$WG_CLI_FOUND" == "true" ]; then
             if [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_STATUS="✅ Published"; else WG_CLI_STATUS="❌ Not Published"; fi
             if [ "$WG_CLI_E2E" == "success" ]; then WG_CLI_E2E_STATUS="✅ Passed"; elif [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_E2E_STATUS="❌ Failed"; else WG_CLI_E2E_STATUS="⚠️ Skipped"; fi
-            echo "| 📦 WinGet CLI | $WG_CLI_STATUS | $WG_CLI_E2E_STATUS | $WG_CLI_VER |" >> $GITHUB_STEP_SUMMARY
+            echo "| 📦 WinGet CLI | $WG_CLI_STATUS | $WG_CLI_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| 📦 WinGet CLI | ⚠️ Not Available | ⚠️ Skipped | |" >> $GITHUB_STEP_SUMMARY
+            echo "| 📦 WinGet CLI | ⚠️ Not Available | ⚠️ Skipped |" >> $GITHUB_STEP_SUMMARY
           fi
 
           # WinGet Manifest
@@ -306,7 +299,7 @@ jobs:
           else
             WG_MANIFEST_STATUS="❌ Manifest Not Published"
           fi
-          echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | |" >> $GITHUB_STEP_SUMMARY
 
       - name: "💾 Save Success Flag to Cache"
         if: needs.choco.outputs.cache-hit != 'true'
