@@ -121,43 +121,25 @@ jobs:
           if ($published -ne "true") { exit 1 }
 
   winget:
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
     outputs:
       published: ${{ steps.verify.outputs.published }}
       e2e_result: ${{ steps.verify.outputs.e2e_result }}
     steps:
-      - name: 📦 Manually Install, Verify, and Test on WinGet
+      - name: 📦 Verify and Test on WinGet
         id: verify
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          
-          Write-Host "Attempting manual installation of winget-cli..."
-          $releaseUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
-          $releaseInfo = Invoke-RestMethod -Uri $releaseUrl
-          $msixBundleAsset = $releaseInfo.assets | Where-Object { $_.name -like '*.msixbundle' } | Select-Object -First 1
-          if (-not $msixBundleAsset) {
-            Write-Host "##[error]Could not find the latest .msixbundle release asset for winget-cli."
-            exit 1
-          }
-          $downloadUrl = $msixBundleAsset.browser_download_url
-          $outputFile = "winget.msixbundle"
-          Write-Host "Downloading winget installer from: $downloadUrl"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $outputFile
-          Write-Host "Installing winget from $outputFile..."
-          Add-AppxPackage -Path $outputFile
           $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
-
           $version = "${{ needs.setup.outputs.release_version }}"
           $packageId = "IgorMundstein.WinMemoryCleaner"
           $e2e_result = "fail"
           $published = "false"
-          
           Write-Host "Updating WinGet source..."
           winget source update
-          
           Write-Host "Verifying '$packageId' version '$version' on WinGet..."
           $winget_output = winget show --id $packageId --source winget --accept-source-agreements
           if ($winget_output -match "Version:\s*$version") {
