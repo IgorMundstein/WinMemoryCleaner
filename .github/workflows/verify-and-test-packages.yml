@@ -136,6 +136,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
           $version = "${{ needs.setup.outputs.release_version }}"
           $packageId = "IgorMundstein.WinMemoryCleaner"
           $e2e_result = "fail"
@@ -151,10 +152,16 @@ jobs:
             $published = "true"
             Write-Host "Performing install and smoke test..."
             winget install --id $packageId --accept-source-agreements --accept-package-agreements
-            $exe = Get-Command WinMemoryCleaner.exe
-            & $exe.Source --version
-            $e2e_result = "success"
-            Write-Host "✅ E2E Test successful."
+            $searchPaths = @("C:\Program Files", "C:\Program Files (x86)")
+            $exe = Get-ChildItem -Path $searchPaths -Recurse -Filter "WinMemoryCleaner.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exe) {
+                & $exe.FullName --version
+                $e2e_result = "success"
+                Write-Host "✅ E2E Test successful."
+            } else {
+                Write-Host "❌ E2E Test Failed: Could not find WinMemoryCleaner.exe after install."
+                $e2e_result = "fail"
+            }
           } else {
             Write-Host "❌ Version not found."
           }
