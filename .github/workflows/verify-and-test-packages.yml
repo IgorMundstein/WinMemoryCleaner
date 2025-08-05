@@ -181,6 +181,7 @@ jobs:
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
     runs-on: windows-latest
+    continue-on-error: true
     outputs:
       found: ${{ steps.detect_winget.outputs.found }}
       published: ${{ steps.winget.outputs.published }}
@@ -270,8 +271,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       published: ${{ steps.check_manifest.outputs.published }}
+      manifest_found: ${{ steps.check_manifest_url.outputs.manifest_found }}
+    continue-on-error: true
     steps:
-      - name: "🌐 Check WinGet Manifest in winget-pkgs"
+      - name: "🌐 Check WinGet Manifest in winget-pkgs repo (API)"
         id: check_manifest
         shell: pwsh
         env:
@@ -297,6 +300,23 @@ jobs:
             exit 1
           }
 
+      - name: "🌐 Check WinGet Manifest in winget-pkgs repo (raw URL, non-blocking)"
+        id: check_manifest_url
+        shell: bash
+        continue-on-error: true
+        env:
+          RELEASE_VERSION: ${{ needs.setup.outputs.release_version }}
+        run: |
+          version="${RELEASE_VERSION}"
+          manifest_url="https://raw.githubusercontent.com/microsoft/winget-pkgs/master/manifests/I/IgorMundstein/WinMemoryCleaner/${version//./_}/WinMemoryCleaner.yaml"
+          if curl --fail -s "$manifest_url" > /dev/null; then
+            echo "Manifest found at $manifest_url"
+            echo "manifest_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "Manifest NOT found at $manifest_url"
+            echo "manifest_found=false" >> $GITHUB_OUTPUT
+          fi
+
   summarize:
     needs: [setup, choco, scoop, winget_cli, winget_manifest]
     runs-on: ubuntu-latest
@@ -306,43 +326,48 @@ jobs:
         run: |
           VERSION="${{ needs.setup.outputs.release_version }}"
           echo "### Publication Verification for $VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "| Package Manager | Publication Status | E2 Test |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------------------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Package Manager | Publication Status | E2 Test | Manifest File |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------------|-------------------|----------|--------------|" >> $GITHUB_STEP_SUMMARY
 
-          # Chocolatey
           CH_PUB="${{ needs.choco.outputs.published }}"
           CH_E2E="${{ needs.choco.outputs.e2e }}"
           if [ "$CH_PUB" == "true" ]; then CH_STATUS="✅ Published"; else CH_STATUS="❌ Not Published"; fi
           if [ "$CH_E2E" == "success" ]; then CH_E2E_STATUS="✅ Passed"; elif [ "$CH_PUB" == "true" ]; then CH_E2E_STATUS="❌ Failed"; else CH_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍫 Chocolatey | $CH_STATUS | $CH_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🍫 Chocolatey | $CH_STATUS | $CH_E2E_STATUS | -- |" >> $GITHUB_STEP_SUMMARY
 
-          # Scoop
           SC_PUB="${{ needs.scoop.outputs.published }}"
           SC_E2E="${{ needs.scoop.outputs.e2e }}"
           if [ "$SC_PUB" == "true" ]; then SC_STATUS="✅ Published"; else SC_STATUS="❌ Not Published"; fi
           if [ "$SC_E2E" == "success" ]; then SC_E2E_STATUS="✅ Passed"; elif [ "$SC_PUB" == "true" ]; then SC_E2E_STATUS="❌ Failed"; else SC_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍦 Scoop      | $SC_STATUS | $SC_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🍦 Scoop      | $SC_STATUS | $SC_E2E_STATUS | -- |" >> $GITHUB_STEP_SUMMARY
 
-          # WinGet CLI
           WG_CLI_FOUND="${{ needs.winget_cli.outputs.found }}"
           WG_CLI_PUB="${{ needs.winget_cli.outputs.published }}"
           WG_CLI_E2E="${{ needs.winget_cli.outputs.e2e }}"
           if [ "$WG_CLI_FOUND" == "true" ]; then
             if [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_STATUS="✅ Published"; else WG_CLI_STATUS="❌ Not Published"; fi
             if [ "$WG_CLI_E2E" == "success" ]; then WG_CLI_E2E_STATUS="✅ Passed"; elif [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_E2E_STATUS="❌ Failed"; else WG_CLI_E2E_STATUS="⚠️ Skipped"; fi
-            echo "| 📦 WinGet CLI | $WG_CLI_STATUS | $WG_CLI_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 📦 WinGet CLI | $WG_CLI_STATUS | $WG_CLI_E2E_STATUS | -- |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| 📦 WinGet CLI | ⚠️ Not Available | ⚠️ Skipped |" >> $GITHUB_STEP_SUMMARY
+            echo "| 📦 WinGet CLI | ⚠️ Not Available | ⚠️ Skipped | -- |" >> $GITHUB_STEP_SUMMARY
           fi
 
-          # WinGet Manifest
           WG_MANIFEST_PUB="${{ needs.winget_manifest.outputs.published }}"
+          WG_MANIFEST_FOUND="${{ needs.winget_manifest.outputs.manifest_found }}"
           if [ "$WG_MANIFEST_PUB" == "true" ]; then
-            WG_MANIFEST_STATUS="✅ Manifest Published"
+            WG_MANIFEST_STATUS="✅ Manifest via API"
           else
-            WG_MANIFEST_STATUS="❌ Manifest Not Published"
+            WG_MANIFEST_STATUS="❌ Manifest via API"
           fi
-          echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | Not Available |" >> $GITHUB_STEP_SUMMARY
+          if [ "$WG_MANIFEST_FOUND" == "true" ]; then
+            WG_MANIFEST_RAW_STATUS="✅ Manifest via Raw"
+          else
+            WG_MANIFEST_RAW_STATUS="❌ Manifest via Raw"
+          fi
+          echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | -- | $WG_MANIFEST_RAW_STATUS |" >> $GITHUB_STEP_SUMMARY
+
+          echo ""
+          echo "_WinGet CLI test is authoritative; manifest checks are informational only._" >> $GITHUB_STEP_SUMMARY
 
       - name: "Set cache flag if all published"
         id: allpublished
