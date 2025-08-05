@@ -121,32 +121,35 @@ jobs:
           if ($published -ne "true") { exit 1 }
 
   winget:
-    runs-on: windows-2022
+    runs-on: windows-latest
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
     outputs:
       published: ${{ steps.verify.outputs.published }}
       e2e_result: ${{ steps.verify.outputs.e2e_result }}
     steps:
+      - name: Install WinGet
+        uses: crazy-max/ghaction-setup-winget@v4
+
       - name: 📦 Verify and Test on WinGet
         id: verify
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
+          $wingetExe = "winget.exe"
           $version = "${{ needs.setup.outputs.release_version }}"
           $packageId = "IgorMundstein.WinMemoryCleaner"
           $e2e_result = "fail"
           $published = "false"
           Write-Host "Updating WinGet source..."
-          winget source update
+          & $wingetExe source update
           Write-Host "Verifying '$packageId' version '$version' on WinGet..."
-          $winget_output = winget show --id $packageId --source winget --accept-source-agreements
+          $winget_output = & $wingetExe show --id $packageId --source winget --accept-source-agreements
           if ($winget_output -match "Version:\s*$version") {
             Write-Host "✅ Version found."
             $published = "true"
             Write-Host "Performing install and smoke test..."
-            winget install --id $packageId --accept-source-agreements --accept-package-agreements
+            & $wingetExe install --id $packageId --accept-source-agreements --accept-package-agreements
             $searchPaths = @("C:\Program Files", "C:\Program Files (x86)")
             $exe = Get-ChildItem -Path $searchPaths -Recurse -Filter "WinMemoryCleaner.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($exe) {
