@@ -120,26 +120,31 @@ jobs:
           echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           if ($published -ne "true") { exit 1 }
 
-  winget:
+  winget-detect:
     runs-on: windows-latest
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
     outputs:
+      found: ${{ steps.detect.outputs.found }}
+    steps:
+      - name: Detect WinGet CLI
+        id: detect
+        shell: pwsh
+        run: |
+          $found = 'false'
+          if (Get-Command winget -ErrorAction SilentlyContinue) {
+            $found = 'true'
+          }
+          echo "found=$found" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+  winget:
+    runs-on: windows-latest
+    needs: [setup, winget-detect]
+    if: needs.setup.outputs.cache-hit != 'true' && needs.winget-detect.outputs.found == 'true'
+    outputs:
       published: ${{ steps.verify.outputs.published }}
       e2e_result: ${{ steps.verify.outputs.e2e_result }}
     steps:
-      - name: Ensure WinGet is installed
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-            Write-Host "winget not found, attempting install..."
-            $msixbundle = "$env:TEMP\winget.msixbundle"
-            Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $msixbundle
-            Add-AppxPackage -Path $msixbundle
-          }
-          winget --version
-
       - name: 📦 Verify and Test on WinGet
         id: verify
         shell: pwsh
@@ -178,7 +183,7 @@ jobs:
 
   summarize:
     runs-on: ubuntu-latest
-    needs: [setup, chocolatey, scoop, winget]
+    needs: [setup, chocolatey, scoop, winget, winget-detect]
     if: always()
     steps:
       - name: 📝 Report Final Status
@@ -200,14 +205,18 @@ jobs:
           echo "|---|---|---|" >> $GITHUB_STEP_SUMMARY
           summary_row "Chocolatey" "🍫" "${{ needs.chocolatey.outputs.published }}" "${{ needs.chocolatey.outputs.e2e_result }}"
           summary_row "Scoop"      "🍦" "${{ needs.scoop.outputs.published }}"      "${{ needs.scoop.outputs.e2e_result }}"
-          summary_row "WinGet"     "📦" "${{ needs.winget.outputs.published }}"      "${{ needs.winget.outputs.e2e_result }}"
+          if [[ "${{ needs.winget-detect.outputs.found }}" == "true" ]]; then
+            summary_row "WinGet"     "📦" "${{ needs.winget.outputs.published }}"      "${{ needs.winget.outputs.e2e_result }}"
+          else
+            echo "| 📦 WinGet | ⚠️ Not Available | ⚠️ Skipped |" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: 💾 Save Success Flag to Cache
         if: |
           needs.setup.outputs.cache-hit != 'true' &&
           needs.chocolatey.outputs.published == 'true' && needs.chocolatey.outputs.e2e_result == 'success' &&
           needs.scoop.outputs.published == 'true' && needs.scoop.outputs.e2e_result == 'success' &&
-          needs.winget.outputs.published == 'true' && needs.winget.outputs.e2e_result == 'success'
+          (needs.winget-detect.outputs.found != 'true' || (needs.winget.outputs.published == 'true' && needs.winget.outputs.e2e_result == 'success'))
         uses: actions/cache/save@v4
         with:
           path: ./.cache
