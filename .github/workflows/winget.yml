@@ -11,13 +11,16 @@ permissions:
 env:
   FORK_REPO: ${{ github.repository_owner }}/WinGet
   UPSTREAM_REPO: microsoft/winget-pkgs
+  PACKAGE_ID: ${{ github.repository_owner }}.WinMemoryCleaner
 
 jobs:
-  submit-winget:
-    name: Submit to WinGet Packages
+  generate-manifests:
+    name: Generate WinGet Manifests
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    
+    outputs:
+      skip: ${{ steps.check_winget.outputs.skip }}
+
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@v2
@@ -92,34 +95,37 @@ jobs:
           set -e
           MANIFEST_DIR="winget-manifest"
           mkdir -p "$MANIFEST_DIR"
-          cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.yaml" <<EOF
+          
+          cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
-          PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
+          PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.tag }}
           DefaultLocale: en-US
           ManifestType: version
           ManifestVersion: 1.6.0
           EOF
 
-          cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.installer.yaml" <<EOF
+          cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.installer.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
-          PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
+          PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.tag }}
-          InstallerType: exe
+          InstallerType: portable
           Installers:
           - Architecture: x64
             InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe
             InstallerSha256: ${{ steps.download.outputs.sha256 }}
-            InstallerSwitches:
-              Silent: /Package
-              SilentWithProgress: /Package
+            PortableCommand: WinMemoryCleaner.exe
+          - Architecture: x86
+            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe
+            InstallerSha256: ${{ steps.download.outputs.sha256 }}
+            PortableCommand: WinMemoryCleaner.exe
           ManifestType: installer
           ManifestVersion: 1.6.0
           EOF
 
-          cat > "${MANIFEST_DIR}/${{ github.repository_owner }}.WinMemoryCleaner.locale.en-US.yaml" <<EOF
+          cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.locale.en-US.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
-          PackageIdentifier: ${{ github.repository_owner }}.WinMemoryCleaner
+          PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.tag }}
           PackageLocale: en-US
           Publisher: Igor Mundstein
@@ -127,58 +133,46 @@ jobs:
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
           ShortDescription: ${{ steps.metadata.outputs.desc }}
+          Commands:
+          - WinMemoryCleaner
           ManifestType: defaultLocale
           ManifestVersion: 1.6.0
           EOF
-          echo "manifest_dir=$MANIFEST_DIR" >> $GITHUB_OUTPUT
 
-      - name: Lint and quality check manifests
+      - name: Upload Manifest Artifact
         if: steps.check_winget.outputs.skip == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: winget-manifest
+          path: winget-manifest
+
+  validate-and-submit:
+    name: Validate and Submit to WinGet
+    needs: generate-manifests
+    if: needs.generate-manifests.outputs.skip == 'false'
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Download Manifest Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: winget-manifest
+
+      - name: Validate Manifests with WinGet CLI
+        run: winget validate .
+
+      - name: Get Package Version from Manifest
+        id: manifest_data
+        shell: bash
         run: |
-          pip install yamllint
-          yamllint ${{ steps.create_manifest.outputs.manifest_dir }}/*.yaml
-          errors=0
-          for file in ${{ steps.create_manifest.outputs.manifest_dir }}/*.yaml; do
-            if ! grep -q '^PackageIdentifier:' "$file"; then
-              echo "::error::$file missing PackageIdentifier"
-              errors=1
-            fi
-            if ! grep -q '^PackageVersion:' "$file"; then
-              echo "::error::$file missing PackageVersion"
-              errors=1
-            fi
-            if ! grep -q '^ManifestType:' "$file"; then
-              echo "::error::$file missing ManifestType"
-              errors=1
-            fi
-            if ! grep -q '^ManifestVersion:' "$file"; then
-              echo "::error::$file missing ManifestVersion"
-              errors=1
-            fi
-            if [[ $file == *.locale.en-US.yaml ]]; then
-              if ! grep -q '^License:' "$file"; then
-                echo "::error::$file missing License"
-                errors=1
-              fi
-              if ! grep -q '^PackageUrl:' "$file"; then
-                echo "::error::$file missing PackageUrl"
-                errors=1
-              fi
-              if ! grep -q '^ShortDescription:' "$file"; then
-                echo "::error::$file missing ShortDescription"
-                errors=1
-              fi
-            fi
-          done
-          if [ $errors -ne 0 ]; then
-            echo "::error::Manifest quality check failed"
-            exit 1
-          fi
+          version=$(grep PackageVersion ${{ env.PACKAGE_ID }}.yaml | cut -d ' ' -f2)
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
-        if: steps.check_winget.outputs.skip == 'false'
         env:
           GH_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        shell: bash
         run: |
           set -e
           
@@ -190,25 +184,22 @@ jobs:
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream master --depth=1
           
-          BRANCH_NAME="add/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
+          VERSION=${{ steps.manifest_data.outputs.version }}
+          BRANCH_NAME="add/${{ github.repository_owner }}/WinMemoryCleaner/${VERSION}"
           git checkout -b "$BRANCH_NAME" upstream/master
           
-          mkdir -p "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}"
-          cp ../winget-manifest/*.yaml "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}/"
+          mkdir -p "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${VERSION}"
+          cp ../*.yaml "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${VERSION}/"
           
           git add .
-          git commit -m "Add ${{ github.repository_owner }}.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}"
+          git commit -m "Add ${{ env.PACKAGE_ID }} version ${VERSION}"
           git push origin "$BRANCH_NAME"
           
           gh pr create \
             --repo "${{ env.UPSTREAM_REPO }}" \
             --head "$(echo ${{ env.FORK_REPO }} | cut -d'/' -f1):${BRANCH_NAME}" \
             --base master \
-            --title "Add ${{ github.repository_owner }}.WinMemoryCleaner ${{ steps.get_release.outputs.tag }}" \
-            --body "Automated submission for ${{ github.repository_owner }}.WinMemoryCleaner version ${{ steps.get_release.outputs.tag }}."
+            --title "Add ${{ env.PACKAGE_ID }} ${VERSION}" \
+            --body "Automated submission for ${{ env.PACKAGE_ID }} version ${VERSION}."
             
           echo "::notice::Pull request created successfully."
-
-      - name: Cleanup
-        if: always()
-        run: rm -f WinMemoryCleaner.exe
