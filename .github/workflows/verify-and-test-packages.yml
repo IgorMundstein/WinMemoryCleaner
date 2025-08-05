@@ -62,7 +62,6 @@ jobs:
           $packageName = "winmemorycleaner"
           $e2e_result = "fail"
           $published = "false"
-
           Write-Host "Verifying '$packageName' version '$version' on Chocolatey..."
           $choco_output = choco search $packageName --exact --all-versions -r
           if ($choco_output -match "$version") {
@@ -98,13 +97,11 @@ jobs:
           $packageName = "winmemorycleaner"
           $e2e_result = "fail"
           $published = "false"
-
           Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
           irm get.scoop.sh | iex
           scoop bucket add extras
           Write-Host "Updating Scoop buckets..."
           scoop update
-
           Write-Host "Verifying '$packageName' version '$version' on Scoop..."
           $scoop_output = scoop info $packageName
           if ($scoop_output -match "Version:\s*$version") {
@@ -136,32 +133,26 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $env:PATH += ";${env:LOCALAPPDATA}\Microsoft\WindowsApps"
-          
+          $wingetExe = "${env:LOCALAPPDATA}\Microsoft\WindowsApps\winget.exe"
+          if (-not (Test-Path $wingetExe)) {
+            Write-Host "##[error]FATAL: winget.exe not found at the expected path: $wingetExe"
+            exit 1
+          }
           $version = "${{ needs.setup.outputs.release_version }}"
           $packageId = "IgorMundstein.WinMemoryCleaner"
           $e2e_result = "fail"
           $published = "false"
-
-          Write-Host "Running initial 'winget show' to safely initialize and refresh the source..."
-          winget show --id Microsoft.PowerShell --source winget --accept-source-agreements | Out-Null
-          
-          Write-Host "Attempting explicit 'winget source update'..."
-          winget source update -ErrorAction SilentlyContinue
-
+          Write-Host "Updating WinGet source..."
+          & $wingetExe source update
           Write-Host "Verifying '$packageId' version '$version' on WinGet..."
-          $winget_output = winget show --id $packageId --source winget --accept-source-agreements
-          
+          $winget_output = & $wingetExe show --id $packageId --source winget --accept-source-agreements
           if ($winget_output -match "Version:\s*$version") {
             Write-Host "✅ Version found."
             $published = "true"
-            
             Write-Host "Performing install and smoke test..."
-            winget install --id $packageId --accept-source-agreements --accept-package-agreements
-            
+            & $wingetExe install --id $packageId --accept-source-agreements --accept-package-agreements
             $searchPaths = @("C:\Program Files", "C:\Program Files (x86)")
             $exe = Get-ChildItem -Path $searchPaths -Recurse -Filter "WinMemoryCleaner.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-            
             if ($exe) {
                 & $exe.FullName --version
                 $e2e_result = "success"
@@ -173,7 +164,6 @@ jobs:
           } else {
             Write-Host "❌ Version not found."
           }
-          
           echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           if ($published -ne "true") { exit 1 }
@@ -189,19 +179,14 @@ jobs:
             echo "✅ Version ${{ needs.setup.outputs.release_version }} was already verified. No new report generated."
             exit 0
           fi
-
           summary_row() {
             pm="$1"; emoji="$2"; status="$3"; test_result="$4"
-            
             if [ "$status" == "true" ]; then pub_icon="✅ Published"; else pub_icon="❌ Not Published"; fi
-            
             if [ "$test_result" == "success" ]; then e2e_icon="✅ Passed";
             elif [ "$status" == "true" ]; then e2e_icon="❌ Failed";
             else e2e_icon="⚠️ Skipped"; fi
-
             echo "| $emoji $pm | $pub_icon | $e2e_icon |" >> $GITHUB_STEP_SUMMARY
           }
-          
           echo "### Publication Verification for v${{ needs.setup.outputs.release_version }}" >> $GITHUB_STEP_SUMMARY
           echo "| Package Manager | Publication Status | E2E Test |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|---|" >> $GITHUB_STEP_SUMMARY
