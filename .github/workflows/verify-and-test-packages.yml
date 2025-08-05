@@ -315,20 +315,20 @@ jobs:
         run: |
           VERSION="${{ needs.setup.outputs.release_version }}"
           echo "### Publication Verification for $VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "| Package Manager | Publication Status | E2 Test | Manifest File |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------------------|----------|--------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Package Manager | Publication Status      | E2 Test         |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------------|------------------------|-----------------|" >> $GITHUB_STEP_SUMMARY
 
           CH_PUB="${{ needs.choco.outputs.published }}"
           CH_E2E="${{ needs.choco.outputs.e2e }}"
           if [ "$CH_PUB" == "true" ]; then CH_STATUS="✅ Published"; else CH_STATUS="❌ Not Published"; fi
           if [ "$CH_E2E" == "success" ]; then CH_E2E_STATUS="✅ Passed"; elif [ "$CH_PUB" == "true" ]; then CH_E2E_STATUS="❌ Failed"; else CH_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍫 Chocolatey | $CH_STATUS | $CH_E2E_STATUS | -- |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🍫 Chocolatey | $CH_STATUS             | $CH_E2E_STATUS   |" >> $GITHUB_STEP_SUMMARY
 
           SC_PUB="${{ needs.scoop.outputs.published }}"
           SC_E2E="${{ needs.scoop.outputs.e2e }}"
           if [ "$SC_PUB" == "true" ]; then SC_STATUS="✅ Published"; else SC_STATUS="❌ Not Published"; fi
           if [ "$SC_E2E" == "success" ]; then SC_E2E_STATUS="✅ Passed"; elif [ "$SC_PUB" == "true" ]; then SC_E2E_STATUS="❌ Failed"; else SC_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍦 Scoop      | $SC_STATUS | $SC_E2E_STATUS | -- |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🍦 Scoop      | $SC_STATUS             | $SC_E2E_STATUS   |" >> $GITHUB_STEP_SUMMARY
 
           WG_CLI_FOUND="${{ needs.winget_cli.outputs.found }}"
           WG_CLI_PUB="${{ needs.winget_cli.outputs.published }}"
@@ -336,24 +336,27 @@ jobs:
           if [ "$WG_CLI_FOUND" == "true" ]; then
             if [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_STATUS="✅ Published"; else WG_CLI_STATUS="❌ Not Published"; fi
             if [ "$WG_CLI_E2E" == "success" ]; then WG_CLI_E2E_STATUS="✅ Passed"; elif [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_E2E_STATUS="❌ Failed"; else WG_CLI_E2E_STATUS="⚠️ Skipped"; fi
-            echo "| 📦 WinGet CLI | $WG_CLI_STATUS | $WG_CLI_E2E_STATUS | -- |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| 📦 WinGet CLI | ⚠️ Not Available | ⚠️ Skipped | -- |" >> $GITHUB_STEP_SUMMARY
+            WG_CLI_STATUS="⚠️ Not Installed"
+            WG_CLI_E2E_STATUS="N/A Not Available"
           fi
+          echo "| 📦 WinGet CLI | $WG_CLI_STATUS         | $WG_CLI_E2E_STATUS|" >> $GITHUB_STEP_SUMMARY
 
           WG_MANIFEST_PUB="${{ needs.winget_manifest.outputs.published }}"
-          WG_MANIFEST_FOUND="${{ needs.winget_manifest.outputs.manifest_found }}"
           if [ "$WG_MANIFEST_PUB" == "true" ]; then
             WG_MANIFEST_STATUS="✅ Manifest via API"
           else
             WG_MANIFEST_STATUS="❌ Manifest via API"
           fi
+          echo "| 🌐 WinGet Manifest (API) | $WG_MANIFEST_STATUS | N/A Not Available |" >> $GITHUB_STEP_SUMMARY
+
+          WG_MANIFEST_FOUND="${{ needs.winget_manifest.outputs.manifest_found }}"
           if [ "$WG_MANIFEST_FOUND" == "true" ]; then
             WG_MANIFEST_RAW_STATUS="✅ Manifest via Raw"
           else
             WG_MANIFEST_RAW_STATUS="❌ Manifest via Raw"
           fi
-          echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | -- | $WG_MANIFEST_RAW_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌐 WinGet Manifest (RAW) | $WG_MANIFEST_RAW_STATUS | N/A Not Available |" >> $GITHUB_STEP_SUMMARY
 
           echo ""
           echo "_WinGet CLI test is authoritative; manifest checks are informational only._" >> $GITHUB_STEP_SUMMARY
