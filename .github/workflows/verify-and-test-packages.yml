@@ -45,14 +45,10 @@ jobs:
           path: ./.cache
           key: verification-flag-v${{ steps.get_version.outputs.RELEASE_VERSION }}
 
-  test-matrix:
+  test:
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        win_image: [windows-2022, windows-2025]
-    runs-on: ${{ matrix.win_image }}
+    runs-on: windows-latest
     env:
       RELEASE_VERSION: ${{ needs.setup.outputs.release_version }}
     outputs:
@@ -60,10 +56,11 @@ jobs:
       chocolatey_e2e: ${{ steps.choco.outputs.e2e_result }}
       scoop_published: ${{ steps.scoop.outputs.published }}
       scoop_e2e: ${{ steps.scoop.outputs.e2e_result }}
-      winget_found: ${{ steps.detect_winget.outputs.found }}
-      winget_version: ${{ steps.detect_winget.outputs.version }}
-      winget_published: ${{ steps.winget.outputs.published }}
-      winget_e2e: ${{ steps.winget.outputs.e2e_result }}
+      winget_cli_found: ${{ steps.detect_winget.outputs.found }}
+      winget_cli_version: ${{ steps.detect_winget.outputs.version }}
+      winget_cli_published: ${{ steps.winget.outputs.published }}
+      winget_cli_e2e: ${{ steps.winget.outputs.e2e_result }}
+      winget_manifest_published: ${{ steps.check_manifest.outputs.published }}
 
     steps:
       - name: "🖥️ Log Runner Info"
@@ -183,7 +180,7 @@ jobs:
           echo "path=$wingetPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "version=$wingetVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: "📦 WinGet Verify and Test"
+      - name: "📦 WinGet CLI Verify and Test"
         id: winget
         if: steps.detect_winget.outputs.found == 'true'
         shell: pwsh
@@ -225,49 +222,79 @@ jobs:
           echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
+      - name: "🌐 Check WinGet Manifest in winget-pkgs"
+        id: check_manifest
+        shell: pwsh
+        env:
+          PKG_ID: IgorMundstein.WinMemoryCleaner
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $owner = "microsoft"
+          $repo = "winget-pkgs"
+          $id = "${env:PKG_ID}"
+          $ver = "${env:RELEASE_VERSION}"
+          $verPath = $ver -replace '\.', '_'
+          $manifestPath = "$($id -replace '\.', '/')/$verPath"
+          $url = "https://api.github.com/repos/$owner/$repo/contents/manifests/$manifestPath"
+          Write-Host "Checking manifest existence: $url"
+          try {
+            $response = Invoke-RestMethod -Uri $url -Method Get
+            Write-Host "✅ Manifest for $id $ver found in winget-pkgs!"
+            echo "published=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } catch {
+            Write-Host "❌ Manifest for $id $ver NOT found in winget-pkgs."
+            echo "published=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
   summarize:
     runs-on: ubuntu-latest
-    needs: [setup, test-matrix]
+    needs: [setup, test]
     if: always()
     steps:
-      - name: "📝 Matrix Publication Summary"
+      - name: "📝 Publication Summary"
         run: |
           echo "### Publication Verification for v${{ needs.setup.outputs.release_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "| Image         | Package Manager | Publication Status | E2E Test | WinGet Version |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------------|-----------------|-------------------|----------|---------------|" >> $GITHUB_STEP_SUMMARY
-          for IMAGE in windows-2022 windows-2025; do
-            CH_PUB="${{ needs.test-matrix.outputs.chocolatey_published }}"
-            CH_E2E="${{ needs.test-matrix.outputs.chocolatey_e2e }}"
-            SC_PUB="${{ needs.test-matrix.outputs.scoop_published }}"
-            SC_E2E="${{ needs.test-matrix.outputs.scoop_e2e }}"
-            WG_FOUND="${{ needs.test-matrix.outputs.winget_found }}"
-            WG_VER="${{ needs.test-matrix.outputs.winget_version }}"
-            WG_PUB="${{ needs.test-matrix.outputs.winget_published }}"
-            WG_E2E="${{ needs.test-matrix.outputs.winget_e2e }}"
+          echo "| Package Manager | Publication Status | E2E Test | WinGet Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------------|-------------------|----------|----------------|" >> $GITHUB_STEP_SUMMARY
 
-            # Chocolatey
-            if [ "$CH_PUB" == "true" ]; then CH_STATUS="✅ Published"; else CH_STATUS="❌ Not Published"; fi
-            if [ "$CH_E2E" == "success" ]; then CH_E2E_STATUS="✅ Passed"; elif [ "$CH_PUB" == "true" ]; then CH_E2E_STATUS="❌ Failed"; else CH_E2E_STATUS="⚠️ Skipped"; fi
-            echo "| $IMAGE | 🍫 Chocolatey | $CH_STATUS | $CH_E2E_STATUS | |" >> $GITHUB_STEP_SUMMARY
+          # Chocolatey
+          CH_PUB="${{ needs.test.outputs.chocolatey_published }}"
+          CH_E2E="${{ needs.test.outputs.chocolatey_e2e }}"
+          if [ "$CH_PUB" == "true" ]; then CH_STATUS="✅ Published"; else CH_STATUS="❌ Not Published"; fi
+          if [ "$CH_E2E" == "success" ]; then CH_E2E_STATUS="✅ Passed"; elif [ "$CH_PUB" == "true" ]; then CH_E2E_STATUS="❌ Failed"; else CH_E2E_STATUS="⚠️ Skipped"; fi
+          echo "| 🍫 Chocolatey | $CH_STATUS | $CH_E2E_STATUS | |" >> $GITHUB_STEP_SUMMARY
 
-            # Scoop
-            if [ "$SC_PUB" == "true" ]; then SC_STATUS="✅ Published"; else SC_STATUS="❌ Not Published"; fi
-            if [ "$SC_E2E" == "success" ]; then SC_E2E_STATUS="✅ Passed"; elif [ "$SC_PUB" == "true" ]; then SC_E2E_STATUS="❌ Failed"; else SC_E2E_STATUS="⚠️ Skipped"; fi
-            echo "| $IMAGE | 🍦 Scoop      | $SC_STATUS | $SC_E2E_STATUS | |" >> $GITHUB_STEP_SUMMARY
+          # Scoop
+          SC_PUB="${{ needs.test.outputs.scoop_published }}"
+          SC_E2E="${{ needs.test.outputs.scoop_e2e }}"
+          if [ "$SC_PUB" == "true" ]; then SC_STATUS="✅ Published"; else SC_STATUS="❌ Not Published"; fi
+          if [ "$SC_E2E" == "success" ]; then SC_E2E_STATUS="✅ Passed"; elif [ "$SC_PUB" == "true" ]; then SC_E2E_STATUS="❌ Failed"; else SC_E2E_STATUS="⚠️ Skipped"; fi
+          echo "| 🍦 Scoop      | $SC_STATUS | $SC_E2E_STATUS | |" >> $GITHUB_STEP_SUMMARY
 
-            # WinGet
-            if [ "$WG_FOUND" == "true" ]; then
-              if [ "$WG_PUB" == "true" ]; then WG_STATUS="✅ Published"; else WG_STATUS="❌ Not Published"; fi
-              if [ "$WG_E2E" == "success" ]; then WG_E2E_STATUS="✅ Passed"; elif [ "$WG_PUB" == "true" ]; then WG_E2E_STATUS="❌ Failed"; else WG_E2E_STATUS="⚠️ Skipped"; fi
-              echo "| $IMAGE | 📦 WinGet     | $WG_STATUS | $WG_E2E_STATUS | $WG_VER |" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "| $IMAGE | 📦 WinGet     | ⚠️ Not Available | ⚠️ Skipped | |" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
+          # WinGet CLI
+          WG_CLI_FOUND="${{ needs.test.outputs.winget_cli_found }}"
+          WG_CLI_VER="${{ needs.test.outputs.winget_cli_version }}"
+          WG_CLI_PUB="${{ needs.test.outputs.winget_cli_published }}"
+          WG_CLI_E2E="${{ needs.test.outputs.winget_cli_e2e }}"
+          if [ "$WG_CLI_FOUND" == "true" ]; then
+            if [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_STATUS="✅ Published"; else WG_CLI_STATUS="❌ Not Published"; fi
+            if [ "$WG_CLI_E2E" == "success" ]; then WG_CLI_E2E_STATUS="✅ Passed"; elif [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_E2E_STATUS="❌ Failed"; else WG_CLI_E2E_STATUS="⚠️ Skipped"; fi
+            echo "| 📦 WinGet CLI | $WG_CLI_STATUS | $WG_CLI_E2E_STATUS | $WG_CLI_VER |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 📦 WinGet CLI | ⚠️ Not Available | ⚠️ Skipped | |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # WinGet Manifest
+          WG_MANIFEST_PUB="${{ needs.test.outputs.winget_manifest_published }}"
+          if [ "$WG_MANIFEST_PUB" == "true" ]; then
+            WG_MANIFEST_STATUS="✅ Manifest Published"
+          else
+            WG_MANIFEST_STATUS="❌ Manifest Not Published"
+          fi
+          echo "| 🌐 WinGet Manifest | $WG_MANIFEST_STATUS | | |" >> $GITHUB_STEP_SUMMARY
 
       - name: "💾 Save Success Flag to Cache"
-        if: |
-          needs.setup.outputs.cache-hit != 'true'
+        if: needs.setup.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ./.cache
