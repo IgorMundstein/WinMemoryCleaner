@@ -1,4 +1,4 @@
-name: 'Update CHANGELOG.md'
+name: 'Update CHANGELOG.md from Release Notes'
 
 on:
   release:
@@ -9,21 +9,22 @@ permissions:
   contents: write
 
 jobs:
-  sync-changelog:
-    name: 'Sync from All Releases'
+  changelog-from-release-notes:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 'Generate Changelog'
-        uses: arumajs/action-generate-changelog@v1.4
-        with:
-          output: CHANGELOG.md
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch all releases and generate CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/releases \
+            --paginate \
+            --jq '.[] | "## \(.name // .tag_name)\n\n\(.body // "No release notes provided.")\n---\n"' > CHANGELOG.md
 
-      - name: 'Commit CHANGELOG.md'
+      - name: Commit and push CHANGELOG.md
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'docs: update changelog'
+          commit_message: 'docs: update changelog from release notes'
           file_pattern: CHANGELOG.md
