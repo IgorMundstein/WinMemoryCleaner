@@ -38,29 +38,35 @@ jobs:
               sed -E '/!\[[^]]*\]\([^)]+\)/d' | \
               sed -E '/<img[^>]+>/d' | \
               awk '
-                {
-                  if ($0 ~ /^-/) {
-                    if (prev_bullet) {
-                      print
-                    } else {
-                      if (NR > 1 && prev_empty == 0) print ""
-                      print
-                    }
-                    prev_bullet=1
-                    prev_empty=0
-                  } else if (length($0) == 0) {
-                    prev_empty=1
-                  } else {
-                    if (NR > 1 && prev_empty == 0) print ""
+                /^$/ { blank=1; next }
+                /^-/ {
+                  if (last_bullet) {
                     print
-                    prev_bullet=0
-                    prev_empty=0
+                  } else {
+                    if (!first && !last_blank) print ""
+                    print
                   }
+                  last_bullet=1
+                  last_blank=0
+                  first=0
+                  next
                 }
+                {
+                  if (!first && !last_blank) print ""
+                  print
+                  last_bullet=0
+                  last_blank=0
+                  first=0
+                }
+                END { }
+                BEGIN { first=1; last_blank=1; last_bullet=0 }
               '
             )
             changelog="${changelog}### ${version}\n\n${body}\n\n"
           done
+
+          # Remove multiple consecutive blank lines (safety net)
+          changelog="$(echo -e "$changelog" | awk 'BEGIN{blank=0} NF{if(blank)print ""; print; blank=0} !NF{blank=1}')"
 
           if [ -z "$changelog" ] || [ -z "$(echo "$changelog" | tr -d '[:space:]')" ]; then
             echo "ERROR: Generated CHANGELOG.md is empty or invalid. Aborting."
