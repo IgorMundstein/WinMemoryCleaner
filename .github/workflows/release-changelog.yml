@@ -11,6 +11,7 @@ permissions:
 jobs:
   update-changelog:
     runs-on: ubuntu-latest
+    if: github.event.release.draft == false && github.event.release.prerelease == false
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
