@@ -1,4 +1,4 @@
-name: 'Update CHANGELOG'
+name: "Update CHANGELOG"
 
 on:
   release:
@@ -18,41 +18,66 @@ jobs:
           token: ${{ secrets.GH_BOT_TOKEN }}
           ref: main
 
-      - name: Generate Changelog
+      - name: Generate and validate changelog
         env:
           GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: |
-          changelog=$(gh api repos/${{ github.repository }}/releases \
-            --paginate \
-            --jq '.[] | "## \(.name // .tag_name)\n\n**\(.published_at | split("T")[0])**\n\n---\n\n\(.body // "No release notes provided.")\n"' |
-            sed -E 's/!\[[^]]*\]\([^)]+\)//g' |
-            sed -E 's/<img[^>]+>//g' |
-            awk '
-              /^## / { if (NR != 1) print ""; print; next }
-              /^\*\*/ { print; next }
-              /^---$/ {
-                if (prev != "") print ""
-                print "---"
-                getline nextline
-                if (nextline != "") print ""
-                print nextline
-                next
-              }
+          releases_json=$(gh api repos/${{ github.repository }}/releases --paginate)
+          n=$(echo "$releases_json" | jq length)
+          if [ "$n" -eq 0 ]; then
+            echo "ERROR: No releases found. Aborting."
+            exit 1
+          fi
+
+          changelog=""
+          for i in $(seq 0 $((n - 1))); do
+            version=$(echo "$releases_json" | jq -r ".[$i].name // .[$i].tag_name")
+            date=$(echo "$releases_json" | jq -r ".[$i].published_at" | cut -d'T' -f1)
+            body=$(echo "$releases_json" | jq -r ".[$i].body // \"No release notes provided.\"")
+
+            body=$(echo "$body" |
+              sed -E 's/!\[[^]]*\]\([^)]+\)//g' |
+              sed -E 's/<img[^>]+>//g' |
+              sed ':a;N;$!ba;s/\r\n/\n/g')
+
+            body=$(echo "$body" | awk '
+              BEGIN { skip_date=0; skip_rule=0 }
+              NR==1 && $0 ~ /^\*\*[0-9]{4}-[0-9]{2}-[0-9]{2}\*\*$/ { skip_date=1; next }
+              NR==1 && $0 == "---" { skip_rule=1; next }
+              skip_date==1 && $0 == "---" { skip_date=0; skip_rule=1; next }
+              skip_rule==1 && $0 ~ /^ *$/ { next }
               { print }
-              { prev = $0 }
             ')
+
+            changelog="${changelog}## ${version}\n\n**${date}**\n\n---\n\n${body}\n\n"
+          done
+
+          changelog="$(echo -e "$changelog" | awk '
+            /^---$/ {
+              if (prev != "") print ""
+              print "---"
+              getline nextline
+              if (nextline != "") print ""
+              print nextline
+              next
+            }
+            { print }
+            { prev = $0 }
+          ')"
+
           if [ -z "$changelog" ] || [ -z "$(echo "$changelog" | tr -d '[:space:]')" ]; then
             echo "ERROR: Generated CHANGELOG.md is empty or invalid. Aborting."
             exit 1
           fi
+
           echo "$changelog" > CHANGELOG.md
 
-      - name: Force push CHANGELOG.md to main
+      - name: Commit and push CHANGELOG.md
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md
           git commit -m "docs: update changelog from release notes" || echo "No changes to commit"
-          git push origin HEAD:main --force
+          git push origin HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
