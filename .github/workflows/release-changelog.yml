@@ -37,22 +37,28 @@ jobs:
             body=$(echo "$body" | \
               sed -E '/!\[[^]]*\]\([^)]+\)/d' | \
               sed -E '/<img[^>]+>/d' | \
-              awk '{
-                if($0 ~ /^-/) {
-                  if(prev_blank && prev_bullet) { }
-                  else if(prev_blank) { }
-                  print
-                  prev_bullet=1
-                  prev_blank=0
-                } else if(length($0)==0) {
-                  prev_blank=1
-                  print
-                } else {
-                  print
-                  prev_bullet=0
-                  prev_blank=0
+              awk '
+                {
+                  if ($0 ~ /^-/) {
+                    if (prev_bullet) {
+                      print
+                    } else {
+                      if (NR > 1 && prev_empty == 0) print ""
+                      print
+                    }
+                    prev_bullet=1
+                    prev_empty=0
+                  } else if (length($0) == 0) {
+                    prev_empty=1
+                  } else {
+                    if (NR > 1 && prev_empty == 0) print ""
+                    print
+                    prev_bullet=0
+                    prev_empty=0
+                  }
                 }
-              }')
+              '
+            )
             changelog="${changelog}### ${version}\n\n${body}\n\n"
           done
 
