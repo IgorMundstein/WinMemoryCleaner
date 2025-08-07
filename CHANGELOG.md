@@ -33,7 +33,7 @@ So, nothing better than a major update release. Here are some critical notes.
 - Many contributors often provide translation updates, as some texts might not be in the best format due to frequent translation revisions. After we introduce the CI/CD workflows, we expect to publish releases more often to update minor corrections quickly. We now use the 'major.minor.patch' format for the app version, which will allow us to launch patch releases for localizations.
 - We prioritize transparency and user safety. Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with. By doing this, we will build trust with Microsoft Defender SmartScreen over time, and maybe someday we will obliterate that "Windows protected your PC" warning.
 
-<img width="520" height="762" alt="main-window" src="https://github.com/user-attachments/assets/f0d1ff8b-d499-4eca-a87a-efd8cf2629d7" />
+
 ---
 
 ## 2.8
@@ -71,13 +71,13 @@ So, nothing better than a major update release. Here are some critical notes.
 - Improved Greek language
 - Improved UI rendering when the start minimized setting is enabled
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/a17ece52-2a28-40c0-a281-40e0a31ea991)
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/78752381-bcaa-4181-ae50-2b9b7f463e47)
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/1c7410e4-10d0-4d16-863f-8d93070b2d27)
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/c1716ba0-247b-46ba-adb0-06a5a1d9f24f)
+
+
+
+
 
 ---
 
@@ -91,13 +91,13 @@ So, nothing better than a major update release. Here are some critical notes.
 - Improved code and UI
 - Improved Greek and Polish languages
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/49965c12-3d7b-4abe-8300-9c69be96bb29)
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/d2026535-91ec-4aab-b211-ff8a58e4ef24)
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/9d83df44-cb33-4a28-920d-0f1a1307eed3)
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/c5ede627-a0af-48dd-baab-3791a3d2bcbe)
+
+
+
+
 ---
 
 ## 2.4
@@ -128,7 +128,7 @@ So, nothing better than a major update release. Here are some critical notes.
 - Improved Code & UI
 - Improved German language
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/867c624b-1389-4bd8-86be-620da4733da3)
+
 ---
 
 ## 2.1
@@ -143,7 +143,7 @@ So, nothing better than a major update release. Here are some critical notes.
 - Modified notify icon title to show the memory usage
 - Modified the default window focus to the Optimize button. That will allow the user to press ENTER to run the optimization after the app starts
 
-![image](https://github.com/IgorMundstein/WinMemoryCleaner/assets/3512138/d82cbdc5-8e3a-4a2f-9113-de84f4a192bd)
+
 
 ---
 
@@ -165,7 +165,7 @@ So, nothing better than a major update release. Here are some critical notes.
 -  System tray icon (Notifications/Optimize/Exit)
 -  Windows Server 2003 and Windows XP 64-Bit support
 
-![image](https://user-images.githubusercontent.com/3512138/227809329-2a9c3bac-224b-4fd9-97bb-83817cc71fa0.png)
+
 
 ---
 
@@ -175,6 +175,6 @@ So, nothing better than a major update release. Here are some critical notes.
 
 * Initial release deprecated. Files updated to 2.0 because its has auto-update
 
-![image](https://user-images.githubusercontent.com/3512138/227809279-5a19dd1b-4db4-4184-a7e2-102a49cf4d6c.png)
+
 ---
 
