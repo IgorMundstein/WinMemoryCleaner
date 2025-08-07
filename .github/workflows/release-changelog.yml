@@ -19,6 +19,8 @@ jobs:
           ref: main
 
       - name: Generate Changelog
+        env:
+          GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: |
           gh api repos/${{ github.repository }}/releases \
             --paginate \
