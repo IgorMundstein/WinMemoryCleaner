@@ -31,46 +31,19 @@ jobs:
 
           changelog=""
           for i in $(seq 0 $((n - 1))); do
-            version=$(echo "$releases_json" | jq -r ".[$i].name // .[$i].tag_name")
-            date=$(echo "$releases_json" | jq -r ".[$i].published_at" | cut -d'T' -f1)
             body=$(echo "$releases_json" | jq -r ".[$i].body // \"No release notes provided.\"")
-
-            body=$(echo "$body" |
-              sed -E 's/!\[[^]]*\]\([^)]+\)//g' |
-              sed -E 's/<img[^>]+>//g' |
-              sed ':a;N;$!ba;s/\r\n/\n/g')
-
-            body=$(echo "$body" | awk '
-              BEGIN { skip_date=0; skip_rule=0 }
-              NR==1 && $0 ~ /^\*\*[0-9]{4}-[0-9]{2}-[0-9]{2}\*\*$/ { skip_date=1; next }
-              NR==1 && $0 == "---" { skip_rule=1; next }
-              skip_date==1 && $0 == "---" { skip_date=0; skip_rule=1; next }
-              skip_rule==1 && $0 ~ /^ *$/ { next }
-              { print }
-            ')
-
-            changelog="${changelog}## ${version}\n\n**${date}**\n\n---\n\n${body}\n\n"
+            body=$(echo "$body" | sed -E 's/!\[[^]]*\]\([^)]+\)//g' | sed -E 's/<img[^>]+>//g')
+            changelog="${changelog}${body}\n\n"
           done
 
-          changelog="$(echo -e "$changelog" | awk '
-            /^---$/ {
-              if (prev != "") print ""
-              print "---"
-              getline nextline
-              if (nextline != "") print ""
-              print nextline
-              next
-            }
-            { print }
-            { prev = $0 }
-          ')"
+          changelog="$(echo -e "$changelog" | sed -E ':a;N;$!ba;s/\n{3,}/\n\n/g')"
 
           if [ -z "$changelog" ] || [ -z "$(echo "$changelog" | tr -d '[:space:]')" ]; then
             echo "ERROR: Generated CHANGELOG.md is empty or invalid. Aborting."
             exit 1
           fi
 
-          echo "$changelog" > CHANGELOG.md
+          echo -e "$changelog" > CHANGELOG.md
 
       - name: Commit and push CHANGELOG.md
         run: |
