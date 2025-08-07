@@ -13,62 +13,47 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.release.draft == false && github.event.release.prerelease == false
     steps:
-      - name: Checkout main
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_BOT_TOKEN }}
           ref: main
 
-      - name: Generate and validate changelog
+      - name: Generate Changelog
         env:
           GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: |
-          releases_json=$(gh api repos/${{ github.repository }}/releases --paginate)
-          n=$(echo "$releases_json" | jq length)
-          if [ "$n" -eq 0 ]; then
-            echo "ERROR: No releases found. Aborting."
-            exit 1
+          releases_json=$(gh api repos/${{ github.repository }}/releases --paginate -q '.[] | select(.draft==false and .prerelease==false)')
+
+          if [ "$(echo "$releases_json" | jq 'length')" -eq 0 ]; then
+            echo "No suitable releases found to build changelog."
+            exit 0
           fi
 
-          changelog=""
-          for i in $(seq 0 $((n - 1))); do
-            version=$(echo "$releases_json" | jq -r ".[$i].name // .[$i].tag_name")
-            body=$(echo "$releases_json" | jq -r ".[$i].body // \"No release notes provided.\"")
-            body=$(echo "$body" | \
-              sed -E '/!\[[^]]*\]\([^)]+\)/d' | \
-              sed -E '/<img[^>]+>/d' | \
-              awk '
-                BEGIN { blank = 0; prev_bullet = 0 }
-                /^$/ { blank++ ; next }
-                /^-/ {
-                  if (prev_bullet) {
-                    print
-                  } else {
-                    if (!first_line) print ""
-                    print
-                  }
-                  blank = 0
-                  prev_bullet = 1
-                  first_line = 0
-                  next
-                }
-                {
-                  if (!first_line) print ""
-                  print
-                  blank = 0
-                  prev_bullet = 0
-                  first_line = 0
-                }
-              '
-            )
-            changelog="${changelog}### ${version}\n\n${body}\n"
-          done
+          final_changelog=""
+          echo "$releases_json" | jq -c '.[]' | while IFS= read -r release; do
+            version=$(echo "$release" | jq -r '.name // .tag_name')
+            body=$(echo "$release" | jq -r '.body // "No release notes provided."')
 
-          # Final pass: remove any leading, trailing, or multiple blank lines
-          echo -e "$changelog" | awk '
-            NF { if (blank) print ""; print; blank=0; next }
-            !NF { blank=1 }
-          ' > CHANGELOG.md
+            clean_body=$(echo -n "$body" | perl -0777 -pe '
+              s/!\[[^\]]*\]\([^)]*\)//g;
+              s/<img[^>]*>//g;
+              s/\r\n/\n/g;
+              s/((?:^[ \t]*[-*+].*\n)+)[ \t]*\n+((?:^[ \t]*[-*+].*\n?)+)/$1$2/mg;
+              s/\n{3,}/\n\n/g;
+              s/^\s+|\s+$//g;
+            ')
+
+            entry="### ${version}\n\n${clean_body}"
+
+            if [ -z "$final_changelog" ]; then
+              final_changelog="$entry"
+            else
+              final_changelog="${final_changelog}\n\n---\n\n${entry}"
+            fi
+          done
+          
+          printf "%s\n" "$final_changelog" > CHANGELOG.md
 
       - name: Commit and push CHANGELOG.md
         run: |
@@ -77,5 +62,3 @@ jobs:
           git add CHANGELOG.md
           git commit -m "docs: update changelog from release notes" || echo "No changes to commit"
           git push origin HEAD:main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
