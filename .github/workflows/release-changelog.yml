@@ -23,15 +23,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: |
-          releases_json=$(gh api repos/${{ github.repository }}/releases --paginate -q '.[] | select(.draft==false and .prerelease==false)')
+          # Fetch all releases as a JSON array
+          releases_json=$(gh api repos/${{ github.repository }}/releases --paginate)
 
-          if [ "$(echo "$releases_json" | jq 'length')" -eq 0 ]; then
+          # Filter out drafts and prereleases, keep as array
+          filtered_releases=$(echo "$releases_json" | jq '[ .[] | select(.draft==false and .prerelease==false) ]')
+
+          # Exit if no suitable releases
+          if [ "$(echo "$filtered_releases" | jq 'length')" -eq 0 ]; then
             echo "No suitable releases found to build changelog."
             exit 0
           fi
 
           final_changelog=""
-          echo "$releases_json" | jq -c '.[]' | while IFS= read -r release; do
+          echo "$filtered_releases" | jq -c '.[]' | while IFS= read -r release; do
             version=$(echo "$release" | jq -r '.name // .tag_name')
             body=$(echo "$release" | jq -r '.body // "No release notes provided."')
 
@@ -52,7 +57,7 @@ jobs:
               final_changelog="${final_changelog}\n\n---\n\n${entry}"
             fi
           done
-          
+
           printf "%s\n" "$final_changelog" > CHANGELOG.md
 
       - name: Commit and push CHANGELOG.md
