@@ -7,46 +7,29 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  create-and-merge-pr:
-    name: 'Create and Auto-Merge Changelog PR'
+  update-changelog:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_BOT_TOKEN }}
+          ref: main
 
-      - name: 'Generate Changelog'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate Changelog
         run: |
           gh api repos/${{ github.repository }}/releases \
             --paginate \
             --jq '.[] | "## \(.name // .tag_name)\n\n\(.body // "No release notes provided.")\n---\n"' > CHANGELOG.md
 
-      - name: 'Create Pull Request'
-        id: cpr
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GH_BOT_TOKEN }}
-          commit-message: 'docs: update changelog from release notes'
-          title: 'Docs: Update CHANGELOG.md'
-          body: 'This is an automated PR updating the CHANGELOG.md from release notes.'
-          branch: 'changelog/update-${{ github.run_id }}'
-          delete-branch: true
-
-      - name: 'Approve the PR'
-        if: steps.cpr.outputs.pull-request-number != ''
-        uses: hmarr/auto-approve-action@v4
-        with:
-          github-token: ${{ secrets.GH_BOT_TOKEN }}
-          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-
-      - name: 'Enable Auto-Merge'
-        if: steps.cpr.outputs.pull-request-number != ''
-        uses: peter-evans/enable-pull-request-automerge@v3
-        with:
-          token: ${{ secrets.GH_BOT_TOKEN }}
-          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: squash
+      - name: Force push CHANGELOG.md to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog from release notes" || echo "No changes to commit"
+          git push origin HEAD:main --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
