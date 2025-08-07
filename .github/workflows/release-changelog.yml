@@ -22,11 +22,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: |
-          gh api repos/${{ github.repository }}/releases \
+          changelog=$(gh api repos/${{ github.repository }}/releases \
             --paginate \
-            --jq '.[] | "## \(.name // .tag_name)\n\n**\(.published_at | split(\"T\")[0])**\n\n---\n\n\(.body // \"No release notes provided.\")\n"' |
-            sed -E 's/!\[[^]]*\]\([^)]+\)//g' | \
-            sed -E 's/<img[^>]+>//g' | \
+            --jq '.[] | "## \(.name // .tag_name)\n\n**\(.published_at | split("T")[0])**\n\n---\n\n\(.body // "No release notes provided.")\n"' |
+            sed -E 's/!\[[^]]*\]\([^)]+\)//g' |
+            sed -E 's/<img[^>]+>//g' |
             awk '
               /^## / { if (NR != 1) print ""; print; next }
               /^\*\*/ { print; next }
@@ -40,7 +40,12 @@ jobs:
               }
               { print }
               { prev = $0 }
-            ' > CHANGELOG.md
+            ')
+          if [ -z "$changelog" ] || [ -z "$(echo "$changelog" | tr -d '[:space:]')" ]; then
+            echo "ERROR: Generated CHANGELOG.md is empty or invalid. Aborting."
+            exit 1
+          fi
+          echo "$changelog" > CHANGELOG.md
 
       - name: Force push CHANGELOG.md to main
         run: |
