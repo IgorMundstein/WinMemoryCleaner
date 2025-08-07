@@ -1,0 +1,29 @@
+name: 'Update CHANGELOG.md'
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-changelog:
+    name: 'Sync from All Releases'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+
+      - name: 'Generate Changelog'
+        uses: arumajs/action-generate-changelog@v1.4
+        with:
+          output: CHANGELOG.md
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Commit CHANGELOG.md'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'docs: update changelog'
+          file_pattern: CHANGELOG.md
