@@ -45,7 +45,7 @@ jobs:
 
       - name: 'Enable Auto-Merge'
         if: steps.cpr.outputs.pull-request-number != ''
-        uses: peter-evans/enable-automerge@v3
+        uses: peter-evans/enable-pull-request-automerge@v3
         with:
           token: ${{ secrets.GH_BOT_TOKEN }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
