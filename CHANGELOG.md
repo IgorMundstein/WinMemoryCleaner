@@ -193,5 +193,3 @@
 * Initial release deprecated. Files updated to 2.0 because its has auto-update
 
 
-
-
