@@ -302,7 +302,7 @@ Although I may not rely on this tool as much as I once did, I continue to mainta
 
 If you find this app helpful, please consider donating. Your contribution helps keep the project alive, optimized, and free for everyone.
 
-- [Sponsor on GitHub](https://github.com/sponsors/IgorMundstein)
-- [Buy me a coffee on Ko-fi](https://ko-fi.com/igormundstein)
-- [Bitcoin (BTC)](https://www.blockchain.com/btc/address/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap)
-- [Ethereum (ETH)](https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d)
+| Cash | Crypto |
+| :--- | :--- |
+| [Sponsor on GitHub](https://github.com/sponsors/IgorMundstein) | [Bitcoin (BTC)](https://www.blockchain.com/btc/address/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap) |
+| [Buy me a coffee on Ko-fi](https://ko-fi.com/igormundstein) | [Ethereum (ETH)](https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d) |
