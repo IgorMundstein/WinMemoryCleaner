@@ -41,12 +41,8 @@ jobs:
             )
             printf "### %s\n\n%s\n\n---\n\n" "$version" "$clean_body" >> "$tmp_changelog"
           done
-          awk 'BEGIN { blank=0 } { if ($0 ~ /^$/) { if (!blank) print; blank=1 } else { print; blank=0 } }' "$tmp_changelog" > CHANGELOG.md
+          awk 'NF{if(blank)print ""; print; blank=0} !NF{blank=1}' "$tmp_changelog" > CHANGELOG.md
 
       - name: Commit and push CHANGELOG.md
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CHANGELOG.md
-          git commit -m "docs: update changelog from release notes" || echo "No changes to commit"
-          git push origin HEAD:main
+          git config user.name "
