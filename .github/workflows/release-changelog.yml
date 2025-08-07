@@ -23,47 +23,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         run: |
-          # Fetch all releases as a JSON array
           releases_json=$(gh api repos/${{ github.repository }}/releases --paginate)
-
-          # Filter out drafts and prereleases, keep as array
           filtered_releases=$(echo "$releases_json" | jq '[ .[] | select(.draft==false and .prerelease==false) ]')
-
-          # Exit if no suitable releases
           if [ "$(echo "$filtered_releases" | jq 'length')" -eq 0 ]; then
             echo "No suitable releases found to build changelog."
             exit 0
           fi
 
           tmp_changelog=$(mktemp)
-          first=1
-
           echo "$filtered_releases" | jq -c '.[]' | while IFS= read -r release; do
             version=$(echo "$release" | jq -r '.name // .tag_name')
             body=$(echo "$release" | jq -r '.body // "No release notes provided."')
-
-            clean_body=$(echo -n "$body" | perl -0777 -pe '
-              # Remove lines that are only images
-              s/^\s*!\[[^\]]*\]\([^)]*\)\s*\n//mg;
-              # Remove inline images
-              s/!\[[^\]]*\]\([^)]*\)//g;
-              s/<img[^>]*>//g;
-              s/\r\n/\n/g;
-              s/((?:^[ \t]*[-*+].*\n)+)[ \t]*\n+((?:^[ \t]*[-*+].*\n?)+)/$1$2/mg;
-              # Collapse multiple blank lines to just one
-              s/\n{2,}/\n\n/g;
-              s/^\s+|\s+$//g;
-            ')
-
-            if [ $first -eq 1 ]; then
-              printf "### %s\n\n%s\n" "$version" "$clean_body" > "$tmp_changelog"
-              first=0
-            else
-              printf "\n\n---\n\n### %s\n\n%s\n" "$version" "$clean_body" >> "$tmp_changelog"
-            fi
+            clean_body=$(echo "$body" | \
+              sed -E '/^\s*!\[[^]]*\]\([^)]*\)\s*$/d' | \
+              sed -E 's/!\[[^]]*\]\([^)]*\)//g' | \
+              sed -E 's/<img[^>]*>//g'
+            )
+            printf "### %s\n\n%s\n\n---\n\n" "$version" "$clean_body" >> "$tmp_changelog"
           done
-
-          mv "$tmp_changelog" CHANGELOG.md
+          awk 'BEGIN { blank=0 } { if ($0 ~ /^$/) { if (!blank) print; blank=1 } else { print; blank=0 } }' "$tmp_changelog" > CHANGELOG.md
 
       - name: Commit and push CHANGELOG.md
         run: |
