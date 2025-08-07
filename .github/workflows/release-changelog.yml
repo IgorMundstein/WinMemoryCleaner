@@ -1,4 +1,4 @@
-name: 'Update CHANGELOG.md from Release Notes'
+name: 'Update CHANGELOG'
 
 on:
   release:
@@ -7,15 +7,17 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  changelog-from-release-notes:
+  create-and-merge-pr:
+    name: 'Create and Auto-Merge Changelog PR'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: 'Checkout'
         uses: actions/checkout@v4
 
-      - name: Fetch all releases and generate CHANGELOG.md
+      - name: 'Generate Changelog'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -23,8 +25,28 @@ jobs:
             --paginate \
             --jq '.[] | "## \(.name // .tag_name)\n\n\(.body // "No release notes provided.")\n---\n"' > CHANGELOG.md
 
-      - name: Commit and push CHANGELOG.md
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: 'Create Pull Request'
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
         with:
-          commit_message: 'docs: update changelog from release notes'
-          file_pattern: CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'docs: update changelog from release notes'
+          title: 'Docs: Update CHANGELOG.md'
+          body: 'This is an automated PR updating the CHANGELOG.md from release notes.'
+          branch: 'changelog/update-${{ github.run_id }}'
+          delete-branch: true
+
+      - name: 'Approve the PR'
+        if: steps.cpr.outputs.pull-request-number != ''
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+
+      - name: 'Enable Auto-Merge'
+        if: steps.cpr.outputs.pull-request-number != ''
+        uses: peter-evans/enable-automerge@v3
+        with:
+          token: ${{ secrets.GH_BOT_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
