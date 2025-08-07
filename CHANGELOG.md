@@ -44,7 +44,6 @@
 - We prioritize transparency and user safety. Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with. By doing this, we will build trust with Microsoft Defender SmartScreen over time, and maybe someday we will obliterate that "Windows protected your PC" warning.
 
 
-
 ### 2.8.0
 
 **2023-12-24**
@@ -55,7 +54,6 @@
 - Improved auto-update task
 - Improved code & UI
 - Improved memory usage tray icon
-
 ### 2.7.0
 
 **2023-12-22**
@@ -66,7 +64,6 @@
 - Improved Chinese (Simplified/Traditional), French, Korean and Serbian languages
 - Improved code
 - Improved memory usage tray icon
-
 ### 2.6.0
 
 **2023-12-17**
@@ -83,7 +80,6 @@
 - Improved code, documentation, and UI
 - Improved Greek language
 - Improved UI rendering when the start minimized setting is enabled
-
 
 
 
@@ -111,7 +107,6 @@
 
 
 
-
 ### 2.4.0
 
 **2023-08-07**
@@ -120,7 +115,6 @@
 
 - Added Polish and Ukrainian languages
 - Improved code and documentation
-
 ### 2.3.0
 
 **2023-08-04**
@@ -131,7 +125,6 @@
 - Improved Code & UI
 - Improved Slovenian language
 - Signed all executable versions using a personal self-code signing certificate. It reset the downloads counter
-
 ### 2.2.0
 
 **2023-08-02**
@@ -143,7 +136,6 @@
 - Fixed bugs
 - Improved Code & UI
 - Improved German language
-
 
 
 ### 2.1.0
@@ -159,7 +151,6 @@
 - Code improvements and bug fixes
 - Modified notify icon title to show the memory usage
 - Modified the default window focus to the Optimize button. That will allow the user to press ENTER to run the optimization after the app starts
-
 
 
 ### 2.0.0
@@ -181,7 +172,6 @@
 -  Start minimized
 -  System tray icon (Notifications/Optimize/Exit)
 -  Windows Server 2003 and Windows XP 64-Bit support
-
 
 
 ### 1.1.0
