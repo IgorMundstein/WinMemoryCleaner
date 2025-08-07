@@ -34,7 +34,25 @@ jobs:
           for i in $(seq 0 $((n - 1))); do
             version=$(echo "$releases_json" | jq -r ".[$i].name // .[$i].tag_name")
             body=$(echo "$releases_json" | jq -r ".[$i].body // \"No release notes provided.\"")
-            body=$(echo "$body" | sed -E '/!\[[^]]*\]\([^)]+\)/d' | sed -E '/<img[^>]+>/d' | awk 'BEGIN{prev=""} {if($0 ~ /^-/) {if(prev !~ /^-$/ && NR>1) print ""; print} else if(length($0)) {print}; prev=$0}')
+            body=$(echo "$body" | \
+              sed -E '/!\[[^]]*\]\([^)]+\)/d' | \
+              sed -E '/<img[^>]+>/d' | \
+              awk '{
+                if($0 ~ /^-/) {
+                  if(prev_blank && prev_bullet) { }
+                  else if(prev_blank) { }
+                  print
+                  prev_bullet=1
+                  prev_blank=0
+                } else if(length($0)==0) {
+                  prev_blank=1
+                  print
+                } else {
+                  print
+                  prev_bullet=0
+                  prev_blank=0
+                }
+              }')
             changelog="${changelog}### ${version}\n\n${body}\n\n"
           done
 
