@@ -24,7 +24,7 @@ jobs:
         run: |
           gh api repos/${{ github.repository }}/releases \
             --paginate \
-            --jq '.[] | "## \(.name // .tag_name)\n\n\(.body // "No release notes provided.")\n---\n"' |
+            --jq '.[] | "## \(.name // .tag_name)\n\n\(.body // "No release notes provided.")\n"' |
             sed -E 's/!\[[^]]*\]\([^)]+\)//g' |
             sed -E 's/<img[^>]+>//g' > CHANGELOG.md
 
