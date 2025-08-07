@@ -1,4 +1,6 @@
-### 3.0.0\n\n**2025-08-02**
+### 3.0.0
+
+**2025-08-02**
 - Added a help `?` menu
 - Added a security check to verify the code certificate and warn if the user downloaded from an untrusted source. It's not bulletproof because the project is open source, but it makes it harder for people with bad intentions
 - Added a setting to reduce or increase the font size. It's helpful for different screen sizes and resolutions
