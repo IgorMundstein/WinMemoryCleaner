@@ -38,42 +38,37 @@ jobs:
               sed -E '/!\[[^]]*\]\([^)]+\)/d' | \
               sed -E '/<img[^>]+>/d' | \
               awk '
-                /^$/ { blank=1; next }
+                BEGIN { blank = 0; prev_bullet = 0 }
+                /^$/ { blank++ ; next }
                 /^-/ {
-                  if (last_bullet) {
+                  if (prev_bullet) {
                     print
                   } else {
-                    if (!first && !last_blank) print ""
+                    if (!first_line) print ""
                     print
                   }
-                  last_bullet=1
-                  last_blank=0
-                  first=0
+                  blank = 0
+                  prev_bullet = 1
+                  first_line = 0
                   next
                 }
                 {
-                  if (!first && !last_blank) print ""
+                  if (!first_line) print ""
                   print
-                  last_bullet=0
-                  last_blank=0
-                  first=0
+                  blank = 0
+                  prev_bullet = 0
+                  first_line = 0
                 }
-                END { }
-                BEGIN { first=1; last_blank=1; last_bullet=0 }
               '
             )
-            changelog="${changelog}### ${version}\n\n${body}\n\n"
+            changelog="${changelog}### ${version}\n\n${body}\n"
           done
 
-          # Remove multiple consecutive blank lines (safety net)
-          changelog="$(echo -e "$changelog" | awk 'BEGIN{blank=0} NF{if(blank)print ""; print; blank=0} !NF{blank=1}')"
-
-          if [ -z "$changelog" ] || [ -z "$(echo "$changelog" | tr -d '[:space:]')" ]; then
-            echo "ERROR: Generated CHANGELOG.md is empty or invalid. Aborting."
-            exit 1
-          fi
-
-          echo -e "$changelog" > CHANGELOG.md
+          # Final pass: remove any leading, trailing, or multiple blank lines
+          echo -e "$changelog" | awk '
+            NF { if (blank) print ""; print; blank=0; next }
+            !NF { blank=1 }
+          ' > CHANGELOG.md
 
       - name: Commit and push CHANGELOG.md
         run: |
