@@ -43,21 +43,23 @@ jobs:
             body=$(echo "$release" | jq -r '.body // "No release notes provided."')
 
             clean_body=$(echo -n "$body" | perl -0777 -pe '
+              # Remove lines that are only images
+              s/^\s*!\[[^\]]*\]\([^)]*\)\s*\n//mg;
+              # Remove inline images
               s/!\[[^\]]*\]\([^)]*\)//g;
               s/<img[^>]*>//g;
               s/\r\n/\n/g;
               s/((?:^[ \t]*[-*+].*\n)+)[ \t]*\n+((?:^[ \t]*[-*+].*\n?)+)/$1$2/mg;
-              s/\n{3,}/\n\n/g;
+              # Collapse multiple blank lines to just one
+              s/\n{2,}/\n\n/g;
               s/^\s+|\s+$//g;
             ')
 
-            entry="### ${version}\n\n${clean_body}"
-
             if [ $first -eq 1 ]; then
-              echo "$entry" > "$tmp_changelog"
+              printf "### %s\n\n%s\n" "$version" "$clean_body" > "$tmp_changelog"
               first=0
             else
-              echo -e "\n\n---\n\n$entry" >> "$tmp_changelog"
+              printf "\n\n---\n\n### %s\n\n%s\n" "$version" "$clean_body" >> "$tmp_changelog"
             fi
           done
 
