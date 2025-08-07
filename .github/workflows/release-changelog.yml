@@ -34,11 +34,9 @@ jobs:
           for i in $(seq 0 $((n - 1))); do
             version=$(echo "$releases_json" | jq -r ".[$i].name // .[$i].tag_name")
             body=$(echo "$releases_json" | jq -r ".[$i].body // \"No release notes provided.\"")
-            body=$(echo "$body" | sed -E '/!\[[^]]*\]\([^)]+\)/d' | sed -E '/<img[^>]+>/d' | sed -E '/^[[:space:]]*$/d')
+            body=$(echo "$body" | sed -E '/!\[[^]]*\]\([^)]+\)/d' | sed -E '/<img[^>]+>/d' | awk 'BEGIN{prev=""} {if($0 ~ /^-/) {if(prev !~ /^-$/ && NR>1) print ""; print} else if(length($0)) {print}; prev=$0}')
             changelog="${changelog}### ${version}\n\n${body}\n\n"
           done
-
-          changelog="$(echo -e "$changelog" | awk 'NF {print $0 "\n"}')"
 
           if [ -z "$changelog" ] || [ -z "$(echo "$changelog" | tr -d '[:space:]')" ]; then
             echo "ERROR: Generated CHANGELOG.md is empty or invalid. Aborting."
