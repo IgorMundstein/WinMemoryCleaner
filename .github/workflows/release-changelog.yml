@@ -35,7 +35,9 @@ jobs:
             exit 0
           fi
 
-          final_changelog=""
+          tmp_changelog=$(mktemp)
+          first=1
+
           echo "$filtered_releases" | jq -c '.[]' | while IFS= read -r release; do
             version=$(echo "$release" | jq -r '.name // .tag_name')
             body=$(echo "$release" | jq -r '.body // "No release notes provided."')
@@ -51,14 +53,15 @@ jobs:
 
             entry="### ${version}\n\n${clean_body}"
 
-            if [ -z "$final_changelog" ]; then
-              final_changelog="$entry"
+            if [ $first -eq 1 ]; then
+              echo "$entry" > "$tmp_changelog"
+              first=0
             else
-              final_changelog="${final_changelog}\n\n---\n\n${entry}"
+              echo -e "\n\n---\n\n$entry" >> "$tmp_changelog"
             fi
           done
 
-          printf "%s\n" "$final_changelog" > CHANGELOG.md
+          mv "$tmp_changelog" CHANGELOG.md
 
       - name: Commit and push CHANGELOG.md
         run: |
