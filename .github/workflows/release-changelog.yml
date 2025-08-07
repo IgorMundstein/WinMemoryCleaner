@@ -24,9 +24,23 @@ jobs:
         run: |
           gh api repos/${{ github.repository }}/releases \
             --paginate \
-            --jq '.[] | "## \(.name // .tag_name)\n\n\(.body // "No release notes provided.")\n"' |
-            sed -E 's/!\[[^]]*\]\([^)]+\)//g' |
-            sed -E 's/<img[^>]+>//g' > CHANGELOG.md
+            --jq '.[] | "## \(.name // .tag_name)\n\n**\(.published_at | split(\"T\")[0])**\n\n---\n\n\(.body // \"No release notes provided.\")\n"' |
+            sed -E 's/!\[[^]]*\]\([^)]+\)//g' | \
+            sed -E 's/<img[^>]+>//g' | \
+            awk '
+              /^## / { if (NR != 1) print ""; print; next }
+              /^\*\*/ { print; next }
+              /^---$/ {
+                if (prev != "") print ""
+                print "---"
+                getline nextline
+                if (nextline != "") print ""
+                print nextline
+                next
+              }
+              { print }
+              { prev = $0 }
+            ' > CHANGELOG.md
 
       - name: Force push CHANGELOG.md to main
         run: |
