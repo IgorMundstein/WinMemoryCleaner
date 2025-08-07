@@ -73,10 +73,6 @@
 
 
 
-
-
-
-
 ### 2.5.0
 
 **2023-08-20**
@@ -86,9 +82,6 @@
 - Changed app priority to low. Optimization may run a little slower, but it will reduce the chance of Windows freezing during the optimization
 - Improved code and UI
 - Improved Greek and Polish languages
-
-
-
 
 
 
@@ -134,7 +127,6 @@
 - Modified the default window focus to the Optimize button. That will allow the user to press ENTER to run the optimization after the app starts
 
 
-
 ### 2.0.0
 
 **2023-03-26**
@@ -152,7 +144,6 @@
 -  Start minimized
 -  System tray icon (Notifications/Optimize/Exit)
 -  Windows Server 2003 and Windows XP 64-Bit support
-
 
 
 ### 1.1.0
