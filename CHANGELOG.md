@@ -4,8 +4,6 @@
 
 ---
 
-**2025-08-02**
----
 - Added a help `?` menu
 - Added a security check to verify the code certificate and warn if the user downloaded from an untrusted source. It's not bulletproof because the project is open source, but it makes it harder for people with bad intentions
 - Added a setting to reduce or increase the font size. It's helpful for different screen sizes and resolutions
@@ -32,15 +30,11 @@
 ---
 
 **This project is celebrating its 6th year. So, nothing better than a major update release. Here are some critical notes.**
-
 - It's the first release implementing the CI/CD pipelines to publish the app to Chocolatey, Scoop, and Winget. So, there may be a delay in being available on these package managers.
 - If you find this app helpful, please consider donating. Your donation helps keep the project alive, optimized, and free for everyone.
 - If you run the app with command-line arguments (no GUI), check the modified memory area parameter names.
 - Many contributors often provide translation updates, as some texts might not be in the best format due to frequent translation revisions. After we introduce the CI/CD workflows, we expect to publish releases more often to update minor corrections quickly. We now use the 'major.minor.patch' format for the app version, which will allow us to launch patch releases for localizations.
 - We prioritize transparency and user safety. Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with. By doing this, we will build trust with Microsoft Defender SmartScreen over time, and maybe someday we will obliterate that "Windows protected your PC" warning.
-
-
-
 
 ## 2.8
 
@@ -48,13 +42,10 @@
 
 ---
 
-**2023-12-24**
----
 - Added optimization progress bar to the optimize button
 - Improved auto-update task
 - Improved code & UI
 - Improved memory usage tray icon
-
 
 ## 2.7
 
@@ -62,13 +53,10 @@
 
 ---
 
-**2023-12-22**
----
 - Changed the error dialog to a warning log event when a firewall blocks the app
 - Improved Chinese (Simplified/Traditional), French, Korean and Serbian languages
 - Improved code
 - Improved memory usage tray icon
-
 
 ## 2.6
 
@@ -76,8 +64,6 @@
 
 ---
 
-**2023-12-17**
----
 - Added Albanian, Bulgarian, Irish, Persian and Russian languages
 - Added approximate memory released to optimization notification
 - Added right-to-left (RTL) language and UI support
@@ -90,37 +76,17 @@
 - Improved UI rendering when the start minimized setting is enabled
 
 
-
-
-
-
-
-
-
-
-
 ## 2.5
 
 **2023-08-20**
 
 ---
 
-**2023-08-20**
----
 - Added optimization runtime stats to the log
 - Added **compact mode** view. Arrow at the top right of the screen to collapse or expand the window
 - Changed app priority to low. Optimization may run a little slower, but it will reduce the chance of Windows freezing during the optimization
 - Improved code and UI
 - Improved Greek and Polish languages
-
-
-
-
-
-
-
-
-
 
 ## 2.4
 
@@ -128,11 +94,8 @@
 
 ---
 
-**2023-08-07**
----
 - Added Polish and Ukrainian languages
 - Improved code and documentation
-
 
 ## 2.3
 
@@ -140,13 +103,10 @@
 
 ---
 
-**2023-08-04**
----
 - Added Korean and Serbian languages
 - Improved Code & UI
 - Improved Slovenian language
 - Signed all executable versions using a personal self-code signing certificate. It reset the downloads counter
-
 
 ## 2.2
 
@@ -154,16 +114,11 @@
 
 ---
 
-**2023-08-02**
----
 - Added optimization hotkey setting
 - Added Arabic, Indonesian, and Japanese languages
 - Fixed bugs
 - Improved Code & UI
 - Improved German language
-
-
-
 
 ## 2.1
 
@@ -171,8 +126,6 @@
 
 ---
 
-**2023-07-27**
----
 - Added close after optimization setting
 - Added support to the Chinese (Simplified), Chinese (Traditional), Dutch, French, German, Greek, Italian, Macedonian, Slovenian, Spanish, and Turkish languages
 - Added the ability to read language JSON files on the exact executable location. That will help contributors to test the translation before submitting it
@@ -182,17 +135,12 @@
 - Modified the default window focus to the Optimize button. That will allow the user to press ENTER to run the optimization after the app starts
 
 
-
-
-
 ## 2.0
 
 **2023-03-26**
 
 ---
 
-**2023-03-26**
----
 -  Always on top
 -  Auto clean (Interval & Usage)
 -  Auto app update
@@ -208,16 +156,10 @@
 -  Windows Server 2003 and Windows XP 64-Bit support
 
 
-
-
-
 ## 1.1
 
 **2021-09-06**
 
 ---
 
-**2021-09-06**
----
 * Initial release deprecated. Files updated to 2.0 because its has auto-update
-
