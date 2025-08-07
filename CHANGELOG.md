@@ -2,6 +2,7 @@
 
 **2025-08-02**
 
+
 - Added a help `?` menu
 
 - Added a security check to verify the code certificate and warn if the user downloaded from an untrusted source. It's not bulletproof because the project is open source, but it makes it harder for people with bad intentions
@@ -46,9 +47,11 @@
 
 - Renamed memory processes working set to working set
 
+
 ---
 
 **This project is celebrating its 6th year. So, nothing better than a major update release. Here are some critical notes.**
+
 
 - It's the first release implementing the CI/CD pipelines to publish the app to Chocolatey, Scoop, and Winget. So, there may be a delay in being available on these package managers.
 
@@ -60,9 +63,11 @@
 
 - We prioritize transparency and user safety. Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with. By doing this, we will build trust with Microsoft Defender SmartScreen over time, and maybe someday we will obliterate that "Windows protected your PC" warning.
 
+
 ### 2.8.0
 
 **2023-12-24**
+
 
 - Added optimization progress bar to the optimize button
 
@@ -76,6 +81,7 @@
 
 **2023-12-22**
 
+
 - Changed the error dialog to a warning log event when a firewall blocks the app
 
 - Improved Chinese (Simplified/Traditional), French, Korean and Serbian languages
@@ -87,6 +93,7 @@
 ### 2.6.0
 
 **2023-12-17**
+
 
 - Added Albanian, Bulgarian, Irish, Persian and Russian languages
 
@@ -108,9 +115,14 @@
 
 - Improved UI rendering when the start minimized setting is enabled
 
+
+
+
+
 ### 2.5.0
 
 **2023-08-20**
+
 
 - Added optimization runtime stats to the log
 
@@ -122,9 +134,14 @@
 
 - Improved Greek and Polish languages
 
+
+
+
+
 ### 2.4.0
 
 **2023-08-07**
+
 
 - Added Polish and Ukrainian languages
 
@@ -133,6 +150,7 @@
 ### 2.3.0
 
 **2023-08-04**
+
 
 - Added Korean and Serbian languages
 
@@ -146,6 +164,7 @@
 
 **2023-08-02**
 
+
 - Added optimization hotkey setting
 
 - Added Arabic, Indonesian, and Japanese languages
@@ -156,9 +175,11 @@
 
 - Improved German language
 
+
 ### 2.1.0
 
 **2023-07-27**
+
 
 - Added close after optimization setting
 
@@ -174,9 +195,11 @@
 
 - Modified the default window focus to the Optimize button. That will allow the user to press ENTER to run the optimization after the app starts
 
+
 ### 2.0.0
 
 **2023-03-26**
+
 
 -  Always on top
 
@@ -204,8 +227,12 @@
 
 -  Windows Server 2003 and Windows XP 64-Bit support
 
+
 ### 1.1.0
 
 **2021-09-06**
 
 * Initial release deprecated. Files updated to 2.0 because its has auto-update
+
+
+
