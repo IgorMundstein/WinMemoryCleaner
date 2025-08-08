@@ -19,9 +19,13 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
-    name: Build and Sign
+  build-and-test:
+    name: Build and Test
     runs-on: windows-latest
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
@@ -54,7 +58,7 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          $assemblyInfoPath = "src/AssemblyInfo.cs"
+          $assemblyInfoPath = "src/Properties/AssemblyInfo.cs"
           if (-Not (Test-Path $assemblyInfoPath)) {
             $assemblyInfoPath = "src/Properties/AssemblyInfo.cs"
           }
@@ -109,7 +113,7 @@ jobs:
 
   test-ui:
     name: UI Test on ${{ matrix.os }}
-    needs: build
+    needs: build-and-test
     strategy:
       fail-fast: false
       matrix:
@@ -120,7 +124,7 @@ jobs:
       - name: Download unsigned build artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build.outputs.unsigned_artifact_name }}
+          name: ${{ needs.build-and-test.outputs.unsigned_artifact_name }}
 
       - name: Run UI Test
         shell: pwsh
@@ -155,7 +159,7 @@ jobs:
 
   package-screenshots:
     name: Package All Screenshots
-    needs: [build, test-ui]
+    needs: [build-and-test, test-ui]
     runs-on: ubuntu-latest
 
     steps:
@@ -172,6 +176,6 @@ jobs:
       - name: Upload final screenshot package
         uses: actions/upload-artifact@v4
         with:
-          name: all-screenshots-${{ needs.build.outputs.app_version }}
+          name: all-screenshots-${{ needs.build-and-test.outputs.app_version }}
           path: ./all-screenshots/
           retention-days: 30
