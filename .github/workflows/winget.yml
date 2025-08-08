@@ -135,6 +135,7 @@ jobs:
           PackageName: ${{ env.APP_NAME }}
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
+          PackageIcon: https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/images/win-memory-cleaner.png
           ShortDescription: ${{ steps.metadata.outputs.desc }}
           Commands:
           - ${{ env.APP_NAME }}
