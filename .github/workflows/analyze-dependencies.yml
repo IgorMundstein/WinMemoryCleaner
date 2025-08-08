@@ -51,6 +51,7 @@ jobs:
         uses: github/dependency-submission-action@v3
 
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "Update dependencies [auto]"
@@ -58,3 +59,11 @@ jobs:
           body: "This pull request updates project dependencies."
           branch: "auto/dependency-update"
           delete-branch: true
+
+      - name: Enable auto-merge on the PR
+        if: steps.cpr.outputs.pull-request-number
+        env:
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge $PR_NUMBER --merge --auto
