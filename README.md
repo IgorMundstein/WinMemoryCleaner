@@ -6,9 +6,7 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 [![](./docs/images/main-window.png)](#windows-memory-cleaner)
 
----
-
-## ⬇️ Download
+## 💾 Download
 
 [![](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FIgorMundstein%2FWinMemoryCleaner%2Freleases%2Flatest&query=%24.tag_name&label=Release&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
@@ -63,8 +61,6 @@ The application provides quick access and information directly from the system t
 
 - **Tray Icon Customization**: The tray icon can be configured to display real-time physical memory usage instead of the app logo. You can customize the background and text colors, as well as set warning and danger level thresholds that change the icon's color based on current memory pressure.
 
----
-
 ## 🧬 Technical Deep Dive: How It Works
 
 WinMemoryCleaner provides a user-friendly interface for powerful, documented Windows API functions. There are no tricks or secrets—just direct access to the tools needed to manage your system's memory effectively. Each cleaning function targets a specific memory area, and its availability depends on your Windows version.
@@ -82,23 +78,17 @@ Here’s a breakdown of what each function does and the minimum supported Window
 | **System&nbsp;File&nbsp;Cache** | Flushes the cache Windows uses for its system files, trimming it to release memory. Useful for refreshing the system’s state before launching a memory-intensive application. | XP+ | 2003+ |
 | **Working&nbsp;Set** | Removes memory from all user-mode and system working sets, forcing processes (like games or browsers that hoard memory) to release non-essential RAM. This can reduce stutter and improve responsiveness. | XP+ | 2003+ |
 
----
-
 ## 🔴 The Problem: Inefficient Memory Management
 
 Modern operating systems are good at managing memory, but they aren't perfect. Over time, RAM can become cluttered with cached data from closed applications (**Standby List**) or held unnecessarily by running processes (**Working Set**). This leads to system slowdowns, stuttering in applications, and reduced responsiveness, especially on systems with limited RAM.
 
 The market for PC utilities is plagued by "RAM boosters" that use deceptive tricks and offer no real, verifiable benefits, creating deep-seated skepticism among users.
 
----
-
 ## ✅ The Solution: A Transparent, Evidence-Based Tool
 
 WinMemoryCleaner is the antidote to "snake oil" utilities. It does not use undocumented hacks or harmful tricks. Instead, it provides a clean, user-friendly interface to powerful, **native Windows API functions** that give you direct control over your system's memory. It is a tool built on transparency, proof, and respect for the user.
 
----
-
-## 🔬 Proof of Concept: See It Work Yourself
+## 🔎 Proof of Concept: See It Work Yourself
 
 Don't take our word for it. You can verify the effects of this tool using Windows' own **Resource Monitor**.
 
@@ -110,8 +100,6 @@ Don't take our word for it. You can verify the effects of this tool using Window
 
 This is a direct, verifiable demonstration that the application converts cached memory into truly free memory, ready for your next task.
 
----
-
 ## 📖 Logs
 
 All optimization activities are logged to the Windows Event Viewer for a transparent audit trail.
@@ -121,8 +109,6 @@ All optimization activities are logged to the Windows Event Viewer for a transpa
 3. Look for events with the source name **Windows Memory Cleaner**
 
 [![](./docs/images/windows-event-log.png)](#-logs)
-
----
 
 ## 🔐 Trust & Integrity
 
@@ -156,9 +142,9 @@ This happens because the application is new and has not yet built a strong reput
 
 Each new version is automatically submitted for analysis to leading security platforms, including VirusTotal and Hybrid Analysis, to ensure it is free from threats.
 
-## 🤖 Automation & Deployment
+## 💻 Automation & Deployment
 
-⚠️ **Note:** You must run these headless operations with administrator privileges.
+You must run these headless operations with administrator privileges.
 
 ### 🔳 Console Mode
 
@@ -175,7 +161,7 @@ Run optimizations silently for scripting and automation. Use any combination of 
 **Command-line example:**
 
 ```cmd
-{path}\WinMemoryCleaner.exe /WorkingSet /StandbyList /SystemFileCache
+{path}\WinMemoryCleaner.exe /ModifiedFileCache /StandbyList /WorkingSet
 ```
 
 ### ⚙️ Windows Service Mode
@@ -192,8 +178,6 @@ For continuous, hands-off optimization, install the application as a background 
 {path}\WinMemoryCleaner.exe /Uninstall
 ```
 
----
-
 ## 🛠️ Complementary Tools
 
 While **Windows Memory Cleaner** excels at efficiently managing and freeing up memory, the following tools can provide even deeper insights into your system's memory usage and help with advanced troubleshooting:
@@ -205,8 +189,6 @@ An advanced task manager from Microsoft Sysinternals that goes beyond what's ava
 ### 🔧 [RAMMap](https://learn.microsoft.com/en-us/sysinternals/downloads/rammap)
 
 A powerful physical memory usage analysis utility from Microsoft Sysinternals. RAMMap provides detailed, real-time information about how Windows is allocating physical memory, including how much is in use by processes, drivers, the kernel, and various cached data. **It also contains some cleaning features that address certain memory areas similar to Windows Memory Cleaner.** It's an excellent tool to use alongside WinMemoryCleaner to understand precisely *where* memory is being used before and after an optimization.
-
----
 
 ## ❓ Frequently Asked Questions (FAQ)
 
@@ -247,8 +229,6 @@ That's a common issue that persists with every new app version. I constantly sub
 It helps if more users [submit the app for malware analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
 
 Meanwhile, as a workaround, you can [add an exclusion to Windows Security](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
-
----
 
 ## 🌐 Translation
 
@@ -291,8 +271,6 @@ When new versions require translation updates, we may use AI tools to provide a 
 | 🇮🇩&nbsp;Indonesian | [Mochammad Misbahus Surur](https://github.com/Eskeyz), [Minids](https://github.com/tdnphantom) | 🇹🇭&nbsp;Thai | [nongice](https://github.com/21icepril) |
 | 🇮🇪&nbsp;Irish | [Happygolucky254](https://github.com/Happygolucky254) | 🇹🇷&nbsp;Turkish | [Rıza Emet](https://github.com/rizaemet), [Viollje](https://github.com/Viollje) |
 | 🇮🇹&nbsp;Italian | [Michele](https://github.com/wintrymichi) | 🇺🇦&nbsp;Ukrainian | [Riebi](https://github.com/RieBi), [Oleksandr](https://github.com/Mariachi1231) |
-
----
 
 ## ❤️ Support the Project
 
