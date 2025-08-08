@@ -2,8 +2,6 @@ name: Analyze and Submit Dependencies
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 3 * * *'
   push:
     branches:
       - main
@@ -76,7 +74,7 @@ jobs:
           delete-branch: true
 
       - name: Enable auto-merge on the PR
-        if: steps.cpr.outputs.pull-request-number
+        if: steps.cpr.outputs.pull-request-number != ''
         env:
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
