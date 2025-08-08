@@ -21,15 +21,18 @@ permissions:
 
 jobs:
   build:
-    name: Build and Sign (develop/pr only)
+    name: Build and Sign
     runs-on: windows-latest
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
+      unsigned_artifact_name: winmemorycleaner-${{ steps.version.outputs.app_version }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache NuGet packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: nuget-${{ hashFiles('**/*.csproj') }}
@@ -37,7 +40,7 @@ jobs:
             nuget-
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+        uses: microsoft/setup-msbuild@v2
 
       - name: Restore NuGet packages
         shell: pwsh
@@ -66,7 +69,6 @@ jobs:
             if ($fullVersion -match '^(\d+\.\d+\.\d+)') {
               $appVersion = $matches[1]
               echo "app_version=$appVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-              Write-Host "Detected app version: $appVersion"
             } else {
               Write-Host "::error::Could not parse Major.Minor.Patch from version $fullVersion"
               exit 1
@@ -103,4 +105,73 @@ jobs:
         with:
           name: winmemorycleaner-${{ steps.version.outputs.app_version }}-signed
           path: WinMemoryCleaner.exe
+          retention-days: 30
+
+  test-ui:
+    name: UI Test on ${{ matrix.os }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2019, windows-2022, windows-2025]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Download unsigned build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.unsigned_artifact_name }}
+
+      - name: Run UI Test
+        shell: pwsh
+        run: |
+          $appPath = ".\WinMemoryCleaner.exe"
+          $appName = "WinMemoryCleaner"
+          $screenshotPath = ".\screenshot-${{ matrix.os }}.png"
+          Start-Process -FilePath $appPath
+          Start-Sleep -Seconds 5
+          $process = Get-Process -Name $appName -ErrorAction SilentlyContinue
+          if (-not $process) {
+            Write-Host "::error::$appName process not found after starting."
+            exit 1
+          }
+          Add-Type -AssemblyName System.Windows.Forms
+          $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+          $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+          $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+          $bitmap.Save($screenshotPath, [System.Drawing.Imaging.ImageFormat]::Png)
+          $graphics.Dispose()
+          $bitmap.Dispose()
+          Stop-Process -Name $appName -Force
+
+      - name: Upload Screenshot Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-screenshot-${{ matrix.os }}
+          path: screenshot-${{ matrix.os }}.png
+          retention-days: 1
+
+  package-screenshots:
+    name: Package All Screenshots
+    needs: [build, test-ui]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all screenshot artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ui-test-screenshot-*
+          path: ./all-screenshots
+          merge-multiple: true
+
+      - name: List final files for verification
+        run: ls -R ./all-screenshots
+
+      - name: Upload final screenshot package
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-screenshots-${{ needs.build.outputs.app_version }}
+          path: ./all-screenshots/
           retention-days: 30
