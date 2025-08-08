@@ -74,10 +74,10 @@ jobs:
           delete-branch: true
 
       - name: Enable auto-merge on the PR
-        if: steps.cpr.outputs.pull-request-number != ''
+        if: ${{ steps.cpr.outputs.pull-request-number }}
         env:
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          echo "$GITHUB_TOKEN" | gh auth login --with-token
+          unset GITHUB_TOKEN
           gh pr merge "$PR_NUMBER" --merge --auto --repo "$GITHUB_REPOSITORY"
