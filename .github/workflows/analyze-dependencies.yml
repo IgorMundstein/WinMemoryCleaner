@@ -79,6 +79,6 @@ jobs:
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          Remove-Item Env:GITHUB_TOKEN
+          Remove-Item Env:GITHUB_TOKEN -ErrorAction SilentlyContinue
           gh pr merge "$env:PR_NUMBER" --merge --auto --repo "$env:GITHUB_REPOSITORY"
         shell: pwsh
