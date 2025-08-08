@@ -2,15 +2,16 @@ name: Automatic Dependency Submission (NuGet)
 
 on:
   push:
-    branches-ignore:
-      - 'sync/**'
+    branches:
+      - main
+      - develop
   pull_request:
-    branches-ignore:
-      - 'sync/**'
+    branches:
+      - main
+      - develop
 
 jobs:
   submit-nuget:
-    if: ${{ !startsWith(github.ref, 'refs/heads/sync/') }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
