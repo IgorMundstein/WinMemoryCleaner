@@ -124,7 +124,7 @@ jobs:
             $errors += "License must be present and valid."
           }
           if ($errors.Count -gt 0) {
-            Write-Host "::error::Nuspec quality check failed:`n$($errors -join "`n")"
+            Write-Host "::error::Manifest quality check failed:`n$($errors -join "`n")"
             exit 1
           }
 
