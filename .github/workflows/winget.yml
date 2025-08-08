@@ -116,12 +116,14 @@ jobs:
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.version }}
-          InstallerType: portable
+          InstallerType: exe
           Installers:
           - Architecture: neutral
             InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe
             InstallerSha256: ${{ steps.download.outputs.sha256 }}
-            PortableCommand: ${{ env.APP_NAME }}.exe
+            InstallerSwitches:
+              Silent: /Package
+              SilentWithProgress: /Package
           ManifestType: installer
           ManifestVersion: 1.6.0
           EOF
