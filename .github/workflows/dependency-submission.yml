@@ -47,4 +47,5 @@ jobs:
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
 
       - name: Submit Dependency Graph
-        uses: actions/dependency-submission@v4
+        uses: actions/dependency-submission@v3
+        continue-on-error: true
