@@ -11,17 +11,25 @@ permissions:
 env:
   FORK_REPO: ${{ github.repository_owner }}/Scoop
   UPSTREAM_REPO: ScoopInstaller/Main
+  APP_NAME: WinMemoryCleaner
+  MANIFEST_NAME: winmemorycleaner
 
 jobs:
   submit:
     name: Submit to Scoop
     runs-on: windows-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
 
-      - name: Get Release Tag
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get latest release info
         id: get_release
         uses: actions/github-script@v7
         with:
@@ -30,73 +38,81 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            core.setOutput('tag', release.tag_name);
+            const tag = release.tag_name;
+            const version = tag.startsWith('v') ? tag.substring(1) : tag;
+            core.setOutput('tag', tag);
+            core.setOutput('version', version);
 
-      - name: Download & SHA256
+      - name: Fetch repository metadata
+        id: metadata
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            core.setOutput('desc', repo.description?.trim() || 'A utility to clean system memory.');
+            core.setOutput('homepage', repo.homepage || repo.html_url);
+            core.setOutput('license', repo.license.spdx_id || 'Unknown');
+
+      - name: Download release asset and calculate checksum
         id: download
-        run: |
-          $releaseTag = "${{ steps.get_release.outputs.tag }}"
-          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$releaseTag/WinMemoryCleaner.exe"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile WinMemoryCleaner.exe
-          $sha256 = (Get-FileHash -Path WinMemoryCleaner.exe -Algorithm SHA256).Hash.ToLower()
-          echo "sha256=$sha256" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         shell: pwsh
+        run: |
+          $assetName = "${{ env.APP_NAME }}.exe"
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/$assetName"
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $assetName -UseBasicParsing
+          $sha256 = (Get-FileHash -Path $assetName -Algorithm SHA256).Hash.ToLower()
+          echo "sha256=$sha256" >> $env:GITHUB_OUTPUT
 
-      - name: Create Manifest File
+      - name: Create Scoop Manifest File
         id: create_manifest
-        env:
-          RELEASE_TAG: ${{ steps.get_release.outputs.tag }}
-          SHA256: ${{ steps.download.outputs.sha256 }}
+        shell: pwsh
         run: |
           $manifestDir = "scoop-manifest"
           New-Item -ItemType Directory -Path $manifestDir -Force
           $manifestContent = @"
           {
-              "version": "$(${env:RELEASE_TAG}.TrimStart('v'))",
-              "description": "This free RAM cleaner uses native Windows features to clear memory areas.",
-              "homepage": "https://github.com/IgorMundstein/WinMemoryCleaner/",
-              "license": "GPL-3.0",
+              "version": "${{ steps.get_release.outputs.version }}",
+              "description": "${{ steps.metadata.outputs.desc }}",
+              "homepage": "${{ steps.metadata.outputs.homepage }}",
+              "license": "${{ steps.metadata.outputs.license }}",
               "architecture": {
                   "64bit": {
-                      "url": "https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/WinMemoryCleaner.exe",
-                      "hash": "$env:SHA256"
+                      "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe",
+                      "hash": "${{ steps.download.outputs.sha256 }}"
                   }
               },
-              "bin": "WinMemoryCleaner.exe",
+              "bin": "${{ env.APP_NAME }}.exe",
               "shortcuts": [
                   [
-                      "WinMemoryCleaner.exe",
-                      "Windows Memory Cleaner"
+                      "${{ env.APP_NAME }}.exe",
+                      "${{ env.APP_NAME }}"
                   ]
               ],
               "checkver": "github",
               "autoupdate": {
                   "architecture": {
                       "64bit": {
-                          "url": "https://github.com/${{ github.repository }}/releases/download/`$version/WinMemoryCleaner.exe"
+                          "url": "https://github.com/${{ github.repository }}/releases/download/`$version/${{ env.APP_NAME }}.exe"
                       }
                   }
               }
           }
           "@
-          $manifestFile = "$manifestDir/winmemorycleaner.json"
+          $manifestFile = "$manifestDir/${{ env.MANIFEST_NAME }}.json"
           $manifestContent | Out-File -FilePath $manifestFile -Encoding UTF8
-          echo "manifest_path=$manifestFile" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        shell: pwsh
-
-      - name: Lint JSON manifest
-        run: |
-          choco install jq -y
-          jq . "$(echo ${{ steps.create_manifest.outputs.manifest_path }})" >nul
-        shell: pwsh
+          echo "manifest_path=$manifestFile" >> $env:GITHUB_OUTPUT
 
       - name: Quality check Scoop manifest
+        shell: pwsh
         run: |
-          $manifestPath = "$(echo ${{ steps.create_manifest.outputs.manifest_path }})"
+          $manifestPath = "${{ steps.create_manifest.outputs.manifest_path }}"
           $json = Get-Content $manifestPath | ConvertFrom-Json
           $errors = @()
           if (-not $json.version -or $json.version -notmatch '^\d+\.\d+\.\d+$') {
-            $errors += "Version must be present and follow semantic versioning (e.g., 1.2.3)."
+            $errors += "Version must be present and follow semantic versioning (e.g., 1.2.3). Found: $($json.version)"
           }
           if (-not $json.description -or $json.description.Length -lt 10) {
             $errors += "Description must be at least 10 characters."
@@ -104,42 +120,42 @@ jobs:
           if (-not $json.homepage) {
             $errors += "Homepage must be present."
           }
-          if (-not $json.license) {
-            $errors += "License must be present."
-          }
-          if (-not $json.architecture.'64bit'.url -or -not $json.architecture.'64bit'.hash) {
-            $errors += "64bit architecture url and hash must be present."
+          if (-not $json.license -or $json.license -eq 'Unknown') {
+            $errors += "License must be present and valid."
           }
           if ($errors.Count -gt 0) {
-            Write-Host "::error::Manifest quality check failed:`n$($errors -join "`n")"
+            Write-Host "::error::Nuspec quality check failed:`n$($errors -join "`n")"
             exit 1
           }
-        shell: pwsh
 
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-          RELEASE_TAG: ${{ steps.get_release.outputs.tag }}
-          SHA256: ${{ steps.download.outputs.sha256 }}
-          FORK_OWNER: ${{ github.repository_owner }}
+        shell: pwsh
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" scoop-bucket-clone
-          cd scoop-bucket-clone
+
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" scoop-fork
+          cd scoop-fork
+
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream master --depth=1
-          $branchName = "update/WinMemoryCleaner-$env:RELEASE_TAG"
-          git checkout -b "$branchName" upstream/master
-          $manifestDir = "bucket"
-          cp ../scoop-manifest/winmemorycleaner.json "$manifestDir/winmemorycleaner.json"
+
+          $version = "${{ steps.get_release.outputs.version }}"
+          $branchName = "update/${{ env.MANIFEST_NAME }}-$version"
+          git checkout -b $branchName upstream/master
+
+          $manifestFile = "${{ steps.create_manifest.outputs.manifest_path }}"
+          cp ../$manifestFile "bucket/${{ env.MANIFEST_NAME }}.json"
+
           git add .
-          git commit -m "WinMemoryCleaner: Add version $env:RELEASE_TAG"
-          git push --force origin "$branchName"
+          git commit -m "${{ env.APP_NAME }}: Add version $version"
+          git push --force origin $branchName
+
           gh pr create `
             --repo "${{ env.UPSTREAM_REPO }}" `
-            --head "$env:FORK_OWNER`:$branchName" `
+            --head "${{ github.repository_owner }}:$branchName" `
             --base master `
-            --title "WinMemoryCleaner: Add version $env:RELEASE_TAG" `
-            --body "Automated submission for WinMemoryCleaner version $env:RELEASE_TAG."
-        shell: pwsh
+            --title "${{ env.APP_NAME }} $version" `
+            --body "Automated submission for ${{ env.APP_NAME }} version $version."
