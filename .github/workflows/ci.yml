@@ -151,27 +151,4 @@ jobs:
         with:
           name: ui-test-screenshot-${{ matrix.os }}
           path: screenshot-${{ matrix.os }}.png
-          retention-days: 1
-
-  package-screenshots:
-    name: Package All Screenshots
-    needs: [build, test-ui]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download all screenshot artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: ui-test-screenshot-*
-          path: ./all-screenshots
-          merge-multiple: true
-
-      - name: List final files for verification
-        run: ls -R ./all-screenshots
-
-      - name: Upload final screenshot package
-        uses: actions/upload-artifact@v4
-        with:
-          name: all-screenshots-${{ needs.build.outputs.app_version }}
-          path: ./all-screenshots/
           retention-days: 30
