@@ -15,11 +15,19 @@ on:
       - develop
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   submit-nuget:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup NuGet
         uses: nuget/setup-nuget@v2
@@ -37,3 +45,6 @@ jobs:
 
       - name: Restore dependencies and generate lock file
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
+        
+      - name: Submit Dependency Graph
+        uses: actions/dependency-submission@v3
