@@ -1,0 +1,39 @@
+name: Automatic Dependency Submission (NuGet)
+
+on:
+  push:
+    branches:
+      - '**'
+    branches-ignore:
+      - 'sync/**'
+  pull_request:
+    branches:
+      - '**'
+    branches-ignore:
+      - 'sync/**'
+
+jobs:
+  submit-nuget:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/**/packages.config', 'src/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies and generate lock file
+        run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
+
+      - name: Submit Dependency Graph
+        uses: github/dependency-submission-action@v4
