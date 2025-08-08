@@ -1,0 +1,48 @@
+name: Analyze and Submit Dependencies
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/**/*.sln'
+      - 'src/**/*.csproj'
+      - 'src/**/packages.config'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-and-submit:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: actions/setup-dotnet@v4
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Submit Dependency Graph
+        uses: github/dependency-submission-action@v3
+        with:
+          manifest-path: src/WinMemoryCleaner.sln
