@@ -17,12 +17,12 @@ permissions:
 jobs:
   sync-and-create-pr:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACTIONS_PAT }}
+          token: ${{ secrets.GH_BOT_TOKEN }}
           fetch-depth: 0
 
       - name: Set up Git
@@ -42,17 +42,17 @@ jobs:
         id: create_pr
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.ACTIONS_PAT }}
+          token: ${{ secrets.GH_BOT_TOKEN }}
           title: "🤖 Sync: Merge main into develop"
           body: "This PR automatically syncs the latest changes from the `main` branch into `develop`."
           base: develop
           branch: ${{ steps.sync_branch.outputs.branch }}
           delete-branch: true
 
-      - name: Enable Auto-Merge
+      - name: Enable Auto-Merge (via gh CLI)
         if: steps.create_pr.outputs.pull-request-number != ''
-        uses: peter-evans/enable-auto-merge@v3
-        with:
-          token: ${{ secrets.ACTIONS_PAT }}
-          pull-request-number: ${{ steps.create_pr.outputs.pull-request-number }}
-          merge-method: rebase
+        env:
+          GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          PR_NUMBER: ${{ steps.create_pr.outputs.pull-request-number }}
+        run: |
+          gh pr merge $PR_NUMBER --auto --rebase
