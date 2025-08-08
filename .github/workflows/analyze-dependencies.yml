@@ -2,12 +2,10 @@ name: Analyze and Submit Dependencies
 
 on:
   workflow_dispatch:
-
   pull_request:
     branches:
       - main
       - develop
-
   push:
     branches:
       - main
@@ -27,22 +25,27 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
       - name: Setup MSBuild
-        uses: actions/setup-dotnet@v4
+        uses: microsoft/setup-msbuild@v2
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('src/**/packages.config') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/**/packages.config', 'src/**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      - name: Restore dependencies and generate lock file
+        run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
+
       - name: Submit Dependency Graph
-        uses: github/dependency-submission-action@v3
-        with:
-          manifest-path: src/WinMemoryCleaner.sln
+        uses: actions/dependency-submission@v3
