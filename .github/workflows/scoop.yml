@@ -127,27 +127,32 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" scoop-fork
           cd scoop-fork
-
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream master --depth=1
-
           $version = "${{ steps.get_release.outputs.version }}"
           $branchName = "update/${{ env.MANIFEST_NAME }}-$version"
           git checkout -b $branchName upstream/master
-
           $manifestFile = "${{ steps.create_manifest.outputs.manifest_path }}"
           cp ../$manifestFile "bucket/${{ env.MANIFEST_NAME }}.json"
-
           git add .
           git commit -m "${{ env.APP_NAME }}: Add version $version"
           git push --force origin $branchName
-
-          gh pr create `
+          $prOutput = gh pr create `
             --repo "${{ env.UPSTREAM_REPO }}" `
             --head "${{ github.repository_owner }}:$branchName" `
             --base master `
             --title "${{ env.APP_NAME }} $version" `
-            --body "Automated submission for ${{ env.APP_NAME }} version $version."
+            --body "Automated submission for ${{ env.APP_NAME }} version $version." 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            if ($prOutput -like "*a pull request for branch*already exists*") {
+              Write-Host "::notice::A pull request for this version already exists. Skipping."
+            } else {
+              Write-Host "::error::Failed to create pull request: $prOutput"
+              exit 1
+            }
+          } else {
+            Write-Host "::notice::Pull request created successfully."
+            Write-Host $prOutput
+          }
