@@ -2,13 +2,9 @@ name: Automatic Dependency Submission (NuGet)
 
 on:
   push:
-    branches:
-      - '**'
     branches-ignore:
       - 'sync/**'
   pull_request:
-    branches:
-      - '**'
     branches-ignore:
       - 'sync/**'
 
