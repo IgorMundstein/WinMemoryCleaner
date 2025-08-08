@@ -48,9 +48,6 @@ jobs:
       - name: Restore dependencies and generate lock file
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
 
-      - name: Submit Dependency Graph
-        uses: github/dependency-submission-action@v3
-
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
