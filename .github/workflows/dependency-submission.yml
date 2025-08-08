@@ -45,6 +45,6 @@ jobs:
 
       - name: Restore dependencies and generate lock file
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
-        
+
       - name: Submit Dependency Graph
-        uses: advanced-security/dependency-submission-action@v3
+        uses: actions/dependency-submission@v3
