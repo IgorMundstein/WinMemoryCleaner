@@ -32,4 +32,4 @@ jobs:
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
 
       - name: Submit Dependency Graph
-        uses: github/dependency-submission-action@v4
+        uses: actions/dependency-submission-action@v4
