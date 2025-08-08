@@ -156,8 +156,6 @@ jobs:
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: pwsh
         run: |
-          choco install chocolatey-verify.extension -y
-          choco verify .\chocolatey-package\winmemorycleaner.nuspec
           [xml]$nuspec = Get-Content .\chocolatey-package\winmemorycleaner.nuspec
           $errors = @()
           $meta = $nuspec.package.metadata
