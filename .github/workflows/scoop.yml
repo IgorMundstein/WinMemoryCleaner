@@ -111,8 +111,10 @@ jobs:
               ],
               "checkver": "github",
               "autoupdate": {
-                  "url": "https://github.com/${{ github.repository }}/releases/download/`$version/${{ env.APP_NAME }}.exe"
-              }
+                  "url": "https://github.com/${{ github.repository }}/releases/download/v`$version/${{ env.APP_NAME }}.exe"
+              },
+              "pre_update": "stop-process -Name '${{ env.APP_NAME }}' -Force -ErrorAction SilentlyContinue",
+              "post_update": "start-process '${{ env.APP_NAME }}'"
           }
           "@
           $manifestFile = "$manifestDir/${{ env.MANIFEST_NAME }}.json"
