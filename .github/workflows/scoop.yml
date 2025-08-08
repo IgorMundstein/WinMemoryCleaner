@@ -78,12 +78,8 @@ jobs:
               "description": "${{ steps.metadata.outputs.desc }}",
               "homepage": "${{ steps.metadata.outputs.homepage }}",
               "license": "${{ steps.metadata.outputs.license }}",
-              "architecture": {
-                  "64bit": {
-                      "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe",
-                      "hash": "${{ steps.download.outputs.sha256 }}"
-                  }
-              },
+              "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe",
+              "hash": "${{ steps.download.outputs.sha256 }}",
               "bin": "${{ env.APP_NAME }}.exe",
               "shortcuts": [
                   [
@@ -93,11 +89,7 @@ jobs:
               ],
               "checkver": "github",
               "autoupdate": {
-                  "architecture": {
-                      "64bit": {
-                          "url": "https://github.com/${{ github.repository }}/releases/download/`$version/${{ env.APP_NAME }}.exe"
-                      }
-                  }
+                  "url": "https://github.com/${{ github.repository }}/releases/download/`$version/${{ env.APP_NAME }}.exe"
               }
           }
           "@
