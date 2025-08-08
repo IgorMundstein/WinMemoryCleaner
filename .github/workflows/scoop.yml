@@ -100,7 +100,6 @@ jobs:
               "description": "${{ steps.metadata.outputs.desc }}",
               "homepage": "${{ steps.metadata.outputs.homepage }}",
               "license": "${{ steps.metadata.outputs.license }}",
-              "icon": "https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/images/win-memory-cleaner.png",
               "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe",
               "hash": "${{ steps.download.outputs.sha256 }}",
               "bin": "${{ env.APP_NAME }}.exe",
