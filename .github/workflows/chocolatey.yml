@@ -145,9 +145,9 @@ jobs:
           `$packageArgs = @{
             packageName    = 'winmemorycleaner'
             fileType       = 'EXE'
-            url64bit       = 'https://github.com/${{ github.repository }}/releases/download/${env:RELEASE_TAG}/WinMemoryCleaner.exe'
-            checksum64     = '${env:SHA256}'
-            checksumType64 = 'sha256'
+            url            = 'https://github.com/${{ github.repository }}/releases/download/${env:RELEASE_TAG}/WinMemoryCleaner.exe'
+            checksum       = '${env:SHA256}'
+            checksumType   = 'sha256'
             silentArgs     = '/Package'
             validExitCodes = @(0)
           }
