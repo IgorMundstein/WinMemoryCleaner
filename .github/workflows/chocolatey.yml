@@ -125,6 +125,7 @@ jobs:
               <title>Windows Memory Cleaner</title>
               <authors>Igor Mundstein</authors>
               <projectUrl>${{ steps.metadata.outputs.homepage }}</projectUrl>
+              <iconUrl>https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/images/win-memory-cleaner.png</iconUrl>
               <packageSourceUrl>https://github.com/${{ github.repository }}</packageSourceUrl>
               <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/${env:RELEASE_TAG}</releaseNotes>
               <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
