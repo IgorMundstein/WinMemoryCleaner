@@ -12,6 +12,7 @@ env:
   FORK_REPO: ${{ github.repository_owner }}/WinGet
   UPSTREAM_REPO: microsoft/winget-pkgs
   PACKAGE_ID: ${{ github.repository_owner }}.WinMemoryCleaner
+  APP_NAME: WinMemoryCleaner
 
 jobs:
   generate-manifests:
@@ -20,6 +21,8 @@ jobs:
     timeout-minutes: 30
     outputs:
       skip: ${{ steps.check_winget.outputs.skip }}
+      version: ${{ steps.get_release.outputs.version }}
+      tag: ${{ steps.get_release.outputs.tag }}
 
     steps:
       - name: Harden Runner
@@ -27,7 +30,7 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: Get latest release tag
+      - name: Get latest release info
         id: get_release
         uses: actions/github-script@v7
         with:
@@ -37,8 +40,9 @@ jobs:
               repo: context.repo.repo
             });
             const tag = release.tag_name;
+            const version = tag.startsWith('v') ? tag.substring(1) : tag;
             core.setOutput('tag', tag);
-            return tag;
+            core.setOutput('version', version);
 
       - name: Validate inputs
         run: |
@@ -51,26 +55,26 @@ jobs:
         id: check_winget
         run: |
           HTTP_CODE=$(curl -s -w "%{http_code}" -o /dev/null \
-            "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.tag }}")
-          
+            "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.version }}")
+
           if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "::notice::Version ${{ steps.get_release.outputs.tag }} already exists. Skipping."
+            echo "::notice::Version ${{ steps.get_release.outputs.version }} already exists. Skipping."
             echo "skip=true" >> $GITHUB_OUTPUT
           else
             echo "::notice::Version not found. Proceeding with submission."
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Download release and get SHA256
         if: steps.check_winget.outputs.skip == 'false'
         id: download
         run: |
-          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe"
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe"
           echo "::notice::Downloading from $DOWNLOAD_URL"
 
-          curl -fL --retry 3 --retry-delay 5 -o WinMemoryCleaner.exe "$DOWNLOAD_URL"
-          
-          SHA256=$(sha256sum WinMemoryCleaner.exe | cut -d ' ' -f1)
+          curl -fL --retry 3 --retry-delay 5 -o ${{ env.APP_NAME }}.exe "$DOWNLOAD_URL"
+
+          SHA256=$(sha256sum ${{ env.APP_NAME }}.exe | cut -d ' ' -f1)
           echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
           echo "::notice::SHA256: ${SHA256}"
 
@@ -95,11 +99,11 @@ jobs:
           set -e
           MANIFEST_DIR="winget-manifest"
           mkdir -p "$MANIFEST_DIR"
-          
+
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
-          PackageVersion: ${{ steps.get_release.outputs.tag }}
+          PackageVersion: ${{ steps.get_release.outputs.version }}
           DefaultLocale: en-US
           ManifestType: version
           ManifestVersion: 1.6.0
@@ -108,17 +112,17 @@ jobs:
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.installer.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
-          PackageVersion: ${{ steps.get_release.outputs.tag }}
+          PackageVersion: ${{ steps.get_release.outputs.version }}
           InstallerType: portable
           Installers:
           - Architecture: x64
-            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe
+            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe
             InstallerSha256: ${{ steps.download.outputs.sha256 }}
-            PortableCommand: WinMemoryCleaner.exe
+            PortableCommand: ${{ env.APP_NAME }}.exe
           - Architecture: x86
-            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/WinMemoryCleaner.exe
+            InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe
             InstallerSha256: ${{ steps.download.outputs.sha256 }}
-            PortableCommand: WinMemoryCleaner.exe
+            PortableCommand: ${{ env.APP_NAME }}.exe
           ManifestType: installer
           ManifestVersion: 1.6.0
           EOF
@@ -126,15 +130,15 @@ jobs:
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.locale.en-US.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
-          PackageVersion: ${{ steps.get_release.outputs.tag }}
+          PackageVersion: ${{ steps.get_release.outputs.version }}
           PackageLocale: en-US
-          Publisher: Igor Mundstein
-          PackageName: Windows Memory Cleaner
+          Publisher: ${{ github.repository_owner }}
+          PackageName: ${{ env.APP_NAME }}
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
           ShortDescription: ${{ steps.metadata.outputs.desc }}
           Commands:
-          - WinMemoryCleaner
+          - ${{ env.APP_NAME }}
           ManifestType: defaultLocale
           ManifestVersion: 1.6.0
           EOF
@@ -162,44 +166,37 @@ jobs:
       - name: Validate Manifests with WinGet CLI
         run: winget validate .
 
-      - name: Get Package Version from Manifest
-        id: manifest_data
-        shell: bash
-        run: |
-          version=$(grep PackageVersion ${{ env.PACKAGE_ID }}.yaml | cut -d ' ' -f2)
-          echo "version=$version" >> $GITHUB_OUTPUT
-
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         shell: bash
         run: |
           set -e
-          
+
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" winget-fork
           cd winget-fork
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream master --depth=1
-          
-          VERSION=${{ steps.manifest_data.outputs.version }}
-          BRANCH_NAME="add/${{ github.repository_owner }}/WinMemoryCleaner/${VERSION}"
+
+          VERSION=${{ needs.generate-manifests.outputs.version }}
+          BRANCH_NAME="add/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}"
           git checkout -b "$BRANCH_NAME" upstream/master
-          
-          mkdir -p "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${VERSION}"
-          cp ../*.yaml "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${VERSION}/"
-          
+
+          mkdir -p "manifests/i/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}"
+          cp ../*.yaml "manifests/i/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}/"
+
           git add .
           git commit -m "Add ${{ env.PACKAGE_ID }} version ${VERSION}"
           git push origin "$BRANCH_NAME"
-          
+
           gh pr create \
             --repo "${{ env.UPSTREAM_REPO }}" \
             --head "$(echo ${{ env.FORK_REPO }} | cut -d'/' -f1):${BRANCH_NAME}" \
             --base master \
             --title "Add ${{ env.PACKAGE_ID }} ${VERSION}" \
             --body "Automated submission for ${{ env.PACKAGE_ID }} version ${VERSION}."
-            
+
           echo "::notice::Pull request created successfully."
