@@ -42,8 +42,8 @@ jobs:
 
       - name: Validate inputs
         run: |
-          if [ -z "${{ secrets.WINGET_TOKEN }}" ]; then
-            echo "::error::WINGET_TOKEN secret is not set!"
+          if [ -z "${{ secrets.PAT_TOKEN }}" ]; then
+            echo "::error::PAT_TOKEN secret is not set!"
             exit 1
           fi
 
@@ -171,7 +171,7 @@ jobs:
 
       - name: Create Pull Request
         env:
-          GH_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         shell: bash
         run: |
           set -e
