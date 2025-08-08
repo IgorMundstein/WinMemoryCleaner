@@ -16,12 +16,12 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_BOT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           ref: main
 
       - name: Generate Changelog
         env:
-          GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           releases_json=$(gh api repos/${{ github.repository }}/releases --paginate)
           filtered_releases=$(echo "$releases_json" | jq '[ .[] | select(.draft==false and .prerelease==false) ]')
