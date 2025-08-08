@@ -2,11 +2,17 @@ name: Analyze and Submit Dependencies
 
 on:
   workflow_dispatch:
-  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  push:
     branches:
       - main
       - develop
-  push:
+    paths:
+      - 'src/**/*.sln'
+      - 'src/**/*.csproj'
+      - 'src/**/packages.config'
+  pull_request:
     branches:
       - main
       - develop
@@ -19,13 +25,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   analyze-and-submit:
     runs-on: windows-latest
     timeout-minutes: 10
-    permissions:
-      contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -48,20 +55,31 @@ jobs:
       - name: Restore dependencies and generate lock file
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
 
+      - name: Commit dependency changes
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "Update dependencies [auto]" || echo "No changes to commit"
+        continue-on-error: true
+
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.PAT_TOKEN }}
+          branch: auto/dependency-update
           commit-message: "Update dependencies [auto]"
           title: "Auto-update dependencies"
-          body: "This pull request updates project dependencies."
-          branch: "auto/dependency-update"
+          body: |
+            This pull request updates project dependencies automatically.
           delete-branch: true
 
       - name: Enable auto-merge on the PR
         if: steps.cpr.outputs.pull-request-number
         env:
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh pr merge $PR_NUMBER --merge --auto
+          echo "$GITHUB_TOKEN" | gh auth login --with-token
+          gh pr merge "$PR_NUMBER" --merge --auto --repo "$GITHUB_REPOSITORY"
