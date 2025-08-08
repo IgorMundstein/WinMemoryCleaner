@@ -21,7 +21,6 @@ concurrency:
 
 jobs:
   analyze-and-submit:
-    if: ${{ !startsWith(github.ref, 'refs/heads/sync/') }}
     runs-on: windows-latest
     timeout-minutes: 10
     permissions:
@@ -50,7 +49,7 @@ jobs:
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
 
       - name: Submit Dependency Graph
-        uses: actions/dependency-submission-action@v3
+        uses: github/dependency-submission-action@v3
 
       - name: Create Pull Request
         id: cpr
