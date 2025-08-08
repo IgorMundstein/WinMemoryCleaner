@@ -171,31 +171,35 @@ jobs:
         shell: bash
         run: |
           set -e
-
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" winget-fork
           cd winget-fork
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream master --depth=1
-
           VERSION=${{ needs.generate-manifests.outputs.version }}
           BRANCH_NAME="add/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}"
           git checkout -b "$BRANCH_NAME" upstream/master
-
           mkdir -p "manifests/i/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}"
           cp ../*.yaml "manifests/i/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}/"
-
           git add .
           git commit -m "Add ${{ env.PACKAGE_ID }} version ${VERSION}"
-          git push origin "$BRANCH_NAME"
-
-          gh pr create \
+          git push -u origin "$BRANCH_NAME" --force
+          PR_OUTPUT=$(gh pr create \
             --repo "${{ env.UPSTREAM_REPO }}" \
             --head "$(echo ${{ env.FORK_REPO }} | cut -d'/' -f1):${BRANCH_NAME}" \
             --base master \
             --title "Add ${{ env.PACKAGE_ID }} ${VERSION}" \
-            --body "Automated submission for ${{ env.PACKAGE_ID }} version ${VERSION}."
-
-          echo "::notice::Pull request created successfully."
+            --body "Automated submission for ${{ env.PACKAGE_ID }} version ${VERSION}." 2>&1)
+          if [[ $? -ne 0 ]]; then
+            if [[ "$PR_OUTPUT" == *"a pull request for branch"* && "$PR_OUTPUT" == *"already exists"* ]]; then
+              echo "::notice::A pull request for this version already exists. Skipping."
+              exit 0
+            else
+              echo "::error::Failed to create pull request: $PR_OUTPUT"
+              exit 1
+            fi
+          else
+            echo "::notice::Pull request created successfully."
+            echo "$PR_OUTPUT"
+          fi
