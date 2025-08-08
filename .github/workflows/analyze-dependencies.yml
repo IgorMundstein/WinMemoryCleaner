@@ -43,7 +43,6 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('src/**/packages.config', 'src/**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
-
       - name: Restore dependencies and generate lock file
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
 
