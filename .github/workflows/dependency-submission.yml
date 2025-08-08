@@ -5,10 +5,15 @@ on:
     branches:
       - main
       - develop
+    paths:
+      - 'src/**/*.sln'
+      - 'src/**/*.csproj'
+      - 'src/**/packages.config'
   pull_request:
     branches:
       - main
       - develop
+  workflow_dispatch:
 
 jobs:
   submit-nuget:
@@ -34,4 +39,4 @@ jobs:
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
 
       - name: Submit Dependency Graph
-        uses: actions/dependency-submission-action@v3
+        uses: github/dependency-submission-action@v3
