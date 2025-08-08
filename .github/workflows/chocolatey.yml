@@ -89,8 +89,7 @@ jobs:
             Write-Host "::error::Downloaded file is missing or too small."
             exit 1
           }
-          $hash = Get-FileHash -Path $assetName -Algorithm SHA256
-          $sha256 = $hash.Hash.ToLower()
+          $sha256 = (Get-FileHash -Path $assetName -Algorithm SHA256).Hash.ToLower()
           echo "SHA256=$sha256" >> $env:GITHUB_ENV
 
       - name: Fetch repository metadata
@@ -105,6 +104,7 @@ jobs:
             });
             core.setOutput('desc', repo.description?.trim() || 'A utility to clean system memory.');
             core.setOutput('homepage', repo.homepage || repo.html_url);
+            core.setOutput('tags', repo.topics.join(' ') || 'ram memory foss cleaner memory-management memory-optimization windows-optimization-tool admin');
 
       - name: Generate Chocolatey package files
         if: steps.check_chocolatey.outputs.skip == 'false'
@@ -129,7 +129,7 @@ jobs:
               <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/${env:RELEASE_TAG}</releaseNotes>
               <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
               <bugTrackerUrl>https://github.com/${{ github.repository }}/issues</bugTrackerUrl>
-              <tags>memory cleaner ram optimization windows portable admin</tags>
+              <tags>${{ steps.metadata.outputs.tags }}</tags>
               <summary>${{ steps.metadata.outputs.desc }}</summary>
               <description>${{ steps.metadata.outputs.desc }}</description>
             </metadata>
@@ -144,13 +144,29 @@ jobs:
           `$ErrorActionPreference = 'Stop'
           `$packageArgs = @{
             packageName    = 'winmemorycleaner'
+            fileType       = 'EXE'
             url64bit       = 'https://github.com/${{ github.repository }}/releases/download/${env:RELEASE_TAG}/WinMemoryCleaner.exe'
             checksum64     = '${env:SHA256}'
             checksumType64 = 'sha256'
+            silentArgs     = '/Package'
+            validExitCodes = @(0)
           }
-          Install-ChocolateyPortablePackage @`$packageArgs
+          Install-ChocolateyInstallPackage @`$packageArgs
           "@
           Set-Content -Path (Join-Path $toolsDir "chocolateyinstall.ps1") -Value $installScriptContent -Encoding UTF8
+
+          $uninstallScriptContent = @"
+          `$ErrorActionPreference = 'Stop'
+          `$installDir = Join-Path `$"env:ProgramFiles" "WinMemoryCleaner"
+          `$exePath = Join-Path `$installDir "WinMemoryCleaner.exe"
+
+          if (Test-Path `$exePath) {
+            Start-Process -FilePath `$exePath -ArgumentList "/Uninstall" -Wait
+          }
+
+          Remove-Item -Path `$installDir -Recurse -Force -ErrorAction SilentlyContinue
+          "@
+          Set-Content -Path (Join-Path $toolsDir "chocolateyuninstall.ps1") -Value $uninstallScriptContent -Encoding UTF8
 
       - name: Lint and quality check nuspec
         if: steps.check_chocolatey.outputs.skip == 'false'
@@ -190,7 +206,7 @@ jobs:
             Write-Host "::error::No .nupkg file was created by 'choco pack'."
             exit 1
           }
-          choco push $nupkgFile.FullName --source https://push.chocolatey.org/ --api-key "${{ secrets.CHOCOLATEY_API_KEY }}"
+          choco push $nupkgFile.FullName --source https://push.chocolatey.org/ --api-key "${{ secrets.CHOCOLATEY_API_KEY }}" --force
           if ($LASTEXITCODE -ne 0) {
             Write-Host "::error::Failed to push package to Chocolatey."
             exit 1
