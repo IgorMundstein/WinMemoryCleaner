@@ -80,5 +80,5 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           Remove-Item Env:GITHUB_TOKEN -ErrorAction SilentlyContinue
-          gh pr merge "$env:PR_NUMBER" --merge --auto --repo "$env:GITHUB_REPOSITORY"
+          gh pr merge "$env:PR_NUMBER" --squash --auto --repo "$env:GITHUB_REPOSITORY"
         shell: pwsh
