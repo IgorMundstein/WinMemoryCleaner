@@ -12,15 +12,17 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  sync-branch:
+  sync-and-create-pr:
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.ACTIONS_PAT }}
           fetch-depth: 0
 
       - name: Set up Git
@@ -28,8 +30,29 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Sync and Push Branches
+      - name: Create and Rebase Sync Branch
+        id: sync_branch
         run: |
-          git checkout develop || git checkout -b develop origin/main
-          git rebase origin/main
-          git push --force-with-lease origin develop
+          TEMP_BRANCH="sync/main-to-develop-${{ github.run_id }}"
+          echo "branch=${TEMP_BRANCH}" >> $GITHUB_OUTPUT
+          git checkout -b $TEMP_BRANCH origin/main
+          git push origin $TEMP_BRANCH
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.ACTIONS_PAT }}
+          title: "🤖 Sync: Merge main into develop"
+          body: "This PR automatically syncs the latest changes from the `main` branch into `develop`."
+          base: develop
+          branch: ${{ steps.sync_branch.outputs.branch }}
+          delete-branch: true
+
+      - name: Enable Auto-Merge
+        if: steps.create_pr.outputs.pull-request-number != ''
+        uses: peter-evans/enable-auto-merge@v3
+        with:
+          token: ${{ secrets.ACTIONS_PAT }}
+          pull-request-number: ${{ steps.create_pr.outputs.pull-request-number }}
+          merge-method: rebase
