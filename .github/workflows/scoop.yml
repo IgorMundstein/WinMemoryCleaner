@@ -118,7 +118,7 @@ jobs:
 
       - name: Create Pull Request
         env:
-          GH_TOKEN: ${{ secrets.SCOOP_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           RELEASE_TAG: ${{ steps.get_release.outputs.tag }}
           SHA256: ${{ steps.download.outputs.sha256 }}
           FORK_OWNER: ${{ github.repository_owner }}
