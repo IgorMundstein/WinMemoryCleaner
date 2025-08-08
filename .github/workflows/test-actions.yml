@@ -1,0 +1,16 @@
+name: Test Action Resolution
+
+on: workflow_dispatch
+
+jobs:
+  test-dependency-submission:
+    runs-on: windows-latest
+    steps:
+      - name: Test Dependency Submission Action
+        uses: actions/dependency-submission@v4
+
+  test-another-official-action:
+    runs-on: windows-latest
+    steps:
+      - name: Test Setup Node Action
+        uses: actions/setup-node@v4
