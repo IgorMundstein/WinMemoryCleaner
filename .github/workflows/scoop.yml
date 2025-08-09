@@ -103,18 +103,9 @@ jobs:
               "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe",
               "hash": "${{ steps.download.outputs.sha256 }}",
               "bin": "${{ env.APP_NAME }}.exe",
-              "shortcuts": [
-                  [
-                      "${{ env.APP_NAME }}.exe",
-                      "${{ env.APP_NAME }}"
-                  ]
-              ],
-              "checkver": "github",
               "autoupdate": {
-                  "url": "https://github.com/${{ github.repository }}/releases/download/v`$version/${{ env.APP_NAME }}.exe"
-              },
-              "pre_update": "stop-process -Name '${{ env.APP_NAME }}' -Force -ErrorAction SilentlyContinue",
-              "post_update": "start-process '${{ env.APP_NAME }}'"
+                  "url": "https://github.com/${{ github.repository }}/releases/download/$version/${{ env.APP_NAME }}.exe"
+              }
           }
           "@
           $manifestFile = "$manifestDir/${{ env.MANIFEST_NAME }}.json"
