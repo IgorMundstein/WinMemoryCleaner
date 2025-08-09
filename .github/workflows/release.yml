@@ -179,7 +179,7 @@ jobs:
           $date = "${{ steps.commit_date.outputs.date }}"
           $body = "**$date**`n"
           foreach ($line in $env:COMMIT_MESSAGE -split "`n") {
-            if ($line.Trim() -ne "") {
+            if ($line.Trim() -ne "" -and $line -notmatch "^Signed-off-by:") {
               $body += "`n- $line"
             }
           }
