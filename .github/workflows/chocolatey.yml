@@ -150,7 +150,6 @@ jobs:
             url            = 'https://github.com/${{ github.repository }}/releases/download/${env:RELEASE_TAG}/WinMemoryCleaner.exe'
             checksum       = '${env:SHA256}'
             checksumType   = 'sha256'
-            silentArgs     = '/Package'
             validExitCodes = @(0)
           }
           Install-ChocolateyInstallPackage @`$packageArgs
