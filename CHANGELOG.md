@@ -1,3 +1,11 @@
+### 3.0.1
+
+**2025-08-08** 
+
+- Enhanced functionality for `Run on Startup` and improved package manager publications (Chocolatey, Scoop, and WinGet)
+
+---
+
 ### 3.0.0
 
 **2025-08-02**
