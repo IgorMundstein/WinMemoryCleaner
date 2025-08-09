@@ -26,10 +26,12 @@ jobs:
           egress-policy: audit
 
       - name: Validate secrets
+        shell: bash
         run: |
+          set -e
           missing=0
           for var in MSRC_CLIENT_ID MSRC_CLIENT_SECRET MSRC_TENANT_ID; do
-            if [ -z "${{ env[$var] }}" ]; then
+            if [ -z "${!var}" ]; then
               echo "::error::Missing required secret: $var"
               missing=1
             fi
@@ -50,6 +52,7 @@ jobs:
             core.setOutput('tag', release.tag_name);
 
       - name: Download artifact
+        shell: bash
         run: |
           set -e
           TAG=${{ steps.release_tag.outputs.tag }}
@@ -70,6 +73,7 @@ jobs:
           MSRC_CLIENT_ID: ${{ env.MSRC_CLIENT_ID }}
           MSRC_CLIENT_SECRET: ${{ env.MSRC_CLIENT_SECRET }}
           MSRC_TENANT_ID: ${{ env.MSRC_TENANT_ID }}
+        shell: bash
         run: |
           set -e
           TOKEN_RESPONSE=$(curl -sS -X POST \
@@ -100,6 +104,7 @@ jobs:
         id: msrc_submit
         env:
           MSRC_TOKEN: ${{ steps.msrc_token.outputs.token }}
+        shell: bash
         run: |
           set -e
           RESPONSE=$(curl --silent -w "HTTPSTATUS:%{http_code}" -X POST \
@@ -134,6 +139,7 @@ jobs:
 
       - name: Output response summary
         if: always()
+        shell: bash
         run: |
           if [ -f msrc_response.json ]; then
             echo '### MSRC Response' >> $GITHUB_STEP_SUMMARY
@@ -142,6 +148,7 @@ jobs:
 
       - name: Cleanup
         if: always()
+        shell: bash
         run: |
           rm -f WinMemoryCleaner.exe msrc_response.json
           echo "::notice::Cleanup complete"
