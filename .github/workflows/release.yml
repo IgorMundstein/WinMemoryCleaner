@@ -173,9 +173,11 @@ jobs:
       - name: Format commit message for release notes
         id: formatted_message
         shell: pwsh
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           $msg = @()
-          foreach ($line in "${{ github.event.head_commit.message }}" -split "`n") {
+          foreach ($line in $env:COMMIT_MESSAGE -split "`n") {
             $msg += "- $line"
           }
           $body = $msg -join "`n"
