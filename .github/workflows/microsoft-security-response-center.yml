@@ -12,7 +12,6 @@ env:
   MSRC_CLIENT_ID: ${{ secrets.MSRC_CLIENT_ID }}
   MSRC_CLIENT_SECRET: ${{ secrets.MSRC_CLIENT_SECRET }}
   MSRC_TENANT_ID: ${{ secrets.MSRC_TENANT_ID }}
-  MSRC_RESOURCE: https://api.msrc.microsoft.com
 
 jobs:
   submit-msrc:
@@ -25,6 +24,19 @@ jobs:
         uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
+
+      - name: Validate secrets
+        run: |
+          missing=0
+          for var in MSRC_CLIENT_ID MSRC_CLIENT_SECRET MSRC_TENANT_ID; do
+            if [ -z "${{ env[$var] }}" ]; then
+              echo "::error::Missing required secret: $var"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
 
       - name: Get latest release tag
         id: release_tag
@@ -39,17 +51,25 @@ jobs:
 
       - name: Download artifact
         run: |
+          set -e
           TAG=${{ steps.release_tag.outputs.tag }}
+          if [ -z "$TAG" ]; then
+            echo "::error::No release tag found."
+            exit 1
+          fi
           curl -fL --retry 3 --retry-delay 5 -o WinMemoryCleaner.exe \
             "https://github.com/${{ github.repository }}/releases/download/${TAG}/WinMemoryCleaner.exe"
+          if [ ! -s WinMemoryCleaner.exe ]; then
+            echo "::error::Downloaded file is missing or empty."
+            exit 1
+          fi
 
-      - name: Acquire MSRC token
+      - name: Acquire MSRC token (v1 endpoint, resource param)
         id: msrc_token
         env:
           MSRC_CLIENT_ID: ${{ env.MSRC_CLIENT_ID }}
           MSRC_CLIENT_SECRET: ${{ env.MSRC_CLIENT_SECRET }}
           MSRC_TENANT_ID: ${{ env.MSRC_TENANT_ID }}
-          MSRC_RESOURCE: ${{ env.MSRC_RESOURCE }}
         run: |
           set -e
           TOKEN_RESPONSE=$(curl -sS -X POST \
@@ -57,8 +77,8 @@ jobs:
             -d "client_id=$MSRC_CLIENT_ID" \
             -d "client_secret=$MSRC_CLIENT_SECRET" \
             -d "grant_type=client_credentials" \
-            -d "scope=$MSRC_RESOURCE/.default" \
-            "https://login.microsoftonline.com/$MSRC_TENANT_ID/oauth2/v2.0/token")
+            -d "resource=https://api.msrc.microsoft.com" \
+            "https://login.microsoftonline.com/$MSRC_TENANT_ID/oauth2/token")
 
           echo "Raw token response: $TOKEN_RESPONSE"
 
