@@ -21,12 +21,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
 
       - name: Cache NuGet packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: nuget-${{ hashFiles('**/*.csproj') }}
@@ -34,7 +34,7 @@ jobs:
             nuget-
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+        uses: microsoft/setup-msbuild@v2
 
       - name: Bump version tag
         id: bump
@@ -72,7 +72,7 @@ jobs:
           path: src\bin\Release\WinMemoryCleaner.exe
           if-no-files-found: error
 
-      - name: Submit to SignPath (release cert later)
+      - name: Submit to SignPath (release cert)
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
         id: signpath
         uses: signpath/github-action-submit-signing-request@v1.1
@@ -84,6 +84,15 @@ jobs:
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: ./
+
+      - name: Validate signed EXE
+        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        run: |
+          if ((Get-Item WinMemoryCleaner.exe).Length -lt 100000) {
+            Write-Host "::error::Signed EXE is unexpectedly small, aborting release!"
+            exit 1
+          }
 
       - name: Create ZIP archive
         if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
@@ -107,7 +116,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download release artifacts
         uses: actions/download-artifact@v4
@@ -176,24 +185,24 @@ jobs:
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          $date = "${{ steps.commit_date.outputs.date }}"
-          $body = "**$date**`n"
+          $msg = @()
           foreach ($line in $env:COMMIT_MESSAGE -split "`n") {
-            if ($line.Trim() -ne "" -and $line -notmatch "^Signed-off-by:") {
-              $body += "`n- $line"
-            }
+            $msg += "- $line"
           }
+          $body = $msg -join "`n"
           echo "body<<EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           echo "$body" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           echo "EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Upload GitHub release assets
         if: steps.check_release.outputs.skip == 'false'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.build.outputs.new_tag }}
           name: ${{ needs.build.outputs.new_tag }}
-          body: ${{ steps.formatted_message.outputs.body }}
+          body: |
+            # ${{ steps.commit_date.outputs.date }}
+            ${{ steps.formatted_message.outputs.body }}
           files: |
             release_artifacts/WinMemoryCleaner.exe
             release_artifacts/WinMemoryCleaner.zip
