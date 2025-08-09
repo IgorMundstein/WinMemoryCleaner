@@ -335,10 +335,6 @@ namespace WinMemoryCleaner
                         if (argument.Equals(Constants.App.CommandLineArgument.Uninstall, StringComparison.OrdinalIgnoreCase))
                             startupType = Enums.StartupType.Uninstallation;
                     }
-
-                    // Update app path setting
-                    if (startupType != Enums.StartupType.Package)
-                        Settings.Path = Path;
                 }
 
                 switch (startupType)
@@ -403,7 +399,7 @@ namespace WinMemoryCleaner
                     case Enums.StartupType.Package:
                         var exe = AppDomain.CurrentDomain.FriendlyName;
                         var sourcePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
-                        var targetPath = File.Exists(Settings.Path) ? Settings.Path : System.IO.Path.Combine(Constants.App.Defaults.Path, exe);
+                        var targetPath = System.IO.Path.Combine(Constants.App.Defaults.Path, exe);
 
                         try
                         {
@@ -530,36 +526,44 @@ namespace WinMemoryCleaner
         {
             try
             {
-                using (Process.Start(new ProcessStartInfo
+                var startInfo = new ProcessStartInfo
                 {
-                    Arguments = string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title),
                     CreateNoWindow = true,
-                    FileName = "schtasks",
-                    RedirectStandardError = false,
-                    RedirectStandardInput = false,
-                    RedirectStandardOutput = false,
                     UseShellExecute = false,
                     WindowStyle = ProcessWindowStyle.Hidden
-                })) { }
+                };
 
                 if (enable)
                 {
-                    using (Process.Start(new ProcessStartInfo
+                    startInfo.Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT /RL HIGHEST /RU ADMINISTRATORS /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, Path);
+                    startInfo.FileName = "schtasks";
+                    startInfo.RedirectStandardError = true;
+                    startInfo.RedirectStandardOutput = true;
+
+                    using (var process = Process.Start(startInfo))
                     {
-                        Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT /RL HIGHEST /RU ADMINISTRATORS /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, Path),
-                        CreateNoWindow = true,
-                        FileName = "schtasks",
-                        RedirectStandardError = false,
-                        RedirectStandardInput = false,
-                        RedirectStandardOutput = false,
-                        UseShellExecute = false,
-                        WindowStyle = ProcessWindowStyle.Hidden
-                    })) { }
+                        var errorMessage = process.StandardError.ReadToEnd();
+
+                        process.WaitForExit();
+
+                        if (process.ExitCode != 0)
+                            Logger.Error(string.Format(Localizer.Culture, "Failed to create startup task for '{0}'. Error: {1}", Constants.App.Title, errorMessage));
+                    }
+                }
+                else
+                {
+                    startInfo.Arguments = string.Format(Localizer.Culture, @"/C schtasks /DELETE /F /TN ""{0}"" 2>nul", Constants.App.Title);
+                    startInfo.FileName = "cmd.exe";
+                    startInfo.RedirectStandardError = false;
+                    startInfo.RedirectStandardOutput = false;
+
+                    using (var process = Process.Start(startInfo))
+                        process.WaitForExit();
                 }
             }
             catch (Exception e)
             {
-                Logger.Error(e);
+                Logger.Error(string.Format(Localizer.Culture, "An unexpected error occurred while managing the startup task for '{0}'. Exception: {1}", Constants.App.Title, e.GetMessage()));
             }
         }
 

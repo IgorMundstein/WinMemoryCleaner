@@ -50,8 +50,6 @@ namespace WinMemoryCleaner
 
         public static ModifierKeys OptimizationModifiers { get; set; }
 
-        public static string Path { get; set; }
-
         public static SortedSet<string> ProcessExclusionList { get; private set; }
 
         public static Enums.Priority RunOnPriority { get; set; }
@@ -168,8 +166,6 @@ namespace WinMemoryCleaner
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => OptimizationModifiers), OptimizationModifiers), _culture), out optimizationModifiers) && optimizationModifiers.IsValid())
                             OptimizationModifiers = optimizationModifiers;
 
-                        Path = Convert.ToString(key.GetValue(Helper.NameOf(() => Path), Path), _culture);
-
                         Enums.Priority runOnPriority;
 
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => RunOnPriority), RunOnPriority), _culture), out runOnPriority) && runOnPriority.IsValid())
@@ -264,7 +260,6 @@ namespace WinMemoryCleaner
                         key.SetValue(Helper.NameOf(() => MemoryAreas), (int)MemoryAreas);
                         key.SetValue(Helper.NameOf(() => OptimizationKey), (int)OptimizationKey);
                         key.SetValue(Helper.NameOf(() => OptimizationModifiers), (int)OptimizationModifiers);
-                        key.SetValue(Helper.NameOf(() => Path), Path);
                         key.SetValue(Helper.NameOf(() => RunOnStartup), RunOnStartup ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => ShowOptimizationNotifications), ShowOptimizationNotifications ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => ShowVirtualMemory), ShowVirtualMemory ? 1 : 0);
