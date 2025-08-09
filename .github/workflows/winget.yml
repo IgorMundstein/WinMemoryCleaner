@@ -15,21 +15,12 @@ env:
   APP_NAME: WinMemoryCleaner
 
 jobs:
-  generate-manifests:
-    name: Generate WinGet Manifests
+  submit:
+    name: Submit to WinGet
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    outputs:
-      skip: ${{ steps.check_winget.outputs.skip }}
-      version: ${{ steps.get_release.outputs.version }}
-      tag: ${{ steps.get_release.outputs.tag }}
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2
-        with:
-          egress-policy: audit
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -47,19 +38,18 @@ jobs:
             core.setOutput('tag', tag);
             core.setOutput('version', version);
 
-      - name: Validate inputs
+      - name: Validate environment and PAT
         run: |
           if [ -z "${{ secrets.PAT_TOKEN }}" ]; then
             echo "::error::PAT_TOKEN secret is not set!"
             exit 1
           fi
 
-      - name: Check if version already exists
+      - name: Check if version already exists in WinGet
         id: check_winget
         run: |
-          HTTP_CODE=$(curl -s -w "%{http_code}" -o /dev/null \
-            "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.version }}")
-
+          MANIFEST_URL="https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/contents/manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${{ steps.get_release.outputs.version }}"
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o /dev/null "$MANIFEST_URL")
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "::notice::Version ${{ steps.get_release.outputs.version }} already exists. Skipping."
             echo "skip=true" >> $GITHUB_OUTPUT
@@ -68,18 +58,18 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Download release and get SHA256
+      - name: Download release asset and compute SHA256
         if: steps.check_winget.outputs.skip == 'false'
         id: download
         run: |
           DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe"
-          echo "::notice::Downloading from $DOWNLOAD_URL"
-
           curl -fL --retry 3 --retry-delay 5 -o ${{ env.APP_NAME }}.exe "$DOWNLOAD_URL"
-
+          if [ ! -f "${{ env.APP_NAME }}.exe" ]; then
+            echo "::error file=winget.yml::Download failed"
+            exit 1
+          fi
           SHA256=$(sha256sum ${{ env.APP_NAME }}.exe | cut -d ' ' -f1)
           echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
-          echo "::notice::SHA256: ${SHA256}"
 
       - name: Fetch repository metadata
         if: steps.check_winget.outputs.skip == 'false'
@@ -87,15 +77,11 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { data: repo } = await github.rest.repos.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            core.setOutput('desc', repo.description.trim());
-            core.setOutput('homepage', repo.homepage || repo.html_url);
-            core.setOutput('license', repo.license.spdx_id);
+            core.setOutput('desc', repo.description?.trim() || "This free RAM cleaner uses native Windows features to optimize memory areas. It's a compact, portable, and smart application.");
+            core.setOutput('homepage', repo.homepage?.trim() || repo.html_url || 'https://github.com/IgorMundstein/WinMemoryCleaner');
+            core.setOutput('license', repo.license?.spdx_id || 'GPL-3.0');
 
-      - name: Create Manifest Files
+      - name: Create WinGet Manifest Files
         if: steps.check_winget.outputs.skip == 'false'
         id: create_manifest
         run: |
@@ -121,9 +107,6 @@ jobs:
           - Architecture: neutral
             InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe
             InstallerSha256: ${{ steps.download.outputs.sha256 }}
-            InstallerSwitches:
-              Silent: /Package
-              SilentWithProgress: /Package
           ManifestType: installer
           ManifestVersion: 1.6.0
           EOF
@@ -145,64 +128,61 @@ jobs:
           ManifestVersion: 1.6.0
           EOF
 
-      - name: Upload Manifest Artifact
+      - name: Validate YAML manifests
         if: steps.check_winget.outputs.skip == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: winget-manifest
-          path: winget-manifest
+        run: |
+          pip install yamllint
+          yamllint winget-manifest
 
-  validate-and-submit:
-    name: Validate and Submit to WinGet
-    needs: generate-manifests
-    if: needs.generate-manifests.outputs.skip == 'false'
-    runs-on: windows-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Download Manifest Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: winget-manifest
-
-      - name: Validate Manifests with WinGet CLI
-        run: winget validate .
-
-      - name: Create Pull Request
+      - name: Prepare PR branch for manifest submission
+        if: steps.check_winget.outputs.skip == 'false'
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        shell: bash
         run: |
-          set -e
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" winget-fork
-          cd winget-fork
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork-winget
+          cd fork-winget
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream master --depth=1
-          VERSION=${{ needs.generate-manifests.outputs.version }}
-          BRANCH_NAME="add/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}"
-          git checkout -b "$BRANCH_NAME" upstream/master
-          mkdir -p "manifests/i/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}"
-          cp ../*.yaml "manifests/i/${{ github.repository_owner }}/${{ env.APP_NAME }}/${VERSION}/"
+          version="${{ steps.get_release.outputs.version }}"
+          branch="add/${{ env.PACKAGE_ID }}/${version}"
+          git checkout -b $branch upstream/master
+          mkdir -p "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${version}"
+          cp ../winget-manifest/*.yaml "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${version}/"
           git add .
-          git commit -m "Add ${{ env.PACKAGE_ID }} version ${VERSION}"
-          git push -u origin "$BRANCH_NAME" --force
-          PR_OUTPUT=$(gh pr create \
+          git commit -m "${{ env.PACKAGE_ID }} version ${version}"
+          git push --force origin $branch
+
+      - name: Create Pull Request to WinGet-Pkgs
+        if: steps.check_winget.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          cd fork-winget
+          version="${{ steps.get_release.outputs.version }}"
+          branch="add/${{ env.PACKAGE_ID }}/${version}"
+          pr_title="${{ env.PACKAGE_ID }} version ${version}"
+          pr_body="Automated submission of ${{ env.PACKAGE_ID }} version ${version}."
+          pr_output=$(gh pr create \
             --repo "${{ env.UPSTREAM_REPO }}" \
-            --head "$(echo ${{ env.FORK_REPO }} | cut -d'/' -f1):${BRANCH_NAME}" \
+            --head "${{ github.repository_owner }}:$branch" \
             --base master \
-            --title "Add ${{ env.PACKAGE_ID }} ${VERSION}" \
-            --body "Automated submission for ${{ env.PACKAGE_ID }} version ${VERSION}." 2>&1)
-          if [[ $? -ne 0 ]]; then
-            if [[ "$PR_OUTPUT" == *"a pull request for branch"* && "$PR_OUTPUT" == *"already exists"* ]]; then
+            --title "$pr_title" \
+            --body "$pr_body" 2>&1)
+          if [ $? -ne 0 ]; then
+            if [[ "$pr_output" == *"A pull request already exists"* ]]; then
               echo "::notice::A pull request for this version already exists. Skipping."
-              exit 0
             else
-              echo "::error::Failed to create pull request: $PR_OUTPUT"
+              echo "::error::Failed to create pull request: $pr_output"
               exit 1
             fi
           else
             echo "::notice::Pull request created successfully."
-            echo "$PR_OUTPUT"
+            echo "$pr_output"
           fi
+
+      - name: Cleanup artifacts
+        if: always()
+        run: |
+          rm -rf fork-winget winget-manifest ${{ env.APP_NAME }}.exe
