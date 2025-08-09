@@ -93,44 +93,50 @@ jobs:
           MANIFEST_DIR="winget-manifest"
           mkdir -p "$MANIFEST_DIR"
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.yaml" <<EOF
-          ---
-          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
-          PackageIdentifier: ${{ env.PACKAGE_ID }}
-          PackageVersion: ${{ steps.get_release.outputs.version }}
-          DefaultLocale: en-US
-          ManifestType: version
-          ManifestVersion: 1.6.0
-          EOF
+---
+# yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
+PackageIdentifier: ${{ env.PACKAGE_ID }}
+PackageVersion: ${{ steps.get_release.outputs.version }}
+DefaultLocale: en-US
+ManifestType: version
+ManifestVersion: 1.6.0
+EOF
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.installer.yaml" <<EOF
-          ---
-          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
-          PackageIdentifier: ${{ env.PACKAGE_ID }}
-          PackageVersion: ${{ steps.get_release.outputs.version }}
-          InstallerType: exe
-          Installers:
-            - Architecture: neutral
-              InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe
-              InstallerSha256: ${{ steps.download.outputs.sha256 }}
-          ManifestType: installer
-          ManifestVersion: 1.6.0
-          EOF
+---
+# yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+PackageIdentifier: ${{ env.PACKAGE_ID }}
+PackageVersion: ${{ steps.get_release.outputs.version }}
+InstallerType: exe
+Installers:
+  - Architecture: neutral
+    InstallerUrl: >
+      https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/
+      ${{ env.APP_NAME }}.exe
+    InstallerSha256: ${{ steps.download.outputs.sha256 }}
+ManifestType: installer
+ManifestVersion: 1.6.0
+EOF
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.locale.en-US.yaml" <<EOF
-          ---
-          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
-          PackageIdentifier: ${{ env.PACKAGE_ID }}
-          PackageVersion: ${{ steps.get_release.outputs.version }}
-          PackageLocale: en-US
-          Publisher: ${{ github.repository_owner }}
-          PackageName: ${{ env.APP_NAME }}
-          License: ${{ steps.metadata.outputs.license }}
-          PackageUrl: ${{ steps.metadata.outputs.homepage }}
-          PackageIcon: https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/images/win-memory-cleaner.png
-          ShortDescription: ${{ steps.metadata.outputs.desc }}
-          Commands:
-            - ${{ env.APP_NAME }}
-          ManifestType: defaultLocale
-          ManifestVersion: 1.6.0
-          EOF
+---
+# yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: ${{ env.PACKAGE_ID }}
+PackageVersion: ${{ steps.get_release.outputs.version }}
+PackageLocale: en-US
+Publisher: ${{ github.repository_owner }}
+PackageName: ${{ env.APP_NAME }}
+License: ${{ steps.metadata.outputs.license }}
+PackageUrl: >
+  ${{ steps.metadata.outputs.homepage }}
+PackageIcon: >
+  https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/images/
+  win-memory-cleaner.png
+ShortDescription: >
+  ${{ steps.metadata.outputs.desc }}
+Commands:
+  - ${{ env.APP_NAME }}
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0
+EOF
 
       - name: Validate YAML manifests
         if: steps.check_winget.outputs.skip == 'false'
