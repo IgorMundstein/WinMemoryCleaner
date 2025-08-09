@@ -77,6 +77,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
             core.setOutput('desc', repo.description?.trim() || "This free RAM cleaner uses native Windows features to optimize memory areas. It's a compact, portable, and smart application.");
             core.setOutput('homepage', repo.homepage?.trim() || repo.html_url || 'https://github.com/IgorMundstein/WinMemoryCleaner');
             core.setOutput('license', repo.license?.spdx_id || 'GPL-3.0');
@@ -88,7 +92,6 @@ jobs:
           set -e
           MANIFEST_DIR="winget-manifest"
           mkdir -p "$MANIFEST_DIR"
-
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
@@ -97,7 +100,6 @@ jobs:
           ManifestType: version
           ManifestVersion: 1.6.0
           EOF
-
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.installer.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
@@ -110,7 +112,6 @@ jobs:
           ManifestType: installer
           ManifestVersion: 1.6.0
           EOF
-
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.locale.en-US.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
