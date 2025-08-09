@@ -12,6 +12,7 @@ env:
   MSRC_CLIENT_ID: ${{ secrets.MSRC_CLIENT_ID }}
   MSRC_CLIENT_SECRET: ${{ secrets.MSRC_CLIENT_SECRET }}
   MSRC_TENANT_ID: ${{ secrets.MSRC_TENANT_ID }}
+  MSRC_RESOURCE: https://api.msrc.microsoft.com
 
 jobs:
   submit-msrc:
@@ -48,32 +49,46 @@ jobs:
           MSRC_CLIENT_ID: ${{ env.MSRC_CLIENT_ID }}
           MSRC_CLIENT_SECRET: ${{ env.MSRC_CLIENT_SECRET }}
           MSRC_TENANT_ID: ${{ env.MSRC_TENANT_ID }}
+          MSRC_RESOURCE: ${{ env.MSRC_RESOURCE }}
         run: |
-          RESPONSE=$(curl -s -X POST \
+          set -e
+          TOKEN_RESPONSE=$(curl -sS -X POST \
+            -H "Content-Type: application/x-www-form-urlencoded" \
             -d "client_id=$MSRC_CLIENT_ID" \
-            -d "scope=api://api.msrc.microsoft.com/.default" \
             -d "client_secret=$MSRC_CLIENT_SECRET" \
             -d "grant_type=client_credentials" \
+            -d "scope=$MSRC_RESOURCE/.default" \
             "https://login.microsoftonline.com/$MSRC_TENANT_ID/oauth2/v2.0/token")
-          echo "Raw token response: $RESPONSE"
-          TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
-          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-            echo "::error::Failed to obtain token"
+
+          echo "Raw token response: $TOKEN_RESPONSE"
+
+          ERROR_DESC=$(echo "$TOKEN_RESPONSE" | jq -r '.error_description // empty')
+          if [ -n "$ERROR_DESC" ]; then
+            echo "::error::Failed to obtain token: $ERROR_DESC"
             exit 1
           fi
-          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+          TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
+          if [ -z "$TOKEN" ]; then
+            echo "::error::Failed to obtain token (no access_token in response)"
+            exit 1
+          fi
+
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
 
       - name: Submit to Microsoft Security Response Center (MSRC)
         id: msrc_submit
         env:
           MSRC_TOKEN: ${{ steps.msrc_token.outputs.token }}
         run: |
+          set -e
           RESPONSE=$(curl --silent -w "HTTPSTATUS:%{http_code}" -X POST \
             "https://api.msrc.microsoft.com/report/v3.0/report/file" \
             -H "Authorization: Bearer $MSRC_TOKEN" \
+            -H "Accept: application/json" \
             -F "file=@WinMemoryCleaner.exe" \
             -F "comment=Automated release submission via GitHub Actions")
-          
+
           BODY=$(echo "$RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
           STATUS=$(echo "$RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
 
@@ -83,16 +98,22 @@ jobs:
             echo "::notice::Submission successful."
             REPORT_ID=$(jq -r '.id // empty' msrc_response.json)
             if [ -n "$REPORT_ID" ]; then
-              echo "report_id=$REPORT_ID" >> $GITHUB_OUTPUT
+              echo "report_id=$REPORT_ID" >> "$GITHUB_OUTPUT"
               echo "::notice::Report ID: $REPORT_ID"
             fi
           else
-            echo "::error::MSRC response error (status $STATUS):"
-            cat msrc_response.json
+            ERR_MSG=$(jq -r '.error.message // .message // empty' msrc_response.json)
+            if [ -n "$ERR_MSG" ]; then
+              echo "::error::MSRC response error (status $STATUS): $ERR_MSG"
+            else
+              echo "::error::MSRC response error (status $STATUS):"
+              cat msrc_response.json
+            fi
             exit 1
           fi
 
       - name: Output response summary
+        if: always()
         run: |
           if [ -f msrc_response.json ]; then
             echo '### MSRC Response' >> $GITHUB_STEP_SUMMARY
