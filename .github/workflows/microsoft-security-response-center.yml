@@ -28,10 +28,10 @@ jobs:
       - name: Validate secrets
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           missing=0
           for var in MSRC_CLIENT_ID MSRC_CLIENT_SECRET MSRC_TENANT_ID; do
-            if [ -z "${!var}" ]; then
+            if [ -z "${!var:-}" ]; then
               echo "::error::Missing required secret: $var"
               missing=1
             fi
@@ -54,7 +54,7 @@ jobs:
       - name: Download artifact
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           TAG=${{ steps.release_tag.outputs.tag }}
           if [ -z "$TAG" ]; then
             echo "::error::No release tag found."
@@ -67,7 +67,7 @@ jobs:
             exit 1
           fi
 
-      - name: Acquire MSRC token (v1 endpoint, resource param)
+      - name: Acquire MSRC token (try v1 then v2)
         id: msrc_token
         env:
           MSRC_CLIENT_ID: ${{ env.MSRC_CLIENT_ID }}
@@ -75,7 +75,9 @@ jobs:
           MSRC_TENANT_ID: ${{ env.MSRC_TENANT_ID }}
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
+
+          # Try v1 token endpoint with resource=
           TOKEN_RESPONSE=$(curl -sS -X POST \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "client_id=$MSRC_CLIENT_ID" \
@@ -84,17 +86,42 @@ jobs:
             -d "resource=https://api.msrc.microsoft.com" \
             "https://login.microsoftonline.com/$MSRC_TENANT_ID/oauth2/token")
 
-          echo "Raw token response: $TOKEN_RESPONSE"
-
-          ERROR_DESC=$(echo "$TOKEN_RESPONSE" | jq -r '.error_description // empty')
-          if [ -n "$ERROR_DESC" ]; then
-            echo "::error::Failed to obtain token: $ERROR_DESC"
-            exit 1
-          fi
+          echo "Raw token response (v1): $TOKEN_RESPONSE"
 
           TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
           if [ -z "$TOKEN" ]; then
-            echo "::error::Failed to obtain token (no access_token in response)"
+            ERR=$(echo "$TOKEN_RESPONSE" | jq -r '.error // empty')
+            ERR_DESC=$(echo "$TOKEN_RESPONSE" | jq -r '.error_description // empty')
+            echo "::warning::v1 token attempt failed${ERR:+: $ERR}${ERR_DESC:+ - $ERR_DESC}"
+
+            # Try v2 token endpoint with scope=.default
+            TOKEN_RESPONSE=$(curl -sS -X POST \
+              -H "Content-Type: application/x-www-form-urlencoded" \
+              -d "client_id=$MSRC_CLIENT_ID" \
+              -d "client_secret=$MSRC_CLIENT_SECRET" \
+              -d "grant_type=client_credentials" \
+              -d "scope=https://api.msrc.microsoft.com/.default" \
+              "https://login.microsoftonline.com/$MSRC_TENANT_ID/oauth2/v2.0/token")
+
+            echo "Raw token response (v2): $TOKEN_RESPONSE"
+            TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token // empty')
+          fi
+
+          if [ -z "$TOKEN" ]; then
+            # Surface a helpful admin consent URL for tenant admins.
+            ADMIN_CONSENT_URL="https://login.microsoftonline.com/$MSRC_TENANT_ID/v2.0/adminconsent?client_id=$MSRC_CLIENT_ID&redirect_uri=https%3A%2F%2Flocalhost%2F&scope=https%3A%2F%2Fapi.msrc.microsoft.com%2F.default&state=msrc"
+            echo "::error::Failed to obtain token. If the error is AADSTS500011 (resource not found), the MSRC API likely hasn't been consented in your tenant or the tenant ID is incorrect."
+            echo "Admin consent URL (have a tenant admin open and grant): $ADMIN_CONSENT_URL"
+            {
+              echo "### MSRC token acquisition failed"
+              echo
+              echo "If you see AADSTS500011, ensure a tenant admin grants consent to the MSRC API for this app registration:"
+              echo "- Tenant: $MSRC_TENANT_ID"
+              echo "- Client ID: $MSRC_CLIENT_ID"
+              echo
+              echo "Admin consent link:"
+              echo "$ADMIN_CONSENT_URL"
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
@@ -106,7 +133,7 @@ jobs:
           MSRC_TOKEN: ${{ steps.msrc_token.outputs.token }}
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           RESPONSE=$(curl --silent -w "HTTPSTATUS:%{http_code}" -X POST \
             "https://api.msrc.microsoft.com/report/v3.0/report/file" \
             -H "Authorization: Bearer $MSRC_TOKEN" \
