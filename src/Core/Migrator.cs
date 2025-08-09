@@ -19,6 +19,11 @@ namespace WinMemoryCleaner
                 MigrateSettingsFromCurrentUserToLocalMachine();
                 RemoveStartupRegistry();
             }
+            // 3.0+
+            if (App.Version >= new Version(3, 0))
+            {
+                RemoveRegistryPath();
+            }
         }
 
         #region Classes  
@@ -45,6 +50,14 @@ namespace WinMemoryCleaner
                 internal const string MemoryAreas = "MemoryAreas";
                 internal const string TrayIcon = "TrayIcon";
                 internal const string TrayIconShowMemoryUsage = "TrayIconShowMemoryUsage";
+            }
+        }
+
+        private static class V30
+        {
+            internal class Registry
+            {
+                internal const string Path = "Path";
             }
         }
 
@@ -143,13 +156,32 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Removes the registry path.
+        /// </summary>
+        private static void RemoveRegistryPath()
+        {
+            try
+            {
+                using (var key = Registry.LocalMachine.OpenSubKey(Constants.App.Registry.Key.Settings, true))
+                {
+                    if (key != null)
+                        key.DeleteValue(V30.Registry.Path, false);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+        }
+
+        /// <summary>
         /// Removes the startup registry to avoid UAC warnings. Use a scheduled task instead to run at startup.
         /// </summary>
         private static void RemoveStartupRegistry()
         {
             try
             {
-                using (var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"))
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run", true))
                 {
                     if (key != null)
                         key.DeleteValue(Constants.App.Title, false);
