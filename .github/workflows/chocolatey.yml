@@ -143,6 +143,7 @@ jobs:
 
           $installScriptContent = @"
           `$ErrorActionPreference = 'Stop'
+          Get-Process -Name "WinMemoryCleaner" -ErrorAction SilentlyContinue | Stop-Process -Force
           `$packageArgs = @{
             packageName    = 'winmemorycleaner'
             fileType       = 'EXE'
@@ -160,11 +161,9 @@ jobs:
           `$ErrorActionPreference = 'Stop'
           `$installDir = Join-Path `$"env:ProgramFiles" "WinMemoryCleaner"
           `$exePath = Join-Path `$installDir "WinMemoryCleaner.exe"
-
           if (Test-Path `$exePath) {
             Start-Process -FilePath `$exePath -ArgumentList "/Uninstall" -Wait
           }
-
           Remove-Item -Path `$installDir -Recurse -Force -ErrorAction SilentlyContinue
           "@
           Set-Content -Path (Join-Path $toolsDir "chocolateyuninstall.ps1") -Value $uninstallScriptContent -Encoding UTF8
