@@ -61,14 +61,6 @@ jobs:
               out = out.replace(/\n{3,}/g, '\n\n');
               return out.trim();
             }
-            function formatDate(iso) {
-              if (!iso) return '';
-              const d = new Date(iso);
-              const y = d.getUTCFullYear();
-              const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-              const day = String(d.getUTCDate()).padStart(2, '0');
-              return `${y}-${m}-${day}`;
-            }
             function versionFromRelease(r) {
               let v = (r.tag_name || '').trim();
               if (!v) v = (r.name || '').trim();
@@ -77,9 +69,8 @@ jobs:
             }
             const sections = published.map(r => {
               const ver = versionFromRelease(r);
-              const date = formatDate(r.published_at || r.created_at);
               const body = stripImages(r.body || '');
-              let section = `### ${ver}\n\n**${date}**`;
+              let section = `### ${ver}`;
               if (body) section += `\n\n${body}`;
               return section;
             });
