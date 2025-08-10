@@ -64,6 +64,78 @@ jobs:
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
+      - name: Capture window-only screenshot for docs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $appPath = "src\bin\Release\WinMemoryCleaner.exe"
+          if (-not (Test-Path $appPath)) {
+            Write-Host "::error::Built EXE not found at $appPath"
+            exit 1
+          }
+          $windowScreenshotPath = "$pwd\main-window-raw.png"
+
+          # Launch app and wait for main window
+          $proc = Start-Process -FilePath $appPath -PassThru
+          $maxWaitMs = 15000
+          $elapsed = 0
+          while ($proc.MainWindowHandle -eq 0 -and $elapsed -lt $maxWaitMs) {
+            Start-Sleep -Milliseconds 200
+            $proc.Refresh()
+            $elapsed += 200
+          }
+          if ($proc.MainWindowHandle -eq 0) {
+            Write-Host "::error::Main window not found."
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            exit 1
+          }
+
+          Add-Type -AssemblyName System.Drawing
+
+          $sig = @"
+using System;
+using System.Runtime.InteropServices;
+public static class Win32 {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
+    [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
+}
+"@
+          Add-Type -TypeDefinition $sig -Language CSharp
+
+          [void][Win32]::SetForegroundWindow([IntPtr]$proc.MainWindowHandle)
+          $rect = New-Object Win32+RECT
+          if (-not [Win32]::GetWindowRect([IntPtr]$proc.MainWindowHandle, [ref]$rect)) {
+            Write-Host "::error::GetWindowRect failed."
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            exit 1
+          }
+          $width = $rect.Right - $rect.Left
+          $height = $rect.Bottom - $rect.Top
+          if ($width -le 0 -or $height -le 0) {
+            Write-Host "::error::Invalid window size: $width x $height"
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            exit 1
+          }
+
+          $wbmp = New-Object System.Drawing.Bitmap $width, $height
+          $wgfx = [System.Drawing.Graphics]::FromImage($wbmp)
+          $wgfx.CopyFromScreen($rect.Left, $rect.Top, 0, 0, (New-Object System.Drawing.Size($width, $height)))
+          $wbmp.Save($windowScreenshotPath, [System.Drawing.Imaging.ImageFormat]::Png)
+          $wgfx.Dispose()
+          $wbmp.Dispose()
+
+          Stop-Process -Id $proc.Id -Force
+
+      - name: Upload screenshot artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-window-screenshot
+          path: main-window-raw.png
+          retention-days: 7
+
       - name: Upload unsigned EXE for signing
         id: upload-unsigned
         uses: actions/upload-artifact@v4
@@ -209,3 +281,84 @@ jobs:
             release_artifacts/checksums.txt
           draft: true
           generate_release_notes: false
+
+  update-docs-image:
+    name: Update docs/images/main-window.png
+    needs: build
+    if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository (with PAT)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Configure Git and pull latest
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+
+      - name: Download window-only screenshot
+        uses: actions/download-artifact@v4
+        with:
+          name: release-window-screenshot
+          path: ./ui-window
+
+      - name: Install ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+      - name: Add transparent rounded corners and update docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/images
+          FILE="./ui-window/main-window-raw.png"
+          if [ ! -f "$FILE" ]; then
+            echo "::error::main-window-raw.png not found in artifact"
+            exit 1
+          fi
+
+          read W H < <(identify -format "%w %h" "$FILE")
+          if [ -z "${W:-}" ] || [ -z "${H:-}" ]; then
+            echo "::error::Failed to read image size"
+            exit 1
+          fi
+
+          # Corner radius ~2% of min dimension, clamped to [10, 24]
+          if [ "$W" -lt "$H" ]; then MIN=$W; else MIN=$H; fi
+          R=$(( MIN / 50 ))
+          if [ "$R" -lt 10 ]; then R=10; fi
+          if [ "$R" -gt 24 ]; then R=24; fi
+
+          magick "$FILE" \
+            \( -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$((W-1)),$((H-1)),$R,$R" \) \
+            -compose DstIn -composite \
+            docs/images/main-window.png
+
+      - name: Commit and push if changed (with PAT)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- docs/images/main-window.png; then
+            echo "No changes to docs/images/main-window.png"
+            exit 0
+          fi
+          git add docs/images/main-window.png
+          if git diff --cached --quiet; then
+            echo "No staged changes."
+            exit 0
+          fi
+          git commit -m "chore(docs): update main-window.png for release ${{ needs.build.outputs.new_tag }} (transparent rounded corners)"
+          git push origin HEAD:main
