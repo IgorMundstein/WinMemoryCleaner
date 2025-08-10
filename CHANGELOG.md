@@ -25,9 +25,7 @@
 - Renamed memory area system working set to system file cache
 - Renamed memory processes working set to working set
 
----
-
-**This project is celebrating its 6th year. So, nothing better than a major update release. Here are some critical notes.**
+**Notes (This project is celebrating its 6th year. So, nothing better than a major update release.)**
 
 - It's the first release implementing the CI/CD pipelines to publish the app to Chocolatey, Scoop, and Winget. So, there may be a delay in being available on these package managers.
 - If you find this app helpful, please consider donating. Your donation helps keep the project alive, optimized, and free for everyone.
