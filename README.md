@@ -272,13 +272,13 @@ When new versions require translation updates, we may use AI tools to provide a 
 | 🇮🇪&nbsp;Irish | [Happygolucky254](https://github.com/Happygolucky254) | 🇹🇷&nbsp;Turkish | [Rıza Emet](https://github.com/rizaemet), [Viollje](https://github.com/Viollje) |
 | 🇮🇹&nbsp;Italian | [Michele](https://github.com/wintrymichi) | 🇺🇦&nbsp;Ukrainian | [Riebi](https://github.com/RieBi), [Oleksandr](https://github.com/Mariachi1231) |
 
-## ❤️ Support the Project
+## ❤️ Contribute to the Project
 
 In the past, I faced challenges with the proper hardware and software needed to fully enjoy technology and gaming. It was a constant battle to squeeze every last drop of performance out of a limited machine.
 
 Although I may not rely on this tool as much as I once did, I continue to maintain it in my free time for a simple reason: to assist others who still encounter similar challenges. This project is a contribution to the field of technology and a tribute to the wonderful open-source community that supports us all.
 
-If you find this app helpful, please consider donating. Your contribution helps keep the project alive, optimized, and free for everyone.
+If you find this app helpful, please consider tipping. Your contribution helps keep the project alive, optimized, and free for everyone.
 
 | 💰 Cash | 🪙 Crypto |
 | :--- | :--- |
