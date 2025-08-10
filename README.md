@@ -41,13 +41,13 @@ winget install IgorMundstein.WinMemoryCleaner
 | **Show&nbsp;Virtual&nbsp;Memory**| Displays virtual memory (page file) usage in the main window and system tray text. |
 | **Start&nbsp;Minimized**| The application will start minimized directly to the system tray. A single-click on the tray icon restores it. |
 
-### Compact Mode
+### ↕️ Compact Mode
 
 The Compact Mode feature allows you to collapse the main window into a minimal view for at-a-glance monitoring. By clicking the arrow next to the minimize button, the UI shrinks to show only the most essential memory statistics and controls. This mode is ideal for users who want to keep an eye on their system’s memory usage without occupying much screen space. Toggle Compact Mode on or off at any time to suit your workflow.
 
 [![](./docs/images/main-window-compact.png)](#compact-Mode)
 
-### System Tray (Notification area)
+### 🔔 System Tray (Notification area)
 
 The application provides quick access and information directly from the system tray.
 
@@ -114,11 +114,11 @@ All optimization activities are logged to the Windows Event Viewer for a transpa
 
 We understand that users are rightfully skeptical of system utilities. This project is built on a foundation of verifiable trust and transparency.
 
-### Automated & Secure Builds (CI/CD)
+### 🛡️ Automated & Secure Builds (CI/CD)
 
 Every official release of WinMemoryCleaner is built, signed, and published automatically by a **CI/CD pipeline using GitHub Actions**. The entire process is defined in the public [release.yml](/.github/workflows/release.yml) workflow file in this repository. This ensures that the distributed executables are compiled directly from the source code you see here, eliminating the potential for manual error or intervention.
 
-### Verifiable Code Signing
+### 🛡️ Verifiable Code Signing
 
 Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with.
 
@@ -130,7 +130,7 @@ You can verify the signature by right-clicking the `.exe` -> `Properties` -> `Di
 
 [![](./docs/images/digital-signature.png)](#-trust--integrity)
 
-### Microsoft Defender SmartScreen
+### 🛡️ Microsoft Defender SmartScreen
 
 Even with a valid digital signature, Microsoft Defender SmartScreen may initially flag a new release with a "Windows protected your PC" warning.
 
@@ -138,7 +138,7 @@ Even with a valid digital signature, Microsoft Defender SmartScreen may initiall
 
 This happens because the application is new and has not yet built a strong reputation with Microsoft. This is a standard, reputation-based security measure. By running the app, you help it build a positive reputation, which will cause this warning to disappear more quickly for other users. We appreciate your trust and understanding.
 
-### Independent Security Scans
+### 🛡️ Independent Security Scans
 
 Each new version is automatically submitted for analysis to leading security platforms, including VirusTotal and Hybrid Analysis, to ensure it is free from threats.
 
@@ -158,7 +158,7 @@ Run optimizations silently for scripting and automation. Use any combination of 
 - `/SystemFileCache`
 - `/WorkingSet`
 
-**Command-line example:**
+**> Command-line example:**
 
 ```cmd
 {path}\WinMemoryCleaner.exe /ModifiedFileCache /StandbyList /WorkingSet
@@ -168,12 +168,12 @@ Run optimizations silently for scripting and automation. Use any combination of 
 
 For continuous, hands-off optimization, install the application as a background service. The installation will close some processes to install or uninstall the service without requiring a system restart, and log files will be generated along with the .exe file. Some application settings will be modified based on recommendations. You can still open the application (GUI) and configure it as desired. The service will utilize these settings.
 
-**Install Service:**
+✅ **Install Service:**
 ```cmd
 {path}\WinMemoryCleaner.exe /Install
 ```
 
-**Uninstall Service:**
+❌ **Uninstall Service:**
 ```cmd
 {path}\WinMemoryCleaner.exe /Uninstall
 ```
@@ -192,7 +192,7 @@ A powerful physical memory usage analysis utility from Microsoft Sysinternals. R
 
 ## ❓ Frequently Asked Questions (FAQ)
 
-### Is this app still useful on modern PCs, and how is it not 'snake oil'?
+### 💭 Is this app still useful on modern PCs, and how is it not 'snake oil'?
 This is an excellent question that gets to the core of this project's philosophy.
 
 **The short answer:** Yes, it's still useful for a massive number of users, and it's the opposite of snake oil because it's built on transparency and verifiable proof.
@@ -208,7 +208,7 @@ WinMemoryCleaner is the **antivirus serum**. It's not a magical cure-all, but a 
 
 This project exists to serve the users who were left behind by the march of technology, and to restore faith that a utility can be both effective and honest.
 
-### What are the project requirements?
+### 💭 What are the project requirements?
 - Logging to Windows Event Viewer
 - Minimalistic user interface using Windows Presentation Foundation (WPF) and single-page application (SPA) architecture
 - Model-View-ViewModel (MVVM) design pattern
@@ -219,10 +219,10 @@ This project exists to serve the users who were left behind by the march of tech
 - Use of Windows native methods for memory management
 - Windows retro-compatibility (Windows XP, Server 2003, and later)
 
-### Where does the app save the settings?
+### 💭 Where does the app save the settings?
 They are saved in the Windows registry path `Computer\HKEY_LOCAL_MACHINE\Software\WinMemoryCleaner`
 
-### Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
+### 💭 Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
 One of the reasons for this **false alarm** is that the application adds entries to the registry and creates a scheduled task to run at startup. Windows doesn't suggest letting applications with administrator privileges run at startup. I understand that, but this is the required method for this functionality. I apologize, but the application cannot perform a deep memory clean without administrator privileges.
 
 That's a common issue that persists with every new app version. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
@@ -236,7 +236,7 @@ If you're a native speaker of a language other than English, you can contribute 
 
 **Please note:** Translated texts should be provided in **lowercase**. The application will automatically handle capitalization as needed for the user interface.
 
-### How to Test Your Translation
+### 🔬 How to Test Your Translation
 
 You can test any translation by creating a file alongside the executable:
 
@@ -245,7 +245,7 @@ You can test any translation by creating a file alongside the executable:
 3. Launch the application. If successful, the new language and your changes will be visible.
 4. Once tested, please either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14).
 
-### For .NET Developers
+### 👨‍💻 For .NET Developers
 
 If you are a .NET developer, you can integrate the new file directly into the project:
 
@@ -280,7 +280,7 @@ Although I may not rely on this tool as much as I once did, I continue to mainta
 
 If you find this app helpful, please consider donating. Your contribution helps keep the project alive, optimized, and free for everyone.
 
-| Cash | Crypto |
+| 💰 Cash | 🪙 Crypto |
 | :--- | :--- |
 | [Sponsor on GitHub](https://github.com/sponsors/IgorMundstein) | [Bitcoin (BTC)](https://www.blockchain.com/btc/address/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap) |
 | [Buy me a coffee on Ko-fi](https://ko-fi.com/igormundstein) | [Ethereum (ETH)](https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d) |
