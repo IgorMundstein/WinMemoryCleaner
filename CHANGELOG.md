@@ -2,8 +2,6 @@
 
 **2025-08-02**
 
-**2025-08-02**
-
 - Added a help `?` menu
 - Added a security check to verify the code certificate and warn if the user downloaded from an untrusted source. It's not bulletproof because the project is open source, but it makes it harder for people with bad intentions
 - Added a setting to reduce or increase the font size. It's helpful for different screen sizes and resolutions
@@ -41,8 +39,6 @@
 
 **2023-12-24**
 
-**2023-12-24**
-
 - Added optimization progress bar to the optimize button
 - Improved auto-update task
 - Improved code & UI
@@ -52,16 +48,12 @@
 
 **2023-12-22**
 
-**2023-12-22**
-
 - Changed the error dialog to a warning log event when a firewall blocks the app
 - Improved Chinese (Simplified/Traditional), French, Korean, and Serbian languages
 - Improved code
 - Improved memory usage tray icon
 
 ### 2.6
-
-**2023-12-18**
 
 **2023-12-17**
 
@@ -80,8 +72,6 @@
 
 **2023-08-20**
 
-**2023-08-20**
-
 - Added optimization runtime stats to the log
 - Added **compact mode** view. Click the arrow at the top right of the screen to collapse or expand the window
 - Changed app priority to low. Optimization may run a little slower, but it will reduce the chance of Windows freezing during the optimization
@@ -90,16 +80,12 @@
 
 ### 2.4
 
-**2023-08-08**
-
 **2023-08-07**
 
 - Added Polish and Ukrainian languages
 - Improved code and documentation
 
 ### 2.3
-
-**2023-08-05**
 
 **2023-08-04**
 
@@ -109,8 +95,6 @@
 - Signed all executable versions using a personal self-code signing certificate. It reset the downloads counter
 
 ### 2.2
-
-**2023-08-02**
 
 **2023-08-02**
 
@@ -124,8 +108,6 @@
 
 **2023-07-27**
 
-**2023-07-27**
-
 - Added close after optimization setting
 - Added support for the Chinese (Simplified), Chinese (Traditional), Dutch, French, German, Greek, Italian, Macedonian, Slovenian, Spanish, and Turkish languages
 - Added the ability to read language JSON files at the exact executable location. That will help contributors to test the translation before submitting it
@@ -135,8 +117,6 @@
 - Modified the default window focus to the Optimize button. That will allow the user to press ENTER to run the optimization after the app starts
 
 ### 2.0
-
-**2023-03-26**
 
 **2023-03-26**
 
@@ -155,8 +135,6 @@
 -  Windows Server 2003 and Windows XP 64-bit support
 
 ### 1.1
-
-**2021-09-06**
 
 **2021-09-06**
 
