@@ -9,51 +9,58 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-changelog-${{ github.ref }}
+  group: update-changelog
   cancel-in-progress: true
 
 jobs:
   update:
     name: Update CHANGELOG.md
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Configure Git and line endings
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
 
       - name: Build CHANGELOG.md from GitHub releases
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
-
             const releases = await github.paginate(
               github.rest.repos.listReleases,
               { owner, repo, per_page: 100 }
             );
-
             const published = releases.filter(r => !r.draft);
             published.sort((a, b) => {
               const da = new Date(a.published_at || a.created_at);
               const db = new Date(b.published_at || b.created_at);
               return db - da;
             });
-
             function stripImages(md) {
               if (!md) return '';
               let out = md;
               out = out.replace(/<img\b[^>]*>/gi, '');
-              out = out.replace(/!\[[^\]]*?\]\([^)]+\)/g, '');
+              out = out.replace(/!\[[^\]]*?\]\([^\)\s]+(?:\s+"[^"]*")?\)/g, '');
               out = out.replace(/!\[[^\]]*?\]\[[^\]]*?\]/g, '');
-              out = out.replace(/^\s*\[[^\]]+\]:\s*\S+(?:\s+"[^"]*")?\s*$/gm, '');
               out = out.replace(/[ \t]+$/gm, '');
               out = out.replace(/\n{3,}/g, '\n\n');
               return out.trim();
             }
-
             function formatDate(iso) {
               if (!iso) return '';
               const d = new Date(iso);
@@ -62,14 +69,12 @@ jobs:
               const day = String(d.getUTCDate()).padStart(2, '0');
               return `${y}-${m}-${day}`;
             }
-
             function versionFromRelease(r) {
               let v = (r.tag_name || '').trim();
               if (!v) v = (r.name || '').trim();
               v = v.replace(/^[vV]/, '');
               return v || '';
             }
-
             const sections = published.map(r => {
               const ver = versionFromRelease(r);
               const date = formatDate(r.published_at || r.created_at);
@@ -78,11 +83,16 @@ jobs:
               if (body) section += `\n\n${body}`;
               return section;
             });
-
             const content = sections.join('\n\n') + '\n';
-
             const fs = require('fs');
             fs.writeFileSync('CHANGELOG.md', content, 'utf8');
+
+      - name: Normalize line endings to LF
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -f CHANGELOG.md ]
+          sed -i 's/\r$//' CHANGELOG.md
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -92,6 +102,9 @@ jobs:
           if-no-files-found: error
 
       - name: Commit and push if changed
+        shell: bash
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           set -euo pipefail
           if git diff --quiet -- CHANGELOG.md; then
@@ -101,5 +114,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No staged changes."
+            exit 0
+          fi
           git commit -m "chore(changelog): update CHANGELOG.md"
-          git push
+          git push origin HEAD:main
