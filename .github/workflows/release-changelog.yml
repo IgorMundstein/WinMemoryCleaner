@@ -1,52 +1,105 @@
-name: "Update CHANGELOG"
+name: Update CHANGELOG
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
-  workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: update-changelog-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  update-changelog:
+  update:
+    name: Update CHANGELOG.md
     runs-on: ubuntu-latest
-    if: github.event.release.draft == false && github.event.release.prerelease == false
     steps:
-      - name: Checkout main branch
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_TOKEN }}
-          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Changelog
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+      - name: Build CHANGELOG.md from GitHub releases
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+
+            const releases = await github.paginate(
+              github.rest.repos.listReleases,
+              { owner, repo, per_page: 100 }
+            );
+
+            const published = releases.filter(r => !r.draft);
+            published.sort((a, b) => {
+              const da = new Date(a.published_at || a.created_at);
+              const db = new Date(b.published_at || b.created_at);
+              return db - da;
+            });
+
+            function stripImages(md) {
+              if (!md) return '';
+              let out = md;
+              out = out.replace(/<img\b[^>]*>/gi, '');
+              out = out.replace(/!\[[^\]]*?\]\([^)]+\)/g, '');
+              out = out.replace(/!\[[^\]]*?\]\[[^\]]*?\]/g, '');
+              out = out.replace(/^\s*\[[^\]]+\]:\s*\S+(?:\s+"[^"]*")?\s*$/gm, '');
+              out = out.replace(/[ \t]+$/gm, '');
+              out = out.replace(/\n{3,}/g, '\n\n');
+              return out.trim();
+            }
+
+            function formatDate(iso) {
+              if (!iso) return '';
+              const d = new Date(iso);
+              const y = d.getUTCFullYear();
+              const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+              const day = String(d.getUTCDate()).padStart(2, '0');
+              return `${y}-${m}-${day}`;
+            }
+
+            function versionFromRelease(r) {
+              let v = (r.tag_name || '').trim();
+              if (!v) v = (r.name || '').trim();
+              v = v.replace(/^[vV]/, '');
+              return v || '';
+            }
+
+            const sections = published.map(r => {
+              const ver = versionFromRelease(r);
+              const date = formatDate(r.published_at || r.created_at);
+              const body = stripImages(r.body || '');
+              let section = `### ${ver}\n\n**${date}**`;
+              if (body) section += `\n\n${body}`;
+              return section;
+            });
+
+            const content = sections.join('\n\n') + '\n';
+
+            const fs = require('fs');
+            fs.writeFileSync('CHANGELOG.md', content, 'utf8');
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CHANGELOG.md
+          path: CHANGELOG.md
+          if-no-files-found: error
+
+      - name: Commit and push if changed
         run: |
-          releases_json=$(gh api repos/${{ github.repository }}/releases --paginate)
-          filtered_releases=$(echo "$releases_json" | jq '[ .[] | select(.draft==false and .prerelease==false) ]')
-          if [ "$(echo "$filtered_releases" | jq 'length')" -eq 0 ]; then
-            echo "No suitable releases found to build changelog."
+          set -euo pipefail
+          if git diff --quiet -- CHANGELOG.md; then
+            echo "No changes to commit."
             exit 0
           fi
-
-          tmp_changelog=$(mktemp)
-          echo "$filtered_releases" | jq -c '.[]' | while IFS= read -r release; do
-            version=$(echo "$release" | jq -r '.name // .tag_name')
-            body=$(echo "$release" | jq -r '.body // "No release notes provided."')
-            clean_body=$(echo "$body" | \
-              sed -E '/^\s*!\[[^]]*\]\([^)]*\)\s*$/d' | \
-              sed -E 's/!\[[^]]*\]\([^)]*\)//g' | \
-              sed -E 's/<img[^>]*>//g'
-            )
-            printf "### %s\n\n%s\n\n---\n\n" "$version" "$clean_body" >> "$tmp_changelog"
-          done
-          awk 'NF{print; n=0} !NF && !n{print ""; n=1}' "$tmp_changelog" > CHANGELOG.md
-
-      - name: Commit and push CHANGELOG.md
-        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md
-          git commit -m "docs: update changelog from release notes" || echo "No changes to commit"
-          git push origin HEAD:main
+          git commit -m "chore(changelog): update CHANGELOG.md"
+          git push
