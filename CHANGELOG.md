@@ -2,6 +2,8 @@
 
 **2025-08-02**
 
+**2025-08-02**
+
 - Added a help `?` menu
 - Added a security check to verify the code certificate and warn if the user downloaded from an untrusted source. It's not bulletproof because the project is open source, but it makes it harder for people with bad intentions
 - Added a setting to reduce or increase the font size. It's helpful for different screen sizes and resolutions
@@ -25,6 +27,8 @@
 - Renamed memory area system working set to system file cache
 - Renamed memory processes working set to working set
 
+---
+
 **This project is celebrating its 6th year. So, nothing better than a major update release. Here are some critical notes.**
 
 - It's the first release implementing the CI/CD pipelines to publish the app to Chocolatey, Scoop, and Winget. So, there may be a delay in being available on these package managers.
@@ -33,7 +37,9 @@
 - Many contributors often provide translation updates, as some texts might not be in the best format due to frequent translation revisions. After we introduce the CI/CD workflows, we expect to publish releases more often to update minor corrections quickly. We now use the 'major.minor.patch' format for the app version, which will allow us to launch patch releases for localizations.
 - We prioritize transparency and user safety. Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with. By doing this, we will build trust with Microsoft Defender SmartScreen over time, and maybe someday we will obliterate that "Windows protected your PC" warning.
 
-### 2.8.0
+### 2.8
+
+**2023-12-24**
 
 **2023-12-24**
 
@@ -42,7 +48,9 @@
 - Improved code & UI
 - Improved memory usage tray icon
 
-### 2.7.0
+### 2.7
+
+**2023-12-22**
 
 **2023-12-22**
 
@@ -51,14 +59,16 @@
 - Improved code
 - Improved memory usage tray icon
 
-### 2.6.0
+### 2.6
+
+**2023-12-18**
 
 **2023-12-17**
 
 - Added Albanian, Bulgarian, Irish, Persian, and Russian languages
 - Added approximate memory released to optimization notification
 - Added right-to-left (RTL) language and UI support
-- Added run on low priority setting. If enabled, it limits the app resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
+- Added run on low priority setting. If enabled, it limits the app's resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
 - Added show virtual memory setting and memory usage view
 - Added support for cultures' native formats, like decimal separators
 - Added tray icon customization. Users can choose between the default app image or show physical memory usage with a background color based on the value. (0% - 79%) White | (80% - 89%) Orange | (90% - 100%) Red
@@ -66,7 +76,9 @@
 - Improved Greek language
 - Improved UI rendering when the start minimized setting is enabled
 
-### 2.5.0
+### 2.5
+
+**2023-08-20**
 
 **2023-08-20**
 
@@ -76,14 +88,18 @@
 - Improved code and UI
 - Improved Greek and Polish languages
 
-### 2.4.0
+### 2.4
+
+**2023-08-08**
 
 **2023-08-07**
 
 - Added Polish and Ukrainian languages
 - Improved code and documentation
 
-### 2.3.0
+### 2.3
+
+**2023-08-05**
 
 **2023-08-04**
 
@@ -92,7 +108,9 @@
 - Improved Slovenian language
 - Signed all executable versions using a personal self-code signing certificate. It reset the downloads counter
 
-### 2.2.0
+### 2.2
+
+**2023-08-02**
 
 **2023-08-02**
 
@@ -102,7 +120,9 @@
 - Improved Code & UI
 - Improved German language
 
-### 2.1.0
+### 2.1
+
+**2023-07-27**
 
 **2023-07-27**
 
@@ -114,7 +134,9 @@
 - Modified notify icon title to show the memory usage
 - Modified the default window focus to the Optimize button. That will allow the user to press ENTER to run the optimization after the app starts
 
-### 2.0.0
+### 2.0
+
+**2023-03-26**
 
 **2023-03-26**
 
@@ -132,7 +154,9 @@
 -  System tray icon (Notifications/Optimize/Exit)
 -  Windows Server 2003 and Windows XP 64-bit support
 
-### 1.1.0
+### 1.1
+
+**2021-09-06**
 
 **2021-09-06**
 
