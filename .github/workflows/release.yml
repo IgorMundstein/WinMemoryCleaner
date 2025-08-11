@@ -92,16 +92,8 @@ jobs:
 
           Add-Type -AssemblyName System.Drawing
 
-          $sig = @'
-using System;
-using System.Runtime.InteropServices;
-public static class Win32 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
-    [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
-    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
-}
-'@
+          # Define Win32 interop without a here-string to avoid YAML parsing issues
+          $sig = 'using System; using System.Runtime.InteropServices; public static class Win32 { [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left; public int Top; public int Right; public int Bottom; } [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect); [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd); }'
           Add-Type -TypeDefinition $sig -Language CSharp
 
           [void][Win32]::SetForegroundWindow([IntPtr]$proc.MainWindowHandle)
