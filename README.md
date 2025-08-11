@@ -102,7 +102,7 @@ This is a direct, verifiable demonstration that the application converts cached 
 
 ## 📖 Logs
 
-All optimization activities are logged to the Windows Event Viewer for a transparent audit trail.
+All optimization activities and data on essential tasks are logged to the Windows Event Viewer for a transparent audit trail.
 
 1. Press **Win + R**, type **eventvwr**, and press Enter.
 2. Navigate to `Windows Logs > Application`
