@@ -23,7 +23,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref_name }}
+          ref: main
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -92,7 +92,7 @@ jobs:
 
           Add-Type -AssemblyName System.Drawing
 
-          $sig = @"
+          $sig = @'
 using System;
 using System.Runtime.InteropServices;
 public static class Win32 {
@@ -101,7 +101,7 @@ public static class Win32 {
     [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
 }
-"@
+'@
           Add-Type -TypeDefinition $sig -Language CSharp
 
           [void][Win32]::SetForegroundWindow([IntPtr]$proc.MainWindowHandle)
