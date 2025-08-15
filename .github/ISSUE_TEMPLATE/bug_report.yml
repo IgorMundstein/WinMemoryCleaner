@@ -1,56 +1,80 @@
-name: ⚠️ Bug report
-description: Report any error or feature that produces an incorrect or unexpected result.
-labels: [ "bug" ]
+name: "🐞 Bug Report"
+description: "Report an error or feature that produces an incorrect or unexpected result."
+labels: ["bug"]
 body:
-  - type: checkboxes
+  - type: input
+    id: app-version
     attributes:
-      label: Checklist
+      label: App Version
+      description: "What version of WinMemoryCleaner are you using? (e.g., 3.0.0)"
+      placeholder: "X.X.X"
+    validations:
+      required: true
+      pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+  - type: dropdown
+    id: os-version
+    attributes:
+      label: Windows Version
+      description: What version of Windows are you using?
       options:
-        - label: I have used the search function to see if someone else has submitted the same bug report.
-          required: true
-        - label: I will describe the problem in as much detail as possible.
-          required: true
-  - type: input
-    attributes:
-      label: App version
-      description: What application version do you use?
-    validations:
-      required: true
-  - type: input
-    attributes:
-      label: Windows version
-      description: What Windows version do you use?
+        - Windows 11
+        - Windows 10
+        - Windows 8.1
+        - Windows 8
+        - Windows 7
+        - Windows Server 2025
+        - Windows Server 2022
+        - Windows Server 2019
+        - Windows Server 2016
+        - Windows Server 2012 R2
+        - Windows Server 2012
+        - Windows Server 2008 R2
+        - Windows Server 2008
+        - Windows Server 2003
+        - Windows Vista
+        - Windows XP 64-bit
+        - Windows XP SP3
     validations:
       required: true
   - type: textarea
+    id: steps-to-reproduce
     attributes:
-      label: Steps To Reproduce
-      description: Steps to reproduce the behavior.
+      label: Steps to Reproduce
+      description: "Please provide a clear, step-by-step description of how to reproduce the bug."
       placeholder: |
-        1. Go to '…'
-        2. Click on '…'
-        3. Scroll down to '…'
-        4. etc.
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
     validations:
       required: true
   - type: textarea
-    attributes:
-      label: Current Behavior
-      description: A concise description of what you are experiencing.
-    validations:
-      required: true
-  - type: textarea
+    id: expected-behavior
     attributes:
       label: Expected Behavior
-      description: A concise description of what you expected to happen.
+      description: "A clear and concise description of what you expected to happen."
     validations:
-      required: false
+      required: true
   - type: textarea
+    id: current-behavior
     attributes:
-      label: Anything else?
-      description: |
-        Logs? Screenshots? Anything that will give us more context about the issue you are encountering!
-  
-        Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
+      label: Current Behavior
+      description: "A clear and concise description of what is actually happening."
     validations:
-      required: false
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: "Add any other context about the problem here. Screenshots, logs, or other details can be very helpful!"
+      placeholder: "You can drag and drop images or log files here."
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Before submitting, please make sure you've done the following.
+      options:
+        - label: I have searched the existing issues to make sure this bug has not been reported yet.
+          required: true
+        - label: I have tested with the latest version of the application.
+          required: true
