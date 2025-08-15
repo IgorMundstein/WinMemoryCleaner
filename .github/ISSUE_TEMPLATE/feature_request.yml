@@ -24,9 +24,9 @@ body:
       label: Checklist
       description: "Before submitting, please make sure you've done the following."
       options:
-        - label: I am using the latest version of the application.
-          required: true
         - label: I have searched the existing issues to make sure this feature has not been requested yet.
+          required: true
+        - label: I have updated the application to its latest version.
           required: true
         - label: This issue is focused on a single feature or enhancement.
           required: true
