@@ -1,45 +1,53 @@
 name: "❓ Question"
 description: "Ask a question about WinMemoryCleaner."
-title: "<Your question here>"
 labels: ["question"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for your question! Please provide as much detail as possible so we can assist you.
+        Have a question? We're here to help! Please provide as much detail as possible.
   - type: textarea
     id: question
     attributes:
       label: What is your question?
-      description: Clearly describe your question or what you need help with.
-      placeholder: e.g., "How do I enable clean on system startup?"
+      description: "Please ask your question in a clear and concise way."
     validations:
       required: true
   - type: input
     id: app-version
     attributes:
       label: App Version
-      description: "What version of WinMemoryCleaner are you using? (See the About menu)"
-      placeholder: e.g., 1.5.2
+      description: "What version of WinMemoryCleaner are you using? (e.g., 3.0.0)"
+      placeholder: "X.X.X"
     validations:
       required: true
-  - type: input
+      pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+  - type: dropdown
     id: os-version
     attributes:
       label: Windows Version
       description: What version of Windows are you using?
-      placeholder: e.g., Windows 10, Windows 11
-    validations:
-      required: false
+      options:
+        - Windows 11
+        - Windows 10
+        - Windows 8.1
+        - Windows 8
+        - Windows 7
+        - Windows Server 2025
+        - Windows Server 2022
+        - Windows Server 2019
+        - Windows Server 2016
+        - Windows Server 2012 R2
+        - Windows Server 2012
+        - Windows Server 2008 R2
+        - Windows Server 2008
+        - Windows Server 2003
+        - Windows Vista
+        - Windows XP 64-bit
+        - Windows XP SP3
   - type: textarea
     id: steps-tried
     attributes:
-      label: Steps you've already tried
-      description: Tell us what you've already tried to resolve your question.
-      placeholder: e.g., "Checked the FAQ, restarted the app, etc."
-    validations:
-      required: false
-  - type: markdown
-    attributes:
-      value: |
-        _If your question is about a bug, please use the **Bug Report** template instead!_
+      label: What have you tried so far?
+      description: "Let us know what you've already tried to find the answer."
+      placeholder: "e.g., Checked the README, searched existing issues, etc."
