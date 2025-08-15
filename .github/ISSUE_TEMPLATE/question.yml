@@ -2,15 +2,11 @@ name: "❓ Question"
 description: "Ask a question about Windows Memory Cleaner."
 labels: ["question"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Have a question? We're here to help! Please provide as much detail as possible.
   - type: textarea
     id: question
     attributes:
       label: What is your question?
-      description: "Please ask your question in a clear and concise way."
+      description: "Please ask your question in a clear and concise way. Please provide as much detail as possible."
     validations:
       required: true
   - type: checkboxes
