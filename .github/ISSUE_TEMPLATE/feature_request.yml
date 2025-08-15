@@ -22,6 +22,7 @@ body:
     id: checklist
     attributes:
       label: Checklist
+      description: "Before submitting, please make sure you've done the following."
       options:
         - label: I am using the latest version of the application.
           required: true
