@@ -45,6 +45,8 @@ body:
         - Windows Vista
         - Windows XP 64-bit
         - Windows XP SP3
+    validations:
+      required: true
   - type: checkboxes
     id: steps-tried
     attributes:
