@@ -6,15 +6,6 @@ body:
     attributes:
       value: |
         Thank you for suggesting an idea! We appreciate your feedback.
-  - type: input
-    id: app-version
-    attributes:
-      label: App Version
-      description: "What version of Windows Memory Cleaner are you using? (e.g., 3.0.0)"
-      placeholder: "X.X.X"
-    validations:
-      required: true
-      pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
   - type: textarea
     id: problem-description
     attributes:
@@ -35,6 +26,15 @@ body:
     attributes:
       label: Any alternatives you've considered?
       description: A clear and concise description of any alternative solutions or features you've considered.
+  - type: input
+    id: app-version
+    attributes:
+      label: App Version
+      description: "What version of Windows Memory Cleaner are you using? (e.g., 3.0.0)"
+      placeholder: "X.X.X"
+    validations:
+      required: true
+      pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
   - type: textarea
     id: additional-context
     attributes:
