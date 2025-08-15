@@ -62,5 +62,5 @@ body:
           required: true
         - label: I have tested my translation locally by creating a `{locale-description}.json` file.
           required: true
-        - label: All translated text is in lowercase as requested.
+        - label: All translated text is in lowercase as requested (App automatically capitalizes the texts)
           required: true
