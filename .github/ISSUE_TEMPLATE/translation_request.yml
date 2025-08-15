@@ -1,0 +1,71 @@
+name: "🌐 Translation Request"
+description: "Contribute a new translation or update an existing one."
+labels: ["translation"]
+body:
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      description: "What language are you contributing?"
+      options:
+        - "🌐 New Language"
+        - "🇦🇱 Albanian"
+        - "🇸🇦 Arabic"
+        - "🇧🇬 Bulgarian"
+        - "🇨🇳 Chinese (Simplified)"
+        - "🇨🇳 Chinese (Traditional)"
+        - "🇳🇱 Dutch"
+        - "🇬🇧 English"
+        - "🇫🇷 French"
+        - "🇩🇪 German"
+        - "🇬🇷 Greek"
+        - "🇮🇱 Hebrew"
+        - "🇭🇺 Hungarian"
+        - "🇮🇩 Indonesian"
+        - "🇮🇪 Irish"
+        - "🇮🇹 Italian"
+        - "🇯🇵 Japanese"
+        - "🇰🇷 Korean"
+        - "🇲🇰 Macedonian"
+        - "🇳🇴 Norwegian"
+        - "🇮🇷 Persian"
+        - "🇵🇱 Polish"
+        - "🇧🇷 Portuguese (BR)"
+        - "🇵🇹 Portuguese (PT)"
+        - "🇷🇺 Russian"
+        - "🇷🇸 Serbian"
+        - "🇸🇮 Slovenian"
+        - "🇪🇸 Spanish"
+        - "🇹🇭 Thai"
+        - "🇹🇷 Turkish"
+        - "🇺🇦 Ukrainian"
+    validations:
+      required: true
+  - type: textarea
+    id: json-file
+    attributes:
+      label: Translation JSON
+      description: |
+        Thank you for helping translate Windows Memory Cleaner!
+
+        Please use the **[English.json](https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/src/Resources/Localization/English.json)** file as a reference. For detailed instructions, see the [Translation section in the README](https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#-translation).
+
+        **Note:** We are looking for neutral language translations to avoid regional slang or cultural specifics.
+
+        Paste the full content of your translated .json file below. If you selected "🌐 New Language", please also specify its name here.
+
+        *Developers: If you prefer, you can submit a pull request directly.*
+      render: json
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have followed the translation guidelines in the README.md.
+          required: true
+        - label: I have tested my translation locally by creating a `{locale-description}.json` file.
+          required: true
+        - label: All translated text is in lowercase as requested.
+          required: true
