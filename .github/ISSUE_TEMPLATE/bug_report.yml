@@ -74,7 +74,7 @@ body:
     id: checklist
     attributes:
       label: Checklist
-      description: Before submitting, please make sure you've done the following.
+      description: "Before submitting, please make sure you've done the following."
       options:
         - label: I have searched the existing issues to make sure this bug has not been reported yet.
           required: true
