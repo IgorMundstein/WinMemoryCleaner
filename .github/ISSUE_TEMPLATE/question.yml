@@ -1,5 +1,5 @@
 name: "❓ Question"
-description: "Ask a question about WinMemoryCleaner."
+description: "Ask a question about Windows Memory Cleaner."
 labels: ["question"]
 body:
   - type: markdown
@@ -17,8 +17,8 @@ body:
     id: app-version
     attributes:
       label: App Version
-      description: "What version of WinMemoryCleaner are you using? (e.g., 3.0.0)"
-      placeholder: "X.X.X"
+      description: "What version of Windows Memory Cleaner are you using?"
+      placeholder: "e.g., 3.0.0"
     validations:
       required: true
       pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
@@ -45,9 +45,11 @@ body:
         - Windows Vista
         - Windows XP 64-bit
         - Windows XP SP3
-  - type: textarea
+  - type: checkboxes
     id: steps-tried
     attributes:
       label: What have you tried so far?
       description: "Let us know what you've already tried to find the answer."
-      placeholder: "e.g., Checked the README, searched existing issues, etc."
+      options:
+        - label: I have read the [README.md](https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/README.md) file.
+        - label: I have searched the existing [issues](https://github.com/IgorMundstein/WinMemoryCleaner/issues) for a similar question.
