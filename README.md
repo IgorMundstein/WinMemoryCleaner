@@ -4,7 +4,7 @@
 
 This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run.
 
-[![](./docs/images/main-window.png)](#windows-memory-cleaner)
+[![](./docs/assets/images/main-window.png)](#windows-memory-cleaner)
 
 ## 💾 Download
 
@@ -45,7 +45,7 @@ winget install IgorMundstein.WinMemoryCleaner
 
 The Compact Mode feature allows you to collapse the main window into a minimal view for at-a-glance monitoring. By clicking the arrow next to the minimize button, the UI shrinks to show only the most essential memory statistics and controls. This mode is ideal for users who want to keep an eye on their system’s memory usage without occupying much screen space. Toggle Compact Mode on or off at any time to suit your workflow.
 
-[![](./docs/images/main-window-compact.png)](#compact-Mode)
+[![](./docs/assets/images/main-window-compact.png)](#compact-Mode)
 
 ### 🔔 System Tray (Notification area)
 
@@ -53,11 +53,11 @@ The application provides quick access and information directly from the system t
 
 - **Menu**: A right-click menu offers quick access to trigger an optimization or exit the application.
   
-  [![](./docs/images/system-tray.png)](#system-tray-notification-area)
+  [![](./docs/assets/images/system-tray.png)](#system-tray-notification-area)
   
 - **Notification**: After an optimization, a notification appears showing the reason and the approximate amount of memory that was freed.
 
-  [![](./docs/images/notification.png)](#system-tray-notification-area)
+  [![](./docs/assets/images/notification.png)](#system-tray-notification-area)
 
 - **Tray Icon Customization**: The tray icon can be configured to display real-time physical memory usage instead of the app logo. You can customize the background and text colors, as well as set warning and danger level thresholds that change the icon's color based on current memory pressure.
 
@@ -108,7 +108,7 @@ All optimization activities and data on essential tasks are logged to the Window
 2. Navigate to `Windows Logs > Application`
 3. Look for events with the source name **Windows Memory Cleaner**
 
-[![](./docs/images/windows-event-log.png)](#-logs)
+[![](./docs/assets/images/windows-event-log.png)](#-logs)
 
 ## 🔐 Trust & Integrity
 
@@ -128,13 +128,13 @@ A digital signature proves two things:
 
 You can verify the signature by right-clicking the `.exe` -> `Properties` -> `Digital Signatures`
 
-[![](./docs/images/digital-signature.png)](#-trust--integrity)
+[![](./docs/assets/images/digital-signature.png)](#-trust--integrity)
 
 ### 🛡️ Microsoft Defender SmartScreen
 
 Even with a valid digital signature, Microsoft Defender SmartScreen may initially flag a new release with a "Windows protected your PC" warning.
 
-[![](./docs/images/microsoft-defender-smart-screen.png)](#-microsoft-defender-smartscreen)
+[![](./docs/assets/images/microsoft-defender-smart-screen.png)](#-microsoft-defender-smartscreen)
 
 This happens because the application is new and has not yet built a strong reputation with Microsoft. This is a standard, reputation-based security measure. By running the app, you help it build a positive reputation, which will cause this warning to disappear more quickly for other users. We appreciate your trust and understanding.
 
@@ -243,7 +243,7 @@ You can test any translation by creating a file alongside the executable:
 1. Visit [https://ss64.com/locale.html](https://ss64.com/locale.html) to get the **locale description** for your language.
 2. Save your translation as **{locale-description}.json** using **UTF-8** character encoding.
 3. Launch the application. If successful, the new language and your changes will be visible.
-4. Once tested, please either submit a pull request or upload the file to the [translation discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions/14).
+4. Once tested, please either submit a pull request or submit the file via the **[Translation Request](https://github.com/IgorMundstein/WinMemoryCleaner/issues/new?template=translation_request.yml)** issue template.
 
 ### 👨‍💻 For .NET Developers
 
