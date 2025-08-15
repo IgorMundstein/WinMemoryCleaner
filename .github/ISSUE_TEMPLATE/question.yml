@@ -6,7 +6,7 @@ body:
     id: question
     attributes:
       label: What is your question?
-      description: "Please ask your question in a clear and concise way. Please provide as much detail as possible."
+      description: "Please ask your question clearly and concisely. Include as much detail as possible."
     validations:
       required: true
   - type: checkboxes
