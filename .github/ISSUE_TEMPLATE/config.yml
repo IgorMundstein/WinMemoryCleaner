@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 issue_templates:
-  - name: "🐞 Bug Report"
+  - name: "🐛 Bug Report"
     description: "Report an error or feature that produces an incorrect or unexpected result."
     template: "bug_report.yml"
   - name: "🚀 Feature Request"
