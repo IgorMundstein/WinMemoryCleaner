@@ -66,7 +66,9 @@ body:
     id: additional-context
     attributes:
       label: Additional Context
-      description: "Add any other context about the problem here. Screenshots, logs, or other details can be very helpful!"
+      description: |
+        Add any other context about the problem here. Screenshots, logs, or other details can be very helpful!
+        **Tip:** Check the Windows Event Viewer for logs. For instructions, see the [Logs section in the README](https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/README.md#-logs).
       placeholder: "You can drag and drop images or log files here."
   - type: checkboxes
     id: checklist
