@@ -49,7 +49,7 @@ body:
         1.  **Use the source file as a reference:** **[English.json](https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/src/Resources/Localization/English.json)**
         2.  **Follow the guidelines:** For detailed instructions, please see the **[Translation section in the README](https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#-translation)**.
         3.  **Use neutral language:** Please provide neutral translations that avoid regional slang or cultural specifics.
-        4.  **Attach your file:** **Drag and drop your `.json` file into this text box.** You can also paste the content directly. If you are adding a new language, please specify its name here as well.
+        4.  **Attach your file:** You can either paste the content of your `.json` file below or attach the file by dragging it into this text box. If you are adding a new language, please also specify its name.
     validations:
       required: true
   - type: checkboxes
