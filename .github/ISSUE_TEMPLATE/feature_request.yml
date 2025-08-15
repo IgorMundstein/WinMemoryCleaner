@@ -18,34 +18,17 @@ body:
     id: suggested-solution
     attributes:
       label: What is your suggested solution?
-      description: A clear and concise description of what you want to happen.
-    validations:
-      required: true
-  - type: textarea
-    id: alternatives
-    attributes:
-      label: Any alternatives you've considered?
-      description: A clear and concise description of any alternative solutions or features you've considered.
-  - type: input
-    id: app-version
-    attributes:
-      label: App Version
-      description: "What version of Windows Memory Cleaner are you using? (e.g., 3.0.0)"
-      placeholder: "X.X.X"
-    validations:
-      required: true
-      pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
-  - type: textarea
-    id: additional-context
-    attributes:
-      label: Additional Context
-      description: "Add any other context, mockups, or screenshots about the feature request here."
+      description: "Describe your solution in as much detail as possible. Include any alternatives you've considered, mockups, or screenshots to help illustrate your idea."
       placeholder: "You can drag and drop images here."
+    validations:
+      required: true
   - type: checkboxes
     id: checklist
     attributes:
       label: Checklist
       options:
+        - label: I am using the latest version of the application.
+          required: true
         - label: I have searched the existing issues to make sure this feature has not been requested yet.
           required: true
         - label: This issue is focused on a single feature or enhancement.
