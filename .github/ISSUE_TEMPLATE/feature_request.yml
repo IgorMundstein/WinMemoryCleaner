@@ -14,7 +14,7 @@ body:
     id: suggested-solution
     attributes:
       label: What is your suggested solution?
-      description: "Describe your solution in as much detail as possible. Include any alternatives you've considered, mockups, or screenshots to help illustrate your idea."
+      description: "Describe your solution in as much detail as possible. Include any alternatives you've considered, mockups, or screenshots to help illustrate it."
       placeholder: "You can drag and drop images here."
     validations:
       required: true
