@@ -46,15 +46,12 @@ body:
     attributes:
       label: Translation JSON
       description: |
-        Thank you for helping translate Windows Memory Cleaner!
+        Thank you for contributing a translation!
 
-        Please use the **[English.json](https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/src/Resources/Localization/English.json)** file as a reference. For detailed instructions, see the [Translation section in the README](https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#-translation).
-
-        **Note:** We are looking for neutral language translations to avoid regional slang or cultural specifics.
-
-        Paste the full content of your translated .json file below. If you selected "🌐 New Language", please also specify its name here.
-
-        *Developers: If you prefer, you can submit a pull request directly.*
+        1.  **Use the source file as a reference:** **[English.json](https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/src/Resources/Localization/English.json)**
+        2.  **Follow the guidelines:** For detailed instructions, please see the **[Translation section in the README](https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#-translation)**.
+        3.  **Use neutral language:** Please provide neutral translations that avoid regional slang or cultural specifics.
+        4.  **Paste your JSON below:** If you are adding a new language, please specify its name here as well.
       render: json
     validations:
       required: true
