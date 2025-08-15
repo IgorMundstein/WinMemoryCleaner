@@ -13,45 +13,12 @@ body:
       description: "Please ask your question in a clear and concise way."
     validations:
       required: true
-  - type: input
-    id: app-version
-    attributes:
-      label: App Version
-      description: "What version of Windows Memory Cleaner are you using?"
-      placeholder: "e.g., 3.0.0"
-    validations:
-      required: true
-      pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
-  - type: dropdown
-    id: os-version
-    attributes:
-      label: Windows Version
-      description: What version of Windows are you using?
-      options:
-        - Windows 11
-        - Windows 10
-        - Windows 8.1
-        - Windows 8
-        - Windows 7
-        - Windows Server 2025
-        - Windows Server 2022
-        - Windows Server 2019
-        - Windows Server 2016
-        - Windows Server 2012 R2
-        - Windows Server 2012
-        - Windows Server 2008 R2
-        - Windows Server 2008
-        - Windows Server 2003
-        - Windows Vista
-        - Windows XP 64-bit
-        - Windows XP SP3
-    validations:
-      required: true
   - type: checkboxes
     id: steps-tried
     attributes:
       label: What have you tried so far?
       description: "Let us know what you've already tried to find the answer."
       options:
+        - label: I have updated the application to its latest version.
         - label: I have read the [README.md](https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/README.md) file.
         - label: I have searched the existing [issues](https://github.com/IgorMundstein/WinMemoryCleaner/issues) for a similar question.
