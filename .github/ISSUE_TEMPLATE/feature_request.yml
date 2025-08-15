@@ -2,15 +2,11 @@ name: "🚀 Feature Request"
 description: "Suggest an idea or enhancement for this project."
 labels: ["enhancement"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thank you for suggesting an idea! We appreciate your feedback.
   - type: textarea
     id: problem-description
     attributes:
       label: What problem are you trying to solve?
-      description: A clear and concise description of the problem or limitation you are facing.
+      description: A clear and concise description of the problem or limitation you are facing. Thank you for suggesting an idea! We appreciate your feedback.
       placeholder: "e.g., I'm always frustrated when..."
     validations:
       required: true
