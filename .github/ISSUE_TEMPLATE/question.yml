@@ -20,5 +20,8 @@ body:
       description: "Let us know what you've already tried to find the answer."
       options:
         - label: I have updated the application to its latest version.
+          required: true
         - label: I have read the [README.md](https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/README.md) file.
+          required: true
         - label: I have searched the existing [issues](https://github.com/IgorMundstein/WinMemoryCleaner/issues) for a similar question.
+          required: true
