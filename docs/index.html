@@ -7,6 +7,25 @@
     <!-- Meta -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Theme color & referrer policy -->
+    <meta name="theme-color" content="#0d1117">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <!-- CSP -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.tailwindcss.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https://raw.githubusercontent.com https://img.shields.io https://www.google-analytics.com;
+      connect-src 'self' https://www.google-analytics.com;
+      font-src 'self';
+      object-src 'none';
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+      upgrade-insecure-requests;
+    ">
 
     <!-- SEO -->
     <meta name="author" content="Igor Mundstein">
@@ -14,18 +33,18 @@
     <meta name="keywords" content="RAM cleaner, memory cleaner, Windows optimization, free software, open source, memory management, PC performance, foss, memory-management, memory-optimization, windows-optimization-tool, admin">
 
     <!-- Social -->
-    <meta property="og:title" content="Windows Memory Cleaner">
-    <meta property="og:site_name" content="Windows Memory Cleaner">
     <meta property="og:description" content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner-ad.png">
+    <meta property="og:site_name" content="Windows Memory Cleaner">
+    <meta property="og:title" content="Windows Memory Cleaner">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://winmemorycleaner.com/">
-    <meta property="og:image" content="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner-ad.png">
-
+    
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Windows Memory Cleaner">
     <meta name="twitter:description" content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer.">
     <meta name="twitter:image" content="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner-ad.png">
-
+    <meta name="twitter:title" content="Windows Memory Cleaner">
+    
     <link rel="canonical" href="https://winmemorycleaner.com/">
 
     <!-- Analytics -->
