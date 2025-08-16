@@ -3,38 +3,36 @@
 <head>
     <title>Windows Memory Cleaner</title>
     <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/refs/heads/main/src/Resources/Images/win-memory-cleaner.ico">
- 
-    <!-- Meta Information -->
+
+    <!-- Meta -->
     <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    
-    <!-- SEO Meta Tags: Sourced from GitHub repository description and topics for optimal relevance. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO -->
     <meta name="author" content="Igor Mundstein">
     <meta name="description" content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer.">
     <meta name="keywords" content="RAM cleaner, memory cleaner, Windows optimization, free software, open source, memory management, PC performance, foss, memory-management, memory-optimization, windows-optimization-tool, admin">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:description" content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer.">
-    <meta name="twitter:image" content="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner-ad.png">
-    <meta name="twitter:title" content="Windows Memory Cleaner">
 
-    <!-- Open Graph Meta Tags for Social Sharing -->
-    <meta property="og:description" content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer.">
-    <meta property="og:image" content="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner-ad.png">
-    <meta property="og:site_name" content="Windows Memory Cleaner">
+    <!-- Social -->
     <meta property="og:title" content="Windows Memory Cleaner">
+    <meta property="og:site_name" content="Windows Memory Cleaner">
+    <meta property="og:description" content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://igormundstein.github.io/WinMemoryCleaner/">
+    <meta property="og:image" content="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner-ad.png">
 
-    <!-- Canonical Link Tag -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Windows Memory Cleaner">
+    <meta name="twitter:description" content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner-ad.png">
+
     <link rel="canonical" href="https://igormundstein.github.io/WinMemoryCleaner/">
 
-    <!-- Google Analytics -->
+    <!-- Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HLZMF4JJHB"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      function gtag(){ dataLayer.push(arguments); }
       gtag('js', new Date());
       gtag('config', 'G-HLZMF4JJHB');
     </script>
@@ -42,103 +40,93 @@
     <!-- Structured Data -->
     <script type="application/ld+json">
     {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Windows Memory Cleaner",
-      "applicationCategory": "Utility",
-      "operatingSystem": "Windows",
-      "description": "This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory.",
-      "license": "https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE",
-      "author": {
-        "@type": "Person",
-        "name": "Igor Mundstein"
-      },
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
+      "@context":"https://schema.org",
+      "@type":"SoftwareApplication",
+      "name":"Windows Memory Cleaner",
+      "applicationCategory":"Utility",
+      "operatingSystem":"Windows",
+      "description":"This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory.",
+      "license":"https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE",
+      "author":{"@type":"Person","name":"Igor Mundstein"},
+      "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
     }
     </script>
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Styles -->
     <style>
-        /* Base and Font Styling */
         body {
             background-color: #0d1117;
             color: #c9d1d9;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
         }
-        /* Hero Section Background */
         .hero-bg {
-            background-color: #0d1117;
-            background-image: radial-gradient(circle at top right, rgba(31, 111, 235, 0.1), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.1), transparent 50%);
+            background-image:
+                radial-gradient(circle at top right, rgba(31,111,235,0.10), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(139,92,246,0.10), transparent 50%);
         }
-        /* Code Block Styling */
         .code-block {
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.7);
+            background: rgba(0,0,0,0.7);
             border: 1px solid #30363d;
             border-radius: 0.375rem;
-            color: #c9d1d9;
             display: flex;
-            font-family: monospace;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
             font-size: 0.875rem;
             justify-content: space-between;
             overflow: hidden;
             padding: 0.5rem 1rem;
-            position: relative;
         }
         .code-block code {
             overflow-x: auto;
             padding-bottom: 2px;
             white-space: nowrap;
         }
-        /* Copy Button Styling */
         .copy-btn {
-            background-color: #21262d;
+            background: #21262d;
             border-radius: 0.375rem;
             color: #c9d1d9;
             margin-left: 0.5rem;
             padding: 0.375rem;
-            transition: background-color 0.2s;
+            transition: background-color .2s;
         }
-        .copy-btn:hover {
-            background-color: #30363d;
-        }
-        /* Scroll offset for sticky header */
-        section[id] {
-            scroll-margin-top: 80px;
-        }
+        .copy-btn:hover { background:#30363d; }
+        section[id] { scroll-margin-top:80px; }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300">
 
     <!-- Header -->
-    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
-        <div class="max-w-screen-xl flex items-center justify-between mx-auto px-6 py-4">
+    <header class="sticky top-0 z-50 border-b border-gray-800 bg-gray-900">
+        <div class="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-4">
             <a class="flex items-center space-x-3" href="#">
                 <img alt="Windows Memory Cleaner Logo" class="h-8 w-8" src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner.png">
-                <span class="font-bold text-white text-xl">Windows Memory Cleaner</span>
+                <span class="text-xl font-bold text-white">Windows Memory Cleaner</span>
             </a>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero-bg md:py-12 py-12 relative text-white">
-        <div class="max-w-screen-xl mx-auto px-6 relative text-center z-10">
-            <h1 class="bg-clip-text bg-gradient-to-r font-black from-blue-400 leading-tight mb-4 md:text-6xl text-4xl text-transparent to-purple-500">Optimize your computer's memory</h1>
-            <p class="mb-8 md:text-xl text-gray-300 text-lg">This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory.</p>
-            <div class="flex flex-col gap-4 items-center justify-center">
-                <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                    <a class="bg-blue-600 font-bold hover:bg-blue-700 hover:scale-105 px-8 py-3 rounded-lg text-lg text-white transform transition-transform w-full" href="#download">Download</a>
-                    <a class="bg-[#202830] font-semibold hover:bg-gray-700 px-4 py-3 rounded-md text-white text-lg transform transition-transform hover:scale-105 w-full whitespace-nowrap" href="https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#windows-memory-cleaner" target="_blank">Documentation</a>
+    <!-- Hero -->
+    <section class="hero-bg relative py-12 text-white md:py-12">
+        <div class="relative z-10 mx-auto max-w-screen-xl px-6 text-center">
+            <h1 class="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-4xl font-black leading-tight text-transparent md:text-6xl">
+                Optimize your computer's memory
+            </h1>
+            <p class="mb-8 text-lg text-gray-300 md:text-xl">
+                This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory.
+            </p>
+            <div class="flex flex-col items-center justify-center gap-4">
+                <div class="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
+                    <a class="w-full transform rounded-lg bg-blue-600 px-8 py-3 text-lg font-bold text-white transition-transform hover:scale-105 hover:bg-blue-700" href="#download">
+                        Download
+                    </a>
+                    <a class="w-full whitespace-nowrap transform rounded-md bg-[#202830] px-4 py-3 text-lg font-semibold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#windows-memory-cleaner" target="_blank">
+                        Documentation
+                    </a>
                 </div>
-                <div class="flex items-center justify-center space-x-4 mt-4">
+                <div class="mt-4 flex items-center justify-center space-x-4">
                     <img alt="GitHub stars" src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social">
                     <img alt="GitHub downloads" src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social">
                 </div>
@@ -146,166 +134,313 @@
         </div>
     </section>
 
-    <!-- Main -->
-    <main class="max-w-screen-xl mx-auto px-6">
+    <main class="mx-auto max-w-screen-xl px-6">
 
-        <!-- Key Features Section -->
+        <!-- Features (Alphabetical Order) -->
         <section class="my-12" id="features">
-            <div class="gap-8 grid md:grid-cols-2 lg:grid-cols-3">
+            <!-- NOTE: Feature cards intentionally kept in pure alphabetical order by heading text.
+                 If adding new features, please insert in correct alphabetical position. -->
+            <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+
+                <!-- Auto Optimization -->
                 <div class="flex items-start space-x-4">
-                    <svg class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <div><h3 class="font-bold text-white">Auto Optimization</h3><p class="text-gray-400 text-sm">Set cleaning by time interval or when free RAM drops below a threshold.</p></div>
-                </div>
-                 <div class="flex items-start space-x-4">
-                    <svg class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M12 18a6 6 0 100-12 6 6 0 000 12z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <div><h3 class="font-bold text-white">Cleans 7 Memory Areas</h3><p class="text-gray-400 text-sm">Targets specific memory caches used by Windows to improve system responsiveness and free up resources.</p></div>
-                </div>
-                <div class="flex items-start space-x-4">
-                     <svg class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5v4m0 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <div><h3 class="font-bold text-white">Compact Mode</h3><p class="text-gray-400 text-sm">A minimal view for at-a-glance monitoring without taking up screen space.</p></div>
-                </div>
-                <div class="flex items-start space-x-4">
-                    <svg class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <div><h3 class="font-bold text-white">Console & Service Modes</h3><p class="text-gray-400 text-sm">Run silently for scripting or install as a background service for continuous, hands-off optimization.</p></div>
-                </div>
-                <div class="flex items-start space-x-4">
-                    <svg class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <div><h3 class="font-bold text-white">Display Memory Usage</h3><p class="text-gray-400 text-sm">Displays physical and virtual memory usage in the main window and system tray text.</p></div>
-                </div>
-                <div class="flex items-start space-x-4">
-                    <svg class="h-8 w-8 shrink-0 mt-1 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 15v-2m4 2v-2m4 2v-2"></path>
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
-                    <div><h3 class="font-bold text-white">Global Hotkey</h3><p class="text-gray-400 text-sm">Trigger optimization from anywhere with a customizable hotkey.</p></div>
+                    <div>
+                        <h3 class="font-bold text-white">Auto Optimization</h3>
+                        <p class="text-sm text-gray-400">Schedule cleaning by interval or trigger based on free RAM threshold.</p>
+                    </div>
                 </div>
+
+                <!-- Cleans 7 Memory Areas -->
                 <div class="flex items-start space-x-4">
-                    <svg class="h-8 w-8 shrink-0 mt-1 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.724 7.724a2 2 0 012.828 0l2.122 2.121a2 2 0 002.828 0l2.121-2.121a2 2 0 012.828 0M12 21a9 9 0 100-18 9 9 0 000 18z"></path>
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        <path d="M12 18a6 6 0 100-12 6 6 0 000 12z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
-                    <div><h3 class="font-bold text-white">Multi-Language Support</h3><p class="text-gray-400 text-sm">Available in over 30 languages, with community contributions welcome.</p></div>
+                    <div>
+                        <h3 class="font-bold text-white">Cleans 7 Memory Areas</h3>
+                        <p class="text-sm text-gray-400">Targets specific Windows caches to reclaim memory efficiently.</p>
+                    </div>
                 </div>
+
+                <!-- Compact Mode -->
                 <div class="flex items-start space-x-4">
-                    <svg class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <div><h3 class="font-bold text-white">Process Exclusion List</h3><p class="text-gray-400 text-sm">Protect critical applications by excluding them from optimizations.</p></div>
-                </div>
-                <div class="flex items-start space-x-4">
-                    <svg class="h-8 w-8 shrink-0 mt-1 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8h8M20 12a8 8 0 01-8 8H4"></path>
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5v4m0 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
-                    <div><h3 class="font-bold text-white">Run on Startup</h3><p class="text-gray-400 text-sm">Automatically starts the application when Windows boots via the Task Scheduler.</p></div>
+                    <div>
+                        <h3 class="font-bold text-white">Compact Mode</h3>
+                        <p class="text-sm text-gray-400">Minimal UI for unobtrusive monitoring.</p>
+                    </div>
                 </div>
+
+                <!-- Console & Service Modes -->
                 <div class="flex items-start space-x-4">
-                    <svg class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <div><h3 class="font-bold text-white">System Tray Customization</h3><p class="text-gray-400 text-sm">Display real-time memory usage in your system tray with custom colors.</p></div>
-                </div>
-                <div class="flex items-start space-x-4">
-                    <svg class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <div><h3 class="font-bold text-white">Trust & Integrity</h3><p class="text-gray-400 text-sm">Automated secure builds, verifiable code signing, and transparent logging ensure the application is safe and reliable.</p></div>
-                </div>
-                <div class="flex items-start space-x-4">
-                    <svg class="h-8 w-8 shrink-0 mt-1 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m-1 4h1m6-12h1m-1 4h1m-1 4h1m-1 4h1"></path>
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
-                    <div><h3 class="font-bold text-white">Wide Windows Support</h3><p class="text-gray-400 text-sm">Compatible with Windows XP and Server 2003 all the way up to the latest versions of Windows 11 and Server 2025.</p></div>
+                    <div>
+                        <h3 class="font-bold text-white">Console & Service Modes</h3>
+                        <p class="text-sm text-gray-400">Run silently for automation or as a Windows service.</p>
+                    </div>
                 </div>
+
+                <!-- Display Memory Usage -->
+                <div class="flex items-start space-x-4">
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-white">Display Memory Usage</h3>
+                        <p class="text-sm text-gray-400">Real-time physical & virtual memory usage in UI and tray.</p>
+                    </div>
+                </div>
+
+                <!-- Global Hotkey -->
+                <div class="flex items-start space-x-4">
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 7H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        <path d="M7 15v-2m4 2v-2m4 2v-2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-white">Global Hotkey</h3>
+                        <p class="text-sm text-gray-400">Trigger cleaning instantly from anywhere.</p>
+                    </div>
+                </div>
+
+                <!-- Multi-Language Support -->
+                <div class="flex items-start space-x-4">
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.724 7.724a2 2 0 012.828 0l2.122 2.121a2 2 0 002.828 0l2.121-2.121a2 2 0 012.828 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-white">Multi-Language Support</h3>
+                        <p class="text-sm text-gray-400">30+ languages; community contributions welcome.</p>
+                    </div>
+                </div>
+
+                <!-- Process Exclusion List -->
+                <div class="flex items-start space-x-4">
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-white">Process Exclusion List</h3>
+                        <p class="text-sm text-gray-400">Protect critical apps by excluding them from cleaning.</p>
+                    </div>
+                </div>
+
+                <!-- Run on Startup -->
+                <div class="flex items-start space-x-4">
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 4v5h5M20 20v-5h-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        <path d="M4 12a8 8 0 018-8h8M20 12a8 8 0 01-8 8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-white">Run on Startup</h3>
+                        <p class="text-sm text-gray-400">Optional Task Scheduler integration for auto launch.</p>
+                    </div>
+                </div>
+
+                <!-- System Tray Customization -->
+                <div class="flex items-start space-x-4">
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-white">System Tray Customization</h3>
+                        <p class="text-sm text-gray-400">Configurable tray text, colors, and update cadence.</p>
+                    </div>
+                </div>
+
+                <!-- Trust & Integrity -->
+                <div class="flex items-start space-x-4">
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-white">Trust & Integrity</h3>
+                        <p class="text-sm text-gray-400">Signed builds, reproducible workflow artifacts.</p>
+                    </div>
+                </div>
+
+                <!-- Wide Windows Support -->
+                <div class="flex items-start space-x-4">
+                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m-1 4h1m6-12h1m-1 4h1m-1 4h1m-1 4h1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <div>
+                        <h3 class="font-bold text-white">Wide Windows Support</h3>
+                        <p class="text-sm text-gray-400">From Windows XP / Server 2003 to the latest Windows 11 / Server 2025.</p>
+                    </div>
+                </div>
+
             </div>
         </section>
 
-        <!-- Contribute Section -->
+        <!-- Contribute -->
         <section class="my-12 text-center" id="contribute">
-            <h2 class="font-bold md:text-4xl text-3xl text-white">Contribute to the Project</h2>
-            <p class="mb-8 mt-2 text-gray-400 text-lg">If you find this app helpful, please consider supporting its development.<br />Your contribution helps keep the project alive, optimized, and free for everyone.</p>
-             <div class="flex flex-wrap gap-4 items-center justify-center">
-                <a class="bg-[#202830] font-bold hover:bg-gray-700 hover:scale-105 px-6 py-3 rounded-lg text-white transform transition-transform" href="https://github.com/sponsors/IgorMundstein" target="_blank">Sponsor on GitHub</a>
-                <a class="bg-[#202830] font-bold hover:bg-gray-700 hover:scale-105 px-6 py-3 rounded-lg text-white transform transition-transform" href="https://ko-fi.com/igormundstein" target="_blank">Buy me a coffee on Ko-fi</a>
-                <a class="bg-[#202830] font-bold hover:bg-gray-700 hover:scale-105 px-6 py-3 rounded-lg text-white transform transition-transform" href="https://www.blockchain.com/explorer/addresses/btc/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap" target="_blank">Bitcoin (BTC)</a>
-                <a class="bg-[#202830] font-bold hover:bg-gray-700 hover:scale-105 px-6 py-3 rounded-lg text-white transform transition-transform" href="https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d" target="_blank">Ethereum (ETH)</a>
+            <h2 class="text-3xl font-bold text-white md:text-4xl">Contribute to the Project</h2>
+            <p class="mt-2 mb-8 text-lg text-gray-400">
+                If you find this app helpful, please consider supporting its development.<br>
+                Your contribution helps keep the project alive, optimized, and free for everyone.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <a class="transform rounded-lg bg-[#202830] px-6 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://github.com/sponsors/IgorMundstein" target="_blank">
+                    Sponsor on GitHub
+                </a>
+                <a class="transform rounded-lg bg-[#202830] px-6 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://ko-fi.com/igormundstein" target="_blank">
+                    Buy me a coffee (Ko-fi)
+                </a>
+                <a class="transform rounded-lg bg-[#202830] px-6 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://www.blockchain.com/explorer/addresses/btc/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap" target="_blank">
+                    Bitcoin (BTC)
+                </a>
+                <a class="transform rounded-lg bg-[#202830] px-6 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d" target="_blank">
+                    Ethereum (ETH)
+                </a>
             </div>
             <div class="mt-4 pt-4">
-                <p class="text-gray-400 text-lg mb-8">You can also provide your feedback by reporting bugs, requesting features, asking questions, or submitting translations.</p>
-                <div class="flex flex-wrap gap-4 items-center justify-center">
-                    <a class="bg-[#202830] font-bold hover:bg-gray-700 hover:scale-105 px-6 py-3 rounded-lg text-white transform transition-transform" href="https://github.com/IgorMundstein/WinMemoryCleaner/issues/new/choose" target="_blank">Provide Feedback</a>
+                <p class="mb-8 text-lg text-gray-400">
+                    You can also provide feedback by reporting bugs, requesting features, asking questions, or submitting translations.
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-4">
+                    <a class="transform rounded-lg bg-[#202830] px-6 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://github.com/IgorMundstein/WinMemoryCleaner/issues/new/choose" target="_blank">
+                        Provide Feedback
+                    </a>
                 </div>
             </div>
         </section>
 
-        <!-- Download Section -->
+        <!-- Download -->
         <section class="my-12 text-center" id="download">
-            <h2 class="font-bold md:text-4xl text-3xl text-white">Get Started</h2>
-            <p class="mb-8 mt-2 text-gray-400 text-lg">Download the portable executable directly or use your favorite package manager.</p>
-            <a class="bg-blue-600 font-bold hover:bg-blue-700 hover:scale-105 inline-block mb-8 px-10 py-4 rounded-lg text-white text-xl transform transition-transform" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">Download</a>
-            <div class="bg-gray-900/50 border border-gray-800 max-w-2xl mx-auto p-6 rounded-xl">
-                <div class="gap-x-8 gap-y-4 grid grid-cols-[auto,1fr] items-center text-left">
+            <h2 class="text-3xl font-bold text-white md:text-4xl">Get Started</h2>
+            <p class="mt-2 mb-8 text-lg text-gray-400">
+                Download the portable executable directly or use your favorite package manager.
+            </p>
+            <a class="mb-8 inline-block transform rounded-lg bg-blue-600 px-10 py-4 text-xl font-bold text-white transition-transform hover:scale-105 hover:bg-blue-700" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
+                Download
+            </a>
+
+            <div class="mx-auto max-w-2xl rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+                <div class="grid grid-cols-[auto,1fr] items-center gap-x-8 gap-y-4 text-left">
                     <!-- Chocolatey -->
-                    <a class="hover:underline justify-self-start text-blue-400 whitespace-nowrap" href="https://community.chocolatey.org/packages/winmemorycleaner" target="_blank">Chocolatey</a>
+                    <a class="justify-self-start whitespace-nowrap text-blue-400 hover:underline" href="https://community.chocolatey.org/packages/winmemorycleaner" target="_blank">
+                        Chocolatey
+                    </a>
                     <div class="code-block w-full">
                         <code>choco install winmemorycleaner</code>
                         <button class="copy-btn" data-copy="choco install winmemorycleaner" title="Copy command">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
                         </button>
                     </div>
+
                     <!-- Scoop -->
-                    <a class="hover:underline justify-self-start text-blue-400 whitespace-nowrap" href="https://scoop.sh/" target="_blank">Scoop</a>
+                    <a class="justify-self-start whitespace-nowrap text-blue-400 hover:underline" href="https://scoop.sh/" target="_blank">
+                        Scoop
+                    </a>
                     <div class="code-block w-full">
                         <code>scoop install winmemorycleaner</code>
-                         <button class="copy-btn" data-copy="scoop install winmemorycleaner" title="Copy command">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                         </button>
+                        <button class="copy-btn" data-copy="scoop install winmemorycleaner" title="Copy command">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                        </button>
                     </div>
+
                     <!-- WinGet -->
-                    <a class="hover:underline justify-self-start text-blue-400 whitespace-nowrap" href="https://winstall.app/apps/IgorMundstein.WinMemoryCleaner" target="_blank">WinGet</a>
+                    <a class="justify-self-start whitespace-nowrap text-blue-400 hover:underline" href="https://winstall.app/apps/IgorMundstein.WinMemoryCleaner" target="_blank">
+                        WinGet
+                    </a>
                     <div class="code-block w-full">
                         <code>winget install IgorMundstein.WinMemoryCleaner</code>
-                         <button class="copy-btn" data-copy="winget install IgorMundstein.WinMemoryCleaner" title="Copy command">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                         </button>
+                        <button class="copy-btn" data-copy="winget install IgorMundstein.WinMemoryCleaner" title="Copy command">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Dynamic App Main Window (cache-busted with fallback) -->
+            <div class="mx-auto mt-8">
+                <img id="app-main-window"
+                     src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png"
+                     data-base="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png"
+                     alt="Windows Memory Cleaner main window screenshot"
+                     class="mx-auto block h-auto max-w-full rounded-md"
+                     decoding="async"
+                     fetchpriority="low"
+                     loading="lazy">
             </div>
         </section>
 
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 border-t border-gray-700">
-        <div class="max-w-screen-xl mx-auto px-6 py-4 text-center text-gray-400 text-sm">
-            <p>Windows Memory Cleaner is a free, open-source project licensed under <a class="hover:underline text-blue-400" href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" target="_blank">GPL 3.0</a></p>
-            <p class="mt-2 text-sm" id="copyright-notice">© 2019 - 2025 Igor Mundstein</p>
+    <footer class="border-t border-gray-700 bg-gray-800">
+        <div class="mx-auto max-w-screen-xl px-6 py-4 text-center text-sm text-gray-400">
+            <p>
+                Windows Memory Cleaner is a free, open-source project licensed under
+                <a class="text-blue-400 hover:underline" href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" target="_blank">GPL-3.0</a>
+            </p>
+            <p id="copyright-notice" class="mt-2 text-sm">© 2019 - 2025 Igor Mundstein</p>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script>
-        // Copyright Notice
-        document.addEventListener("DOMContentLoaded", function() {
-            const copyrightNotice = document.getElementById('copyright-notice');
-            const currentYear = new Date().getFullYear();
-            copyrightNotice.textContent = `© 2019 - ${currentYear} Igor Mundstein`;
+        // IMPORTANT: This line is automatically replaced by the release workflow (update-docs-image job).
+        // Pattern must stay exactly: const IMAGE_VERSION = "....";
+        const IMAGE_VERSION = "v1";
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Dynamic year
+            const copy = document.getElementById('copyright-notice');
+            if (copy) {
+                const yr = new Date().getFullYear();
+                copy.textContent = `© 2019 - ${yr} Igor Mundstein`;
+            }
+
+            // Cache-busted screenshot (works even if preview disables JS because a fallback src exists)
+            const img = document.getElementById('app-main-window');
+            if (img) {
+                const base = img.getAttribute('data-base') || img.src;
+                const busted = `${base}?cb=${encodeURIComponent(IMAGE_VERSION)}`;
+                if (!img.src.endsWith(busted)) {
+                    img.src = busted;
+                }
+            }
         });
 
-        // Copy to clipboard functionality
+        // Copy to clipboard
         document.addEventListener('click', function (event) {
             const button = event.target.closest('.copy-btn');
-            if (button) {
-                const textToCopy = button.getAttribute('data-copy');
-                const el = document.createElement('textarea');
-                el.value = textToCopy;
-                document.body.appendChild(el);
-                el.select();
-                try {
-                    document.execCommand('copy');
-                    const originalContent = button.innerHTML;
-                    button.innerHTML = `<svg class="h-4 text-green-400 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>`;
-                    setTimeout(() => {
-                        button.innerHTML = originalContent;
-                    }, 2000);
-                } catch (err) {
-                    console.error('Failed to copy: ', err);
-                }
-                document.body.removeChild(el);
+            if (!button) return;
+            const textToCopy = button.getAttribute('data-copy');
+            if (!textToCopy) return;
+
+            const el = document.createElement('textarea');
+            el.value = textToCopy;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            try {
+                document.execCommand('copy');
+                const original = button.innerHTML;
+                button.innerHTML = `<svg class="h-4 w-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>`;
+                setTimeout(() => { button.innerHTML = original; }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
             }
+            document.body.removeChild(el);
         });
     </script>
 
