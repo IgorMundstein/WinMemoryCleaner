@@ -8,11 +8,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <!-- Tailwind CSS -->
+    <link rel="preload" href="./assets/css/style.css" as="style">
+    <link href="./assets/css/style.css" rel="stylesheet">
+
     <!-- Preconnect to external domains to speed up resource loading -->
-    <link crossorigin href="https://analytics.google.com" rel="preconnect">
-    <link crossorigin href="https://img.shields.io" rel="preconnect">
-    <link crossorigin href="https://raw.githubusercontent.com" rel="preconnect">
-    <link crossorigin href="https://stats.g.doubleclick.net" rel="preconnect">
     <link crossorigin href="https://www.googletagmanager.com" rel="preconnect">
 
     <!-- Content Security Policy to allow Google Analytics -->
@@ -57,9 +57,6 @@
     }
     </script>
     
-    <!-- Tailwind CSS -->
-    <link href="./assets/css/style.css" rel="stylesheet">
-
     <!-- Styles -->
     <style>
         body {
@@ -106,6 +103,11 @@
         h2 {
             font-size: 1.875rem; /* Corresponds to Tailwind's text-3xl */
             margin-bottom: 2rem; /* Corresponds to Tailwind's mb-8 */
+        }
+        /* Defer rendering of below-the-fold sections for faster LCP (heading is LCP) */
+        #features, #contribute, #download {
+            content-visibility: auto;
+            contain-intrinsic-size: 600px;
         }
     </style>
 </head>
@@ -420,30 +422,25 @@
         function loadGA(){
           if(loaded) return;
           loaded=true;
-          const s=document.createElement('script');
-          s.async=true;
-          s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;
-          s.onload=function(){
-            window.dataLayer=window.dataLayer||[];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', GA_ID);
-          };
-          document.head.appendChild(s);
+            const s=document.createElement('script');
+            s.async=true;
+            s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;
+            s.onload=function(){
+              window.dataLayer=window.dataLayer||[];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', GA_ID, {transport_type:'beacon'});
+            };
+            document.head.appendChild(s);
         }
-        ['click','scroll','keydown','pointerdown','touchstart'].forEach(ev=>{
+        ['click','keydown','pointerdown','touchstart'].forEach(ev=>{
           window.addEventListener(ev, loadGA,{once:true,passive:true});
         });
-        if('PerformanceObserver' in window){
-          try{
-            const po=new PerformanceObserver(()=>{
-              loadGA();
-              po.disconnect();
-            });
-            po.observe({type:'largest-contentful-paint', buffered:true});
-          }catch(e){}
+        if('requestIdleCallback' in window){
+          requestIdleCallback(loadGA,{timeout:4000});
+        } else {
+          setTimeout(loadGA,4000);
         }
-        setTimeout(loadGA,1500);
       })();
     </script>
     
