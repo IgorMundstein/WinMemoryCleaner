@@ -312,6 +312,7 @@ jobs:
           sudo apt-get install -y imagemagick
 
       - name: Add transparent rounded corners and write image
+        id: image_dimensions
         shell: bash
         run: |
           set -euo pipefail
@@ -327,6 +328,9 @@ jobs:
             echo "::error::Failed to read image size"
             exit 1
           fi
+          
+          echo "IMAGE_WIDTH=$W" >> $GITHUB_OUTPUT
+          echo "IMAGE_HEIGHT=$H" >> $GITHUB_OUTPUT
 
             # Corner radius ~2% of min dimension, clamped to [10, 24]
           if [ "$W" -lt "$H" ]; then MIN=$W; else MIN=$H; fi
@@ -339,7 +343,7 @@ jobs:
             -compose DstIn -composite \
             docs/assets/images/main-window.png
 
-      - name: Update IMAGE_VERSION in docs/index.html (cache bust)
+      - name: Update docs/index.html
         shell: bash
         run: |
           set -euo pipefail
@@ -353,6 +357,14 @@ jobs:
             echo "::error::$IMG not found"
             exit 1
           fi
+          
+          # Update image dimensions
+          WIDTH=${{ steps.image_dimensions.outputs.IMAGE_WIDTH }}
+          HEIGHT=${{ steps.image_dimensions.outputs.IMAGE_HEIGHT }}
+          sed -i "s|<img id=\"app-main-window\".*width=\"[0-9]*\" height=\"[0-9]*\"|<img id=\"app-main-window\" src=\"https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png\" data-base=\"https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png\" alt=\"App Main Window\" class=\"mx-auto block h-auto max-w-full rounded-md\" width=\"$WIDTH\" height=\"$HEIGHT\"|" "$INDEX"
+          echo "Updated image dimensions to width=$WIDTH height=$HEIGHT"
+
+          # Update cache bust token
           HASH=$(sha256sum "$IMG" | cut -c1-12)
           if grep -q 'const IMAGE_VERSION' "$INDEX"; then
             sed -i "s/const IMAGE_VERSION = \".*\";/const IMAGE_VERSION = \"$HASH\";/" "$INDEX"
