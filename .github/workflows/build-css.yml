@@ -15,8 +15,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-            token: ${{ secrets.PAT_TOKEN }}
-            fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
 
       - name: Configure Git
         run: |
@@ -31,42 +31,34 @@ jobs:
           cache-dependency-path: docs/package-lock.json
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Inspect npm & environment
-        working-directory: ./docs
+      - name: Show npm config & possible .npmrc files
         run: |
-          node -v
-            npm -v
-            npm config list
-          ls -al
+          echo "--- Root directory listing ---"
+          ls -al .
+          echo "--- docs directory listing ---"
+            ls -al docs || true
+          echo "--- Root .npmrc ---"
+          [ -f .npmrc ] && sed 's/^/ROOT .npmrc: /' .npmrc || echo "No root .npmrc"
+          echo "--- docs/.npmrc ---"
+          [ -f docs/.npmrc ] && sed 's/^/DOCS .npmrc: /' docs/.npmrc || echo "No docs/.npmrc"
+          echo "--- npm config list (user + project) ---"
+          npm config list
 
-      - name: Clean & prepare npm cache
-        working-directory: ./docs
+      - name: Clean npm cache (defensive)
         run: |
-          npm config set registry https://registry.npmjs.org/
           npm cache clean --force
-          npm cache verify || true
+          npm config set registry https://registry.npmjs.org/
+          npm config set fetch-retries 5
+          npm config set fetch-retry-maxtimeout 60000
 
-      - name: (Optional) Upgrade npm
+      - name: Upgrade npm (optional)
         run: npm i -g npm@latest
 
-      - name: Install dependencies (with retry, using npm ci)
+      - name: Install dependencies (npm ci)
         working-directory: ./docs
         run: |
-          set -e
-          attempts=3
-          for i in $(seq 1 $attempts); do
-            echo "Attempt $i of $attempts"
-            if npm ci --no-audit --no-fund; then
-              break
-            fi
-            echo "Install failed. Cleaning cache and retrying..."
-            npm cache clean --force
-            if [ "$i" = "$attempts" ]; then
-              echo "All attempts failed."
-              exit 1
-            fi
-            sleep 5
-          done
+          echo "Running npm ci (expects package-lock.json to be in sync)..."
+          npm ci --no-audit --no-fund
 
       - name: Build CSS
         working-directory: ./docs
@@ -81,3 +73,10 @@ jobs:
           else
             echo "No changes to commit."
           fi
+
+      - name: Upload npm logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-logs
+          path: /home/runner/.npm/_logs
