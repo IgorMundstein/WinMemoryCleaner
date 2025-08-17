@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Tailwind CSS
+    name: Build and Commit Tailwind CSS
     runs-on: ubuntu-latest
 
     steps:
@@ -39,7 +39,7 @@ jobs:
 
       - name: Commit and push if changed
         run: |
-          git add docs/assets/css/style.css
+          git add docs/assets/css/style.css docs/package-lock.json
           if ! git diff --cached --quiet; then
             git commit -m "chore(docs): build and commit new stylesheet"
             git push
