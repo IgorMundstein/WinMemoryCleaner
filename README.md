@@ -24,7 +24,7 @@ scoop install winmemorycleaner
 ```cmd
 winget install IgorMundstein.WinMemoryCleaner
 ```
-## 🚀 Key Features
+## 🚀 Features
 
 | Feature | Description |
 |:---|:---|
