@@ -3,12 +3,23 @@ name: Build CSS
 on:
   workflow_dispatch:
 
+concurrency:
+  group: build-css-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
+  actions: read
+
+env:
+  DOCS_DIR: docs
+  BUILD_CSS_PATH: docs/assets/css/style.css
 
 jobs:
-  build:
+  build-css:
+    name: Build CSS
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,108 +27,118 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
+      - name: Verify lock file
+        run: |
+          if [ ! -f "$DOCS_DIR/package-lock.json" ]; then
+            echo "::error::Missing $DOCS_DIR/package-lock.json. Commit the lock file."
+            exit 1
+          fi
+
       - name: Configure Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
-      - name: Setup Node (no cache yet)
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ${{ env.DOCS_DIR }}/package-lock.json
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Show environment
-        run: |
-          echo "Node: $(node -v)"
-          echo "npm:  $(npm -v)"
 
       - name: Prepare npm config
         run: |
-          npm cache clean --force
           npm config set registry https://registry.npmjs.org/
           npm config delete always-auth || true
           npm config set fetch-retries 5
           npm config set fetch-retry-maxtimeout 60000
 
-      - name: Ensure lock file
-        id: lock
-        working-directory: ./docs
+      - name: Compute source hash
+        id: hash
         run: |
-          if [ ! -f package-lock.json ]; then
-            echo "Lock file missing; generating."
-            npm install --no-audit --no-fund
-            echo "generated=true" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          FILE_LIST=$(mktemp)
+          find "$DOCS_DIR" -type f \( \
+            -name 'package.json' -o \
+            -name 'package-lock.json' -o \
+            -name 'tailwind.config.*' -o \
+            -name 'postcss.config.*' -o \
+            -path "$DOCS_DIR/src/*" -o \
+            -path "$DOCS_DIR/assets/css/src/*" -o \
+            -path "$DOCS_DIR/assets/css/tailwind/*" \
+          \) 2>/dev/null | sort > "$FILE_LIST"
+          if [ -s "$FILE_LIST" ]; then
+            HASH_VALUE=$(xargs sha256sum < "$FILE_LIST" | sha256sum | cut -d' ' -f1)
           else
-            echo "Lock file present."
-            echo "generated=false" >> $GITHUB_OUTPUT
+            HASH_VALUE="empty"
           fi
+          echo "hash=$HASH_VALUE" >> "$GITHUB_OUTPUT"
 
-      - name: Commit generated lock file
-        if: steps.lock.outputs.generated == 'true'
-        run: |
-          git add docs/package-lock.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(docs): add package-lock.json"
-            git push
-          fi
-
-      - name: Restore npm cache
-        if: steps.lock.outputs.generated == 'false' || steps.lock.outputs.generated == 'true'
+      - name: Restore build cache
+        id: build-cache
         uses: actions/cache@v4
-        id: npm-cache
         with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('docs/package-lock.json') }}
-          restore-keys: |
-            npm-
+          path: ${{ env.BUILD_CSS_PATH }}
+          key: build-css-${{ steps.hash.outputs.hash }}
 
-      - name: Clean node_modules after lock generation
-        if: steps.lock.outputs.generated == 'true'
-        working-directory: ./docs
-        run: rm -rf node_modules
-
-      - name: Install (npm ci)
-        working-directory: ./docs
+      - name: Install dependencies
+        working-directory: ${{ env.DOCS_DIR }}
         run: |
-          set +e
-          npm ci --no-audit --no-fund 2>&1 | tee ../ci-output.log
-          status=${PIPESTATUS[0]}
-          set -e
-          if [ $status -ne 0 ]; then
-            if grep -qi "`npm ci` can only install packages" ../ci-output.log; then
-              echo "::error::package-lock.json out of sync. Regenerate locally and commit."
-              exit 1
-            else
-              echo "::error::npm ci failed."
-              exit $status
-            fi
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+
+      - name: Skip build if cached
+        id: maybe-skip
+        if: steps.build-cache.outputs.cache-hit == 'true'
+        run: |
+          if [ -f "${BUILD_CSS_PATH}" ]; then
+            echo "skip_build=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build CSS
-        working-directory: ./docs
-        run: npm run build:css
-
-      - name: Commit built CSS
+        if: steps.maybe-skip.outputs.skip_build != 'true'
+        working-directory: ${{ env.DOCS_DIR }}
         run: |
-          git add docs/assets/css/style.css
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(docs): build and commit new stylesheet"
-            git push
+          set -euo pipefail
+          npm run build:css
+          if [ ! -f "../${BUILD_CSS_PATH#"$DOCS_DIR/"}" ]; then
+            echo "::error::Expected built CSS at ${BUILD_CSS_PATH} not found."
+            exit 1
           fi
 
-      - name: Save npm cache
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('docs/package-lock.json') }}
+      - name: Validate deterministic build
+        if: steps.maybe-skip.outputs.skip_build != 'true'
+        run: |
+          set -euo pipefail
+          cp "${BUILD_CSS_PATH}" "${BUILD_CSS_PATH}.first"
+          (cd "$DOCS_DIR" && npm run build:css)
+          diff -q "${BUILD_CSS_PATH}.first" "${BUILD_CSS_PATH}" || echo "::warning::Non-deterministic build (CSS differs between consecutive runs)."
 
-      - name: Upload logs on failure
+      - name: Commit CSS if changed
+        if: steps.maybe-skip.outputs.skip_build != 'true'
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- "${BUILD_CSS_PATH}"; then
+            exit 0
+          fi
+          git add "${BUILD_CSS_PATH}"
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(docs): update built stylesheet"
+          git push
+
+      - name: Upload CSS artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-css
+          path: ${{ env.BUILD_CSS_PATH }}
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload npm logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-            name: npm-logs
-            path: |
-              /home/runner/.npm/_logs
-              docs/ci-output.log
+          name: npm-logs
+          path: /home/runner/.npm/_logs
