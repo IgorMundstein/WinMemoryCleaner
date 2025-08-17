@@ -8,6 +8,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <!-- Preconnect to external domains to speed up resource loading -->
+    <link rel="preconnect" href="https://analytics.google.com">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://img.shields.io">
+    <link rel="preconnect" href="https://raw.githubusercontent.com">    
+    <link rel="preconnect" href="https://stats.g.doubleclick.net">
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    
+    <!-- Content Security Policy to allow Google Analytics -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com;">
+
     <!-- Theme color & referrer policy -->
     <meta name="theme-color" content="#0d1117">
     <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -400,7 +411,7 @@
     </script>
     
     <!-- WMC -->
-    <script>
+    <script defer>
         // IMPORTANT: This line is automatically replaced by the release workflow (update-docs-image job).
         const IMAGE_VERSION = "v1";
 
