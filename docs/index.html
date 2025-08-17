@@ -2,22 +2,22 @@
 <html class="scroll-smooth" lang="en">
 <head>
     <title>Windows Memory Cleaner</title>
-    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/refs/heads/main/src/Resources/Images/win-memory-cleaner.ico">
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner.ico">
 
     <!-- Meta -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Preconnect to external domains to speed up resource loading -->
-    <link rel="preconnect" href="https://analytics.google.com">
-    <link rel="preconnect" href="https://cdn.tailwindcss.com">
-    <link rel="preconnect" href="https://img.shields.io">
-    <link rel="preconnect" href="https://raw.githubusercontent.com">
-    <link rel="preconnect" href="https://stats.g.doubleclick.net">
-    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="preconnect" href="https://analytics.google.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://img.shields.io" crossorigin>
+    <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
+    <link rel="preconnect" href="https://stats.g.doubleclick.net" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
 
     <!-- Content Security Policy to allow Google Analytics -->
-    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://analytics.google.com https://stats.g.doubleclick.net https://www.google-analytics.com; img-src 'self' https://img.shields.io https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://www.googletagmanager.com;">
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://analytics.google.com https://stats.g.doubleclick.net https://www.google-analytics.com; img-src 'self' https://img.shields.io https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;">
 
     <!-- Theme color & referrer policy -->
     <meta name="theme-color" content="#0d1117">
@@ -60,7 +60,7 @@
     </script>
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.tailwindcss.com/3.4.1/tailwind.min.css" rel="stylesheet">
 
     <!-- Styles -->
     <style>
@@ -101,10 +101,6 @@
         }
         .copy-btn:hover { background:#30363d; }
         section[id] { scroll-margin-top:80px; }
-        h2 {
-            font-size: 1.875rem; /* Corresponds to Tailwind's text-3xl */
-            margin-bottom: 2rem; /* Corresponds to Tailwind's mb-8 */
-        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300">
@@ -293,7 +289,7 @@
 
         <!-- Contribute -->
         <section class="my-8 text-center" id="contribute">
-            <h2 class="text-3xl font-bold text-white md:text-4xl">Contribute to the Project</h2>
+            <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Contribute to the Project</h2>
             <p class="mt-2 mb-8 text-lg text-gray-400">
                 If you find this app helpful, please consider supporting its development.<br>
                 Your contribution helps keep the project alive, optimized, and free for everyone.
@@ -326,7 +322,7 @@
 
         <!-- Download -->
         <section class="my-8 text-center" id="download">
-            <h2 class="text-3xl font-bold text-white md:text-4xl">Get Started</h2>
+            <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Get Started</h2>
             <p class="mt-2 mb-8 text-lg text-gray-400">
                 Download the portable executable directly from the official GitHub repository or use your favorite package manager.
             </p>
@@ -379,14 +375,14 @@
 
             <!-- App Main Window -->
             <div class="mx-auto mt-8">
-                <img id="app-main-window"
-                     src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png"
-                     data-base="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png"
-                     alt="App Main Window"
+                <img alt="App Main Window"
                      class="mx-auto block h-auto max-w-full rounded-md"
+                     data-base="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png"
                      decoding="async"
                      height="652"
+                     id="app-main-window"
                      loading="lazy"
+                     src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png"
                      width="564">
             </div>
         </section>
@@ -405,6 +401,7 @@
     </footer>
 
     <!-- Scripts -->
+
     <!-- Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HLZMF4JJHB"></script>
     <script>
