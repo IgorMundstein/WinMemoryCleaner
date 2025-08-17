@@ -36,8 +36,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -102,18 +102,22 @@ jobs:
         run: |
           set -euo pipefail
           npm run build:css
-          if [ ! -f "../${BUILD_CSS_PATH#"$DOCS_DIR/"}" ]; then
-            echo "::error::Expected built CSS at ${BUILD_CSS_PATH} not found."
+          if [ ! -f "assets/css/style.css" ]; then
+            echo "::error::Expected built CSS at assets/css/style.css not found."
+            ls -al assets/css || true
             exit 1
           fi
 
       - name: Validate deterministic build
         if: steps.maybe-skip.outputs.skip_build != 'true'
+        working-directory: ${{ env.DOCS_DIR }}
         run: |
           set -euo pipefail
-          cp "${BUILD_CSS_PATH}" "${BUILD_CSS_PATH}.first"
-          (cd "$DOCS_DIR" && npm run build:css)
-          diff -q "${BUILD_CSS_PATH}.first" "${BUILD_CSS_PATH}" || echo "::warning::Non-deterministic build (CSS differs between consecutive runs)."
+          cp assets/css/style.css assets/css/style.css.first
+          npm run build:css
+          if ! diff -q assets/css/style.css.first assets/css/style.css; then
+            echo "::warning::Non-deterministic build (second run output differs)."
+          fi
 
       - name: Commit CSS if changed
         if: steps.maybe-skip.outputs.skip_build != 'true'
