@@ -10,7 +10,6 @@ jobs:
   build:
     name: Build and Commit Tailwind CSS
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,7 +17,7 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 0
 
-      - name: Configure Git
+      - name: Configure Git user
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -31,47 +30,74 @@ jobs:
           cache-dependency-path: docs/package-lock.json
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Show npm config & possible .npmrc files
+      - name: Show environment & .npmrc
         run: |
-          echo "--- Root directory listing ---"
-          ls -al .
-          echo "--- docs directory listing ---"
-            ls -al docs || true
-          echo "--- Root .npmrc ---"
+          echo "Node: $(node -v)"
+          echo "npm:  $(npm -v)"
           [ -f .npmrc ] && sed 's/^/ROOT .npmrc: /' .npmrc || echo "No root .npmrc"
-          echo "--- docs/.npmrc ---"
           [ -f docs/.npmrc ] && sed 's/^/DOCS .npmrc: /' docs/.npmrc || echo "No docs/.npmrc"
-          echo "--- npm config list (user + project) ---"
-          npm config list
 
-      - name: Clean npm cache (defensive)
+      - name: Prepare npm config
         run: |
           npm cache clean --force
           npm config set registry https://registry.npmjs.org/
+          npm config delete always-auth || true
           npm config set fetch-retries 5
           npm config set fetch-retry-maxtimeout 60000
 
-      - name: Upgrade npm (optional)
-        run: npm i -g npm@latest
-
-      - name: Install dependencies (npm ci)
+      - name: Ensure / validate lock file
+        id: lock
         working-directory: ./docs
         run: |
-          echo "Running npm ci (expects package-lock.json to be in sync)..."
-          npm ci --no-audit --no-fund
+          set -e
+          if [ ! -f package-lock.json ]; then
+            echo "package-lock.json missing"
+            npm install --no-audit --no-fund
+            echo "generated=true" >> $GITHUB_OUTPUT
+          else
+            echo "package-lock.json present"
+            echo "generated=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit newly generated lock file
+        if: steps.lock.outputs.generated == 'true'
+        run: |
+          git add docs/package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(docs): add package-lock.json"
+            git push
+          fi
+
+      - name: Install via npm ci
+        working-directory: ./docs
+        run: |
+          if [ "${{ steps.lock.outputs.generated }}" = "true" ]; then
+            rm -rf node_modules
+          fi
+          set +e
+          npm ci --no-audit --no-fund 2>&1 | tee ../ci-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+            if [ $status -ne 0 ]; then
+            if grep -qi "`npm ci` can only install packages" ../ci-output.log; then
+              echo "::error::package-lock.json out of sync. Regenerate locally (cd docs && rm package-lock.json && npm install) and commit."
+              exit 1
+            else
+              echo "::error::npm ci failed."
+              exit $status
+            fi
+          fi
 
       - name: Build CSS
         working-directory: ./docs
         run: npm run build:css
 
-      - name: Commit and push if changed
+      - name: Commit built CSS
         run: |
-          git add docs/assets/css/style.css docs/package-lock.json
+          git add docs/assets/css/style.css
           if ! git diff --cached --quiet; then
             git commit -m "chore(docs): build and commit new stylesheet"
             git push
-          else
-            echo "No changes to commit."
           fi
 
       - name: Upload npm logs on failure
@@ -79,4 +105,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: npm-logs
-          path: /home/runner/.npm/_logs
+          path: |
+            /home/runner/.npm/_logs
+            docs/ci-output.log
