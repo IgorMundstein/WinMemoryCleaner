@@ -1,0 +1,15 @@
+{
+  "name": "winmemorycleaner-website",
+  "version": "1.0.0",
+  "description": "Website for WinMemoryCleaner",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/css/input.css -o ./assets/css/style.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.4.3"
+  }
+}
