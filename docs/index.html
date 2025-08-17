@@ -10,8 +10,10 @@
     
     <!-- Tailwind CSS -->
     <link rel="preload" href="./assets/css/style.css" as="style">
-    <link href="./assets/css/style.css" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="./assets/css/style.css" rel="stylesheet"></noscript>
+    <link href="./assets/css/style.css" rel="stylesheet">
+
+    <!-- Preconnect to external domains to speed up resource loading -->
+    <link crossorigin href="https://www.googletagmanager.com" rel="preconnect">
 
     <!-- Content Security Policy to allow Google Analytics -->
     <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://analytics.google.com https://stats.g.doubleclick.net https://www.google-analytics.com; img-src 'self' https://img.shields.io https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline';">
@@ -62,11 +64,7 @@
             color: #c9d1d9;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
         }
-        /* Initial hero background omitted (added after first frame for faster first paint) */
         .hero-bg {
-            background-color: transparent; /* fallback */
-        }
-        .bg-ready .hero-bg {
             background-image:
                 radial-gradient(circle at top right, rgba(31,111,235,0.10), transparent 40%),
                 radial-gradient(circle at bottom left, rgba(139,92,246,0.10), transparent 50%);
@@ -105,11 +103,6 @@
         h2 {
             font-size: 1.875rem; /* Corresponds to Tailwind's text-3xl */
             margin-bottom: 2rem; /* Corresponds to Tailwind's mb-8 */
-        }
-        /* Defer rendering of below-the-fold sections for faster LCP (heading is LCP) */
-        #features, #contribute, #download {
-            content-visibility: auto;
-            contain-intrinsic-size: 600px;
         }
     </style>
 </head>
@@ -161,7 +154,6 @@
         <section class="my-8" id="features">
             <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Features</h2>
             <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-
                 <!-- Auto Optimization -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +164,6 @@
                         <p class="text-sm text-gray-400">Schedule cleaning by interval or trigger based on free RAM threshold.</p>
                     </div>
                 </div>
-
                 <!-- Cleans 7 Memory Areas -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,7 +175,6 @@
                         <p class="text-sm text-gray-400">Targets specific Windows caches to reclaim memory efficiently.</p>
                     </div>
                 </div>
-
                 <!-- Compact Mode -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,7 +185,6 @@
                         <p class="text-sm text-gray-400">Minimal UI for unobtrusive monitoring.</p>
                     </div>
                 </div>
-
                 <!-- Console & Service Modes -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,7 +195,6 @@
                         <p class="text-sm text-gray-400">Run silently for automation or as a Windows service.</p>
                     </div>
                 </div>
-
                 <!-- Display Memory Usage -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,7 +205,6 @@
                         <p class="text-sm text-gray-400">Real-time physical & virtual memory usage in UI and tray.</p>
                     </div>
                 </div>
-
                 <!-- Global Hotkey -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,7 +216,6 @@
                         <p class="text-sm text-gray-400">Trigger cleaning instantly from anywhere.</p>
                     </div>
                 </div>
-
                 <!-- Multi-Language Support -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,7 +226,6 @@
                         <p class="text-sm text-gray-400">30+ languages; community contributions welcome.</p>
                     </div>
                 </div>
-
                 <!-- Process Exclusion List -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +236,6 @@
                         <p class="text-sm text-gray-400">Protect critical apps by excluding them from cleaning.</p>
                     </div>
                 </div>
-
                 <!-- Run on Startup -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,7 +247,6 @@
                         <p class="text-sm text-gray-400">Optional Task Scheduler integration for auto launch.</p>
                     </div>
                 </div>
-
                 <!-- System Tray Customization -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -275,7 +258,6 @@
                         <p class="text-sm text-gray-400">Configurable tray text, colors, and update cadence.</p>
                     </div>
                 </div>
-
                 <!-- Trust & Integrity -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,7 +268,6 @@
                         <p class="text-sm text-gray-400">Signed builds, reproducible workflow artifacts.</p>
                     </div>
                 </div>
-
                 <!-- Wide Windows Support -->
                 <div class="flex items-start space-x-4">
                     <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -297,7 +278,6 @@
                         <p class="text-sm text-gray-400">From Windows XP / Server 2003 to the latest Windows 11 / Server 2025.</p>
                     </div>
                 </div>
-
             </div>
         </section>
 
@@ -358,7 +338,6 @@
                             </svg>
                         </button>
                     </div>
-
                     <!-- Scoop -->
                     <a class="justify-self-start whitespace-nowrap text-blue-400 hover:underline" href="https://scoop.sh/" rel="noopener" target="_blank">
                         Scoop
@@ -371,7 +350,6 @@
                             </svg>
                         </button>
                     </div>
-
                     <!-- WinGet -->
                     <a class="justify-self-start whitespace-nowrap text-blue-400 hover:underline" href="https://winstall.app/apps/IgorMundstein.WinMemoryCleaner" rel="noopener" target="_blank">
                         WinGet
@@ -438,11 +416,6 @@
         ['click','keydown','pointerdown','touchstart'].forEach(ev=>{
           window.addEventListener(ev, loadGA, {once:true, passive:true});
         });
-        if('requestIdleCallback' in window){
-          requestIdleCallback(loadGA, {timeout:6000});
-        } else {
-          setTimeout(loadGA, 6000);
-        }
       })();
     </script>
     
@@ -450,9 +423,6 @@
     <script defer>
         // IMPORTANT: This line is automatically replaced by the release workflow (update-docs-image job).
         const IMAGE_VERSION = "v1";
-
-        // Apply deferred background gradients just after first paint
-        requestAnimationFrame(()=>document.documentElement.classList.add('bg-ready'));
 
         document.addEventListener("DOMContentLoaded", function () {
             // Dynamic year
