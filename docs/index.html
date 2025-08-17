@@ -369,7 +369,6 @@
             <div class="mx-auto mt-8">
                 <img alt="App Main Window"
                      class="mx-auto block h-auto max-w-full rounded-md"
-                     data-base="./assets/images/main-window.png"
                      decoding="async"
                      height="652"
                      id="app-main-window"
@@ -430,16 +429,6 @@
             if (copy) {
                 const yr = new Date().getFullYear();
                 copy.textContent = `© 2019 - ${yr} Igor Mundstein`;
-            }
-
-            // Cache-busted screenshot
-            const img = document.getElementById('app-main-window');
-            if (img) {
-                const base = img.getAttribute('data-base') || img.src;
-                const busted = `${base}?cb=${encodeURIComponent(IMAGE_VERSION)}`;
-                if (!img.src.endsWith(busted)) {
-                    img.src = busted;
-                }
             }
         });
 
