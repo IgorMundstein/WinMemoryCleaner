@@ -16,7 +16,7 @@
     <link crossorigin href="https://www.googletagmanager.com" rel="preconnect">
 
     <!-- Content Security Policy to allow Google Analytics -->
-    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://analytics.google.com https://stats.g.doubleclick.net https://www.google-analytics.com; img-src 'self' data: https://img.shields.io https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline';">
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://analytics.google.com https://stats.g.doubleclick.net https://www.google-analytics.com; img-src 'self' https://img.shields.io https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline';">
 
     <!-- Theme color & referrer policy -->
     <meta content="#0d1117" name="theme-color">
@@ -26,6 +26,7 @@
     <meta content="Igor Mundstein" name="author">
     <meta content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer." name="description">
     <meta content="RAM cleaner, memory cleaner, Windows optimization, free software, open source, memory management, PC performance, foss, memory-management, memory-optimization, windows-optimization-tool, admin" name="keywords">
+    <link href="https://winmemorycleaner.com/" rel="canonical">
 
     <!-- Social -->
     <meta content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer." property="og:description">
@@ -40,8 +41,6 @@
     <meta content="https://winmemorycleaner.com/assets/images/win-memory-cleaner-ad.png" name="twitter:image">
     <meta content="Windows Memory Cleaner" name="twitter:title">
     
-    <link href="https://winmemorycleaner.com/" rel="canonical">
-
     <!-- Structured Data -->
     <script type="application/ld+json">
     {
@@ -141,8 +140,12 @@
                     </a>
                 </div>
                 <div class="mt-4 flex items-center justify-center space-x-4">
-                    <img alt="GitHub stars" data-src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social" decoding="async" height="20" loading="lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" width="91">
-                    <img alt="GitHub downloads" data-src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social" decoding="async" height="20" loading="lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" width="111">
+                    <img alt="GitHub stars"
+                         data-src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social"
+                         decoding="async" height="20" loading="lazy" width="91">
+                    <img alt="GitHub downloads"
+                         data-src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social"
+                         decoding="async" height="20" loading="lazy" width="111">
                 </div>
             </div>
         </div>
@@ -504,20 +507,20 @@
               }
             });
           }
-            if('PerformanceObserver' in window){
-              try{
-                const po = new PerformanceObserver(()=>{
-                  loadBadges();
-                  po.disconnect();
-                });
-                po.observe({type:'largest-contentful-paint', buffered:true});
-              }catch(e){
-                window.addEventListener('load', ()=>setTimeout(loadBadges,100));
-              }
-            } else {
+          if('PerformanceObserver' in window){
+            try{
+              const po = new PerformanceObserver(()=>{
+                loadBadges();
+                po.disconnect();
+              });
+              po.observe({type:'largest-contentful-paint', buffered:true});
+            }catch(e){
               window.addEventListener('load', ()=>setTimeout(loadBadges,100));
             }
-            setTimeout(loadBadges, 3000);
+          } else {
+            window.addEventListener('load', ()=>setTimeout(loadBadges,100));
+          }
+          setTimeout(loadBadges, 3000);
         })();
     </script>
 
