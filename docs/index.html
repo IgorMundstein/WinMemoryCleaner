@@ -10,10 +10,8 @@
     
     <!-- Tailwind CSS -->
     <link rel="preload" href="./assets/css/style.css" as="style">
-    <link href="./assets/css/style.css" rel="stylesheet">
-
-    <!-- Preconnect to external domains to speed up resource loading -->
-    <link crossorigin href="https://www.googletagmanager.com" rel="preconnect">
+    <link href="./assets/css/style.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="./assets/css/style.css" rel="stylesheet"></noscript>
 
     <!-- Content Security Policy to allow Google Analytics -->
     <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://analytics.google.com https://stats.g.doubleclick.net https://www.google-analytics.com; img-src 'self' https://img.shields.io https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline';">
@@ -64,7 +62,11 @@
             color: #c9d1d9;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
         }
+        /* Initial hero background omitted (added after first frame for faster first paint) */
         .hero-bg {
+            background-color: transparent; /* fallback */
+        }
+        .bg-ready .hero-bg {
             background-image:
                 radial-gradient(circle at top right, rgba(31,111,235,0.10), transparent 40%),
                 radial-gradient(circle at bottom left, rgba(139,92,246,0.10), transparent 50%);
@@ -422,24 +424,24 @@
         function loadGA(){
           if(loaded) return;
           loaded=true;
-            const s=document.createElement('script');
-            s.async=true;
-            s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;
-            s.onload=function(){
-              window.dataLayer=window.dataLayer||[];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', GA_ID, {transport_type:'beacon'});
-            };
-            document.head.appendChild(s);
+          const s=document.createElement('script');
+          s.async=true;
+          s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;
+          s.onload=function(){
+            window.dataLayer=window.dataLayer||[];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', GA_ID, {transport_type:'beacon'});
+          };
+          document.head.appendChild(s);
         }
         ['click','keydown','pointerdown','touchstart'].forEach(ev=>{
-          window.addEventListener(ev, loadGA,{once:true,passive:true});
+          window.addEventListener(ev, loadGA, {once:true, passive:true});
         });
         if('requestIdleCallback' in window){
-          requestIdleCallback(loadGA,{timeout:4000});
+          requestIdleCallback(loadGA, {timeout:6000});
         } else {
-          setTimeout(loadGA,4000);
+          setTimeout(loadGA, 6000);
         }
       })();
     </script>
@@ -448,6 +450,9 @@
     <script defer>
         // IMPORTANT: This line is automatically replaced by the release workflow (update-docs-image job).
         const IMAGE_VERSION = "v1";
+
+        // Apply deferred background gradients just after first paint
+        requestAnimationFrame(()=>document.documentElement.classList.add('bg-ready'));
 
         document.addEventListener("DOMContentLoaded", function () {
             // Dynamic year
