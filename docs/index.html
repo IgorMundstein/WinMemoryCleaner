@@ -12,12 +12,12 @@
     <link rel="preconnect" href="https://analytics.google.com">
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://img.shields.io">
-    <link rel="preconnect" href="https://raw.githubusercontent.com">    
+    <link rel="preconnect" href="https://raw.githubusercontent.com">
     <link rel="preconnect" href="https://stats.g.doubleclick.net">
     <link rel="preconnect" href="https://www.googletagmanager.com">
-    
+
     <!-- Content Security Policy to allow Google Analytics -->
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com;">
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://analytics.google.com https://stats.g.doubleclick.net https://www.google-analytics.com; img-src 'self' https://img.shields.io https://raw.githubusercontent.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://www.googletagmanager.com;">
 
     <!-- Theme color & referrer policy -->
     <meta name="theme-color" content="#0d1117">
@@ -58,8 +58,8 @@
       "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
     }
     </script>
-
-    <!-- Tailwind -->
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Styles -->
@@ -109,7 +109,7 @@
     <header class="sticky top-0 z-50 border-b border-gray-800 bg-gray-900">
         <div class="mx-auto flex max-w-screen-xl items-center justify-between px-4 py-4">
             <a class="flex items-center space-x-3" href="#">
-                <img alt="Windows Memory Cleaner Logo" class="h-8 w-8" src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner.png">
+                <img alt="Windows Memory Cleaner Logo" class="h-8 w-8" height="32" src="https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/win-memory-cleaner.png" width="32">
                 <span class="text-xl font-bold text-white">Windows Memory Cleaner</span>
             </a>
         </div>
@@ -134,8 +134,8 @@
                     </a>
                 </div>
                 <div class="mt-4 flex items-center justify-center space-x-4">
-                    <img alt="GitHub stars" src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social">
-                    <img alt="GitHub downloads" src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social">
+                    <img alt="GitHub stars" decoding="async" height="20" loading="lazy" src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social" width="91">
+                    <img alt="GitHub downloads" decoding="async" height="20" loading="lazy" src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social" width="111">
                 </div>
             </div>
         </div>
@@ -381,8 +381,9 @@
                      alt="App Main Window"
                      class="mx-auto block h-auto max-w-full rounded-md"
                      decoding="async"
-                     fetchpriority="low"
-                     loading="lazy">
+                     height="652"
+                     loading="lazy"
+                     width="564">
             </div>
         </section>
 
@@ -400,7 +401,6 @@
     </footer>
 
     <!-- Scripts -->
-
     <!-- Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HLZMF4JJHB"></script>
     <script>
