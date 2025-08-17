@@ -15,7 +15,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+            token: ${{ secrets.PAT_TOKEN }}
+            fetch-depth: 0
 
       - name: Configure Git
         run: |
@@ -27,11 +28,45 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: docs/package.json
+          cache-dependency-path: docs/package-lock.json
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
+      - name: Inspect npm & environment
         working-directory: ./docs
-        run: npm install
+        run: |
+          node -v
+            npm -v
+            npm config list
+          ls -al
+
+      - name: Clean & prepare npm cache
+        working-directory: ./docs
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm cache clean --force
+          npm cache verify || true
+
+      - name: (Optional) Upgrade npm
+        run: npm i -g npm@latest
+
+      - name: Install dependencies (with retry, using npm ci)
+        working-directory: ./docs
+        run: |
+          set -e
+          attempts=3
+          for i in $(seq 1 $attempts); do
+            echo "Attempt $i of $attempts"
+            if npm ci --no-audit --no-fund; then
+              break
+            fi
+            echo "Install failed. Cleaning cache and retrying..."
+            npm cache clean --force
+            if [ "$i" = "$attempts" ]; then
+              echo "All attempts failed."
+              exit 1
+            fi
+            sleep 5
+          done
 
       - name: Build CSS
         working-directory: ./docs
