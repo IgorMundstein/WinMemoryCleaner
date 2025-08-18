@@ -47,7 +47,7 @@ jobs:
       - name: Check for Broken Links
         uses: lycheeverse/lychee-action@v1
         with:
-          args: --verbose ./docs/index.html
+          args: --verbose --exclude https://www.googletagmanager.com ./docs/index.html
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Upload artifact for deployment
