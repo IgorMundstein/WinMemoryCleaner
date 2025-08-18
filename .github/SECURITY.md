@@ -8,7 +8,7 @@ Even if you’re not sure it’s a real vulnerability, I’d rather hear from yo
 
 **If you notice a potential security problem, please:**
 - **Email me directly at [igor.mundstein@gmail.com](mailto:igor.mundstein@gmail.com) for sensitive issues.**  
-- You may also [use the “Report a security vulnerability” button on GitHub](../../security/advisories/new) if available, or
+- You may also [use the “Report a security vulnerability” button on GitHub](https://github.com/IgorMundstein/WinMemoryCleaner/security/advisories/new) if available, or
 - As a last resort, open an issue on this repo (please do **not** include sensitive details in public issues).
 
 I aim to respond to security reports within **72 hours**.
