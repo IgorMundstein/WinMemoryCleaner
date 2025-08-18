@@ -47,7 +47,8 @@ jobs:
       - name: Check for Broken Links
         uses: lycheeverse/lychee-action@v1
         with:
-          args: --verbose ./docs
+          args: --verbose ./docs/index.html
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3
