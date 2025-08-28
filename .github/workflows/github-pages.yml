@@ -45,7 +45,7 @@ jobs:
         run: npm run build:css
 
       - name: Check for Broken Links
-        uses: lycheeverse/lychee-action@v1
+        uses: lycheeverse/lychee-action@v2.0.2
         with:
           args: --verbose --exclude https://www.googletagmanager.com ./docs/index.html
           token: ${{ secrets.GITHUB_TOKEN }}
