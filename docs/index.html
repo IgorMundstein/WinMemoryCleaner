@@ -93,6 +93,9 @@
             font-size: 1.875rem; /* Corresponds to Tailwind's text-3xl */
             margin-bottom: 2rem; /* Corresponds to Tailwind's mb-8 */
         }
+        img[data-src] {
+            color: transparent;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300">
@@ -124,9 +127,11 @@
                     </a>
                 </div>
                 <div class="mt-4 flex items-center justify-center space-x-4">
-                    <img data-src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social"
+                    <img alt="GitHub stars"
+                         data-src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social"
                          decoding="async" height="20" loading="lazy" width="91">
-                    <img data-src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social"
+                    <img alt="GitHub downloads"
+                         data-src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social"
                          decoding="async" height="20" loading="lazy" width="111">
                 </div>
             </div>
