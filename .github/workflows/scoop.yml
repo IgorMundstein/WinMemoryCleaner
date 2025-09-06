@@ -99,7 +99,7 @@ jobs:
               "version": "${{ steps.get_release.outputs.version }}",
               "description": "${{ steps.metadata.outputs.desc }}",
               "homepage": "${{ steps.metadata.outputs.homepage }}",
-              "license": "${{ steps.metadata.outputs.license }}",
+              "license": "GPL-3.0-only",
               "architecture": {
                   "64bit": {
                       "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.zip",
@@ -107,7 +107,15 @@ jobs:
                   }
               },
               "bin": "${{ env.APP_NAME }}.exe",
-              "checkver": "github",
+              "shortcuts": [
+                  [
+                      "${{ env.APP_NAME }}.exe",
+                      "${{ env.APP_NAME }}"
+                  ]
+              ],
+              "checkver": {
+                  "github": "https://github.com/${{ github.repository }}"
+              },
               "autoupdate": {
                   "architecture": {
                       "64bit": {
