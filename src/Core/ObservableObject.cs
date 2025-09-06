@@ -38,15 +38,15 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <typeparam name="T">The type of the property that
         /// changed.</typeparam>
-        /// <param name="propertyExpression">An expression identifying the property
+        /// <param name="expression">An expression identifying the property
         /// that changed.</param>
-        public void RaisePropertyChanged<T>(Expression<Func<T>> propertyExpression)
+        public void RaisePropertyChanged<T>(Expression<Func<T>> expression)
         {
             var handler = PropertyChanged;
 
-            if (handler != null && propertyExpression != null)
+            if (handler != null && expression != null)
             {
-                var body = propertyExpression.Body as MemberExpression;
+                var body = expression.Body as MemberExpression;
 
                 if (body != null)
                 {

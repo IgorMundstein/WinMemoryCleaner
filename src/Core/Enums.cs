@@ -98,6 +98,12 @@ namespace WinMemoryCleaner
             Silent,
             Uninstallation
         }
+
+        public enum Theme
+        {
+            Dark,
+            Light
+        }
     }
 }
 

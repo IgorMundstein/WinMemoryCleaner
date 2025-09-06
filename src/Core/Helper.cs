@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Web.Script.Serialization;
 
 namespace WinMemoryCleaner
 {
@@ -8,6 +12,97 @@ namespace WinMemoryCleaner
     /// </summary>
     public static class Helper
     {
+        /// <summary>
+        /// Determines if the current Windows version supports updates via GitHub TLS/SNI.
+        /// Returns false for legacy Windows versions (XP/2003) that cannot reach GitHub.
+        /// </summary>
+        /// <returns>True if updates are supported; otherwise, false.</returns>
+        public static bool IsAutoUpdateSupported
+        {
+            get
+            {
+                try
+                {
+                    var os = Environment.OSVersion;
+
+                    if (os.Version != null && os.Version.Major < 6)
+                        return false; // Windows XP/2003 and earlier
+                }
+                catch
+                {
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Converts the specified JSON string to an object of type T
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static T Deserialize<T>(string input)
+        {
+            return new JavaScriptSerializer().Deserialize<T>(input);
+        }
+
+        /// <summary>
+        /// Creates a directory exists. Ignores failures.
+        /// </summary>
+        public static void CreateDirectory(string path)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(path) && !Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+            }
+            catch
+            {
+            }
+        }
+
+        /// <summary>
+        /// Gets the current application's assembly version.
+        /// </summary>
+        public static Version GetCurrentVersion()
+        {
+            try
+            {
+                return (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName().Version ?? new Version(0, 0, 0, 0);
+            }
+            catch
+            {
+                return new Version(0, 0, 0, 0);
+            }
+        }
+
+        /// <summary>
+        /// Returns the executable path of the current process.
+        /// </summary>
+        public static string GetExecutablePath()
+        {
+            try
+            {
+                var entry = Assembly.GetEntryAssembly();
+
+                if (entry != null && !string.IsNullOrEmpty(entry.Location))
+                    return entry.Location;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                return Process.GetCurrentProcess().MainModule.FileName;
+            }
+            catch
+            {
+                return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+            }
+        }
+
         /// <summary>
         /// Gets the string name of a property or field.
         /// </summary>
@@ -25,6 +120,20 @@ namespace WinMemoryCleaner
                 throw new ArgumentException("Expression must be a simple member access (e.g., () => myObject.MyProperty).");
 
             return memberExpression.Member.Name;
+        }
+
+        /// <summary>
+        /// Reads the embedded resource.
+        /// </summary>
+        /// <param name="name">Name of the resource.</param>
+        /// <returns></returns>
+        public static T ReadEmbeddedResource<T>(string name)
+        {
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
+            using (var reader = new StreamReader(stream))
+            {
+                return Deserialize<T>(reader.ReadToEnd());
+            }
         }
 
         /// <summary>

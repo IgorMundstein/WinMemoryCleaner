@@ -30,7 +30,7 @@ namespace WinMemoryCleaner
         private string _text, _trayIcon;
         private string _updatedToVersion, _used, _useTransparentBackground;
         private string _virtualMemory;
-        private string _warningLevel, _whenFreeMemoryIsBelow, _workingSet;
+        private string _warningLevel, _whenFreePhysicalMemoryIsBelow, _workingSet;
         private string _yes;
 
         #endregion
@@ -493,10 +493,10 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
-        public string WhenFreeMemoryIsBelow
+        public string WhenFreePhysicalMemoryIsBelow
         {
-            get { return _whenFreeMemoryIsBelow; }
-            private set { _whenFreeMemoryIsBelow = value.Capitalize(); }
+            get { return _whenFreePhysicalMemoryIsBelow; }
+            private set { _whenFreePhysicalMemoryIsBelow = value.Capitalize(); }
         }
 
         [DataMember]

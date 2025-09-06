@@ -108,12 +108,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="WindowsService\WinService.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="WindowsService\WinServiceInstaller.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Attribute\CallerMemberNameAttribute.cs" />
     <Compile Include="Command\RelayCommand.cs" />
     <Compile Include="Converters\BrushToHexConverter.cs" />
@@ -127,7 +121,7 @@
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
-	<Compile Include="Core\GlobalSuppressions.cs" />
+    <Compile Include="Core\GlobalSuppressions.cs" />
     <Compile Include="Core\Helper.cs" />
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
@@ -136,6 +130,8 @@
     <Compile Include="Core\ObservableObject.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Core\Structs.cs" />
+    <Compile Include="Core\ThemeManager.cs" />
+    <Compile Include="Core\Updater.cs" />
     <Compile Include="Core\Validator.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
     <Compile Include="Interfaces\IHotkeyService.cs" />
@@ -143,6 +139,7 @@
     <Compile Include="Interfaces\IMemoryService.cs" />
     <Compile Include="Interfaces\INotificationService.cs" />
     <Compile Include="Interfaces\IOperatingSystem.cs" />
+    <Compile Include="Interfaces\ITheme.cs" />
     <Compile Include="Model\Computer.cs" />
     <Compile Include="Model\Hotkey.cs" />
     <Compile Include="Model\Language.cs" />
@@ -155,6 +152,7 @@
     <Compile Include="Model\Memory\MemoryStats.cs" />
     <Compile Include="Model\ObservableItem.cs" />
     <Compile Include="Model\OperatingSystem.cs" />
+    <Compile Include="Model\Theme.cs" />
     <Compile Include="Service\ComputerService.cs" />
     <Compile Include="Service\HotkeyService.cs" />
     <Compile Include="Service\NotificationService.cs" />
@@ -177,11 +175,20 @@
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\MessageViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="WindowsService\WinService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="WindowsService\WinServiceInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <None Include="app.manifest" />
+    <None Include="nuget.config" />
+    <None Include="packages.config" />
     <EmbeddedResource Include="Resources\Localization\Albanian.json" />
     <EmbeddedResource Include="Resources\Localization\Arabic.json" />
     <EmbeddedResource Include="Resources\Localization\Bulgarian.json" />
@@ -211,9 +218,8 @@
     <EmbeddedResource Include="Resources\Localization\Thai.json" />
     <EmbeddedResource Include="Resources\Localization\Turkish.json" />
     <EmbeddedResource Include="Resources\Localization\Ukrainian.json" />
-    <None Include="app.manifest" />
-    <None Include="nuget.config" />
-    <None Include="packages.config" />
+    <EmbeddedResource Include="Resources\Themes\DarkTheme.json" />
+    <EmbeddedResource Include="Resources\Themes\LightTheme.json" />
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
@@ -224,6 +230,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />

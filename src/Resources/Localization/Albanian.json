@@ -64,7 +64,7 @@
   "Used": "i përdorur",
   "UseTransparentBackground": "përdorni sfond transparent",
   "VirtualMemory": "memorie virtuale",
-  "WhenFreeMemoryIsBelow": "kur memoria e lirë është nën {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "kur memoria fizike e lirë është nën {0}%",
   "WarningLevel": "niveli i paralajmërimit",
   "WorkingSet": "grupi i punës",
   "Yes": "po"

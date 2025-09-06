@@ -64,7 +64,7 @@
   "Used": "digunakan",
   "UseTransparentBackground": "gunakan latar belakang transparan",
   "VirtualMemory": "memori virtual",
-  "WhenFreeMemoryIsBelow": "ketika sisa memori dibawah {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "ketika memori fisik bebas di bawah {0}%",
   "WarningLevel": "tingkat peringatan",
   "WorkingSet": "working set",
   "Yes": "ya"

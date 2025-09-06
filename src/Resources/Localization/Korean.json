@@ -64,7 +64,7 @@
   "Used": "사용",
   "UseTransparentBackground": "투명 배경 사용",
   "VirtualMemory": "가상 메모리",
-  "WhenFreeMemoryIsBelow": "사용 가능한 메모리가 {0}% 미만인 경우",
+  "WhenFreePhysicalMemoryIsBelow": "사용 가능한 물리적 메모리가 {0}% 미만일 때",
   "WarningLevel": "경고 수준",
   "WorkingSet": "작업 집합",
   "Yes": "예"

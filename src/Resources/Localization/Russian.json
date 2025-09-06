@@ -64,7 +64,7 @@
   "Used": "использовано",
   "UseTransparentBackground": "использовать прозрачный фон",
   "VirtualMemory": "виртуальная память",
-  "WhenFreeMemoryIsBelow": "когда свободная память ниже {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "когда свободная физическая память ниже {0}%",
   "WarningLevel": "уровень предупреждения",
   "WorkingSet": "рабочий набор",
   "Yes": "да"

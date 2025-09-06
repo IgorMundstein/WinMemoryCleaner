@@ -64,7 +64,7 @@
   "Used": "使用済み",
   "UseTransparentBackground": "透明な背景を使用",
   "VirtualMemory": "仮想メモリ",
-  "WhenFreeMemoryIsBelow": "フリーメモリが {0}% 以下になったら",
+  "WhenFreePhysicalMemoryIsBelow": "空き物理メモリが {0}% を下回ったとき",
   "WarningLevel": "警告レベル",
   "WorkingSet": "ワーキングセット",
   "Yes": "はい"

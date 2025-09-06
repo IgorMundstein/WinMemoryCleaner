@@ -64,7 +64,7 @@
   "Used": "kullanıldı",
   "UseTransparentBackground": "şeffaf arka plan kullan",
   "VirtualMemory": "sanal bellek",
-  "WhenFreeMemoryIsBelow": "boş bellek {0}% altına düştüğünde",
+  "WhenFreePhysicalMemoryIsBelow": "boş fiziksel bellek {0}%'nin altında olduğunda",
   "WarningLevel": "uyarı seviyesi",
   "WorkingSet": "çalışma kümesi",
   "Yes": "evet"

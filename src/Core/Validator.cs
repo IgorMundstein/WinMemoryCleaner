@@ -43,7 +43,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                Logger.Error(e, string.Format(Localizer.Culture, "{0} Error: {1}", Localizer.String.SecurityWarning, e.Message));
+                Logger.Error(e, string.Format(Localizer.Culture, "{0} Error: {1}", Localizer.String.SecurityWarning, e.GetMessage()));
 
                 return false;
             }

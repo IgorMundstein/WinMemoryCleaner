@@ -64,7 +64,7 @@
   "Used": "gebruikt",
   "UseTransparentBackground": "transparante achtergrond gebruiken",
   "VirtualMemory": "virtueel geheugen",
-  "WhenFreeMemoryIsBelow": "wanneer het vrije geheugen lager is dan {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "wanneer het vrije fysieke geheugen lager is dan {0}%",
   "WarningLevel": "waarschuwingsniveau",
   "WorkingSet": "werkset",
   "Yes": "ja"

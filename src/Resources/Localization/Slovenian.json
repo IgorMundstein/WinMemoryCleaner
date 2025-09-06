@@ -64,7 +64,7 @@
   "Used": "uporabljeno",
   "UseTransparentBackground": "uporabi prosojno ozadje",
   "VirtualMemory": "virtualni pomnilnik",
-  "WhenFreeMemoryIsBelow": "ko je prosti pomnilnik pod {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "ko je prost fizični pomnilnik pod {0}%",
   "WarningLevel": "stopnja opozorila",
   "WorkingSet": "delovni nabor",
   "Yes": "da"

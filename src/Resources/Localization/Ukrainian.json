@@ -64,7 +64,7 @@
   "Used": "використано",
   "UseTransparentBackground": "використовувати прозоре тло",
   "VirtualMemory": "віртуальна пам'ять",
-  "WhenFreeMemoryIsBelow": "коли вільна пам'ять нижче {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "коли вільна фізична пам'ять нижче {0}%",
   "WarningLevel": "рівень попередження",
   "WorkingSet": "робочий набір",
   "Yes": "так"

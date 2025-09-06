@@ -64,7 +64,7 @@
   "Used": "مستخدمة",
   "UseTransparentBackground": "استخدم خلفية شفافة",
   "VirtualMemory": "ذاكرة افتراضية",
-  "WhenFreeMemoryIsBelow": "عندما تكون الذاكرة الحرة أقل من {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "عندما تكون الذاكرة الفيزيائية الحرة أقل من {0}%",
   "WarningLevel": "مستوى التحذير",
   "WorkingSet": "مجموعة العمل",
   "Yes": "نعم"

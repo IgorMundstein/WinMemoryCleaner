@@ -126,6 +126,9 @@ namespace WinMemoryCleaner
         /// <param name="running">True (ON) / False (OFF)</param>
         public void Loading(bool running)
         {
+            if (Application.Current == null || Application.Current.Dispatcher == null)
+                return;
+
             // Multi-threading trick
             Application.Current.Dispatcher.Invoke((Action)delegate
             {

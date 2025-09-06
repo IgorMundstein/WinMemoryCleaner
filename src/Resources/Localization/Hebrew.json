@@ -64,7 +64,7 @@
   "Used": "בשימוש",
   "UseTransparentBackground": "השתמש ברקע שקוף",
   "VirtualMemory": "זיכרון וירטואלי",
-  "WhenFreeMemoryIsBelow": "כאשר הזיכרון הפנוי נמוך מ- {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "כאשר הזיכרון הפיזי הפנוי נמוך מ-{0}%",
   "WarningLevel": "רמת אזהרה",
   "WorkingSet": "קבוצת עבודה",
   "Yes": "כן"
