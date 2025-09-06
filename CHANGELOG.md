@@ -1,3 +1,15 @@
+### 3.0.2
+
+**2025-09-06**
+
+- Enhanced code and user interface
+- Enhanced functionality to run on startup and improved package manager support (Chocolatey, Scoop, and WinGet)
+- Fixed a bug that prevented the "Run On Priority" setting from being saved.
+- Improved auto-update feature
+- Improved string capitalization for non-ASCII languages
+- Revised some texts for more precise descriptions
+- Updated the Hungarian language
+
 ### 3.0.0
 
 **2025-08-02**
