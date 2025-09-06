@@ -194,7 +194,7 @@ namespace WinMemoryCleaner
         /// </value>
         public string AutoOptimizationMemoryUsageDescription
         {
-            get { return string.Format(Localizer.Culture, Localizer.String.WhenFreeMemoryIsBelow, AutoOptimizationMemoryUsage); }
+            get { return string.Format(Localizer.Culture, Localizer.String.WhenFreePhysicalMemoryIsBelow, AutoOptimizationMemoryUsage); }
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace WinMemoryCleaner
                 {
                     IsBusy = true;
 
-                    Settings.AutoUpdate = value;
+                    Settings.AutoUpdate = Helper.IsAutoUpdateSupported && value;
                     Settings.Save();
 
                     RaisePropertyChanged();
@@ -245,7 +245,7 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return new ObservableCollection<SolidColorBrush>(App.IsInDesignMode ? new List<SolidColorBrush> { System.Windows.Media.Brushes.White } : App.Brushes);
+                return new ObservableCollection<SolidColorBrush>(App.IsInDesignMode ? new List<SolidColorBrush> { System.Windows.Media.Brushes.White } : ThemeManager.Brushes);
             }
         }
 
@@ -521,7 +521,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    NotificationService.Notify(e.Message);
+                    NotificationService.Notify(e.GetMessage());
                     Logger.Error(e);
                 }
                 finally
@@ -894,7 +894,7 @@ namespace WinMemoryCleaner
                     new List<ObservableItem<bool>>
                     {
                        new ObservableItem<bool>(Localizer.String.AlwaysOnTop, () => AlwaysOnTop, value => AlwaysOnTop = value),
-                       new ObservableItem<bool>(Localizer.String.AutoUpdate, () => AutoUpdate, value => AutoUpdate = value),
+                       new ObservableItem<bool>(Localizer.String.AutoUpdate, () => AutoUpdate, value => AutoUpdate = value, Helper.IsAutoUpdateSupported),
                        new ObservableItem<bool>(Localizer.String.CloseAfterOptimization, () => CloseAfterOptimization, value => CloseAfterOptimization = value),
                        new ObservableItem<bool>(Localizer.String.CloseToTheNotificationArea, () => CloseToTheNotificationArea, value => CloseToTheNotificationArea = value),
                        new ObservableItem<bool>(Localizer.String.RunOnLowPriority, () => RunOnLowPriority, value => RunOnLowPriority = value),
@@ -1502,8 +1502,7 @@ namespace WinMemoryCleaner
                         break;
 
                     // Update app
-                    if (Settings.AutoUpdate)
-                        App.Update();
+                    Updater.Update();
 
                     // App priority
                     App.SetPriority(Settings.RunOnPriority);
@@ -1756,11 +1755,13 @@ namespace WinMemoryCleaner
                 IsBusy = true;
 
                 Settings.Reset(true);
+                ThemeManager.Theme = Enums.Theme.Dark;
 
                 FontSize = Settings.FontSize;
                 OptimizationKey = Settings.OptimizationKey;
                 OptimizationModifiers = Settings.OptimizationModifiers;
-                
+
+                NotificationService.Initialize();
                 NotificationService.Update(Computer.Memory);
 
                 RaisePropertyChanged(string.Empty);

@@ -23,7 +23,7 @@ namespace WinMemoryCleaner
                 : Regex.Replace
                 (
                     Localizer.Culture.TextInfo.ToLower(obj),
-                    @"(^|(?<=\.))(\s*)([a-zA-Z])",
+                    @"(^|(?<=\.))(\s*)(\p{L})",
                     m => m.Groups[1].Value + m.Groups[2].Value + Localizer.Culture.TextInfo.ToUpper(m.Groups[3].Value[0])
                 );
         }
@@ -78,27 +78,6 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Get exception error message.
-        /// </summary>
-        /// <param name="obj">The object.</param>
-        /// <returns></returns>
-        public static string GetMessage(this Exception obj)
-        {
-            var exception = obj;
-            var messages = new List<string>();
-
-            do
-            {
-                messages.Add(exception.Message.Trim());
-
-                exception = exception.InnerException;
-            }
-            while (exception != null);
-
-            return string.Join(". ", messages.Distinct());
-        }
-
-        /// <summary>
         /// Gets the key value.
         /// </summary>
         /// <param name="obj">The object.</param>
@@ -120,6 +99,40 @@ namespace WinMemoryCleaner
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        /// <summary>
+        /// Returns a compact, de-duplicated message across the exception chain.
+        /// </summary>
+        public static string GetMessage(this Exception obj)
+        {
+            if (obj == null)
+                return null;
+
+            var exception = obj;
+            var messages = new List<string>();
+
+            do
+            {
+                try
+                {
+                    var message = exception.Message;
+
+                    if (!string.IsNullOrEmpty(message))
+                        messages.Add(message.Trim());
+                    else
+                        messages.Add(exception.ToString());
+                }
+                catch
+                {
+                    messages.Add(exception.ToString());
+                }
+
+                exception = exception.InnerException;
+            }
+            while (exception != null);
+
+            return string.Join(". ", messages.Distinct());
         }
 
         /// <summary>

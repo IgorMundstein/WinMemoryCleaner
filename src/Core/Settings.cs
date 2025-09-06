@@ -50,6 +50,8 @@ namespace WinMemoryCleaner
 
         public static ModifierKeys OptimizationModifiers { get; set; }
 
+        public static string Path { get; set; }
+
         public static SortedSet<string> ProcessExclusionList { get; private set; }
 
         public static Enums.Priority RunOnPriority { get; set; }
@@ -94,11 +96,12 @@ namespace WinMemoryCleaner
             CloseAfterOptimization = false;
             CloseToTheNotificationArea = false;
             CompactMode = false;
-            FontSize = 15;
+            FontSize = 14;
             Language = Constants.Windows.Locale.Name.English;
             MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedFileCache | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.RegistryCache | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemFileCache | Enums.Memory.Areas.WorkingSet;
             OptimizationKey = Key.M;
             OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Shift;
+            Path = string.Empty;
             ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             RunOnPriority = Enums.Priority.Low;
             RunOnStartup = false;
@@ -144,7 +147,7 @@ namespace WinMemoryCleaner
                         CloseToTheNotificationArea = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CloseToTheNotificationArea), CloseToTheNotificationArea), _culture);
                         CompactMode = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CompactMode), CompactMode), _culture);
                         FontSize = Convert.ToDouble(key.GetValue(Helper.NameOf(() => FontSize), FontSize), _culture);
-                        Language = Convert.ToString(key.GetValue(Helper.NameOf(() => Language), Language), _culture);
+                        Language = Convert.ToString(key.GetValue(Helper.NameOf(() => Language), Language), CultureInfo.InvariantCulture);
 
                         Enums.Memory.Areas memoryAreas;
 
@@ -165,6 +168,8 @@ namespace WinMemoryCleaner
 
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => OptimizationModifiers), OptimizationModifiers), _culture), out optimizationModifiers) && optimizationModifiers.IsValid())
                             OptimizationModifiers = optimizationModifiers;
+
+                        Path = Convert.ToString(key.GetValue(Helper.NameOf(() => Path), Path), _culture);
 
                         Enums.Priority runOnPriority;
 
@@ -260,6 +265,8 @@ namespace WinMemoryCleaner
                         key.SetValue(Helper.NameOf(() => MemoryAreas), (int)MemoryAreas);
                         key.SetValue(Helper.NameOf(() => OptimizationKey), (int)OptimizationKey);
                         key.SetValue(Helper.NameOf(() => OptimizationModifiers), (int)OptimizationModifiers);
+                        key.SetValue(Helper.NameOf(() => Path), Path);
+                        key.SetValue(Helper.NameOf(() => RunOnPriority), (int)RunOnPriority);
                         key.SetValue(Helper.NameOf(() => RunOnStartup), RunOnStartup ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => ShowOptimizationNotifications), ShowOptimizationNotifications ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => ShowVirtualMemory), ShowVirtualMemory ? 1 : 0);

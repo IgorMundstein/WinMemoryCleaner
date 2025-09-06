@@ -64,7 +64,7 @@
   "Used": "utilisé",
   "UseTransparentBackground": "utiliser un arrière-plan transparent",
   "VirtualMemory": "mémoire virtuelle",
-  "WhenFreeMemoryIsBelow": "lorsque la mémoire libre est inférieure à {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "lorsque la mémoire physique libre est inférieure à {0}%",
   "WarningLevel": "niveau d'avertissement",
   "WorkingSet": "ensemble de travail",
   "Yes": "oui"

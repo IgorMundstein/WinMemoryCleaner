@@ -1,0 +1,11 @@
+﻿{
+  "Accent": "#0078D4",
+  "MemoryBarIndicatorBackground": "#D13438",
+  "MemoryBarTrackBackground": "#107C10",
+  "PrimaryBackground": "#FFFFFF",
+  "PrimaryBorder": "#CCCCCC",
+  "SecondaryBackground": "#F5F5F5",
+  "SecondaryBorder": "#E0E0E0",
+  "SecondaryDisabled": "#666666",
+  "SecondaryForeground": "#000000"
+}

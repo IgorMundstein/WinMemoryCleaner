@@ -64,7 +64,7 @@
   "Used": "brukt",
   "UseTransparentBackground": "bruk gjennomsiktig bakgrunn",
   "VirtualMemory": "virtuelt minne",
-  "WhenFreeMemoryIsBelow": "når ledig minne er under {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "når ledig fysisk minne er under {0}%",
   "WarningLevel": "advarselsnivå",
   "WorkingSet": "arbeidssett",
   "Yes": "ja"

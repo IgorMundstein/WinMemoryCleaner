@@ -64,8 +64,7 @@ namespace WinMemoryCleaner
             private set
             {
                 _culture = value;
-
-                RaiseStaticPropertyChanged("Culture");
+                RaiseStaticPropertyChanged();
             }
         }
 
@@ -103,8 +102,7 @@ namespace WinMemoryCleaner
 
                 _language = value;
 
-                RaiseStaticPropertyChanged("Language");
-                RaiseStaticPropertyChanged("String");
+                RaiseStaticPropertyChanged(string.Empty);
 
                 App.ReleaseMemory();
             }
@@ -123,14 +121,14 @@ namespace WinMemoryCleaner
                 try
                 {
                     var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                        .Where(file => file.StartsWith(Constants.App.LocalizationResourcePath, StringComparison.OrdinalIgnoreCase) && file.EndsWith(Constants.App.LocalizationResourceExtension, StringComparison.OrdinalIgnoreCase))
-                        .Select(file => file.Replace(Constants.App.LocalizationResourcePath, string.Empty).Replace(Constants.App.LocalizationResourceExtension, string.Empty))
+                        .Where(file => file.StartsWith(Constants.App.LocalizationResourcePath, StringComparison.OrdinalIgnoreCase) && file.EndsWith(Constants.App.EmbeddedResourcePathExtension, StringComparison.OrdinalIgnoreCase))
+                        .Select(file => file.Replace(Constants.App.LocalizationResourcePath, string.Empty).Replace(Constants.App.EmbeddedResourcePathExtension, string.Empty))
                         .OrderBy(file => file)
                         .ToList();
 
                     try
                     {
-                        var localResources = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, string.Format(Culture, "*{0}", Constants.App.LocalizationResourceExtension), SearchOption.TopDirectoryOnly)
+                        var localResources = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, string.Format(Culture, "*{0}", Constants.App.EmbeddedResourcePathExtension), SearchOption.TopDirectoryOnly)
                             .Select(Path.GetFileNameWithoutExtension)
                             .ToList();
 
@@ -170,8 +168,8 @@ namespace WinMemoryCleaner
         {
             Localization localization;
 
-            var localResource = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(Culture, "{0}{1}", language.EnglishName, Constants.App.LocalizationResourceExtension));
-            var resource = string.Format(Culture, "{0}{1}{2}", Constants.App.LocalizationResourcePath, language.EnglishName, Constants.App.LocalizationResourceExtension);
+            var localResource = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format(Culture, "{0}{1}", language.EnglishName, Constants.App.EmbeddedResourcePathExtension));
+            var resource = string.Format(Culture, "{0}{1}{2}", Constants.App.LocalizationResourcePath, language.EnglishName, Constants.App.EmbeddedResourcePathExtension);
 
             using (var stream = File.Exists(localResource) ? File.OpenRead(localResource) : Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
             {

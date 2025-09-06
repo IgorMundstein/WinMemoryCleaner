@@ -64,7 +64,7 @@
   "Used": "δεσμευμένη",
   "UseTransparentBackground": "χρήση διαφανούς φόντου",
   "VirtualMemory": "εικονική μνήμη",
-  "WhenFreeMemoryIsBelow": "όταν η ελεύθερη μνήμη είναι λιγότερη από {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "όταν η ελεύθερη φυσική μνήμη είναι κάτω από {0}%",
   "WarningLevel": "επίπεδο προειδοποίησης",
   "WorkingSet": "ενεργό σύνολο",
   "Yes": "ναι"

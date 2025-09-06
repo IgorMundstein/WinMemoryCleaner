@@ -16,15 +16,15 @@
             <local:SumNumericConverter x:Key="SumNumericConverter" />
             <local:ViewModelLocator x:Key="ViewModelLocator" />
             <!-- Colors -->
-            <SolidColorBrush x:Key="DarkBackground" Color="#2C2C2C" />
-            <SolidColorBrush x:Key="DarkBorderBrush" Color="#707070" />
-            <SolidColorBrush x:Key="DarkDisabled" Color="#999999" />
-            <SolidColorBrush x:Key="DarkForeground" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="DarkMemoryBarIndicatorBackground" Color="#E0360A" />
-            <SolidColorBrush x:Key="DarkMemoryBarTrackBackground" Color="#00AA41" />
-            <SolidColorBrush x:Key="DarkOver" Color="#00AEF7" />
-            <SolidColorBrush x:Key="DarkWindowBackground" Color="#202020" />
-            <SolidColorBrush x:Key="DarkWindowBorderBrush" Color="#303030" />
+            <SolidColorBrush x:Key="Accent" Color="#00AEF7" />
+            <SolidColorBrush x:Key="MemoryBarIndicatorBackground" Color="#E0360A" />
+            <SolidColorBrush x:Key="MemoryBarTrackBackground" Color="#00AA41" />
+            <SolidColorBrush x:Key="PrimaryBackground" Color="#202020" />
+            <SolidColorBrush x:Key="PrimaryBorder" Color="#303030" />
+            <SolidColorBrush x:Key="SecondaryBackground" Color="#2C2C2C" />
+            <SolidColorBrush x:Key="SecondaryBorder" Color="#707070" />
+            <SolidColorBrush x:Key="SecondaryDisabled" Color="#999999" />
+            <SolidColorBrush x:Key="SecondaryForeground" Color="#FFFFFF" />
             <!-- Font -->
             <FontFamily x:Key="FontFamily">Calibri</FontFamily>
             <System:Double x:Key="FontSize">15</System:Double>
@@ -39,12 +39,13 @@
                 </Style.Triggers>
             </Style>
             <Style x:Key="ControlBase" TargetType="{x:Type Control}" BasedOn="{StaticResource FrameworkElementBase}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SecondaryBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorder}" />
+                <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
                 <Setter Property="FontSize" Value="{DynamicResource FontSize}" />
                 <Setter Property="FontWeight" Value="{DynamicResource FontWeight}" />
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Style.Resources>
                     <Style TargetType="{x:Type Border}">
@@ -54,13 +55,13 @@
                 </Style.Resources>
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                        <Setter Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
                     </Trigger>
                     <Trigger Property="IsFocused" Value="True">
-                        <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
+                        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                     </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
+                        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -69,7 +70,8 @@
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="FontWeight" Value="Normal" />
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
-                <Setter Property="Padding" Value="3, 0, 3, 0" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Padding" Value="0" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
                 <Setter Property="Template">
@@ -79,6 +81,7 @@
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="3"
+                                    Margin="0, 0, 1, 0"                                    
                                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                                   Margin="{TemplateBinding Padding}"
@@ -99,7 +102,7 @@
                                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                                 <Border Background="{TemplateBinding Background}" 
                                         BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}"  
                                         CornerRadius="3"
                                         Height="15"
                                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
@@ -136,11 +139,12 @@
                         <ColumnDefinition Width="20" />
                     </Grid.ColumnDefinitions>
                     <Border x:Name="Border" 
-                            Background="{StaticResource DarkBackground}"
-                            BorderBrush="{StaticResource DarkBorderBrush}"
+                            Background="{DynamicResource SecondaryBackground}"
+                            BorderBrush="{DynamicResource SecondaryBorder}"
                             BorderThickness="1"
                             CornerRadius="3"
                             Grid.ColumnSpan="2"
+                            Margin="0, 0, 1, 1"
                             SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                     <Path x:Name="Arrow"
                           Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
@@ -167,7 +171,7 @@
                                 <ToggleButton ClickMode="Press"
                                               Focusable="False"
                                               IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
-                                              Foreground="{StaticResource DarkForeground}"
+                                              Foreground="{DynamicResource SecondaryForeground}"
                                               Name="ToggleButton" 
                                               Template="{StaticResource ComboBoxToggleButton}" />
                                 <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
@@ -180,9 +184,9 @@
                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                   VerticalAlignment="Center" />
                                 <TextBox x:Name="PART_EditableTextBox"
-                                         Background="{StaticResource DarkBackground}"
+                                         Background="{DynamicResource SecondaryBackground}"
                                          Focusable="True" 
-                                         Foreground="{StaticResource DarkForeground}"
+                                         Foreground="{DynamicResource SecondaryForeground}"
                                          HorizontalAlignment="Left" 
                                          IsReadOnly="{TemplateBinding IsReadOnly}"
                                          Margin="3, 3, 19, 3"
@@ -202,9 +206,9 @@
                                           Name="DropDown"
                                           SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
                                         <Border x:Name="DropDownBorder"
-                                                Background="{StaticResource DarkBackground}"
+                                                Background="{DynamicResource SecondaryBackground}"
                                                 BorderThickness="1"
-                                                BorderBrush="{StaticResource DarkBorderBrush}"
+                                                BorderBrush="{DynamicResource SecondaryBorder}"
                                                 CornerRadius="3"
                                                 SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                         <ScrollViewer Margin="1, 3, 2, 2" 
@@ -226,16 +230,16 @@
                                     <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="ToggleButton" Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                                    <Setter TargetName="ToggleButton" Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
                                 </Trigger>
                                 <Trigger Property="IsFocused" Value="True">
-                                    <Setter TargetName="ToggleButton" Property="Foreground" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="ToggleButton" Property="Foreground" Value="{DynamicResource Accent}" />
                                 </Trigger>
                                 <Trigger Property="IsGrouping" Value="True">
                                     <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ToggleButton" Property="Foreground" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="ToggleButton" Property="Foreground" Value="{DynamicResource Accent}" />
                                 </Trigger>
                                 <Trigger SourceName="Popup" Property="Popup.AllowsTransparency" Value="True">
                                     <Setter TargetName="DropDownBorder" Property="CornerRadius" Value="3" />
@@ -247,10 +251,10 @@
                 </Setter>
             </Style>
             <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource FrameworkElementBase}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SecondaryBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorder}" />
                 <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}" />
                 <Setter Property="IsTabStop" Value="False" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="Template">
@@ -267,16 +271,16 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
                                 </Trigger>
                                 <Trigger Property="IsFocused" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                                 </Trigger>
                                 <Trigger Property="IsHighlighted" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}" />
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -285,19 +289,19 @@
             </Style>
             <!-- ComboBox (END) -->
             <Style TargetType="{x:Type GroupBox}" BasedOn="{StaticResource FrameworkElementBase}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+                <Setter Property="Background" Value="{DynamicResource SecondaryBackground}" />
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="HeaderTemplate">
                     <Setter.Value>
                         <DataTemplate>
-                            <TextBlock Foreground="{StaticResource DarkForeground}" 
+                            <TextBlock Foreground="{DynamicResource SecondaryForeground}" 
                                        FontWeight="Normal" 
                                        Name="GroupBoxHeader"
                                        Text="{Binding}"
                                        Typography.Capitals="AllSmallCaps" />
                             <DataTemplate.Triggers>
                                 <Trigger SourceName="GroupBoxHeader" Property="IsEnabled" Value="False">
-                                    <Setter TargetName="GroupBoxHeader" Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                                    <Setter TargetName="GroupBoxHeader" Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
                                 </Trigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
@@ -306,22 +310,23 @@
                 <Setter Property="Padding" Value="3, 9, 3, 3" />
             </Style>
             <Style TargetType="{x:Type Hyperlink}">
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}" />
                 <Style.Triggers>
                     <Trigger Property="IsFocused" Value="True">
                         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                     </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
+                        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
             <Style TargetType="{x:Type Image}" BasedOn="{StaticResource FrameworkElementBase}" />
             <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource ControlBase}" >
+                <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="IsTabStop" Value="False" />
             </Style>
             <Style TargetType="{x:Type Label}" BasedOn="{StaticResource FrameworkElementBase}">
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}" />
                 <Setter Property="Margin" Value="0" />
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="Template">
@@ -335,7 +340,7 @@
                 </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                        <Setter Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -353,7 +358,7 @@
                                           Width="15">
                                         <Ellipse x:Name="Border"
                                                  Fill="{TemplateBinding Background}"
-                                                 Stroke="{StaticResource DarkBorderBrush}"
+                                                 Stroke="{DynamicResource SecondaryBorder}"
                                                  StrokeThickness="1" />
                                         <Ellipse x:Name="CheckMark"
                                                  Fill="{TemplateBinding Foreground}"
@@ -370,17 +375,17 @@
                                     <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed" />
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="true">
-                                    <Setter TargetName="Border" Property="Fill" Value="{StaticResource DarkBackground}" />
+                                    <Setter TargetName="Border" Property="Fill" Value="{DynamicResource SecondaryBackground}" />
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="true">
-                                    <Setter TargetName="Border" Property="Fill" Value="{StaticResource DarkBackground}" />
-                                    <Setter TargetName="Border" Property="Stroke" Value="{StaticResource DarkBorderBrush}" />
+                                    <Setter TargetName="Border" Property="Fill" Value="{DynamicResource SecondaryBackground}" />
+                                    <Setter TargetName="Border" Property="Stroke" Value="{DynamicResource SecondaryBorder}" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="false">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
-                                    <Setter TargetName="Border" Property="Fill" Value="{StaticResource DarkBackground}" />
-                                    <Setter TargetName="Border" Property="Stroke" Value="{StaticResource DarkBorderBrush}" />
-                                    <Setter TargetName="CheckMark" Property="Fill" Value="{StaticResource DarkDisabled}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
+                                    <Setter TargetName="Border" Property="Fill" Value="{DynamicResource SecondaryBackground}" />
+                                    <Setter TargetName="Border" Property="Stroke" Value="{DynamicResource SecondaryBorder}" />
+                                    <Setter TargetName="CheckMark" Property="Fill" Value="{DynamicResource SecondaryDisabled}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -389,8 +394,8 @@
             </Style>
             <!-- ContextMenu -->
             <Style TargetType="{x:Type ContextMenu}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SecondaryBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorder}" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Margin" Value="0" />
                 <Setter Property="Padding" Value="0" />
@@ -415,10 +420,10 @@
             </Style>
             <!-- MenuItem -->
             <Style TargetType="{x:Type MenuItem}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SecondaryBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorder}" />
                 <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="Foreground" Value="{StaticResource DarkForeground}" />
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}" />
                 <Setter Property="Margin" Value="10, 0, 10, 0" />
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -442,7 +447,7 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <Border x:Name="IconBorder"
-                                            Background="{StaticResource DarkBackground}"
+                                            Background="{DynamicResource SecondaryBackground}"
                                             Grid.Column="0"
                                             HorizontalAlignment="Left"
                                             Margin="0"
@@ -463,14 +468,14 @@
                                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                       VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="2"
-                                               Foreground="{StaticResource DarkDisabled}"
+                                               Foreground="{DynamicResource SecondaryDisabled}"
                                                Margin="0"
                                                Padding="0"
                                                Text="{TemplateBinding InputGestureText}"
                                                VerticalAlignment="Center" />
                                     <Path Grid.Column="3"
                                           Data="M 0 0 L 4 4 L 0 8 Z"
-                                          Fill="{StaticResource DarkForeground}"
+                                          Fill="{DynamicResource SecondaryForeground}"
                                           HorizontalAlignment="Center"
                                           Margin="0"
                                           Name="Arrow"
@@ -486,23 +491,23 @@
                                     <Setter TargetName="IconBorder" Property="Width" Value="0" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
-                                    <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DarkDisabled}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
+                                    <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource SecondaryDisabled}" />
                                 </Trigger>
                                 <Trigger Property="IsHighlighted" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
-                                    <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DarkOver}" />
-                                    <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+                                    <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Accent}" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource SecondaryBorder}" />
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
-                                    <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DarkOver}" />
-                                    <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+                                    <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Accent}" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource SecondaryBorder}" />
                                 </Trigger>
                                 <Trigger Property="IsSubmenuOpen" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource DarkOver}" />
-                                    <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DarkOver}" />
-                                    <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+                                    <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Accent}" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource SecondaryBorder}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -542,7 +547,7 @@
             </Style>
             <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource FrameworkElementBase}">
                 <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
                 <Setter Property="Margin" Value="-5, 0, -5, 0" />
                 <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
                 <Setter Property="Width" Value="8" />
@@ -557,7 +562,7 @@
                                        IsDirectionReversed="True">
                                     <Track.Thumb>
                                         <Thumb x:Name="ScrollBarThumb" 
-                                               Background="{StaticResource DarkBorderBrush}"
+                                               Background="{DynamicResource SecondaryBorder}"
                                                BorderThickness="0"
                                                Style="{StaticResource ScrollThumbs}" />
                                     </Track.Thumb>
@@ -571,10 +576,10 @@
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="ScrollBarThumb" Property="Background" Value="{StaticResource DarkDisabled}" />
+                                    <Setter TargetName="ScrollBarThumb" Property="Background" Value="{DynamicResource SecondaryDisabled}" />
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ScrollBarThumb" Property="Background" Value="{StaticResource DarkOver}" />
+                                    <Setter TargetName="ScrollBarThumb" Property="Background" Value="{DynamicResource Accent}" />
                                 </Trigger>
                                 <Trigger Property="Orientation" Value="Horizontal">
                                     <Setter TargetName="GridRoot" Property="LayoutTransform">
@@ -601,9 +606,9 @@
             <!-- ScrollBar (END) -->
             <Style TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource FrameworkElementBase}" />
             <Style TargetType="{x:Type Slider}" BasedOn="{StaticResource FrameworkElementBase}">
-                <Setter Property="Background" Value="{StaticResource DarkBackground}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}" />
-                <Setter Property="Foreground" Value="{StaticResource DarkBorderBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SecondaryBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorder}" />
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryBorder}" />
                 <Setter Property="IsMoveToPointEnabled" Value="True" />
                 <Setter Property="IsSelectionRangeEnabled" Value="True" />
                 <Setter Property="SelectionStart" Value="{Binding Minimum, RelativeSource={RelativeSource Self}}" />
@@ -639,15 +644,15 @@
                 </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Background" Value="{StaticResource DarkDisabled}" />
+                        <Setter Property="Background" Value="{DynamicResource SecondaryDisabled}" />
                     </Trigger>
                     <Trigger Property="IsFocused" Value="True">
-                        <Setter Property="Background" Value="{StaticResource DarkOver}" />
-                        <Setter Property="BorderBrush" Value="{StaticResource DarkOver}" />
+                        <Setter Property="Background" Value="{DynamicResource Accent}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
                     </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="{StaticResource DarkOver}" />
-                        <Setter Property="BorderBrush" Value="{StaticResource DarkOver}" />
+                        <Setter Property="Background" Value="{DynamicResource Accent}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
                     </Trigger>
                 </Style.Triggers>
                 <Style.Resources>
@@ -674,7 +679,7 @@
                 <Setter Property="Padding" Value="0" />
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Foreground" Value="{StaticResource DarkDisabled}" />
+                        <Setter Property="Foreground" Value="{DynamicResource SecondaryDisabled}" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -698,7 +703,7 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsChecked" Value="True">
-                                    <Setter Property="BorderBrush" Value="{StaticResource DarkOver}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
                                 </Trigger>
                                 <Trigger Property="IsChecked" Value="False">
                                     <Setter Property="BorderBrush" Value="Transparent" />
@@ -717,7 +722,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Separator}">
                             <Grid Margin="0">
-                                <Rectangle Fill="{StaticResource DarkBorderBrush}"
+                                <Rectangle Fill="{DynamicResource SecondaryBorder}"
                                            Height="1"
                                            HorizontalAlignment="Stretch" />
                             </Grid>

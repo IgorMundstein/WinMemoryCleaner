@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.ServiceProcess;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace WinMemoryCleaner
@@ -24,7 +22,6 @@ namespace WinMemoryCleaner
         #region Fields
 
         private static bool _isRunning;
-        private static DateTimeOffset _lastAutoUpdate;
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
         private static readonly List<ProcessStartInfo> _processes = new List<ProcessStartInfo>();
@@ -41,7 +38,7 @@ namespace WinMemoryCleaner
         public App()
         {
             // Log
-            Logger.Level = Debugger.IsAttached ? Enums.Log.Levels.Debug : Enums.Log.Levels.Information;
+            Logger.Level = IsInDebugMode ? Enums.Log.Levels.Debug : Enums.Log.Levels.Information;
 
             // Events
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
@@ -54,12 +51,22 @@ namespace WinMemoryCleaner
         #region Properties
 
         /// <summary>
-        /// Gets the brushes.
+        /// Gets a value indicating whether this instance is in debug mode.
         /// </summary>
         /// <value>
-        /// The brushes.
+        ///   <c>true</c> if this instance is in debug mode; otherwise, <c>false</c>.
         /// </value>
-        public static List<SolidColorBrush> Brushes { get; private set; }
+        public static bool IsInDebugMode
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this instance is in design mode.
@@ -158,16 +165,6 @@ namespace WinMemoryCleaner
             DependencyInjection.Container.Register<INotificationService, NotificationService>();
 
             // App properties
-            Brushes = typeof(System.Drawing.Color)
-                .GetProperties(BindingFlags.Public | BindingFlags.Static)
-                .Where(property => property.PropertyType == typeof(System.Drawing.Color))
-                .Select(property => (System.Drawing.Color)property.GetValue(null, null))
-                .Where(color => color.A == 255)
-                .OrderBy(color => color.GetHue())
-                .ThenBy(color => color.GetSaturation())
-                .ThenBy(color => color.GetBrightness())
-                .Select(color => new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)))
-                .ToList();
             Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
             Version = Assembly.GetExecutingAssembly().GetName().Version;
 
@@ -303,8 +300,7 @@ namespace WinMemoryCleaner
                 if (commandLineArguments != null)
                 {
                     // Update to the latest version
-                    if (Settings.AutoUpdate)
-                        Update(commandLineArguments);
+                    Updater.Update(commandLineArguments);
 
                     // Process command‑line arguments
                     foreach (var argument in commandLineArguments.Select(arg => arg.Replace("/", string.Empty)))
@@ -337,6 +333,13 @@ namespace WinMemoryCleaner
                     }
                 }
 
+                // Update the last executable path when neither installing nor updating via a package manager
+                if (startupType != Enums.StartupType.Package)
+                {
+                    Settings.Path = Path;
+                    Settings.Save();
+                }
+
                 switch (startupType)
                 {
                     case Enums.StartupType.App:
@@ -365,8 +368,8 @@ namespace WinMemoryCleaner
 
                         NativeMethods.AllowSetForegroundWindow(Process.GetCurrentProcess().Id);
 
-                        // Run On Startup
-                        RunOnStartup(Settings.RunOnStartup);
+                        // Theme
+                        ThemeManager.Theme = Enums.Theme.Dark;
 
                         // Notification Areas
                         _notifyIcon = new NotifyIcon();
@@ -387,6 +390,7 @@ namespace WinMemoryCleaner
                             DependencyInjection.Container.Resolve<INotificationService>().Notify(notification);
                         }
 
+                        RunOnStartup(Settings.RunOnStartup);
                         ReleaseMemory();
                         break;
 
@@ -397,48 +401,108 @@ namespace WinMemoryCleaner
                         break;
 
                     case Enums.StartupType.Package:
+                        commandLineArguments.Remove(string.Format(Localizer.Culture, "/{0}", Constants.App.CommandLineArgument.Package));
+
                         var exe = AppDomain.CurrentDomain.FriendlyName;
+                        var isUpdate = false;
                         var sourcePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
-                        var targetPath = System.IO.Path.Combine(Constants.App.Defaults.Path, exe);
+                        var targetPath = sourcePath;
+                        var wasRunning = false;
 
                         try
                         {
-                            foreach (var process in Process.GetProcessesByName(Constants.App.Name).Where(p => p != null && p.Id != Process.GetCurrentProcess().Id))
+                            if (Directory.Exists(System.IO.Path.GetDirectoryName(Settings.Path)))
+                                targetPath = Settings.Path;
+                        }
+                        catch
+                        {
+                            // Ignored
+                        }
+
+                        try
+                        {
+                            var runningProcesses = Process.GetProcessesByName(Constants.App.Name)
+                                .Where(p => p != null && p.Id != Process.GetCurrentProcess().Id)
+                                .ToList();
+
+                            wasRunning = runningProcesses.Any();
+
+                            foreach (var process in runningProcesses)
                             {
                                 try
                                 {
-                                    targetPath = process.MainModule.FileName;
+                                    var processPath = process.MainModule.FileName;
+
+                                    if (!string.IsNullOrEmpty(processPath) && File.Exists(processPath))
+                                        targetPath = processPath;
                                 }
                                 catch
                                 {
-                                    // ignored
+                                    // Ignored
                                 }
 
                                 try
                                 {
                                     process.Kill();
+                                    process.WaitForExit();
                                 }
                                 catch
                                 {
-                                    // ignored
+                                    // Ignored
+                                }
+                                finally
+                                {
+                                    process.Dispose();
                                 }
                             }
                         }
                         catch
                         {
-                            // ignored
+                            // Ignored
                         }
 
-                        commandLineArguments.Remove(string.Format(Localizer.Culture, "/{0}", Constants.App.CommandLineArgument.Package));
+                        try
+                        {
+                            if (File.Exists(targetPath))
+                            {
+                                var currentVersion = FileVersionInfo.GetVersionInfo(sourcePath);
+                                var targetVersion = FileVersionInfo.GetVersionInfo(targetPath);
+
+                                isUpdate = currentVersion.FileVersion != targetVersion.FileVersion;
+                            }
+                        }
+                        catch
+                        {
+                            // Ignored
+                        }
+
+                        try
+                        {
+                            var targetDirectory = System.IO.Path.GetDirectoryName(targetPath);
+
+                            if (!string.IsNullOrEmpty(targetDirectory) && !Directory.Exists(targetDirectory))
+                                Directory.CreateDirectory(targetDirectory);
+                        }
+                        catch
+                        {
+                            // Ignored
+                        }
+
+                        var restart = !isUpdate || wasRunning;
 
                         _processes.Add(new ProcessStartInfo
                         {
-                            Arguments = string.Format(Localizer.Culture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, sourcePath, targetPath, Version, string.Join(" ", commandLineArguments)).Trim(),
+                            Arguments = string.Format
+                            (
+                                CultureInfo.InvariantCulture,
+                                @"/c move ""{0}"" ""{1}"" >nul 2>&1 & if {2} equ 1 if exist ""{1}"" start """" ""{1}"" {3}",
+                                sourcePath,
+                                targetPath,
+                                restart ? "1" : "0",
+                                string.Join(" ", commandLineArguments.Concat(new[] { isUpdate ? string.Format(CultureInfo.InvariantCulture, "/{0}", Version) : string.Empty }).Where(arg => !string.IsNullOrEmpty(arg)))
+                            ).Trim(),
                             CreateNoWindow = true,
                             FileName = "cmd",
-                            RedirectStandardError = false,
-                            RedirectStandardInput = false,
-                            RedirectStandardOutput = false,
                             UseShellExecute = false,
                             WindowStyle = ProcessWindowStyle.Hidden
                         });
@@ -449,7 +513,7 @@ namespace WinMemoryCleaner
                     case Enums.StartupType.Service:
                         using (var service = new WinService())
                         {
-                            if (Debugger.IsAttached)
+                            if (IsInDebugMode)
                                 service.OnDebug(null);
                             else
                                 ServiceBase.Run(service);
@@ -526,44 +590,65 @@ namespace WinMemoryCleaner
         {
             try
             {
-                var startInfo = new ProcessStartInfo
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-
                 if (enable)
                 {
-                    startInfo.Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT /RL HIGHEST /RU ADMINISTRATORS /SC ONLOGON /TN ""{0}"" /TR """"""{1}""""""", Constants.App.Title, Path);
-                    startInfo.FileName = "schtasks";
-                    startInfo.RedirectStandardError = true;
-                    startInfo.RedirectStandardOutput = true;
+                    var runLevelArgument = Environment.OSVersion.Version.Major >= 6 ? " /RL HIGHEST" : string.Empty;
 
-                    using (var process = Process.Start(startInfo))
+                    var createStartInfo = new ProcessStartInfo("schtasks")
                     {
-                        var errorMessage = process.StandardError.ReadToEnd();
+                        Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT{0} /SC ONLOGON /TN ""{1}"" /TR ""{2}"" /RU ""{3}""", runLevelArgument, Constants.App.Title, Path, Environment.UserName),
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        RedirectStandardError = true
+                    };
 
-                        process.WaitForExit();
+                    using (var createProcess = Process.Start(createStartInfo))
+                    {
+                        var errorMessage = createProcess.StandardError.ReadToEnd();
+                        createProcess.WaitForExit();
 
-                        if (process.ExitCode != 0)
+                        if (createProcess.ExitCode != Constants.Windows.SystemErrorCode.ErrorSuccess)
                             Logger.Error(string.Format(Localizer.Culture, "Failed to create startup task for '{0}'. Error: {1}", Constants.App.Title, errorMessage));
                     }
                 }
                 else
                 {
-                    startInfo.Arguments = string.Format(Localizer.Culture, @"/C schtasks /DELETE /F /TN ""{0}"" 2>nul", Constants.App.Title);
-                    startInfo.FileName = "cmd.exe";
-                    startInfo.RedirectStandardError = false;
-                    startInfo.RedirectStandardOutput = false;
+                    var queryStartInfo = new ProcessStartInfo("schtasks")
+                    {
+                        Arguments = string.Format(Localizer.Culture, @"/QUERY /TN ""{0}""", Constants.App.Title),
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true
+                    };
 
-                    using (var process = Process.Start(startInfo))
-                        process.WaitForExit();
+                    using (var queryProcess = Process.Start(queryStartInfo))
+                    {
+                        queryProcess.WaitForExit();
+
+                        if (queryProcess.ExitCode == Constants.Windows.SystemErrorCode.ErrorSuccess)
+                        {
+                            var deleteStartInfo = new ProcessStartInfo("schtasks")
+                            {
+                                Arguments = string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title),
+                                CreateNoWindow = true,
+                                UseShellExecute = false,
+                                WindowStyle = ProcessWindowStyle.Hidden
+                            };
+
+                            using (var deleteProcess = Process.Start(deleteStartInfo))
+                            {
+                                deleteProcess.WaitForExit();
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception e)
             {
-                Logger.Error(string.Format(Localizer.Culture, "An unexpected error occurred while managing the startup task for '{0}'. Exception: {1}", Constants.App.Title, e.GetMessage()));
+                Logger.Error(string.Format(Localizer.Culture, "An error occurred while managing the scheduled task for app startup. Error: {0}", e.GetMessage()));
             }
         }
 
@@ -572,7 +657,7 @@ namespace WinMemoryCleaner
         /// </summary>
         private void SecurityCheck()
         {
-            if (Debugger.IsAttached)
+            if (IsInDebugMode)
                 return;
 
             if (!Validator.IsCertificateValid())
@@ -729,72 +814,6 @@ namespace WinMemoryCleaner
             catch
             {
                 Environment.Exit(Constants.Windows.SystemErrorCode.ErrorSuccess);
-            }
-        }
-
-        /// <summary>
-        /// Update to the latest version
-        /// </summary>
-        public static void Update(List<string> commandLineArguments = null)
-        {
-            try
-            {
-                if (commandLineArguments != null && commandLineArguments.Any(arg => arg.Replace("/", string.Empty).Equals(Constants.App.CommandLineArgument.Package, StringComparison.OrdinalIgnoreCase)))
-                    return;
-
-                if (DateTimeOffset.Now.Subtract(_lastAutoUpdate).TotalHours < Constants.App.AutoUpdateInterval)
-                    return;
-
-                _lastAutoUpdate = DateTimeOffset.Now;
-
-                using (var client = new WebClient())
-                {
-                    ServicePointManager.DefaultConnectionLimit = 10;
-                    ServicePointManager.Expect100Continue = true;
-                    ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072 | (SecurityProtocolType)12288; // TLS 1.2 | TLS 1.3
-
-                    var assemblyInfo = client.DownloadString(Constants.App.Repository.AssemblyInfoUri);
-
-                    var assemblyVersionMatch = Regex.Match(assemblyInfo, @"AssemblyVersion\(""(.*)""\)\]");
-
-                    if (!assemblyVersionMatch.Success)
-                        return;
-
-                    var newestVersion = Version.Parse(assemblyVersionMatch.Groups[1].Value);
-
-                    if (Version < newestVersion)
-                    {
-                        var exe = AppDomain.CurrentDomain.FriendlyName;
-                        var sourcePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), exe);
-                        var targetPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
-
-                        if (File.Exists(sourcePath))
-                            File.Delete(sourcePath);
-
-                        client.DownloadFile(Constants.App.Repository.LatestExeUri, sourcePath);
-
-                        if (File.Exists(sourcePath) && AssemblyName.GetAssemblyName(sourcePath).Version.Equals(newestVersion))
-                        {
-                            _processes.Add(new ProcessStartInfo
-                            {
-                                Arguments = string.Format(Localizer.Culture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, sourcePath, targetPath, newestVersion, string.Join(" ", commandLineArguments)).Trim(),
-                                CreateNoWindow = true,
-                                FileName = "cmd",
-                                RedirectStandardError = false,
-                                RedirectStandardInput = false,
-                                RedirectStandardOutput = false,
-                                UseShellExecute = false,
-                                WindowStyle = ProcessWindowStyle.Hidden
-                            });
-
-                            Shutdown();
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Warning(string.Format(Localizer.Culture, "({0}) {1}", Localizer.String.AutoUpdate.ToUpper(Localizer.Culture), e.GetMessage()));
             }
         }
 

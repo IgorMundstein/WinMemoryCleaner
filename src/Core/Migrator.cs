@@ -19,11 +19,6 @@ namespace WinMemoryCleaner
                 MigrateSettingsFromCurrentUserToLocalMachine();
                 RemoveStartupRegistry();
             }
-            // 3.0+
-            if (App.Version >= new Version(3, 0))
-            {
-                RemoveRegistryPath();
-            }
         }
 
         #region Classes  
@@ -148,25 +143,8 @@ namespace WinMemoryCleaner
 
                 Registry.CurrentUser.DeleteSubKey(Constants.App.Registry.Key.ProcessExclusionList, false);
                 Registry.CurrentUser.DeleteSubKey(Constants.App.Registry.Key.Settings, false);
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e);
-            }
-        }
 
-        /// <summary>
-        /// Removes the registry path.
-        /// </summary>
-        private static void RemoveRegistryPath()
-        {
-            try
-            {
-                using (var key = Registry.LocalMachine.OpenSubKey(Constants.App.Registry.Key.Settings, true))
-                {
-                    if (key != null)
-                        key.DeleteValue(V30.Registry.Path, false);
-                }
+                Logger.Information("Migration version update: Settings migrated from Current User to Local Machine on registry.");
             }
             catch (Exception e)
             {
@@ -183,8 +161,12 @@ namespace WinMemoryCleaner
             {
                 using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run", true))
                 {
-                    if (key != null)
-                        key.DeleteValue(Constants.App.Title, false);
+                    if (key != null && key.GetValue(Constants.App.Title, null) != null)
+                    {
+                        key.DeleteValue(Constants.App.Title);
+
+                        Logger.Information("Migration version update: Removed startup registry entry to avoid UAC warnings.");
+                    }
                 }
             }
             catch (Exception e)

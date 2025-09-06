@@ -64,7 +64,7 @@
   "Used": "искористено",
   "UseTransparentBackground": "користи транспарентна позадина",
   "VirtualMemory": "виртуелна меморија",
-  "WhenFreeMemoryIsBelow": "кога слободната меморија е под {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "кога слободната физичка меморија е под {0}%",
   "WarningLevel": "ниво на предупредување",
   "WorkingSet": "работен сет",
   "Yes": "да"

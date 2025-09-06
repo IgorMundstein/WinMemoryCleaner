@@ -56,8 +56,8 @@ namespace WinMemoryCleaner
         /// Called when [window closed].
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void OnWindowClosed(object sender, System.EventArgs e)
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void OnWindowClosed(object sender, EventArgs e)
         {
             if (Owner != null)
                 Owner.IsEnabled = true;

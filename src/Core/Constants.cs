@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -13,27 +12,20 @@ namespace WinMemoryCleaner
         public static class App
         {
             public const int AutoOptimizationMemoryUsageInterval = 5; // Minute
-            public const int AutoUpdateInterval = 24; // Hour
+            public const string EmbeddedResourcePath = "WinMemoryCleaner.Resources.";
+            public const string EmbeddedResourcePathExtension = ".json";
             public const string Id = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
             public const string KeyFile = "WinMemoryCleaner.snk";
             public const string License = "GPL-3.0";
-            public const string LocalizationResourceExtension = ".json";
-            public const string LocalizationResourcePath = "WinMemoryCleaner.Resources.Localization.";
+            public const string LocalizationResourcePath = EmbeddedResourcePath + "Localization.";
             public const string Name = "WinMemoryCleaner";
+            public const string ThemesResourcePath = EmbeddedResourcePath + "Themes.";
             public const string Title = "Windows Memory Cleaner";
             public const string VersionFormat = "{0}.{1}.{2}";
 
             public static class Author
             {
                 public const string Name = "Igor Mundstein";
-            }
-
-            public static class CommandLineArgument
-            {
-                public const string Install = "Install";
-                public const string Package = "Package";
-                public const string Service = "Service";
-                public const string Uninstall = "Uninstall";
             }
 
             public static class Certificate
@@ -47,6 +39,14 @@ namespace WinMemoryCleaner
                 {
                     public const string Thumbprint = "2187092935C12F90727B29AD6913A7F89817B942";
                 }
+            }
+
+            public static class CommandLineArgument
+            {
+                public const string Install = "Install";
+                public const string Package = "Package";
+                public const string Service = "Service";
+                public const string Uninstall = "Uninstall";
             }
 
             public static class Defaults
@@ -77,10 +77,34 @@ namespace WinMemoryCleaner
                 private const string GitHubRaw = "https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main";
 
                 public static readonly Uri AboutUri = new Uri(GitHub + "?tab=readme-ov-file#windows-memory-cleaner");
-                public static readonly Uri AssemblyInfoUri = new Uri(Path.Combine(GitHubRaw, "src/Properties/AssemblyInfo.cs"));
+                public static readonly Uri AssemblyInfoUri = new Uri(GitHubRaw + "/src/Properties/AssemblyInfo.cs");
                 public static readonly Uri DownloadUri = new Uri(GitHub + "?tab=readme-ov-file#-download");
-                public static readonly Uri LatestExeUri = new Uri(Path.Combine(GitHub, "releases/latest/download/WinMemoryCleaner.exe"));
+                public static readonly Uri LatestExeUri = new Uri(GitHub + "/releases/latest/download/WinMemoryCleaner.exe");
                 public static readonly Uri Uri = new Uri(GitHub);
+            }
+
+            public static class Update
+            {
+                public const string BackupDirName = "Backups";
+                public const int BackupRetentionDays = 3; // Day
+                public const int CheckInterval = 24; // Hour
+                public const string ChecksumsFileName = "checksums.txt";
+                public const int ChecksumsMaxRetries = 3;
+                public const int ChecksumsRetryDelay = 2; // Second
+                public const int DownloadTimeout = 60; // Second
+                public const int MaxConnectionLimit = 10;
+                public const string MutexName = @"Local\WinMemoryCleaner_AutoUpdate_Mutex";
+                public const bool RequireAuthenticode = true; // Require Authenticode trust and known thumbprint
+                public const bool RequireChecksum = true; // Require checksum to be present and matching
+                public const bool RequireKnownDownloadUri = true; // Require expected HTTPS GitHub URL shape
+                public const int ReplaceMaxTries = 120; // Count
+                public const int ReplaceRetryDelayMs = 1000; // Millisecond
+                public const string TempRootDirName = "WinMemoryCleaner";
+                public const string TokenEnvVar = "WMC_UPDATE_TOKEN";
+                public const string TokenFilePrefix = "WMC.";
+                public const string TokenFileSuffix = ".txt";
+                public const string UserAgent = "WinMemoryCleaner-Updater/1.0";
+                public const bool VerifyFileVersionInfo = true;
             }
         }
 
@@ -93,6 +117,7 @@ namespace WinMemoryCleaner
                     public const int BorderColor = 34;
                     public const int WindowCornerPreference = 33;
                 }
+
                 public static class Value
                 {
                     public const int WindowCornerPreferenceRound = 2;

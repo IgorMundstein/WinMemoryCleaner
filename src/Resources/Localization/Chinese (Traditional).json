@@ -64,7 +64,7 @@
   "Used": "使用中",
   "UseTransparentBackground": "使用透明背景",
   "VirtualMemory": "虛擬記憶體",
-  "WhenFreeMemoryIsBelow": "當可用記憶體低於 {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "當可用實體記憶體低於 {0}% 時",
   "WarningLevel": "警告級別",
   "WorkingSet": "工作集",
   "Yes": "是"

@@ -22,8 +22,12 @@ namespace WinMemoryCleaner
         /// </summary>
         public MainWindow()
         {
+            // Check if application is shutting down
+            if (Application.Current != null && Application.Current.Dispatcher != null && Application.Current.Dispatcher.HasShutdownStarted)
+                return;
+
             InitializeComponent();
-            
+
             IsVisibleChanged += OnWindowVisibleChanged;
 
             _viewModel = DataContext as MainViewModel;

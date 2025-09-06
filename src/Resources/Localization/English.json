@@ -13,7 +13,7 @@
   "CombinedPageList": "combined page list",
   "DangerLevel": "danger level",
   "Donate": "donate",
-  "DonationMessage": "if you find this app helpful, consider donating. your donation helps keep the project alive, optimized, and free for everyone.",
+  "DonationMessage": "if you find this app helpful, please consider donating. your contribution helps keep the project alive, optimized, and free for everyone.",
   "DonationTitle": "support this project",
   "Error": "error",
   "ErrorAdminPrivilegeRequired": "this operation requires administrator privileges ({0})",
@@ -64,7 +64,7 @@
   "Used": "used",
   "UseTransparentBackground": "use transparent background",
   "VirtualMemory": "virtual memory",
-  "WhenFreeMemoryIsBelow": "when free memory is below {0}%",
+  "WhenFreePhysicalMemoryIsBelow": "when free physical memory is below {0}%",
   "WarningLevel": "warning level",
   "WorkingSet": "working set",
   "Yes": "yes"
