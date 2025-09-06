@@ -88,7 +88,6 @@ jobs:
         id: capture_screenshot
         shell: pwsh
         run: |
-          # PowerShell script remains the same
           $ErrorActionPreference = "Stop"
           $appPath = ".\WinMemoryCleaner.exe"
           if (-not (Test-Path $appPath)) {
@@ -228,7 +227,7 @@ jobs:
           tag_name: ${{ needs.build.outputs.new_tag }}
           name: ${{ needs.build.outputs.new_tag }}
           body: |
-            # ${{ steps.commit_date.outputs.date }}
+            **${{ steps.commit_date.outputs.date }}**
             ${{ steps.formatted_message.outputs.body }}
           files: |
             release_artifacts/WinMemoryCleaner.exe
