@@ -27,7 +27,6 @@ jobs:
   check-assembly-version:
     name: Check AssemblyVersion Up-to-Date
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,6 +67,7 @@ jobs:
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
       unsigned_artifact_name: winmemorycleaner-${{ steps.version.outputs.app_version }}
+      test_artifact_name: ${{ steps.determine_artifact.outputs.name }}
 
     steps:
       - name: Checkout code
@@ -142,12 +142,22 @@ jobs:
           output-artifact-directory: ./
 
       - name: Upload signed build artifact
-        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/develop'
+        if: steps.signpath.conclusion == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: winmemorycleaner-${{ steps.version.outputs.app_version }}-signed
           path: WinMemoryCleaner.exe
           retention-days: 30
+
+      - name: Determine Test Artifact
+        id: determine_artifact
+        shell: pwsh
+        run: |
+          if ('${{ steps.signpath.conclusion }}' -eq 'success') {
+            echo "name=winmemorycleaner-${{ steps.version.outputs.app_version }}-signed" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          } else {
+            echo "name=winmemorycleaner-${{ steps.version.outputs.app_version }}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          }
 
   test-ui:
     name: UI Test on ${{ matrix.os }}
@@ -159,10 +169,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Download unsigned build artifact
+      - name: Download build artifact for testing
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build-and-test.outputs.unsigned_artifact_name }}
+          name: ${{ needs.build-and-test.outputs.test_artifact_name }}
 
       - name: Run UI Test
         shell: pwsh
