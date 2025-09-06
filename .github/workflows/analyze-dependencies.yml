@@ -53,19 +53,12 @@ jobs:
       - name: Restore dependencies and generate lock file
         run: nuget restore src/WinMemoryCleaner.sln -UseLockFile
 
-      - name: Commit dependency changes
-        run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git add .
-          git diff --cached --quiet || git commit -m "Update dependencies [auto]" || echo "No changes to commit"
-        continue-on-error: true
-
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_TOKEN }}
+          base: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref_name }}
           branch: auto/dependency-update
           commit-message: "Update dependencies [auto]"
           title: "Auto-update dependencies"
@@ -82,3 +75,4 @@ jobs:
           Remove-Item Env:GITHUB_TOKEN -ErrorAction SilentlyContinue
           gh pr merge "$env:PR_NUMBER" --squash --auto --repo "$env:GITHUB_REPOSITORY"
         shell: pwsh
+
