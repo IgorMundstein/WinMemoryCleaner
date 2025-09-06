@@ -111,7 +111,7 @@ jobs:
               "autoupdate": {
                   "architecture": {
                       "64bit": {
-                          "url": "https://github.com/${{ github.repository }}/releases/download/$version/${{ env.APP_NAME }}.zip"
+                          "url": "https://github.com/${{ github.repository }}/releases/download/`$version/${{ env.APP_NAME }}.zip"
                       }
                   }
               }
