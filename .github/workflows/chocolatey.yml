@@ -142,7 +142,7 @@ jobs:
               <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/${env:RELEASE_TAG}</releaseNotes>
               <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
               <bugTrackerUrl>https://github.com/${{ github.repository }}/issues</bugTrackerUrl>
-              <tags>${{ steps.metadata.outputs.tags }}</tags>
+              <tags>notSilent ${{ steps.metadata.outputs.tags }}</tags>
               <summary>${{ steps.metadata.outputs.desc }}</summary>
               <description>${{ steps.metadata.outputs.desc }}</description>
               <dependencies>
