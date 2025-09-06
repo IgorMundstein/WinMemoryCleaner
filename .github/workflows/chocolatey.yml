@@ -145,6 +145,9 @@ jobs:
               <tags>${{ steps.metadata.outputs.tags }}</tags>
               <summary>${{ steps.metadata.outputs.desc }}</summary>
               <description>${{ steps.metadata.outputs.desc }}</description>
+              <dependencies>
+                <dependency id="dotnetfx" />
+              </dependencies>
             </metadata>
             <files>
               <file src='tools\**' target='tools' />
@@ -198,7 +201,7 @@ jobs:
         run: |
           cd .\chocolatey-package
           choco pack
-          $nupkgFile = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
+          $nkgFile = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
           if (-not $nupkgFile) {
             Write-Host "::error::No .nupkg file was created by 'choco pack'."
             exit 1
