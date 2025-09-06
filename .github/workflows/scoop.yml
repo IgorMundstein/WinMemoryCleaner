@@ -81,7 +81,7 @@ jobs:
         id: download
         shell: pwsh
         run: |
-          $assetName = "${{ env.APP_NAME }}.exe"
+          $assetName = "${{ env.APP_NAME }}.zip"
           $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/$assetName"
           Invoke-WebRequest -Uri $downloadUrl -OutFile $assetName -UseBasicParsing
           $sha256 = (Get-FileHash -Path $assetName -Algorithm SHA256).Hash.ToLower()
@@ -100,11 +100,20 @@ jobs:
               "description": "${{ steps.metadata.outputs.desc }}",
               "homepage": "${{ steps.metadata.outputs.homepage }}",
               "license": "${{ steps.metadata.outputs.license }}",
-              "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe",
-              "hash": "${{ steps.download.outputs.sha256 }}",
+              "architecture": {
+                  "64bit": {
+                      "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.zip",
+                      "hash": "${{ steps.download.outputs.sha256 }}"
+                  }
+              },
               "bin": "${{ env.APP_NAME }}.exe",
+              "checkver": "github",
               "autoupdate": {
-                  "url": "https://github.com/${{ github.repository }}/releases/download/$version/${{ env.APP_NAME }}.exe"
+                  "architecture": {
+                      "64bit": {
+                          "url": "https://github.com/${{ github.repository }}/releases/download/v$version/${{ env.APP_NAME }}.zip"
+                      }
+                  }
               }
           }
           "@
@@ -130,13 +139,13 @@ jobs:
           $manifestFile = "${{ steps.create_manifest.outputs.manifest_path }}"
           cp ../$manifestFile "bucket/${{ env.MANIFEST_NAME }}.json"
           git add .
-          git commit -m "${{ env.APP_NAME }}: Add version $version"
+          git commit -m "${{ env.MANIFEST_NAME }}: Update to $version"
           git push --force origin $branchName
           $prOutput = gh pr create `
             --repo "${{ env.UPSTREAM_REPO }}" `
             --head "${{ github.repository_owner }}:$branchName" `
             --base master `
-            --title "${{ env.APP_NAME }} $version" `
+            --title "${{ env.MANIFEST_NAME }}: Update to $version" `
             --body "Automated submission for ${{ env.APP_NAME }} version $version." 2>&1
           if ($LASTEXITCODE -ne 0) {
             if ($prOutput -like "*a pull request for branch*already exists*") {
