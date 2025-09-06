@@ -146,7 +146,7 @@ jobs:
               <summary>${{ steps.metadata.outputs.desc }}</summary>
               <description>${{ steps.metadata.outputs.desc }}</description>
               <dependencies>
-                <dependency id="dotnetfx" />
+                <dependency id="dotnetfx" version="4.0" />
               </dependencies>
             </metadata>
             <files>
