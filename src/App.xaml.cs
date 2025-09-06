@@ -208,7 +208,6 @@ namespace WinMemoryCleaner
             e.Handled = true;
 
             Logger.Error(e.Exception);
-            ShowDialog(e.Exception);
         }
 
         /// <summary>
@@ -550,8 +549,6 @@ namespace WinMemoryCleaner
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Logger.Error((Exception)e.ExceptionObject);
-
-            ShowDialog((Exception)e.ExceptionObject);
         }
 
         /// <summary>
