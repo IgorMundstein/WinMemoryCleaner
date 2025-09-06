@@ -10,7 +10,7 @@ on:
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   build:
@@ -64,72 +64,8 @@ jobs:
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
-      - name: Capture window-only screenshot for docs
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-            $appPath = "src\bin\Release\WinMemoryCleaner.exe"
-            if (-not (Test-Path $appPath)) {
-              Write-Host "::error::Built EXE not found at $appPath"
-              exit 1
-            }
-            $windowScreenshotPath = "$pwd\main-window-raw.png"
-
-            # Launch app and wait for main window
-            $proc = Start-Process -FilePath $appPath -PassThru
-            $maxWaitMs = 15000
-            $elapsed = 0
-            while ($proc.MainWindowHandle -eq 0 -and $elapsed -lt $maxWaitMs) {
-              Start-Sleep -Milliseconds 200
-              $proc.Refresh()
-              $elapsed += 200
-            }
-            if ($proc.MainWindowHandle -eq 0) {
-              Write-Host "::error::Main window not found."
-              Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-              exit 1
-            }
-
-            Add-Type -AssemblyName System.Drawing
-
-            # Define Win32 interop without a here-string to avoid YAML parsing issues
-            $sig = 'using System; using System.Runtime.InteropServices; public static class Win32 { [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left; public int Top; public int Right; public int Bottom; } [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, ref RECT rect); [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd); }'
-            Add-Type -TypeDefinition $sig -Language CSharp
-
-            [void][Win32]::SetForegroundWindow([IntPtr]$proc.MainWindowHandle)
-            $rect = New-Object Win32+RECT
-            if (-not [Win32]::GetWindowRect([IntPtr]$proc.MainWindowHandle, [ref]$rect)) {
-              Write-Host "::error::GetWindowRect failed."
-              Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-              exit 1
-            }
-            $width = $rect.Right - $rect.Left
-            $height = $rect.Bottom - $rect.Top
-            if ($width -le 0 -or $height -le 0) {
-              Write-Host "::error::Invalid window size: $width x $height"
-              Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-              exit 1
-            }
-
-            $wbmp = New-Object System.Drawing.Bitmap $width, $height
-            $wgfx = [System.Drawing.Graphics]::FromImage($wbmp)
-            $wgfx.CopyFromScreen($rect.Left, $rect.Top, 0, 0, (New-Object System.Drawing.Size($width, $height)))
-            $wbmp.Save($windowScreenshotPath, [System.Drawing.Imaging.ImageFormat]::Png)
-            $wgfx.Dispose()
-            $wbmp.Dispose()
-
-            Stop-Process -Id $proc.Id -Force
-
-      - name: Upload screenshot artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-window-screenshot
-          path: main-window-raw.png
-          retention-days: 7
-
-      - name: Upload unsigned EXE for signing
-        id: upload-unsigned
+      - name: Upload EXE for signing
+        id: upload-for-signing
         uses: actions/upload-artifact@v4
         with:
           name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}
@@ -145,26 +81,74 @@ jobs:
           organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
           project-slug: WinMemoryCleaner
           signing-policy-slug: release-signing
-          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          github-artifact-id: ${{ steps.upload-for-signing.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: ./
 
-      - name: Validate signed EXE
-        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
+      - name: Capture window screenshot from SIGNED exe
+        if: steps.signpath.conclusion == 'success'
         shell: pwsh
         run: |
-          if ((Get-Item WinMemoryCleaner.exe).Length -lt 100000) {
-            Write-Host "::error::Signed EXE is unexpectedly small, aborting release!"
+          $ErrorActionPreference = "Stop"
+          $appPath = ".\WinMemoryCleaner.exe"
+          if (-not (Test-Path $appPath)) {
+            Write-Host "::error::Signed EXE not found at $appPath"
             exit 1
           }
+          $windowScreenshotPath = "$pwd\main-window-raw.png"
+          $proc = Start-Process -FilePath $appPath -PassThru
+          $maxWaitMs = 15000
+          $elapsed = 0
+          while ($proc.MainWindowHandle -eq 0 -and $elapsed -lt $maxWaitMs) {
+            Start-Sleep -Milliseconds 200
+            $proc.Refresh()
+            $elapsed += 200
+          }
+          if ($proc.MainWindowHandle -eq 0) {
+            Write-Host "::error::Main window not found for signed EXE."
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            exit 1
+          }
+          Add-Type -AssemblyName System.Drawing
+          $sig = 'using System; using System.Runtime.InteropServices; public static class Win32 { [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left; public int Top; public int Right; public int Bottom; } [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, ref RECT rect); [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd); }'
+          Add-Type -TypeDefinition $sig -Language CSharp
+          [void][Win32]::SetForegroundWindow([IntPtr]$proc.MainWindowHandle)
+          $rect = New-Object Win32+RECT
+          if (-not [Win32]::GetWindowRect([IntPtr]$proc.MainWindowHandle, [ref]$rect)) {
+            Write-Host "::error::GetWindowRect failed."
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            exit 1
+          }
+          $width = $rect.Right - $rect.Left
+          $height = $rect.Bottom - $rect.Top
+          if ($width -le 0 -or $height -le 0) {
+            Write-Host "::error::Invalid window size: $($width)x$($height)"
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            exit 1
+          }
+          $wbmp = New-Object System.Drawing.Bitmap $width, $height
+          $wgfx = [System.Drawing.Graphics]::FromImage($wbmp)
+          $wgfx.CopyFromScreen($rect.Left, $rect.Top, 0, 0, (New-Object System.Drawing.Size($width, $height)))
+          $wbmp.Save($windowScreenshotPath, [System.Drawing.Imaging.ImageFormat]::Png)
+          $wgfx.Dispose()
+          $wbmp.Dispose()
+          Stop-Process -Id $proc.Id -Force
 
-      - name: Create ZIP archive
-        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
+      - name: Upload screenshot artifact
+        if: steps.signpath.conclusion == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-window-screenshot
+          path: main-window-raw.png
+          retention-days: 7
+
+      - name: Create ZIP archive from SIGNED exe
+        if: steps.signpath.conclusion == 'success'
         shell: pwsh
         run: Compress-Archive -Path WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
 
       - name: Upload release artifacts
-        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
+        if: steps.signpath.conclusion == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: winmemorycleaner-release-${{ steps.bump.outputs.new_tag }}
@@ -275,12 +259,13 @@ jobs:
           generate_release_notes: false
 
   update-docs-image:
-    name: Update docs/assets/images/main-window.png & cache bust token
+    name: Update docs/assets/images/main-window.png
     needs: build
     if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository (with PAT)
@@ -294,9 +279,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-          git config user.name "github-actions[bot]"
+          git config --global user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git pull --rebase
 
@@ -322,69 +305,40 @@ jobs:
             echo "::error::main-window-raw.png not found in artifact"
             exit 1
           fi
-
           read W H < <(identify -format "%w %h" "$FILE")
           if [ -z "${W:-}" ] || [ -z "${H:-}" ]; then
             echo "::error::Failed to read image size"
             exit 1
           fi
-          
-          echo "IMAGE_WIDTH=$W" >> $GITHUB_OUTPUT
-          echo "IMAGE_HEIGHT=$H" >> $GITHUB_OUTPUT
-
-            # Corner radius ~2% of min dimension, clamped to [10, 24]
           if [ "$W" -lt "$H" ]; then MIN=$W; else MIN=$H; fi
           R=$(( MIN / 50 ))
           if [ "$R" -lt 10 ]; then R=10; fi
           if [ "$R" -gt 24 ]; then R=24; fi
-
           magick "$FILE" \
             \( -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$((W-1)),$((H-1)),$R,$R" \) \
             -compose DstIn -composite \
             docs/assets/images/main-window.png
 
-      - name: Update docs/index.html
-        shell: bash
-        run: |
-          set -euo pipefail
-          INDEX="docs/index.html"
-          IMG="docs/assets/images/main-window.png"
-          if [ ! -f "$INDEX" ]; then
-            echo "::error::$INDEX not found"
-            exit 1
-          fi
-          if [ ! -f "$IMG" ]; then
-            echo "::error::$IMG not found"
-            exit 1
-          fi
-          
-          # Update image dimensions
-          WIDTH=${{ steps.image_dimensions.outputs.IMAGE_WIDTH }}
-          HEIGHT=${{ steps.image_dimensions.outputs.IMAGE_HEIGHT }}
-          sed -i "s|<img id=\"app-main-window\".*width=\"[0-9]*\" height=\"[0-9]*\"|<img id=\"app-main-window\" src=\"https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png\" data-base=\"https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/assets/images/main-window.png\" alt=\"App Main Window\" class=\"mx-auto block h-auto max-w-full rounded-md\" width=\"$WIDTH\" height=\"$HEIGHT\"|" "$INDEX"
-          echo "Updated image dimensions to width=$WIDTH height=$HEIGHT"
+      - name: Create Pull Request for Updated Screenshot
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          commit-message: "chore(docs): update main-window.png"
+          title: "Docs: Update screenshot for v${{ needs.build.outputs.new_tag }}"
+          body: |
+            This is an automated PR to update the main window screenshot.
+            It will be automatically merged once all status checks pass.
+          branch: "docs/screenshot-update-${{ needs.build.outputs.new_tag }}"
+          base: main
+          delete-branch: true
+          add-paths: |
+            docs/assets/images/main-window.png
 
-          # Update cache bust token
-          HASH=$(sha256sum "$IMG" | cut -c1-12)
-          if grep -q 'const IMAGE_VERSION' "$INDEX"; then
-            sed -i "s/const IMAGE_VERSION = \".*\";/const IMAGE_VERSION = \"$HASH\";/" "$INDEX"
-          else
-            # Append a small script block if placeholder not present
-            printf '\n<script>const IMAGE_VERSION = "%s";</script>\n' "$HASH" >> "$INDEX"
-          fi
-          echo "Updated IMAGE_VERSION to $HASH"
-
-      - name: Commit and push if changed (with PAT)
-        shell: bash
-        run: |
-          set -euo pipefail
-          CHANGED=0
-          git add docs/assets/images/main-window.png docs/index.html || true
-          if ! git diff --cached --quiet; then
-            CHANGED=1
-            git commit -m "chore(docs): update main-window.png & cache bust token (image hash)"
-            git push origin HEAD:main
-          fi
-          if [ $CHANGED -eq 0 ]; then
-            echo "No changes to commit."
-          fi
+      - name: Enable Auto-Merge for the PR
+        if: steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          REPO: ${{ github.repository }}
+        run: gh pr merge $PR_NUMBER --repo $REPO --squash --auto --delete-branch
