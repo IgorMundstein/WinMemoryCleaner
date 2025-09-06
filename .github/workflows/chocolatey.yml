@@ -201,7 +201,7 @@ jobs:
         run: |
           cd .\chocolatey-package
           choco pack
-          $nkgFile = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
+          $nupkgFile = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
           if (-not $nupkgFile) {
             Write-Host "::error::No .nupkg file was created by 'choco pack'."
             exit 1
