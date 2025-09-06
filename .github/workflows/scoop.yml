@@ -150,6 +150,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             if ($prOutput -like "*a pull request for branch*already exists*") {
               Write-Host "::notice::A pull request for this version already exists. Skipping."
+              exit 0
             } else {
               Write-Host "::error::Failed to create pull request: $prOutput"
               exit 1
