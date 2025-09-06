@@ -43,9 +43,7 @@ jobs:
           git fetch --tags
           $currentTag = git tag --sort=-creatordate | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Select-Object -First 1
           if (-not $currentTag) {
-            $major = 1
-            $minor = 0
-            $patch = 0
+            $major = 1; $minor = 0; $patch = 0
           } else {
             $parts = $currentTag.Split('.')
             $major = [int]$parts[0]
@@ -87,8 +85,10 @@ jobs:
 
       - name: Capture window screenshot from SIGNED exe
         if: steps.signpath.conclusion == 'success'
+        id: capture_screenshot
         shell: pwsh
         run: |
+          # PowerShell script remains the same
           $ErrorActionPreference = "Stop"
           $appPath = ".\WinMemoryCleaner.exe"
           if (-not (Test-Path $appPath)) {
@@ -97,12 +97,9 @@ jobs:
           }
           $windowScreenshotPath = "$pwd\main-window-raw.png"
           $proc = Start-Process -FilePath $appPath -PassThru
-          $maxWaitMs = 15000
-          $elapsed = 0
+          $maxWaitMs = 15000; $elapsed = 0
           while ($proc.MainWindowHandle -eq 0 -and $elapsed -lt $maxWaitMs) {
-            Start-Sleep -Milliseconds 200
-            $proc.Refresh()
-            $elapsed += 200
+            Start-Sleep -Milliseconds 200; $proc.Refresh(); $elapsed += 200
           }
           if ($proc.MainWindowHandle -eq 0) {
             Write-Host "::error::Main window not found for signed EXE."
@@ -116,26 +113,22 @@ jobs:
           $rect = New-Object Win32+RECT
           if (-not [Win32]::GetWindowRect([IntPtr]$proc.MainWindowHandle, [ref]$rect)) {
             Write-Host "::error::GetWindowRect failed."
-            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-            exit 1
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue; exit 1
           }
-          $width = $rect.Right - $rect.Left
-          $height = $rect.Bottom - $rect.Top
+          $width = $rect.Right - $rect.Left; $height = $rect.Bottom - $rect.Top
           if ($width -le 0 -or $height -le 0) {
             Write-Host "::error::Invalid window size: $($width)x$($height)"
-            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-            exit 1
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue; exit 1
           }
           $wbmp = New-Object System.Drawing.Bitmap $width, $height
           $wgfx = [System.Drawing.Graphics]::FromImage($wbmp)
           $wgfx.CopyFromScreen($rect.Left, $rect.Top, 0, 0, (New-Object System.Drawing.Size($width, $height)))
           $wbmp.Save($windowScreenshotPath, [System.Drawing.Imaging.ImageFormat]::Png)
-          $wgfx.Dispose()
-          $wbmp.Dispose()
+          $wgfx.Dispose(); $wbmp.Dispose()
           Stop-Process -Id $proc.Id -Force
 
       - name: Upload screenshot artifact
-        if: steps.signpath.conclusion == 'success'
+        if: steps.capture_screenshot.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: release-window-screenshot
@@ -161,17 +154,14 @@ jobs:
     name: Create GitHub Release
     needs: build
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
           name: winmemorycleaner-release-${{ needs.build.outputs.new_tag }}
           path: release_artifacts
-
       - name: Create Checksums
         shell: pwsh
         working-directory: release_artifacts
@@ -179,33 +169,30 @@ jobs:
           Get-FileHash -Algorithm SHA256 -Path "WinMemoryCleaner.exe", "WinMemoryCleaner.zip" | ForEach-Object {
             $_.Hash.ToLower() + "  " + (Split-Path -Leaf $_.Path)
           } | Out-File -FilePath "checksums.txt" -Encoding utf8
-          Write-Host "Generated checksums.txt:"
-          cat checksums.txt
-
+          Write-Host "Generated checksums.txt:"; cat checksums.txt
       - name: Create or reuse version tag
         shell: pwsh
         run: |
           $tag = "${{ needs.build.outputs.new_tag }}"
           git fetch --tags
-          $tagExists = git tag -l $tag
-          if (-not $tagExists) {
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
+          if (-not (git tag -l $tag)) {
+            git config user.name "github-actions"; git config user.email "github-actions@github.com"
             git tag $tag
             git push origin $tag
           } else {
             Write-Host "Tag '$tag' already exists. Reusing..."
           }
-
       - name: Check if release already exists
         id: check_release
         shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $tag = "${{ needs.build.outputs.new_tag }}"
           $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN" }
           $uri = "https://api.github.com/repos/${{ github.repository }}/releases/tags/$tag"
           try {
-            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method GET
+            Invoke-RestMethod -Uri $uri -Headers $headers -Method GET
             Write-Host "Release already exists for tag $tag."
             "skip=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           } catch {
@@ -213,20 +200,15 @@ jobs:
               Write-Host "No release exists for tag $tag. Proceeding."
               "skip=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             } else {
-              Write-Error "Unexpected error: $($_.Exception.Message)"
-              exit 1
+              Write-Error "Unexpected error: $($_.Exception.Message)"; exit 1
             }
           }
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Get commit date
         id: commit_date
         shell: pwsh
         run: |
           $date = (git show -s --format=%cd --date=short ${{ github.event.head_commit.id }}).Trim()
-          echo "date=$date" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
+          "date=$date" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       - name: Format commit message for release notes
         id: formatted_message
         shell: pwsh
@@ -234,14 +216,11 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           $msg = @()
-          foreach ($line in $env:COMMIT_MESSAGE -split "`n") {
-            $msg += "- $line"
-          }
+          foreach ($line in $env:COMMIT_MESSAGE -split "`n") { $msg += "- $line" }
           $body = $msg -join "`n"
-          echo "body<<EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "$body" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          echo "EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
+          "body<<EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "$body" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       - name: Upload GitHub release assets
         if: steps.check_release.outputs.skip == 'false'
         uses: softprops/action-gh-release@v2
@@ -284,36 +263,43 @@ jobs:
           git pull --rebase
 
       - name: Download window-only screenshot
+        id: download_screenshot
         uses: actions/download-artifact@v4
         with:
           name: release-window-screenshot
           path: ./ui-window
+        continue-on-error: true
 
+      - name: Check if screenshot exists
+        id: check_screenshot
+        if: steps.download_screenshot.outcome == 'success'
+        shell: bash
+        run: |
+          if [ -f "./ui-window/main-window-raw.png" ]; then
+            echo "Screenshot artifact found. Proceeding with image update."
+            echo "screenshot_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::Screenshot artifact downloaded, but main-window-raw.png is missing. Skipping image update."
+            echo "screenshot_exists=false" >> $GITHUB_OUTPUT
+          fi
+      
       - name: Install ImageMagick
+        if: steps.check_screenshot.outputs.screenshot_exists == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
       - name: Add transparent rounded corners and write image
-        id: image_dimensions
+        if: steps.check_screenshot.outputs.screenshot_exists == 'true'
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p docs/assets/images
           FILE="./ui-window/main-window-raw.png"
-          if [ ! -f "$FILE" ]; then
-            echo "::error::main-window-raw.png not found in artifact"
-            exit 1
-          fi
           read W H < <(identify -format "%w %h" "$FILE")
-          if [ -z "${W:-}" ] || [ -z "${H:-}" ]; then
-            echo "::error::Failed to read image size"
-            exit 1
-          fi
+          if [ -z "${W:-}" ] || [ -z "${H:-}" ]; then echo "::error::Failed to read image size"; exit 1; fi
           if [ "$W" -lt "$H" ]; then MIN=$W; else MIN=$H; fi
-          R=$(( MIN / 50 ))
-          if [ "$R" -lt 10 ]; then R=10; fi
-          if [ "$R" -gt 24 ]; then R=24; fi
+          R=$(( MIN / 50 )); if [ "$R" -lt 10 ]; then R=10; fi; if [ "$R" -gt 24 ]; then R=24; fi
           magick "$FILE" \
             \( -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$((W-1)),$((H-1)),$R,$R" \) \
             -compose DstIn -composite \
@@ -321,6 +307,7 @@ jobs:
 
       - name: Create Pull Request for Updated Screenshot
         id: cpr
+        if: steps.check_screenshot.outputs.screenshot_exists == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_TOKEN }}
@@ -336,7 +323,7 @@ jobs:
             docs/assets/images/main-window.png
 
       - name: Enable Auto-Merge for the PR
-        if: steps.cpr.outputs.pull-request-number != ''
+        if: steps.check_screenshot.outputs.screenshot_exists == 'true' && steps.cpr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
