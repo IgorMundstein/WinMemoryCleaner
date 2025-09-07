@@ -1,5 +1,5 @@
 {
-  "About": "정보",
+  "About": "정보 - 번역: 비너스걸",
   "Add": "추가",
   "AlwaysOnTop": "항상 맨 위에",
   "AutoOptimization": "자동 최적화",
@@ -19,7 +19,7 @@
   "ErrorAdminPrivilegeRequired": "이 작업을 수행하려면 관리자 권한({0})이 필요합니다",
   "ErrorCanNotSaveLog": "로그: {0} (예외: {1})를 저장할 수 없습니다)",
   "ErrorMemoryAreaOptimizationNotSupported": "이 운영 체제 버전에서는 {0} 최적화가 지원되지 않습니다.",
-  "EveryHour": "매번 {0}h",
+  "EveryHour": "매 {0}시간마다",
   "Exit": "종료",
   "Expand": "펼치기",
   "Free": "여유",
