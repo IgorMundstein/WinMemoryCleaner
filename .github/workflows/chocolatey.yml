@@ -155,8 +155,10 @@ jobs:
           </package>
           "@
           Set-Content -Path (Join-Path $packageDir "winmemorycleaner.nuspec") -Value $nuspecContent -Encoding UTF8
+          
           $installScriptContent = @"
           `$ErrorActionPreference = 'Stop'
+          `$toolsDir = Split-Path -Parent `$MyInvocation.MyCommand.Definition
           Get-Process -Name "WinMemoryCleaner" -ErrorAction SilentlyContinue | Stop-Process -Force
           `$packageArgs = @{
             packageName    = 'winmemorycleaner'
@@ -166,10 +168,15 @@ jobs:
             checksumType   = 'sha256'
           }
           Install-ChocolateyPackage @`$packageArgs
+
+          `$shortcutPath = Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk'
+          Install-ChocolateyShortcut -shortcutFilePath `$shortcutPath -targetPath (Join-Path `$toolsDir 'WinMemoryCleaner.exe')
           "@
           Set-Content -Path (Join-Path $toolsDir "chocolateyinstall.ps1") -Value $installScriptContent -Encoding UTF8
+          
           $uninstallScriptContent = @"
           `$ErrorActionPreference = 'Stop'
+          Remove-Item -Path (Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk') -ErrorAction SilentlyContinue
           `$packageArgs = @{
             packageName    = 'winmemorycleaner'
             fileType       = 'EXE'
