@@ -211,20 +211,23 @@ jobs:
 
       - name: Build and Push Chocolatey package
         if: steps.check_chocolatey.outputs.skip == 'false'
-        shell: pwsh
-        run: |
-          cd .\chocolatey-package
-          choco pack
-          $nupkgFile = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
-          if (-not $nupkgFile) {
-            Write-Host "::error::No .nupkg file was created by 'choco pack'."
-            exit 1
-          }
-          choco push $nupkgFile.FullName --source https://push.chocolatey.org/ --api-key "${{ secrets.CHOCOLATEY_API_KEY }}"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "::error::Failed to push package to Chocolatey."
-            exit 1
-          }
+        uses: nick-invision/retry@v2
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 60
+          command: |
+            cd .\chocolatey-package
+            choco pack
+            $nupkgFile = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
+            if (-not $nupkgFile) {
+              Write-Host "::error::No .nupkg file was created by 'choco pack'."
+              exit 1
+            }
+            choco push $nupkgFile.FullName --source https://push.chocolatey.org/ --api-key "${{ secrets.CHOCOLATEY_API_KEY }}"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "::error::Failed to push package to Chocolatey."
+              exit 1
+            }
 
       - name: Cleanup
         if: always()
