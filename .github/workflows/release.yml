@@ -54,6 +54,28 @@ jobs:
           "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           Write-Host "New tag generated: $newTag"
 
+      - name: Check AssemblyVersion matches new tag
+        shell: pwsh
+        run: |
+          $expectedVersion = "${{ steps.bump.outputs.new_tag }}"
+          Write-Host "Checking for expected release version: $expectedVersion"
+          $assemblyInfoPath = "src/Properties/AssemblyInfo.cs"
+          $assemblyInfo = Get-Content $assemblyInfoPath
+          $versionLine = $assemblyInfo | Select-String -Pattern 'AssemblyVersion\("([0-9\.]+)"\)'
+          if (-not $versionLine) {
+              Write-Host "::error::Could not find AssemblyVersion in $assemblyInfoPath"
+              exit 1
+          }
+          $fullVersion = $versionLine.Matches.Groups[1].Value
+          $fileVersion = ($fullVersion -split '\.')[0..2] -join '.'
+          Write-Host "Found version in file: $fileVersion (full: $fullVersion)"
+          if ($fileVersion -eq $expectedVersion) {
+              Write-Host "✅ AssemblyVersion matches the new tag."
+          } else {
+              Write-Host "::error::Version mismatch! Expected '$expectedVersion' but found '$fileVersion' in AssemblyInfo.cs. Please update the file before releasing."
+              exit 1
+          }
+
       - name: Restore NuGet packages
         shell: pwsh
         run: nuget restore src\WinMemoryCleaner.sln
@@ -281,7 +303,7 @@ jobs:
             echo "::warning::Screenshot artifact downloaded, but main-window-raw.png is missing. Skipping image update."
             echo "screenshot_exists=false" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Install ImageMagick
         if: steps.check_screenshot.outputs.screenshot_exists == 'true'
         run: |
