@@ -26,6 +26,7 @@ concurrency:
 jobs:
   check-assembly-version:
     name: Check AssemblyVersion Up-to-Date
+    if: github.base_ref == 'main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
