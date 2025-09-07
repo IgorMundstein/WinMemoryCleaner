@@ -24,47 +24,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-assembly-version:
-    name: Check AssemblyVersion Up-to-Date
-    if: github.base_ref == 'main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Fetch main branch
-        run: git fetch origin main:refs/remotes/origin/main
-
-      - name: Get AssemblyVersion in current branch
-        id: version_current
-        run: |
-          current_version=$(grep -Po '(?<=AssemblyVersion\(")[^"]+' src/Properties/AssemblyInfo.cs | head -1)
-          echo "CURRENT_VERSION=$current_version" >> $GITHUB_ENV
-
-      - name: Get AssemblyVersion in main branch
-        id: version_main
-        run: |
-          git show origin/main:src/Properties/AssemblyInfo.cs > AssemblyInfo.main.cs
-          main_version=$(grep -Po '(?<=AssemblyVersion\(")[^"]+' AssemblyInfo.main.cs | head -1)
-          echo "MAIN_VERSION=$main_version" >> $GITHUB_ENV
-
-      - name: Compare AssemblyVersion
-        run: |
-          echo "Current branch version: $CURRENT_VERSION"
-          echo "Main branch version: $MAIN_VERSION"
-          if [ "$CURRENT_VERSION" = "$MAIN_VERSION" ]; then
-            echo "❌ AssemblyVersion matches main branch! You probably forgot to bump it."
-            exit 1
-          else
-            echo "✅ AssemblyVersion is different from main branch."
-          fi
-
   build-and-test:
     name: Build and Test
     runs-on: windows-latest
-    needs: check-assembly-version
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
       unsigned_artifact_name: winmemorycleaner-${{ steps.version.outputs.app_version }}
