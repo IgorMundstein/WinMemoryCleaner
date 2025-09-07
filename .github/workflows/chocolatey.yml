@@ -179,6 +179,7 @@ jobs:
           `$toolsDir = Split-Path -Parent `$MyInvocation.MyCommand.Definition
           
           Remove-Item -Path (Join-Path `$toolsDir 'WinMemoryCleaner.exe') -ErrorAction SilentlyContinue
+          Remove-Item -Path (Join-Path `$toolsDir 'chocolateyinstall.ps1') -ErrorAction SilentlyContinue
 
           `$shortcutPath = Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk'
           Remove-ChocolateyShortcut -shortcutFilePath `$shortcutPath
