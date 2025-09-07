@@ -213,6 +213,7 @@ jobs:
         if: steps.check_chocolatey.outputs.skip == 'false'
         uses: nick-invision/retry@v2
         with:
+          timeout_seconds: 300
           max_attempts: 3
           retry_wait_seconds: 60
           command: |
