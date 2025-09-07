@@ -176,7 +176,9 @@ jobs:
           
           $uninstallScriptContent = @"
           `$ErrorActionPreference = 'Stop'
-          Remove-Item -Path (Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk') -ErrorAction SilentlyContinue
+          `$shortcutPath = Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk'
+          Remove-ChocolateyShortcut -shortcutFilePath `$shortcutPath
+
           `$packageArgs = @{
             packageName    = 'winmemorycleaner'
             fileType       = 'EXE'
