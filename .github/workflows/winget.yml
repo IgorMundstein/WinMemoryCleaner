@@ -126,9 +126,6 @@ jobs:
           PackageName: ${{ env.APP_NAME }}
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
-          Icons:
-            - IconUrl: https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.get_release.outputs.tag }}/docs/assets/images/win-memory-cleaner.png
-              IconFileType: png
           ShortDescription: ${{ steps.metadata.outputs.desc }}
           ManifestType: defaultLocale
           ManifestVersion: 1.6.0
@@ -144,7 +141,6 @@ jobs:
             exit 0
           }
           winget --info
-          # Let real validation errors fail the job; only skip when winget is missing
           winget validate --manifest winget-manifest --verbose-logs
 
       - name: Prepare PR branch for manifest submission
