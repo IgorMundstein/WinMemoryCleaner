@@ -138,8 +138,7 @@ jobs:
         if: steps.check_winget.outputs.skip == 'false'
         run: |
           echo "Validating manifests..."
-          set -e
-          # Try direct .exe first; fall back to API if needed
+          # Download wingetcreate.exe (direct latest link, then API fallback)
           if ! curl -fsSL -o wingetcreate.exe https://github.com/microsoft/winget-create/releases/latest/download/wingetcreate.exe; then
             echo "Direct .exe not available, falling back to resolving latest asset via API..."
             API_URL="https://api.github.com/repos/microsoft/winget-create/releases/latest"
@@ -152,7 +151,8 @@ jobs:
             fi
           fi
           chmod +x wingetcreate.exe
-          ./wingetcreate.exe version
+          # wingetcreate's "version" output may return non-zero; skip it to avoid failing the job
+          set -e
           ./wingetcreate.exe validate winget-manifest/ --all
 
       - name: Prepare PR branch for manifest submission
