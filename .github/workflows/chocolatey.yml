@@ -100,7 +100,7 @@ jobs:
             echo "skip=false" >> $env:GITHUB_OUTPUT
           }
 
-      - name: Download release asset
+      - name: Download release asset and calculate checksum
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: pwsh
         run: |
@@ -110,6 +110,8 @@ jobs:
             Write-Host "::error::Downloaded file missing or unexpectedly small."
             exit 1
           }
+          $sha256 = (Get-FileHash -Algorithm SHA256 -Path $env:ASSET_NAME).Hash.ToLower()
+          echo "SHA256=$sha256" >> $env:GITHUB_ENV
 
       - name: Fetch repository metadata
         if: steps.check_chocolatey.outputs.skip == 'false'
@@ -135,6 +137,13 @@ jobs:
           $packageDir = ".\chocolatey-package"
           $toolsDir = Join-Path $packageDir "tools"
           New-Item -ItemType Directory -Force -Path $toolsDir | Out-Null
+          
+          # Create required files for embedded binaries
+          Copy-Item -Path ".\LICENSE" -Destination (Join-Path $packageDir "LICENSE.txt")
+          $verificationContent = "The embedded binary WinMemoryCleaner.exe was downloaded directly from the official GitHub release page for this project: $($env:ASSET_URL)`nSHA256 Checksum: $($env:SHA256)"
+          Set-Content -Path (Join-Path $packageDir "VERIFICATION.txt") -Value $verificationContent -Encoding UTF8
+          
+          # Copy the EXE into tools for embedding
           Copy-Item -Path ".\${{ env.ASSET_NAME }}" -Destination (Join-Path $toolsDir "WinMemoryCleaner.exe")
 
           $nuspec = @"
@@ -158,6 +167,8 @@ jobs:
             </metadata>
             <files>
               <file src="tools\**" target="tools" />
+              <file src="LICENSE.txt" target="" />
+              <file src="VERIFICATION.txt" target="" />
             </files>
           </package>
           "@
@@ -191,7 +202,6 @@ jobs:
             choco pack
             $pkg = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
             if (-not $pkg) { Write-Host "::error::No nupkg created."; exit 1 }
-            # Use --force with choco push ONLY when the 'force_resubmit' input is true
             $forcePush = if ("${{ inputs.force_resubmit }}" -eq "true") { "--force" } else { "" }
             choco push $pkg.FullName --source https://push.chocolatey.org/ --api-key "${{ secrets.CHOCOLATEY_API_KEY }}" $forcePush
             if ($LASTEXITCODE -ne 0) { Write-Host "::error::Push failed."; exit 1 }
