@@ -134,12 +134,17 @@ jobs:
           ManifestVersion: 1.6.0
           EOF
 
-      - name: Validate manifests with winget (Windows)
+      - name: Validate manifests with winget (skip if winget missing)
         if: steps.check_winget.outputs.skip == 'false'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            Write-Host "::notice::winget CLI not available on this runner. Skipping validation and continuing."
+            exit 0
+          }
           winget --info
+          # Let real validation errors fail the job; only skip when winget is missing
           winget validate --manifest winget-manifest --verbose-logs
 
       - name: Prepare PR branch for manifest submission
