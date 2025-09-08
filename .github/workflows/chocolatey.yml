@@ -62,7 +62,7 @@ jobs:
       - name: Validate inputs and environment
         shell: pwsh
         run: |
-          if (-not ("${{ secrets.CHOCO_DATEY_API_KEY }}")) {
+          if (-not ("${{ secrets.CHOCOLATEY_API_KEY }}")) {
             Write-Host "::error::CHOCOLATEY_API_KEY secret is not set in the repository settings!"
             exit 1
           }
@@ -104,4 +104,101 @@ jobs:
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: pwsh
         run: |
-          Write-Host "Downloading ${{ env.ASSET_NAME }} from ${{ env.
+          Write-Host "Downloading ${{ env.ASSET_NAME }} from ${{ env.ASSET_URL }}"
+          Invoke-WebRequest -Uri "${{ env.ASSET_URL }}" -OutFile "${{ env.ASSET_NAME }}" -UseBasicParsing
+          if (!(Test-Path "${{ env.ASSET_NAME }}") -or (Get-Item "${{ env.ASSET_NAME }}").Length -lt 50000) {
+            Write-Host "::error::Downloaded file missing or unexpectedly small."
+            exit 1
+          }
+
+      - name: Fetch repository metadata
+        if: steps.check_chocolatey.outputs.skip == 'false'
+        id: metadata
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            core.setOutput('desc', repo.description?.trim() || 'A utility to clean system memory.');
+            core.setOutput('tags', repo.topics.join(' ') || 'memory ram cleaner optimization windows');
+
+      - name: Generate Chocolatey package (embedded portable)
+        if: steps.check_chocolatey.outputs.skip == 'false'
+        shell: pwsh
+        env:
+          GH_REPO: ${{ github.repository }}
+          METADATA_DESC: ${{ steps.metadata.outputs.desc }}
+          METADATA_TAGS: ${{ steps.metadata.outputs.tags }}
+        run: |
+          $packageDir = ".\chocolatey-package"
+          $toolsDir = Join-Path $packageDir "tools"
+          New-Item -ItemType Directory -Force -Path $toolsDir | Out-Null
+          Copy-Item -Path ".\${{ env.ASSET_NAME }}" -Destination (Join-Path $toolsDir "WinMemoryCleaner.exe")
+
+          $nuspec = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+            <metadata>
+              <id>winmemorycleaner</id>
+              <version>$($env:CHOCO_VERSION)</version>
+              <title>Windows Memory Cleaner</title>
+              <authors>Igor Mundstein</authors>
+              <owners>Igor Mundstein</owners>
+              <projectUrl>https://github.com/$($env:GH_REPO)</projectUrl>
+              <iconUrl>https://raw.githubusercontent.com/$($env:GH_REPO)/main/docs/images/win-memory-cleaner.png</iconUrl>
+              <packageSourceUrl>https://github.com/$($env:GH_REPO)</packageSourceUrl>
+              <releaseNotes>https://github.com/$($env:GH_REPO)/releases/tag/$($env:RELEASE_TAG)</releaseNotes>
+              <licenseUrl>https://github.com/$($env:GH_REPO)/blob/main/LICENSE</licenseUrl>
+              <bugTrackerUrl>https://github.com/$($env:GH_REPO)/issues</bugTrackerUrl>
+              <tags>portable admin $($env:METADATA_TAGS)</tags>
+              <summary>$($env:METADATA_DESC)</summary>
+              <description>$($env:METADATA_DESC)</description>
+            </metadata>
+            <files>
+              <file src="tools\**" target="tools" />
+            </files>
+          </package>
+          "@
+          Set-Content -Path (Join-Path $packageDir "winmemorycleaner.nuspec") -Value $nuspec -Encoding UTF8
+
+          $installPs1 = @"
+          `$ErrorActionPreference = 'Stop'
+          `$toolsDir = Split-Path -Parent `$MyInvocation.MyCommand.Definition
+          `$exePath = Join-Path `$toolsDir 'WinMemoryCleaner.exe'
+          `$shortcutPath = Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk'
+          Install-ChocolateyShortcut -shortcutFilePath `$shortcutPath -targetPath `$exePath
+          "@
+          Set-Content -Path (Join-Path $toolsDir "chocolateyinstall.ps1") -Value $installPs1 -Encoding UTF8
+
+          $uninstallPs1 = @"
+          `$ErrorActionPreference = 'Stop'
+          `$shortcutPath = Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk'
+          Remove-Item `$shortcutPath -ErrorAction SilentlyContinue
+          "@
+          Set-Content -Path (Join-Path $toolsDir "chocolateyuninstall.ps1") -Value $uninstallPs1 -Encoding UTF8
+
+      - name: Build and Push Package
+        if: steps.check_chocolatey.outputs.skip == 'false'
+        uses: nick-invision/retry@v2
+        with:
+          timeout_seconds: 300
+          max_attempts: 3
+          retry_wait_seconds: 60
+          command: |
+            cd .\chocolatey-package
+            choco pack
+            $pkg = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
+            if (-not $pkg) { Write-Host "::error::No nupkg created."; exit 1 }
+            # Use --force with choco push ONLY when the 'force_resubmit' input is true
+            $forcePush = if ("${{ inputs.force_resubmit }}" -eq "true") { "--force" } else { "" }
+            choco push $pkg.FullName --source https://push.chocolatey.org/ --api-key "${{ secrets.CHOCOLATEY_API_KEY }}" $forcePush
+            if ($LASTEXITCODE -ne 0) { Write-Host "::error::Push failed."; exit 1 }
+            
+      - name: Cleanup
+        if: always()
+        shell: pwsh
+        run: |
+          Remove-Item -Path ".\${{ env.ASSET_NAME }}" -ErrorAction SilentlyContinue
+          Remove-Item -Path ".\chocolatey-package" -Recurse -Force -ErrorAction SilentlyContinue
