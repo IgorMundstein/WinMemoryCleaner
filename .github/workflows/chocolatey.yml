@@ -4,6 +4,12 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      force_resubmit:
+        description: "Force re-submit of the latest release version (for moderation fixes)."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -34,7 +40,7 @@ jobs:
             });
             const full_tag = release.tag_name;
             const version_tag = full_tag.startsWith('v') ? full_tag.substring(1) : full_tag;
-            const asset = release.assets.find(asset => asset.name.endsWith('.exe'));
+            const asset = release.assets.find(a => a.name.toLowerCase().endsWith('.exe'));
             if (!asset) {
               core.setFailed('Could not find .exe asset in the latest release.');
               return;
@@ -44,18 +50,19 @@ jobs:
             core.setOutput('asset_url', asset.browser_download_url);
             core.setOutput('asset_name', asset.name);
 
-      - name: Set Release Version Environment Variables
+      - name: Set Environment
         shell: pwsh
         run: |
           echo "CHOCO_VERSION=${{ steps.get_release.outputs.version_tag }}" >> $env:GITHUB_ENV
           echo "RELEASE_TAG=${{ steps.get_release.outputs.full_tag }}" >> $env:GITHUB_ENV
           echo "ASSET_URL=${{ steps.get_release.outputs.asset_url }}" >> $env:GITHUB_ENV
           echo "ASSET_NAME=${{ steps.get_release.outputs.asset_name }}" >> $env:GITHUB_ENV
+          echo "CHOCO_FORCE_RESUBMIT=${{ inputs.force_resubmit }}" >> $env:GITHUB_ENV
 
       - name: Validate inputs and environment
         shell: pwsh
         run: |
-          if (-not ("${{ secrets.CHOCOLATEY_API_KEY }}")) {
+          if (-not ("${{ secrets.CHOCO_DATEY_API_KEY }}")) {
             Write-Host "::error::CHOCOLATEY_API_KEY secret is not set in the repository settings!"
             exit 1
           }
@@ -64,10 +71,15 @@ jobs:
             exit 1
           }
 
-      - name: Check if version already exists on Chocolatey
+      - name: Check if version already exists on Chocolatey (skip if force)
         id: check_chocolatey
         shell: pwsh
         run: |
+          if ($env:CHOCO_FORCE_RESUBMIT -eq 'true') {
+            Write-Host "::notice::Force resubmission enabled; skipping existing-version check."
+            echo "skip=false" >> $env:GITHUB_OUTPUT
+            return
+          }
           $packageName = 'winmemorycleaner'
           $apiUrl = "https://community.chocolatey.org/api/v2/Packages()?`$filter=Id%20eq%20'$($packageName)'"
           try {
@@ -78,161 +90,18 @@ jobs:
                   Write-Host "::notice::Version $($env:CHOCO_VERSION) already exists on Chocolatey. Skipping submission."
                   echo "skip=true" >> $env:GITHUB_OUTPUT
                 } else {
-                  Write-Host "::notice::Version $($env:CHOCO_VERSION) not found on Chocolatey. Proceeding."
                   echo "skip=false" >> $env:GITHUB_OUTPUT
                 }
             } else {
-                Write-Host "::notice::Package not found or no versions exist. Proceeding."
-                echo "skip=false" >> $env:GITHUB_OUTPUT
+              echo "skip=false" >> $env:GITHUB_OUTPUT
             }
-          }
-          catch {
-            Write-Host "::warning::Could not check for existing versions. Proceeding with submission."
+          } catch {
+            Write-Host "::warning::Version check failed; proceeding."
             echo "skip=false" >> $env:GITHUB_OUTPUT
           }
 
-      - name: Download release asset and calculate checksum
-        if: steps.check_chocolatey.outputs.skip == 'false'
-        id: download
-        shell: pwsh
-        run: |
-          Write-Host "Downloading ${{ env.ASSET_NAME }} from ${{ env.ASSET_URL }}"
-          Invoke-WebRequest -Uri "${{ env.ASSET_URL }}" -OutFile "${{ env.ASSET_NAME }}" -UseBasicParsing
-          if (!(Test-Path "${{ env.ASSET_NAME }}") -or (Get-Item "${{ env.ASSET_NAME }}").Length -lt 10000) {
-            Write-Host "::error::Downloaded file is missing or too small."
-            exit 1
-          }
-          $sha256 = (Get-FileHash -Path "${{ env.ASSET_NAME }}" -Algorithm SHA256).Hash.ToLower()
-          echo "SHA256=$sha256" >> $env:GITHUB_ENV
-
-      - name: Fetch repository metadata
-        if: steps.check_chocolatey.outputs.skip == 'false'
-        id: metadata
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: repo } = await github.rest.repos.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            core.setOutput('desc', repo.description?.trim() || 'A utility to clean system memory.');
-            core.setOutput('homepage', repo.homepage || repo.html_url);
-            core.setOutput('tags', repo.topics.join(' ') || 'ram memory foss cleaner memory-management memory-optimization windows-optimization-tool admin');
-
-      - name: Generate Chocolatey package files
+      - name: Download release asset
         if: steps.check_chocolatey.outputs.skip == 'false'
         shell: pwsh
         run: |
-          $packageDir = ".\chocolatey-package"
-          New-Item -ItemType Directory -Path $packageDir -Force
-          $toolsDir = Join-Path $packageDir "tools"
-          New-Item -ItemType Directory -Path $toolsDir -Force
-          $nuspecContent = @"
-          <?xml version='1.0' encoding='utf-8'?>
-          <package xmlns='http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd'>
-            <metadata>
-              <id>winmemorycleaner</id>
-              <version>${env:CHOCO_VERSION}</version>
-              <owners>Igor Mundstein</owners>
-              <title>Windows Memory Cleaner</title>
-              <authors>Igor Mundstein</authors>
-              <projectUrl>${{ steps.metadata.outputs.homepage }}</projectUrl>
-              <iconUrl>https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/images/win-memory-cleaner.png</iconUrl>
-              <packageSourceUrl>https://github.com/${{ github.repository }}</packageSourceUrl>
-              <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/${env:RELEASE_TAG}</releaseNotes>
-              <licenseUrl>https://github.com/${{ github.repository }}/blob/main/LICENSE</licenseUrl>
-              <bugTrackerUrl>https://github.com/${{ github.repository }}/issues</bugTrackerUrl>
-              <tags>notSilent ${{ steps.metadata.outputs.tags }}</tags>
-              <summary>${{ steps.metadata.outputs.desc }}</summary>
-              <description>${{ steps.metadata.outputs.desc }}</description>
-              <dependencies>
-                <dependency id="dotnetfx" version="4.0" />
-              </dependencies>
-            </metadata>
-            <files>
-              <file src='tools\**' target='tools' />
-            </files>
-          </package>
-          "@
-          Set-Content -Path (Join-Path $packageDir "winmemorycleaner.nuspec") -Value $nuspecContent -Encoding UTF8
-          
-          $installScriptContent = @"
-          `$ErrorActionPreference = 'Stop'
-          `$toolsDir = Split-Path -Parent `$MyInvocation.MyCommand.Definition
-          Get-Process -Name "WinMemoryCleaner" -ErrorAction SilentlyContinue | Stop-Process -Force
-          `$packageArgs = @{
-            packageName    = 'winmemorycleaner'
-            fileType       = 'EXE'
-            url            = '${env:ASSET_URL}'
-            checksum       = '${env:SHA256}'
-            checksumType   = 'sha256'
-          }
-          Install-ChocolateyPackage @packageArgs
-
-          `$shortcutPath = Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk'
-          Install-ChocolateyShortcut -shortcutFilePath `$shortcutPath -targetPath (Join-Path `$toolsDir 'WinMemoryCleaner.exe')
-          "@
-          Set-Content -Path (Join-Path $toolsDir "chocolateyinstall.ps1") -Value $installScriptContent -Encoding UTF8
-          
-          $uninstallScriptContent = @"
-          `$ErrorActionPreference = 'Stop'
-          `$toolsDir = Split-Path -Parent `$MyInvocation.MyCommand.Definition
-          
-          Remove-Item -Path (Join-Path `$toolsDir 'WinMemoryCleaner.exe') -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path (Join-Path `$toolsDir 'chocolateyinstall.ps1') -Force -ErrorAction SilentlyContinue
-
-          `$shortcutPath = Join-Path `$env:ProgramData 'Microsoft\Windows\Start Menu\Programs\WinMemoryCleaner.lnk'
-          Remove-ChocolateyShortcut -shortcutFilePath `$shortcutPath
-
-          `$packageArgs = @{
-            packageName    = 'winmemorycleaner'
-            fileType       = 'EXE'
-          }
-          Uninstall-ChocolateyPackage @packageArgs
-          "@
-          Set-Content -Path (Join-Path $toolsDir "chocolateyuninstall.ps1") -Value $uninstallScriptContent -Encoding UTF8
-
-      - name: Lint and quality check nuspec
-        if: steps.check_chocolatey.outputs.skip == 'false'
-        shell: pwsh
-        run: |
-          [xml]$nuspec = Get-Content .\chocolatey-package\winmemorycleaner.nuspec
-          $errors = @()
-          $meta = $nuspec.package.metadata
-          if (-not $meta.version -or $meta.version -notmatch '^\d+\.\d+\.\d+$') { $errors += "Version must be present and follow semantic versioning (e.g., 1.2.3)." }
-          if (-not $meta.description -or $meta.description.Length -lt 10) { $errors += "Description must be at least 10 characters." }
-          if (-not $meta.projectUrl) { $errors += "projectUrl must be present." }
-          if (-not $meta.licenseUrl) { $errors += "licenseUrl must be present." }
-          if (-not $meta.owners) { $errors += "owners must be present." }
-          if ($errors.Count -gt 0) {
-            Write-Host "::error::Nuspec quality check failed:`n$($errors -join "`n")"
-            exit 1
-          }
-
-      - name: Build and Push Chocolatey package
-        if: steps.check_chocolatey.outputs.skip == 'false'
-        uses: nick-invision/retry@v2
-        with:
-          timeout_seconds: 300
-          max_attempts: 3
-          retry_wait_seconds: 60
-          command: |
-            cd .\chocolatey-package
-            choco pack
-            $nupkgFile = Get-ChildItem -Filter "*.nupkg" | Select-Object -First 1
-            if (-not $nupkgFile) {
-              Write-Host "::error::No .nupkg file was created by 'choco pack'."
-              exit 1
-            }
-            choco push $nupkgFile.FullName --source https://push.chocolatey.org/ --api-key "${{ secrets.CHOCOLATEY_API_KEY }}"
-            if ($LASTEXITCODE -ne 0) {
-              Write-Host "::error::Failed to push package to Chocolatey."
-              exit 1
-            }
-
-      - name: Cleanup
-        if: always()
-        shell: pwsh
-        run: |
-          Remove-Item -Path ".\${{ env.ASSET_NAME }}" -ErrorAction SilentlyContinue
-          Remove-Item -Path ".\chocolatey-package" -Recurse -Force -ErrorAction SilentlyContinue
+          Write-Host "Downloading ${{ env.ASSET_NAME }} from ${{ env.
