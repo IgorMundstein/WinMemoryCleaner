@@ -133,8 +133,8 @@ jobs:
         if: steps.check_winget.outputs.skip == 'false'
         run: |
           echo "Validating manifests..."
-          wget -q https://github.com/microsoft/winget-create/releases/latest/download/winget-create.zip
-          unzip -q winget-create.zip
+          wget -q https://github.com/microsoft/winget-create/releases/latest/download/wingetcreate.zip
+          unzip -q wingetcreate.zip
           ./winget-create.exe validate winget-manifest/ --all
 
       - name: Prepare PR branch for manifest submission
