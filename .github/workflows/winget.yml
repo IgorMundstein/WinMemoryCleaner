@@ -156,12 +156,12 @@ jobs:
           git fetch upstream master --depth=1
           version="${{ steps.get_release.outputs.version }}"
           branch="add/${{ env.PACKAGE_ID }}/${version}"
-          git checkout -b $branch upstream/master
+          git checkout -b "$branch" "upstream/master"
           mkdir -p "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${version}"
           cp ../winget-manifest/*.yaml "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${version}/"
           git add .
           git commit -m "${{ env.PACKAGE_ID }} version ${version}"
-          git push --force origin $branch
+          git push --force origin "$branch"
 
       - name: Create Pull Request to WinGet-Pkgs
         if: steps.check_winget.outputs.skip == 'false'
