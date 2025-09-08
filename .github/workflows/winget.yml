@@ -129,13 +129,25 @@ jobs:
           ManifestVersion: 1.6.0
           EOF
 
-      - name: Validate manifests with winget-create
+      # Use cross-platform wingetcreate (dotnet global tool) on Ubuntu
+      - name: Setup .NET SDK
+        if: steps.check_winget.outputs.skip == 'false'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install wingetcreate tool
+        if: steps.check_winget.outputs.skip == 'false'
+        run: |
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+          dotnet tool install --global Microsoft.WinGet.Create
+          wingetcreate --version
+
+      - name: Validate manifests with wingetcreate
         if: steps.check_winget.outputs.skip == 'false'
         run: |
           echo "Validating manifests..."
-          wget -q https://github.com/microsoft/winget-create/releases/latest/download/wingetcreate.zip
-          unzip -q wingetcreate.zip
-          ./winget-create.exe validate winget-manifest/ --all
+          wingetcreate validate winget-manifest/ --all
 
       - name: Prepare PR branch for manifest submission
         if: steps.check_winget.outputs.skip == 'false'
