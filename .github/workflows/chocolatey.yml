@@ -140,9 +140,9 @@ jobs:
           
           # Create required files for embedded binaries
           Copy-Item -Path ".\LICENSE" -Destination (Join-Path $packageDir "LICENSE.txt")
-          $verificationContent = "The embedded binary WinMemoryCleaner.exe was downloaded directly from the official GitHub release page for this project: $($env:ASSET_URL)`nSHA256 Checksum: $($env:SHA256)"
+          $verificationContent = "The embedded binary WinMemoryCleaner.exe was downloaded directly from the official GitHub release: $($env:ASSET_URL)`nSHA256 Checksum: $($env:SHA256)"
           Set-Content -Path (Join-Path $packageDir "VERIFICATION.txt") -Value $verificationContent -Encoding UTF8
-          
+
           # Copy the EXE into tools for embedding
           Copy-Item -Path ".\${{ env.ASSET_NAME }}" -Destination (Join-Path $toolsDir "WinMemoryCleaner.exe")
 
@@ -156,7 +156,7 @@ jobs:
               <authors>Igor Mundstein</authors>
               <owners>Igor Mundstein</owners>
               <projectUrl>https://github.com/$($env:GH_REPO)</projectUrl>
-              <iconUrl>https://raw.githubusercontent.com/$($env:GH_REPO)/main/docs/images/win-memory-cleaner.png</iconUrl>
+              <iconUrl>https://raw.githubusercontent.com/$($env:GH_REPO)/main/docs/assets/images/win-memory-cleaner.png</iconUrl>
               <packageSourceUrl>https://github.com/$($env:GH_REPO)</packageSourceUrl>
               <releaseNotes>https://github.com/$($env:GH_REPO)/releases/tag/$($env:RELEASE_TAG)</releaseNotes>
               <licenseUrl>https://github.com/$($env:GH_REPO)/blob/main/LICENSE</licenseUrl>
