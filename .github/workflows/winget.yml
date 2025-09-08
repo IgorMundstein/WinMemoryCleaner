@@ -17,8 +17,11 @@ env:
 jobs:
   submit:
     name: Submit to WinGet
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout repository
@@ -123,31 +126,24 @@ jobs:
           PackageName: ${{ env.APP_NAME }}
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
-          PackageIcon: https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.get_release.outputs.tag }}/docs/assets/images/win-memory-cleaner.png
+          Icons:
+            - IconUrl: https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.get_release.outputs.tag }}/docs/assets/images/win-memory-cleaner.png
+              IconFileType: png
           ShortDescription: ${{ steps.metadata.outputs.desc }}
           ManifestType: defaultLocale
           ManifestVersion: 1.6.0
           EOF
 
-      # Use cross-platform wingetcreate (dotnet global tool) on Ubuntu
-      - name: Setup .NET SDK
-        if: steps.check_winget.outputs.skip == 'false'
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Install wingetcreate tool
-        if: steps.check_winget.outputs.skip == 'false'
-        run: |
-          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
-          dotnet tool install --global Microsoft.WinGet.Create
-          wingetcreate --version
-
-      - name: Validate manifests with wingetcreate
+      - name: Validate manifests with wingetcreate (Windows)
         if: steps.check_winget.outputs.skip == 'false'
         run: |
           echo "Validating manifests..."
-          wingetcreate validate winget-manifest/ --all
+          curl -fsSL -o wingetcreate.zip https://github.com/microsoft/winget-create/releases/latest/download/wingetcreate.zip
+          # Use built-in tar on Windows to extract zip
+          tar -xf wingetcreate.zip
+          ls -la
+          ./wingetcreate.exe --version
+          ./wingetcreate.exe validate winget-manifest/ --all
 
       - name: Prepare PR branch for manifest submission
         if: steps.check_winget.outputs.skip == 'false'
@@ -200,4 +196,4 @@ jobs:
       - name: Cleanup artifacts
         if: always()
         run: |
-          rm -rf fork-winget winget-manifest ${{ env.APP_NAME }}.exe
+          rm -rf fork-winget winget-manifest ${{ env.APP_NAME }}.exe wingetcreate.zip wingetcreate.exe
