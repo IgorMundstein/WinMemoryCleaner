@@ -59,7 +59,7 @@ jobs:
             Write-Host "::error::CHOCOLATEY_API_KEY secret is not set in the repository settings!"
             exit 1
           }
-          if (-not ($env:CHOCO_VERSION -match "^\d+\.\d+\d+$")) {
+          if (-not ($env:CHOCO_VERSION -match "^\d+\.\d+\.\d+$")) {
             Write-Host "::error::Version format must be Major.Minor.Patch (e.g., 1.0.0). Found: $($env:CHOCO_VERSION)"
             exit 1
           }
