@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 env:
-  FORK_REPO: ${{ github.repository_owner }}/WinGet
+  FORK_REPO: ${{ github.repository_owner }}/winget-pkgs
   UPSTREAM_REPO: microsoft/winget-pkgs
   PACKAGE_ID: ${{ github.repository_owner }}.WinMemoryCleaner
   APP_NAME: WinMemoryCleaner
@@ -93,56 +93,49 @@ jobs:
           MANIFEST_DIR="winget-manifest"
           mkdir -p "$MANIFEST_DIR"
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.yaml" <<EOF
----
-# yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
-PackageIdentifier: ${{ env.PACKAGE_ID }}
-PackageVersion: ${{ steps.get_release.outputs.version }}
-DefaultLocale: en-US
-ManifestType: version
-ManifestVersion: 1.6.0
-EOF
+          ---
+          PackageIdentifier: ${{ env.PACKAGE_ID }}
+          PackageVersion: ${{ steps.get_release.outputs.version }}
+          DefaultLocale: en-US
+          ManifestType: version
+          ManifestVersion: 1.6.0
+          EOF
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.installer.yaml" <<EOF
----
-# yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
-PackageIdentifier: ${{ env.PACKAGE_ID }}
-PackageVersion: ${{ steps.get_release.outputs.version }}
-InstallerType: exe
-Installers:
-  - Architecture: neutral
-    InstallerUrl: >
-      https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/
-      ${{ env.APP_NAME }}.exe
-    InstallerSha256: ${{ steps.download.outputs.sha256 }}
-ManifestType: installer
-ManifestVersion: 1.6.0
-EOF
+          ---
+          PackageIdentifier: ${{ env.PACKAGE_ID }}
+          PackageVersion: ${{ steps.get_release.outputs.version }}
+          InstallerType: portable
+          Installers:
+            - Architecture: neutral
+              InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe
+              InstallerSha256: ${{ steps.download.outputs.sha256 }}
+              Commands:
+                - ${{ env.APP_NAME }}
+          ManifestType: installer
+          ManifestVersion: 1.6.0
+          EOF
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.locale.en-US.yaml" <<EOF
----
-# yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
-PackageIdentifier: ${{ env.PACKAGE_ID }}
-PackageVersion: ${{ steps.get_release.outputs.version }}
-PackageLocale: en-US
-Publisher: ${{ github.repository_owner }}
-PackageName: ${{ env.APP_NAME }}
-License: ${{ steps.metadata.outputs.license }}
-PackageUrl: >
-  ${{ steps.metadata.outputs.homepage }}
-PackageIcon: >
-  https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/images/
-  win-memory-cleaner.png
-ShortDescription: >
-  ${{ steps.metadata.outputs.desc }}
-Commands:
-  - ${{ env.APP_NAME }}
-ManifestType: defaultLocale
-ManifestVersion: 1.6.0
-EOF
+          ---
+          PackageIdentifier: ${{ env.PACKAGE_ID }}
+          PackageVersion: ${{ steps.get_release.outputs.version }}
+          PackageLocale: en-US
+          Publisher: ${{ github.repository_owner }}
+          PackageName: ${{ env.APP_NAME }}
+          License: ${{ steps.metadata.outputs.license }}
+          PackageUrl: ${{ steps.metadata.outputs.homepage }}
+          PackageIcon: https://raw.githubusercontent.com/IgorMundstein/WinMemoryCleaner/main/docs/images/win-memory-cleaner.png
+          ShortDescription: ${{ steps.metadata.outputs.desc }}
+          ManifestType: defaultLocale
+          ManifestVersion: 1.6.0
+          EOF
 
-      - name: Validate YAML manifests
+      - name: Validate manifests with winget-create
         if: steps.check_winget.outputs.skip == 'false'
         run: |
-          pip install yamllint
-          yamllint winget-manifest
+          echo "Validating manifests..."
+          wget -q https://github.com/microsoft/winget-create/releases/latest/download/winget-create.zip
+          unzip -q winget-create.zip
+          ./winget-create.exe validate winget-manifest/ --all
 
       - name: Prepare PR branch for manifest submission
         if: steps.check_winget.outputs.skip == 'false'
