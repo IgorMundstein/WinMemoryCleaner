@@ -123,7 +123,7 @@ jobs:
           PackageName: ${{ env.APP_NAME }}
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
-          PackageIcon: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/docs/assets/images/win-memory-cleaner.png
+          PackageIcon: https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.get_release.outputs.tag }}/docs/assets/images/win-memory-cleaner.png
           ShortDescription: ${{ steps.metadata.outputs.desc }}
           ManifestType: defaultLocale
           ManifestVersion: 1.6.0
