@@ -174,7 +174,7 @@ jobs:
             --title "$pr_title" \
             --body "$pr_body" 2>&1)
           if [ $? -ne 0 ]; then
-            if [[ "$pr_output" == *"A pull request already exists"* ]]; then
+            if [[ "$pr_output" == *"already exists"* ]]; then
               echo "::notice::A pull request for this version already exists. Skipping."
             else
               echo "::error::Failed to create pull request: $pr_output"
