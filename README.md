@@ -4,7 +4,9 @@
 
 This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run.
 
-[![](./docs/assets/images/main-window.png)](#windows-memory-cleaner)
+<a href="#windows-memory-cleaner">
+  <img src="./docs/assets/images/main-window.png" style="width:50%; height:auto;">
+</a>
 
 ## 💾 Download
 
