@@ -282,9 +282,8 @@ jobs:
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream master --depth=1
           git checkout -b "sync-tags/${{ github.repository_owner }}-$(date +%Y%m%d%H%M%S)" upstream/master
-          cp ../repo_tags.yaml .
 
-          root="$(pwd)"
+          ws="${GITHUB_WORKSPACE}/repo_tags.yaml"
           base_dir="manifests/i/${{ github.repository_owner }}/WinMemoryCleaner"
           if [ ! -d "$base_dir" ]; then
             echo "::notice::No package directory exists in upstream."
@@ -299,7 +298,7 @@ jobs:
               skip==1 && /^[A-Za-z]/ {skip=0}
               skip==0 {print}
             ' "$f" > "$f.nontags"
-            awk -v tags="$root/repo_tags.yaml" '
+            awk -v tags="$ws" '
               BEGIN {inserted=0}
               /^ManifestType:/ && inserted==0 {
                 print "";
@@ -324,10 +323,11 @@ jobs:
           done < <(find "$base_dir" -mindepth 1 -maxdepth 2 -type f -name "${{ env.PACKAGE_ID }}.locale.en-US.yaml" -print0)
 
           if [ "$changed" -eq 0 ]; then
+            echo "::notice::No files changed; exiting."
             exit 0
           fi
 
-          git add .
+          git add "$base_dir"
           git commit -m "Sync Tags with repo topics for ${{ env.PACKAGE_ID }}"
           git push --force origin HEAD
 
