@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FORK_REPO: ${{ github.repository_owner }}/Scoop
@@ -75,15 +75,63 @@ jobs:
             core.setOutput('desc', repo.description?.trim() || 'A utility to clean system memory.');
             core.setOutput('homepage', repo.homepage || repo.html_url);
 
-      - name: Download release asset and calculate checksum
+      - name: Prepare ZIP asset and calculate checksum
         if: steps.check_scoop.outputs.skip == 'false'
-        id: download
+        id: prepare_zip
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          $assetName = "${{ env.APP_NAME }}.zip"
-          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/$assetName"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $assetName
-          $sha256 = (Get-FileHash -Path $assetName -Algorithm SHA256).Hash.ToLower()
+          $ErrorActionPreference = "Stop"
+          $repo = "${{ github.repository }}"
+          $tag = "${{ steps.get_release.outputs.tag }}"
+          $app = "${{ env.APP_NAME }}"
+          $dist = "dist"
+          New-Item -ItemType Directory -Path $dist -Force | Out-Null
+
+          # Inspect release assets
+          $releaseJson = gh api "repos/$repo/releases/tags/$tag"
+          $release = $releaseJson | ConvertFrom-Json
+          $hasZip = $false
+          $hasExe = $false
+          foreach ($a in $release.assets) {
+            if ($a.name -eq "$app.zip") { $hasZip = $true }
+            if ($a.name -eq "$app.exe") { $hasExe = $true }
+          }
+
+          $zipPath = Join-Path $dist "$app.zip"
+
+          if (-not $hasZip) {
+            if (-not $hasExe) {
+              Write-Error "Release $tag does not contain $app.exe; cannot package ZIP."
+              exit 1
+            }
+
+            # Download exe
+            gh release download $tag --repo $repo --pattern "$app.exe" --dir $dist --clobber
+
+            # Collect files to include in ZIP
+            $paths = @()
+            $paths += (Join-Path $dist "$app.exe")
+            if (Test-Path "LICENSE") { Copy-Item "LICENSE" $dist -Force; $paths += (Join-Path $dist "LICENSE") }
+            if (Test-Path "LICENSE.txt") { Copy-Item "LICENSE.txt" $dist -Force; $paths += (Join-Path $dist "LICENSE.txt") }
+            if (Test-Path "README.md") { Copy-Item "README.md" $dist -Force; $paths += (Join-Path $dist "README.md") }
+            if (Test-Path "README.txt") { Copy-Item "README.txt" $dist -Force; $paths += (Join-Path $dist "README.txt") }
+            if (Test-Path "CHANGELOG.md") { Copy-Item "CHANGELOG.md" $dist -Force; $paths += (Join-Path $dist "CHANGELOG.md") }
+            if (Test-Path "CHANGELOG.txt") { Copy-Item "CHANGELOG.txt" $dist -Force; $paths += (Join-Path $dist "CHANGELOG.txt") }
+            if (Test-Path "WinMemoryCleaner.ico") { Copy-Item "WinMemoryCleaner.ico" $dist -Force; $paths += (Join-Path $dist "WinMemoryCleaner.ico") }
+            if (Test-Path "icon.ico") { Copy-Item "icon.ico" $dist -Force; $paths += (Join-Path $dist "icon.ico") }
+
+            Compress-Archive -Path $paths -DestinationPath $zipPath -Force
+
+            # Upload ZIP to the release
+            gh release upload $tag $zipPath --repo $repo --clobber
+          } else {
+            # Download existing ZIP so we can hash it
+            gh release download $tag --repo $repo --pattern "$app.zip" --dir $dist --clobber
+          }
+
+          $sha256 = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash.ToLower()
           echo "sha256=$sha256" >> $env:GITHUB_OUTPUT
 
       - name: Create Scoop Manifest File
@@ -100,7 +148,7 @@ jobs:
               "homepage": "${{ steps.metadata.outputs.homepage }}",
               "license": "GPL-3.0-only",
               "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.zip",
-              "hash": "${{ steps.download.outputs.sha256 }}",
+              "hash": "${{ steps.prepare_zip.outputs.sha256 }}",
               "bin": "${{ env.APP_NAME }}.exe",
               "shortcuts": [
                   [
