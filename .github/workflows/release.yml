@@ -159,7 +159,8 @@ jobs:
       - name: Create ZIP archive from SIGNED exe
         if: steps.signpath.conclusion == 'success'
         shell: pwsh
-        run: Compress-Archive -Path WinMemoryCleaner.exe -DestinationPath WinMemoryCleaner.zip
+        run: |
+          Compress-Archive -Path "WinMemoryCleaner.exe", "README.md", "CHANGELOG.md" -DestinationPath WinMemoryCleaner.zip
 
       - name: Upload release artifacts
         if: steps.signpath.conclusion == 'success'
