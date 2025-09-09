@@ -121,7 +121,7 @@ jobs:
             const fs = require('fs');
             if (topics.length) {
               const lines = ['Tags:', ...topics.map(t => `- ${t}`)];
-              fs.writeFileSync('repo_tags.yaml', lines.join('\n'));
+              fs.writeFileSync('repo_tags.yaml', lines.join('\n') + '\n');
               core.setOutput('found', 'true');
               core.setOutput('count', String(topics.length));
             } else {
@@ -169,13 +169,14 @@ jobs:
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
           ShortDescription: ${{ steps.metadata.outputs.desc }}
+          EOF
+          if [ "${{ steps.repo_topics.outputs.found }}" = "true" ]; then
+            cat repo_tags.yaml >> "$locale_file"
+          fi
+          cat >> "$locale_file" <<EOF
           ManifestType: defaultLocale
           ManifestVersion: 1.6.0
           EOF
-          if [ "${{ steps.repo_topics.outputs.found }}" = "true" ]; then
-            echo "" >> "$locale_file"
-            cat repo_tags.yaml >> "$locale_file"
-          fi
 
       - name: Validate manifests with winget
         if: steps.check_winget.outputs.skip == 'false'
@@ -287,7 +288,7 @@ jobs:
             const fs = require('fs');
             if (topics.length) {
               const lines = ['Tags:', ...topics.map(t => `- ${t}`)];
-              fs.writeFileSync('repo_tags.yaml', lines.join('\n'));
+              fs.writeFileSync('repo_tags.yaml', lines.join('\n') + '\n');
               core.setOutput('found', 'true');
             } else {
               core.setOutput('found', 'false');
@@ -325,14 +326,12 @@ jobs:
             awk -v tags="$ws" '
               BEGIN {inserted=0}
               /^ManifestType:/ && inserted==0 {
-                print "";
                 system("cat \"" tags "\"");
                 inserted=1
               }
               {print}
               END {
                 if (inserted==0) {
-                  print "";
                   system("cat \"" tags "\"");
                 }
               }
