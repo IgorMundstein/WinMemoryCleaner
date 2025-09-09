@@ -23,7 +23,9 @@ env:
   FORK_REPO: ${{ github.repository_owner }}/winget-pkgs
   UPSTREAM_REPO: microsoft/winget-pkgs
   PACKAGE_ID: ${{ github.repository_owner }}.WinMemoryCleaner
-  APP_NAME: WinMemoryCleaner
+  DISPLAY_NAME: Windows Memory Cleaner
+  BINARY_NAME: WinMemoryCleaner
+  PUBLISHER: Igor Mundstein
 
 jobs:
   submit:
@@ -77,13 +79,13 @@ jobs:
         if: steps.check_winget.outputs.skip == 'false'
         id: download
         run: |
-          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe"
-          curl -fL --retry 3 --retry-delay 5 -o ${{ env.APP_NAME }}.exe "$DOWNLOAD_URL"
-          if [ ! -f "${{ env.APP_NAME }}.exe" ]; then
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.BINARY_NAME }}.exe"
+          curl -fL --retry 3 --retry-delay 5 -o ${{ env.BINARY_NAME }}.exe "$DOWNLOAD_URL"
+          if [ ! -f "${{ env.BINARY_NAME }}.exe" ]; then
             echo "::error file=winget.yml::Download failed"
             exit 1
           fi
-          SHA256=$(sha256sum ${{ env.APP_NAME }}.exe | cut -d ' ' -f1)
+          SHA256=$(sha256sum ${{ env.BINARY_NAME }}.exe | cut -d ' ' -f1)
           echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
 
       - name: Fetch repository metadata
@@ -137,7 +139,7 @@ jobs:
           MANIFEST_DIR="winget-manifest"
           mkdir -p "$MANIFEST_DIR"
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.yaml" <<EOF
-          ---
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.version }}
           DefaultLocale: en-US
@@ -145,27 +147,27 @@ jobs:
           ManifestVersion: 1.6.0
           EOF
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.installer.yaml" <<EOF
-          ---
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.version }}
           InstallerType: portable
           Installers:
             - Architecture: neutral
-              InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.exe
+              InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.BINARY_NAME }}.exe
               InstallerSha256: ${{ steps.download.outputs.sha256 }}
               Commands:
-                - ${{ env.APP_NAME }}
+                - ${{ env.BINARY_NAME }}
           ManifestType: installer
           ManifestVersion: 1.6.0
           EOF
           locale_file="${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.locale.en-US.yaml"
           cat > "$locale_file" <<EOF
-          ---
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.version }}
           PackageLocale: en-US
-          Publisher: ${{ github.repository_owner }}
-          PackageName: ${{ env.APP_NAME }}
+          Publisher: ${{ env.PUBLISHER }}
+          PackageName: ${{ env.DISPLAY_NAME }}
           License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
           ShortDescription: ${{ steps.metadata.outputs.desc }}
@@ -254,7 +256,7 @@ jobs:
       - name: Cleanup artifacts
         if: always()
         run: |
-          rm -rf fork-winget upstream-winget winget-manifest ${{ env.APP_NAME }}.exe repo_tags.yaml
+          rm -rf fork-winget upstream-winget winget-manifest ${{ env.BINARY_NAME }}.exe repo_tags.yaml
 
   sync_tags:
     name: Sync Tags across existing versions
