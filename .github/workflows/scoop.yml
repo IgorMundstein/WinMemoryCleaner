@@ -74,7 +74,6 @@ jobs:
             });
             core.setOutput('desc', repo.description?.trim() || 'A utility to clean system memory.');
             core.setOutput('homepage', repo.homepage || repo.html_url);
-            core.setOutput('license', repo.license.spdx_id || 'Unknown');
 
       - name: Download release asset and calculate checksum
         if: steps.check_scoop.outputs.skip == 'false'
@@ -83,7 +82,7 @@ jobs:
         run: |
           $assetName = "${{ env.APP_NAME }}.zip"
           $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/$assetName"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $assetName -UseBasicParsing
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $assetName
           $sha256 = (Get-FileHash -Path $assetName -Algorithm SHA256).Hash.ToLower()
           echo "sha256=$sha256" >> $env:GITHUB_OUTPUT
 
@@ -93,19 +92,15 @@ jobs:
         shell: pwsh
         run: |
           $manifestDir = "scoop-manifest"
-          New-Item -ItemType Directory -Path $manifestDir -Force
+          New-Item -ItemType Directory -Path $manifestDir -Force | Out-Null
           $manifestContent = @"
           {
               "version": "${{ steps.get_release.outputs.version }}",
               "description": "${{ steps.metadata.outputs.desc }}",
               "homepage": "${{ steps.metadata.outputs.homepage }}",
               "license": "GPL-3.0-only",
-              "architecture": {
-                  "64bit": {
-                      "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.zip",
-                      "hash": "${{ steps.download.outputs.sha256 }}"
-                  }
-              },
+              "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.zip",
+              "hash": "${{ steps.download.outputs.sha256 }}",
               "bin": "${{ env.APP_NAME }}.exe",
               "shortcuts": [
                   [
@@ -114,14 +109,10 @@ jobs:
                   ]
               ],
               "checkver": {
-                  "github": "https://github.com/${{ github.repository }}"
+                  "github": "${{ github.repository }}"
               },
               "autoupdate": {
-                  "architecture": {
-                      "64bit": {
-                          "url": "https://github.com/${{ github.repository }}/releases/download/`$version/${{ env.APP_NAME }}.zip"
-                      }
-                  }
+                  "url": "https://github.com/${{ github.repository }}/releases/download/`$version/${{ env.APP_NAME }}.zip"
               }
           }
           "@
@@ -147,7 +138,7 @@ jobs:
           $manifestFile = "${{ steps.create_manifest.outputs.manifest_path }}"
           cp ../$manifestFile "bucket/${{ env.MANIFEST_NAME }}.json"
           git add .
-          git commit -m "${{ env.MANIFEST_NAME }}: Update to $version"
+          git commit -m "${{ env.MANIFEST_NAME }}: Update to $version" || echo "No changes to commit"
           git push --force origin $branchName
           $prOutput = gh pr create `
             --repo "${{ env.UPSTREAM_REPO }}" `
