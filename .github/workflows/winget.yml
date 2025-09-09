@@ -100,7 +100,7 @@ jobs:
             core.setOutput('homepage', repo.homepage?.trim() || repo.html_url || 'https://github.com/IgorMundstein/WinMemoryCleaner');
             core.setOutput('license', repo.license?.spdx_id || 'GPL-3.0');
 
-      - name: Fetch repository topics (Tags source of truth)
+      - name: Build Tags from repo topics
         if: steps.check_winget.outputs.skip == 'false'
         id: repo_topics
         uses: actions/github-script@v7
@@ -110,9 +110,14 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            const topics = (data.names || [])
-              .map(s => s.trim())
-              .filter(Boolean);
+            let topics = (data.names || []).map(s => s.trim()).filter(Boolean);
+            topics = Array.from(new Set(topics));
+            topics.sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+            if (topics.length > 16) {
+              const dropped = topics.slice(16);
+              topics = topics.slice(0, 16);
+              core.notice(`Dropped Tags due to 16-item schema limit: ${dropped.join(', ')}`);
+            }
             const fs = require('fs');
             if (topics.length) {
               const lines = ['Tags:', ...topics.map(t => `- ${t}`)];
@@ -262,7 +267,7 @@ jobs:
             exit 1
           fi
 
-      - name: Fetch repository topics
+      - name: Build Tags from repo topics
         id: repo_topics
         uses: actions/github-script@v7
         with:
@@ -271,7 +276,14 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            const topics = (data.names || []).map(s => s.trim()).filter(Boolean);
+            let topics = (data.names || []).map(s => s.trim()).filter(Boolean);
+            topics = Array.from(new Set(topics));
+            topics.sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+            if (topics.length > 16) {
+              const dropped = topics.slice(16);
+              topics = topics.slice(0, 16);
+              core.notice(`Dropped Tags due to 16-item schema limit: ${dropped.join(', ')}`);
+            }
             const fs = require('fs');
             if (topics.length) {
               const lines = ['Tags:', ...topics.map(t => `- ${t}`)];
