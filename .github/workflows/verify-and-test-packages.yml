@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: "⏳ Add grace period after release publication"
         if: github.event_name == 'release'
-        run: sleep 1800
+        run: sleep 14400
 
       - name: "🔽 Checkout Repository"
         uses: actions/checkout@v4
@@ -54,6 +54,7 @@ jobs:
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
     runs-on: windows-latest
+    timeout-minutes: 15
     outputs:
       published: ${{ steps.choco.outputs.published }}
       e2e: ${{ steps.choco.outputs.e2e_result }}
@@ -69,51 +70,79 @@ jobs:
           $packageName = "winmemorycleaner"
           $e2e_result = "fail"
           $published = "false"
+
+          function Set-Outputs {
+            param($Published, $E2E)
+            echo "published=$Published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            echo "e2e_result=$E2E" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
           Write-Host "===[Chocolatey] Checking $packageName version $version==="
           try {
             $choco_output = choco search $packageName --exact --all-versions -r
             Write-Host "Chocolatey search output:`n$choco_output"
-            if ($choco_output -match "$version") {
+            if ($choco_output -match "\b$([regex]::Escape($version))\b") {
               Write-Host "[Chocolatey] ✅ Version found."
               $published = "true"
+
               Write-Host("[Chocolatey] Installing package...")
               choco install $packageName --version $version -y --no-progress
-              $exe = Get-Command WinMemoryCleaner.exe -ErrorAction SilentlyContinue
-              if ($null -eq $exe) {
+
+              $chocoRoot = $env:ChocolateyInstall
+              if (-not $chocoRoot) { $chocoRoot = "C:\ProgramData\chocolatey" }
+              $exePath = Get-ChildItem -Path (Join-Path $chocoRoot "lib\$packageName") -Recurse -Filter "WinMemoryCleaner.exe" -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName -First 1
+              if (-not $exePath) {
+                $cmd = Get-Command WinMemoryCleaner.exe -ErrorAction SilentlyContinue
+                if ($cmd -and (Test-Path $cmd.Source)) {
+                  $exePath = $cmd.Source
+                }
+              }
+
+              if (-not $exePath) {
                 Write-Host "[Chocolatey] ❌ WinMemoryCleaner.exe not found after install"
                 $e2e_result = "fail"
-                echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-                echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                Set-Outputs -Published $published -E2E $e2e_result
                 exit 1
-              } else {
-                Write-Host "[Chocolatey] Running version command..."
-                & $exe.Source --version | Write-Host
+              }
+
+              Write-Host "[Chocolatey] Found executable: $exePath"
+
+              $verInfo = (Get-Item $exePath).VersionInfo
+              $fileVersion = $verInfo.ProductVersion
+              if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
+              $expectedRegex = '^' + [regex]::Escape($version) + '(\.0)?$'
+              Write-Host "[Chocolatey] Installed file version: $fileVersion"
+              if ($fileVersion -match $expectedRegex) {
                 $e2e_result = "success"
-                Write-Host "[Chocolatey] ✅ E2E Test successful."
+                Write-Host "[Chocolatey] ✅ E2E Test successful (version matches)."
+              } else {
+                Write-Host "[Chocolatey] ❌ Version mismatch. Expected $version, got $fileVersion"
+                $e2e_result = "fail"
+                Set-Outputs -Published $published -E2E $e2e_result
+                exit 1
               }
             } else {
               Write-Host "[Chocolatey] ❌ Version not found."
               $published = "false"
               $e2e_result = "skipped"
-              echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
           } catch {
             Write-Host "[Chocolatey] ❌ Error: $($_.Exception.Message)"
             $published = "false"
             $e2e_result = "skipped"
-            echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Set-Outputs -Published $published -E2E $e2e_result
             exit 1
           }
-          echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+          Set-Outputs -Published $published -E2E $e2e_result
 
   scoop:
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
     runs-on: windows-latest
+    timeout-minutes: 15
     outputs:
       published: ${{ steps.scoop.outputs.published }}
       e2e: ${{ steps.scoop.outputs.e2e_result }}
@@ -129,59 +158,80 @@ jobs:
           $packageName = "winmemorycleaner"
           $e2e_result = "fail"
           $published = "false"
+
+          function Set-Outputs {
+            param($Published, $E2E)
+            echo "published=$Published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            echo "e2e_result=$E2E" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
           Write-Host "===[Scoop] Ensuring Scoop is installed==="
           try {
             if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
               irm get.scoop.sh | iex
             }
             scoop update
-            scoop bucket add extras -f
+
+            if (-not (scoop bucket list | Select-String -SimpleMatch 'extras')) {
+              scoop bucket add extras
+            }
             scoop update extras
+
             Write-Host "===[Scoop] Checking $packageName version $version==="
-            $scoop_info = scoop info $packageName
+            $scoop_info = scoop info $packageName 2>$null
             Write-Host "Scoop info output:`n$scoop_info"
-            if ($scoop_info -match "Version:\s*$version") {
+            if ($scoop_info -match "Version:\s*$([regex]::Escape($version))\s*$") {
               Write-Host "[Scoop] ✅ Version found."
               $published = "true"
+
               Write-Host "[Scoop] Installing package..."
               scoop install $packageName
+
               $exe = "$(scoop prefix $packageName)\WinMemoryCleaner.exe"
               if (-not (Test-Path $exe)) {
                 Write-Host "[Scoop] ❌ WinMemoryCleaner.exe not found after install"
                 $e2e_result = "fail"
-                echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-                echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                Set-Outputs -Published $published -E2E $e2e_result
                 exit 1
-              } else {
-                Write-Host "[Scoop] Running version command..."
-                & $exe --version | Write-Host
+              }
+
+              $verInfo = (Get-Item $exe).VersionInfo
+              $fileVersion = $verInfo.ProductVersion
+              if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
+              $expectedRegex = '^' + [regex]::Escape($version) + '(\.0)?$'
+              Write-Host "[Scoop] Installed file version: $fileVersion"
+              if ($fileVersion -match $expectedRegex) {
                 $e2e_result = "success"
-                Write-Host "[Scoop] ✅ E2E Test successful."
+                Write-Host "[Scoop] ✅ E2E Test successful (version matches)."
+              } else {
+                Write-Host "[Scoop] ❌ Version mismatch. Expected $version, got $fileVersion"
+                $e2e_result = "fail"
+                Set-Outputs -Published $published -E2E $e2e_result
+                exit 1
               }
             } else {
               Write-Host "[Scoop] ❌ Version not found."
               $published = "false"
               $e2e_result = "skipped"
-              echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
           } catch {
             Write-Host "[Scoop] ❌ Error: $($_.Exception.Message)"
             $published = "false"
             $e2e_result = "skipped"
-            echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Set-Outputs -Published $published -E2E $e2e_result
             exit 1
           }
-          echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+          Set-Outputs -Published $published -E2E $e2e_result
 
   winget_cli:
     needs: setup
     if: needs.setup.outputs.cache-hit != 'true'
     runs-on: windows-latest
     continue-on-error: true
+    timeout-minutes: 20
     outputs:
       found: ${{ steps.detect_winget.outputs.found }}
       published: ${{ steps.winget.outputs.published }}
@@ -216,54 +266,83 @@ jobs:
         env:
           RELEASE_VERSION: ${{ needs.setup.outputs.release_version }}
         run: |
-          $version_to_check = "$env:RELEASE_VERSION"
+          $ErrorActionPreference = 'Stop'
+          $expected = "$env:RELEASE_VERSION"
+          $expectedRegex = '^' + [regex]::Escape($expected) + '(\.0)?$'
           $wingetExe = "${{ steps.detect_winget.outputs.path }}"
           if (-not (Test-Path $wingetExe)) { $wingetExe = "winget.exe" }
           $pkgName = "IgorMundstein.WinMemoryCleaner"
           $published = "false"
           $e2e_result = "fail"
+
+          function Set-Outputs {
+            param($Published, $E2E)
+            echo "published=$Published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            echo "e2e_result=$E2E" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
           Write-Host "===[WinGet] Using $wingetExe"
           try {
             Write-Host "[WinGet] Updating sources..."
             try { & $wingetExe source update } catch { Write-Host "[WinGet] source update failed (non-fatal)" }
-            Write-Host "[WinGet] Showing package info..."
-            $winget_output = & $wingetExe show --id $pkgName --source winget --accept-source-agreements
-            Write-Host "WinGet show output:`n$winget_output"
-            if ($winget_output -match "Version:\s*$version_to_check") {
-              Write-Host "[WinGet] ✅ Version found."
+
+            Write-Host "[WinGet] Checking available versions..."
+            $versionsOut = & $wingetExe show --id $pkgName --source winget --versions --accept-source-agreements
+            Write-Host "WinGet versions output:`n$versionsOut"
+
+            $available = $versionsOut -split "`r?`n" |
+              ForEach-Object { $_.Trim() } |
+              Where-Object { $_ -match '^\d+(\.\d+){2,3}$' }
+
+            if ($available | Where-Object { $_ -match $expectedRegex }) {
+              Write-Host "[WinGet] ✅ Version $expected is listed."
               $published = "true"
-              Write-Host "[WinGet] Installing package..."
-              & $wingetExe install --id $pkgName --accept-source-agreements --accept-package-agreements --silent -o .
-              if (-not (Test-Path ".\WinMemoryCleaner.exe")) {
+
+              Write-Host "[WinGet] Installing exact version $expected..."
+              & $wingetExe install --id $pkgName --version $expected --accept-source-agreements --accept-package-agreements --silent -o .
+
+              $exePath = Join-Path (Get-Location) "WinMemoryCleaner.exe"
+              if (-not (Test-Path $exePath)) {
+                $cmd = Get-Command WinMemoryCleaner.exe -ErrorAction SilentlyContinue
+                if ($cmd -and (Test-Path $cmd.Source)) { $exePath = $cmd.Source }
+              }
+
+              if (-not (Test-Path $exePath)) {
                 Write-Host "[WinGet] ❌ WinMemoryCleaner.exe not found after install"
                 $e2e_result = "fail"
-                echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-                echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                Set-Outputs -Published $published -E2E $e2e_result
                 exit 1
-              } else {
-                Write-Host "[WinGet] Running version command..."
-                .\WinMemoryCleaner.exe --version | Write-Host
+              }
+
+              $verInfo = (Get-Item $exePath).VersionInfo
+              $fileVersion = $verInfo.ProductVersion
+              if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
+              Write-Host "[WinGet] Installed file version: $fileVersion"
+              if ($fileVersion -match $expectedRegex) {
                 $e2e_result = "success"
-                Write-Host "[WinGet] ✅ E2E Test successful."
+                Write-Host "[WinGet] ✅ E2E Test successful (version matches)."
+              } else {
+                Write-Host "[WinGet] ❌ Version mismatch. Expected $expected, got $fileVersion"
+                $e2e_result = "fail"
+                Set-Outputs -Published $published -E2E $e2e_result
+                exit 1
               }
             } else {
-              Write-Host "[WinGet] ❌ Version not found."
+              Write-Host "[WinGet] ❌ Version $expected not yet in client index (likely ingestion delay)."
               $published = "false"
               $e2e_result = "skipped"
-              echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
           } catch {
             Write-Host "[WinGet] ❌ Error: $($_.Exception.Message)"
             $published = "false"
             $e2e_result = "skipped"
-            echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Set-Outputs -Published $published -E2E $e2e_result
             exit 1
           }
-          echo "published=$published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          echo "e2e_result=$e2e_result" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+          Set-Outputs -Published $published -E2E $e2e_result
 
   winget_manifest:
     needs: setup
@@ -336,7 +415,10 @@ jobs:
           WG_CLI_PUB="${{ needs.winget_cli.outputs.published }}"
           if [ "$WG_CLI_FOUND" == "true" ]; then
             if [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_STATUS="✅ Published"; else WG_CLI_STATUS="❌ Not Published"; fi
-            WG_CLI_E2E_STATUS="N/A"
+            WG_CLI_E2E_RAW="${{ needs.winget_cli.outputs.e2e }}"
+            if [ "$WG_CLI_E2E_RAW" == "success" ]; then WG_CLI_E2E_STATUS="✅ Passed"
+            elif [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_E2E_STATUS="❌ Failed"
+            else WG_CLI_E2E_STATUS="⚠️ Skipped"; fi
           else
             WG_CLI_STATUS="⚠️ Not Installed"
             WG_CLI_E2E_STATUS="N/A"
