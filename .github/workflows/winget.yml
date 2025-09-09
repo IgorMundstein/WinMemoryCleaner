@@ -30,7 +30,7 @@ jobs:
     name: Submit to WinGet
     runs-on: windows-latest
     timeout-minutes: 30
-    if: github.event_name != 'workflow_dispatch' || inputs.run_submit == 'true'
+    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.run_submit == true || inputs.run_submit == 'true')) }}
     defaults:
       run:
         shell: bash
@@ -242,7 +242,7 @@ jobs:
   sync_tags:
     name: Sync Tags across existing versions
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && inputs.sync_all_tags == 'true'
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.sync_all_tags == true || inputs.sync_all_tags == 'true') }}
     steps:
       - name: Validate environment and PAT
         run: |
@@ -270,12 +270,6 @@ jobs:
               core.setOutput('found', 'false');
             }
 
-      - name: Exit if no topics
-        if: steps.repo_topics.outputs.found != 'true'
-        run: |
-          echo "::notice::No repo topics found; nothing to sync."
-          exit 0
-
       - name: Clone fork and prepare branch
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -299,7 +293,6 @@ jobs:
 
           changed=0
           while IFS= read -r -d '' f; do
-            echo "::group::Updating $f"
             awk '
               BEGIN {skip=0}
               /^Tags:/ {skip=1; next}
@@ -325,16 +318,12 @@ jobs:
               mv "$f.new" "$f"
               rm -f "$f.nontags"
               changed=$((changed+1))
-              echo "::notice::Updated Tags in $f"
             else
               rm -f "$f.nontags" "$f.new"
-              echo "::notice::No change in $f"
             fi
-            echo "::endgroup::"
           done < <(find "$base_dir" -mindepth 1 -maxdepth 2 -type f -name "${{ env.PACKAGE_ID }}.locale.en-US.yaml" -print0)
 
           if [ "$changed" -eq 0 ]; then
-            echo "::notice::No files changed; exiting."
             exit 0
           fi
 
