@@ -195,13 +195,14 @@ jobs:
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork-winget
           cd fork-winget
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
-          git fetch upstream master --depth=1
+          git fetch upstream --depth=1
+          base_branch=$(git remote show upstream | sed -n '/HEAD branch/s/.*: //p'); [ -z "$base_branch" ] && base_branch="master"
           version="${{ steps.get_release.outputs.version }}"
           branch="add/${{ env.PACKAGE_ID }}/${version}"
-          git checkout -b "$branch" "upstream/master"
+          git checkout -b "$branch" "upstream/$base_branch"
           mkdir -p "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${version}"
           cp ../winget-manifest/*.yaml "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${version}/"
-          git add .
+          git add "manifests/i/${{ github.repository_owner }}/WinMemoryCleaner/${version}"
           git commit -m "${{ env.PACKAGE_ID }} version ${version}"
           git push --force origin "$branch"
 
@@ -212,27 +213,37 @@ jobs:
         run: |
           set -e
           cd fork-winget
+          gh --version
+          gh auth status -h github.com || true
           version="${{ steps.get_release.outputs.version }}"
           branch="add/${{ env.PACKAGE_ID }}/${version}"
           pr_title="${{ env.PACKAGE_ID }} version ${version}"
           pr_body="Automated submission of ${{ env.PACKAGE_ID }} version ${version}."
+          base_branch=$(gh repo view "${{ env.UPSTREAM_REPO }}" --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo master)
+          existing=$(gh pr list --repo "${{ env.UPSTREAM_REPO }}" --head "${{ github.repository_owner }}:$branch" --state open --json url -q '.[0].url' 2>/dev/null || true)
+          if [ -n "$existing" ]; then
+            echo "::notice::A pull request already exists: $existing"
+            exit 0
+          fi
+          set +e
           pr_output=$(gh pr create \
             --repo "${{ env.UPSTREAM_REPO }}" \
             --head "${{ github.repository_owner }}:$branch" \
-            --base master \
+            --base "$base_branch" \
             --title "$pr_title" \
             --body "$pr_body" 2>&1)
-          if [ $? -ne 0 ]; then
-            if [[ "$pr_output" == *"already exists"* ]]; then
-              echo "::notice::A pull request for this version already exists. Skipping."
-            else
-              echo "::error::Failed to create pull request: $pr_output"
-              exit 1
+          status=$?
+          echo "$pr_output"
+          set -e
+          if [ $status -ne 0 ]; then
+            if echo "$pr_output" | grep -qi "already exists"; then
+              echo "::notice::A pull request for this branch already exists."
+              exit 0
             fi
-          else
-            echo "::notice::Pull request created successfully."
-            echo "$pr_output"
+            echo "::error::Failed to create pull request"
+            exit 1
           fi
+          echo "::notice::Pull request created successfully."
 
       - name: Cleanup artifacts
         if: always()
@@ -280,8 +291,9 @@ jobs:
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork-winget
           cd fork-winget
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
-          git fetch upstream master --depth=1
-          git checkout -b "sync-tags/${{ github.repository_owner }}-$(date +%Y%m%d%H%M%S)" upstream/master
+          git fetch upstream --depth=1
+          base_branch=$(git remote show upstream | sed -n '/HEAD branch/s/.*: //p'); [ -z "$base_branch" ] && base_branch="master"
+          git checkout -b "sync-tags/${{ github.repository_owner }}-$(date +%Y%m%d%H%M%S)" "upstream/$base_branch"
 
           ws="${GITHUB_WORKSPACE}/repo_tags.yaml"
           base_dir="manifests/i/${{ github.repository_owner }}/WinMemoryCleaner"
@@ -334,6 +346,6 @@ jobs:
           gh pr create \
             --repo "${{ env.UPSTREAM_REPO }}" \
             --head "${{ github.repository_owner }}:$(git rev-parse --abbrev-ref HEAD)" \
-            --base master \
+            --base "$base_branch" \
             --title "Sync Tags with repo topics for ${{ env.PACKAGE_ID }}" \
             --body "Automated update to align Tags with repository topics."
