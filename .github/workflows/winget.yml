@@ -4,6 +4,17 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      run_submit:
+        description: "Submit latest release to WinGet"
+        required: false
+        type: boolean
+        default: true
+      sync_all_tags:
+        description: "Sync Tags across all existing versions in microsoft/winget-pkgs to match this repo's topics"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -19,6 +30,7 @@ jobs:
     name: Submit to WinGet
     runs-on: windows-latest
     timeout-minutes: 30
+    if: github.event_name != 'workflow_dispatch' || inputs.run_submit == 'true'
     defaults:
       run:
         shell: bash
@@ -88,27 +100,29 @@ jobs:
             core.setOutput('homepage', repo.homepage?.trim() || repo.html_url || 'https://github.com/IgorMundstein/WinMemoryCleaner');
             core.setOutput('license', repo.license?.spdx_id || 'GPL-3.0');
 
-      - name: Fetch previous Tags from upstream manifest
+      - name: Fetch repository topics (Tags source of truth)
         if: steps.check_winget.outputs.skip == 'false'
-        id: prev_tags
-        run: |
-          set -e
-          git clone --filter=blob:none --depth=1 "https://github.com/${{ env.UPSTREAM_REPO }}.git" upstream-winget
-          version="${{ steps.get_release.outputs.version }}"
-          base_dir="upstream-winget/manifests/i/${{ github.repository_owner }}/WinMemoryCleaner"
-          prev_ver=""
-          if [ -d "$base_dir" ]; then
-            prev_ver=$(ls -1 "$base_dir" | sort -V | grep -E '^[0-9]+' | grep -v "^${version}$" | tail -n 1 || true)
-          fi
-          if [ -n "$prev_ver" ] && [ -f "$base_dir/$prev_ver/${{ env.PACKAGE_ID }}.locale.en-US.yaml" ]; then
-            awk '/^Tags:/{print; flag=1; next} flag && /^[A-Za-z]/{flag=0} flag {print}' \
-              "$base_dir/$prev_ver/${{ env.PACKAGE_ID }}.locale.en-US.yaml" > prev_tags.yaml || true
-          fi
-          if [ -s prev_tags.yaml ]; then
-            echo "found=true" >> $GITHUB_OUTPUT
-          else
-            echo "found=false" >> $GITHUB_OUTPUT
-          fi
+        id: repo_topics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getAllTopics({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const topics = (data.names || [])
+              .map(s => s.trim())
+              .filter(Boolean);
+            const fs = require('fs');
+            if (topics.length) {
+              const lines = ['Tags:', ...topics.map(t => `- ${t}`)];
+              fs.writeFileSync('repo_tags.yaml', lines.join('\n'));
+              core.setOutput('found', 'true');
+              core.setOutput('count', String(topics.length));
+            } else {
+              core.setOutput('found', 'false');
+              core.setOutput('count', '0');
+            }
 
       - name: Create WinGet Manifest Files
         if: steps.check_winget.outputs.skip == 'false'
@@ -153,9 +167,9 @@ jobs:
           ManifestType: defaultLocale
           ManifestVersion: 1.6.0
           EOF
-          if [ "${{ steps.prev_tags.outputs.found }}" = "true" ]; then
+          if [ "${{ steps.repo_topics.outputs.found }}" = "true" ]; then
             echo "" >> "$locale_file"
-            cat prev_tags.yaml >> "$locale_file"
+            cat repo_tags.yaml >> "$locale_file"
           fi
 
       - name: Validate manifests with winget
@@ -223,4 +237,114 @@ jobs:
       - name: Cleanup artifacts
         if: always()
         run: |
-          rm -rf fork-winget upstream-winget winget-manifest ${{ env.APP_NAME }}.exe prev_tags.yaml
+          rm -rf fork-winget upstream-winget winget-manifest ${{ env.APP_NAME }}.exe repo_tags.yaml
+
+  sync_tags:
+    name: Sync Tags across existing versions
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.sync_all_tags == 'true'
+    steps:
+      - name: Validate environment and PAT
+        run: |
+          if [ -z "${{ secrets.PAT_TOKEN }}" ]; then
+            echo "::error::PAT_TOKEN secret is not set!"
+            exit 1
+          fi
+
+      - name: Fetch repository topics
+        id: repo_topics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getAllTopics({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const topics = (data.names || []).map(s => s.trim()).filter(Boolean);
+            const fs = require('fs');
+            if (topics.length) {
+              const lines = ['Tags:', ...topics.map(t => `- ${t}`)];
+              fs.writeFileSync('repo_tags.yaml', lines.join('\n'));
+              core.setOutput('found', 'true');
+            } else {
+              core.setOutput('found', 'false');
+            }
+
+      - name: Exit if no topics
+        if: steps.repo_topics.outputs.found != 'true'
+        run: |
+          echo "::notice::No repo topics found; nothing to sync."
+          exit 0
+
+      - name: Clone fork and prepare branch
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          set -e
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork-winget
+          cd fork-winget
+          git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
+          git fetch upstream master --depth=1
+          git checkout -b "sync-tags/${{ github.repository_owner }}-$(date +%Y%m%d%H%M%S)" upstream/master
+          cp ../repo_tags.yaml .
+
+          root="$(pwd)"
+          base_dir="manifests/i/${{ github.repository_owner }}/WinMemoryCleaner"
+          if [ ! -d "$base_dir" ]; then
+            echo "::notice::No package directory exists in upstream."
+            exit 0
+          fi
+
+          changed=0
+          while IFS= read -r -d '' f; do
+            echo "::group::Updating $f"
+            awk '
+              BEGIN {skip=0}
+              /^Tags:/ {skip=1; next}
+              skip==1 && /^[A-Za-z]/ {skip=0}
+              skip==0 {print}
+            ' "$f" > "$f.nontags"
+            awk -v tags="$root/repo_tags.yaml" '
+              BEGIN {inserted=0}
+              /^ManifestType:/ && inserted==0 {
+                print "";
+                system("cat \"" tags "\"");
+                inserted=1
+              }
+              {print}
+              END {
+                if (inserted==0) {
+                  print "";
+                  system("cat \"" tags "\"");
+                }
+              }
+            ' "$f.nontags" > "$f.new"
+            if ! diff -q "$f" "$f.new" >/dev/null; then
+              mv "$f.new" "$f"
+              rm -f "$f.nontags"
+              changed=$((changed+1))
+              echo "::notice::Updated Tags in $f"
+            else
+              rm -f "$f.nontags" "$f.new"
+              echo "::notice::No change in $f"
+            fi
+            echo "::endgroup::"
+          done < <(find "$base_dir" -mindepth 1 -maxdepth 2 -type f -name "${{ env.PACKAGE_ID }}.locale.en-US.yaml" -print0)
+
+          if [ "$changed" -eq 0 ]; then
+            echo "::notice::No files changed; exiting."
+            exit 0
+          fi
+
+          git add .
+          git commit -m "Sync Tags with repo topics for ${{ env.PACKAGE_ID }}"
+          git push --force origin HEAD
+
+          gh pr create \
+            --repo "${{ env.UPSTREAM_REPO }}" \
+            --head "${{ github.repository_owner }}:$(git rev-parse --abbrev-ref HEAD)" \
+            --base master \
+            --title "Sync Tags with repo topics for ${{ env.PACKAGE_ID }}" \
+            --body "Automated update to align Tags with repository topics."
