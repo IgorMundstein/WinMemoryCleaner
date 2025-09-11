@@ -57,7 +57,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $branch = "update/${{ env.MANIFEST_NAME }}-${{ steps.version.outputs.version }}"
-          # Query upstream for open PRs with head = yourfork:branch
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
           $url = "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/pulls?state=open&head=$encodedHead"
           try {
@@ -118,7 +117,7 @@ jobs:
             Write-Error "Asset not reachable at $url"
             exit 1
           }
-            "asset_url=$url" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "asset_url=$url" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Asset OK"
 
       - name: Download & hash
@@ -145,7 +144,11 @@ jobs:
           $owner   = "${{ github.repository_owner }}"
           $repo    = "${{ github.event.repository.name }}"
           if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
-
+          $inner = [object[]]@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
+          $outer = New-Object System.Collections.ArrayList
+          [void]$outer.Add($inner)
+          Write-Host "Debug: inner type=$($inner.GetType().FullName) length=$($inner.Count)"
+          Write-Host "Debug: outer type=$($outer.GetType().FullName) count=$($outer.Count) firstInnerType=$($outer[0].GetType().FullName)"
           $obj = [ordered]@{
             version     = $version
             description = "${{ env.FIXED_DESCRIPTION }}"
@@ -154,14 +157,17 @@ jobs:
             url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
             hash        = $hash
             bin         = "${{ env.APP_NAME }}.exe"
-            shortcuts   = @(@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}"))
+            shortcuts   = $outer
             checkver    = "github"
             autoupdate  = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
           }
-
+          if ($obj.shortcuts -is [string[]]) {
+            Write-Warning "Pre-serialization shortcuts flattened unexpectedly; re-wrapping."
+            $obj.shortcuts = @(@($obj.shortcuts))
+          }
           New-Item -Type Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
-          ($obj | ConvertTo-Json -Depth 5 | Out-String).Trim() | Set-Content -LiteralPath $path -Encoding UTF8
+          ($obj | ConvertTo-Json -Depth 6 | Out-String).Trim() | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Get-Content $path
 
@@ -176,11 +182,22 @@ jobs:
           foreach ($f in 'version','url','hash','bin','autoupdate','checkver','shortcuts') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { Write-Host "Missing $f"; $ok=$false }
           }
+          if ($j.shortcuts -is [string[]]) {
+            Write-Warning "Detected flattened shortcuts (string array). Auto-repairing to nested array."
+            $j.shortcuts = @(@($j.shortcuts))
+            $repaired = ($j | ConvertTo-Json -Depth 6 | Out-String).Trim()
+            Set-Content -LiteralPath $p -Value $repaired -Encoding UTF8
+            $raw = Get-Content $p -Raw
+            $j = $raw | ConvertFrom-Json
+          }
+          if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) {
+            Write-Host "Shortcuts still malformed after any repair attempt."
+            $ok=$false
+          }
           if (-not $j.autoupdate.url.Contains('$version')) { Write-Host "autoupdate missing \$version"; $ok=$false }
-          if ($j.shortcuts.Count -lt 1 -or $j.shortcuts[0].Count -ne 2) { Write-Host "Shortcuts malformed"; $ok=$false }
-          if ($j.checkver -ne 'github') { Write-Host "checkver not 'github' shorthand"; $ok=$false }
+          if ($j.checkver -ne 'github') { Write-Host "checkver not 'github'"; $ok=$false }
           if (-not $ok) {
-            Write-Host "Manifest content:"
+            Write-Host "Manifest content (final state):"
             Write-Host $raw
             Write-Error "Critical validation failed"
             exit 1
