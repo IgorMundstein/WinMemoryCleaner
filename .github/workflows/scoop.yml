@@ -48,7 +48,7 @@ jobs:
             if (-not $latest) { Write-Error "No releases found."; exit 1 }
             $tag = ($latest -split "\s+")[0]
           }
-            if ($tag.StartsWith('v')) { $version = $tag.Substring(1) } else { $version = $tag }
+          if ($tag.StartsWith('v')) { $version = $tag.Substring(1) } else { $version = $tag }
           "tag=$tag"       | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Resolved tag=$tag version=$version"
@@ -174,9 +174,7 @@ jobs:
             url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.APP_NAME }}.zip"
             hash        = $hash
             bin         = "${{ env.APP_NAME }}.exe"
-            shortcuts   = @(
-              @("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
-            )
+            shortcuts   = @(@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}"))
             checkver    = @{ github = "$owner/$repo" }
             autoupdate  = @{
               url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.APP_NAME }}.zip"
@@ -217,27 +215,31 @@ jobs:
           $actionText  = if ($isUpdate -eq 'true') { "Update to" } else { "Add version" }
           $bodyIntro   = if ($isUpdate -eq 'true') { "Updates the manifest for" } else { "Adds the initial manifest for" }
           $titleExpected = "${{ env.MANIFEST_NAME }}: $actionText $version"
-          $checklist = @"
----
-###### Submission checklist
-- [x] I have read the [Contributing Guide](https://github.com/ScoopInstaller/Main/blob/${{ env.UPSTREAM_BRANCH }}/CONTRIBUTING.md).
-- [x] Title follows the convention: `$titleExpected`
-- [x] Hash matches the downloaded archive.
-- [x] \`checkver\` uses GitHub shorthand (owner/repo).
-- [x] \`autoupdate.url\` contains the \$version placeholder.
-- [x] Description is concise and neutral.
-"@
-          $body = @"
-$bodyIntro ${{ env.APP_NAME }} version $version.
 
-> $description
+          $checklistLines = @(
+            '---'
+            '###### Submission checklist'
+            '- [x] I have read the [Contributing Guide](https://github.com/ScoopInstaller/Main/blob/master/CONTRIBUTING.md).'
+            "- [x] Title follows the convention: `$titleExpected"
+            '- [x] Hash matches the downloaded archive.'
+            '- [x] `checkver` uses GitHub shorthand (owner/repo).'
+            '- [x] `autoupdate.url` contains the `$version placeholder.'
+            '- [x] Description is concise and neutral.'
+          )
+          $checklist = $checklistLines -join "`n"
 
-- **Project Homepage:** $homepage
-- **Release Notes:** https://github.com/${{ github.repository }}/releases/tag/$tag
+          $bodyLines = @(
+            "$bodyIntro ${{ env.APP_NAME }} version $version."
+            ''
+            "> $description"
+            ''
+            "- **Project Homepage:** $homepage"
+            "- **Release Notes:** https://github.com/${{ github.repository }}/releases/tag/$tag"
+            ''
+            $checklist
+          )
+          $body = ($bodyLines -join "`n").Trim()
 
-$checklist
-"@
-          $body = $body.Trim()
           $file = "pr_body.txt"
           Set-Content -Path $file -Value $body -Encoding UTF8
           "file=$file" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
