@@ -10,17 +10,17 @@ This free RAM cleaner uses native Windows features to efficiently clear memory a
 
 [![](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FIgorMundstein%2FWinMemoryCleaner%2Freleases%2Flatest&query=%24.tag_name&label=Release&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
-### 🍫 Chocolatey
+### 🍫 [Chocolatey](https://community.chocolatey.org/packages/winmemorycleaner)
 ```cmd
 choco install winmemorycleaner
 ```
 
-### 🍦 Scoop
+### 🍦 [Scoop](https://scoop.sh/#/apps?q=winmemorycleaner)
 ```cmd
 scoop install winmemorycleaner
 ```
 
-### 📦 WinGet
+### 📦 [WinGet](https://winstall.app/apps/IgorMundstein.WinMemoryCleaner)
 ```cmd
 winget install IgorMundstein.WinMemoryCleaner
 ```
@@ -45,7 +45,7 @@ winget install IgorMundstein.WinMemoryCleaner
 
 The Compact Mode feature allows you to collapse the main window into a minimal view for at-a-glance monitoring. By clicking the arrow next to the minimize button, the UI shrinks to show only the most essential memory statistics and controls. This mode is ideal for users who want to keep an eye on their system’s memory usage without occupying much screen space. Toggle Compact Mode on or off at any time to suit your workflow.
 
-[![](./docs/assets/images/main-window-compact.png)](#-compact-mode)
+[![](./docs/assets/images/main-window-compact.png)](#%EF%B8%8F-compact-mode)
 
 ### 🔔 System Tray (Notification area)
 
