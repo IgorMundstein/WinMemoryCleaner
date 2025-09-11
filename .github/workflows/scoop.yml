@@ -21,7 +21,6 @@ env:
   MANIFEST_NAME: winmemorycleaner
   LICENSE_ID: GPL-3.0-or-later
   ASSET_FILE: WinMemoryCleaner.zip
-  PAT_NAME: PAT_TOKEN
 
 jobs:
   submit:
@@ -46,7 +45,7 @@ jobs:
             $tag = ($latest -split '\s+')[0]
           }
           if ([string]::IsNullOrWhiteSpace($tag)) { Write-Error "Tag empty"; exit 1 }
-          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "tag=$tag"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Version: $tag"
 
@@ -58,14 +57,17 @@ jobs:
           try {
             $data = Invoke-RestMethod -Uri $url -Method Get -TimeoutSec 15 -ErrorAction Stop
             if ($data.version -eq "${{ steps.version.outputs.version }}") {
-              "skip=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "skip=yes"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
               Write-Host "Upstream already at this version."
             } else {
-              "skip=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              Write-Host "Upstream has different version ($($data.version)); will update."
+              "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              Write-Host "Upstream has version $($data.version); will update."
             }
           } catch {
-            "skip=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "update=no"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             Write-Host "Manifest not present upstream; new submission."
           }
 
@@ -83,8 +85,10 @@ jobs:
             const fallback = 'Portable RAM cleaner that uses native Windows features to optimize memory.';
             let desc = (repo.description || '').trim();
             if (!desc) desc = fallback;
-            // keep neutral & concise
-            desc = desc.replace(/\b(free|smart|compact|advanced|powerful|lightweight)\b/gi,'').replace(/\s{2,}/g,' ').trim();
+            desc = desc
+              .replace(/\b(free|smart|compact|advanced|powerful|lightweight)\b/gi,'')
+              .replace(/\s{2,}/g,' ')
+              .trim();
             if (!desc) desc = fallback;
             core.setOutput('desc', desc);
             core.setOutput('homepage', repo.homepage || repo.html_url);
@@ -173,14 +177,13 @@ jobs:
         id: prbody
         shell: pwsh
         run: |
-          $isUpdate = if ("${{ steps.upstream.outputs.skip }}" -eq 'no' -and "${{ steps.upstream.outputs.update }}" -eq 'yes') { 'yes' } else { 'no' }
+          $isUpdate = "${{ steps.upstream.outputs.update }}"
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
           $homepage = "${{ steps.meta.outputs.homepage }}"
           $description = "${{ steps.meta.outputs.desc }}"
           $action = if ($isUpdate -eq 'yes') { 'Update to' } else { 'Add version' }
           $title = "${{ env.MANIFEST_NAME }}: $action $version"
-
           $body = @(
             "$(if ($isUpdate -eq 'yes') {'Updates the manifest for'} else {'Adds the initial manifest for'}) ${{ env.APP_NAME }} version $version."
             ""
@@ -194,7 +197,6 @@ jobs:
             "- autoupdate placeholder ok"
             "- shortcuts schema ok"
           ) -join "`n"
-
           Set-Content pr_body.txt -Value $body -Encoding UTF8
           "file=pr_body.txt" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "title=$title" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -203,11 +205,10 @@ jobs:
         if: steps.upstream.outputs.skip == 'no'
         shell: pwsh
         env:
-          GH_TOKEN: ${{ secrets[PAT_NAME] }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --global user.name  "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           $version = "${{ steps.version.outputs.version }}"
           $branch  = "update/${{ env.MANIFEST_NAME }}-$version"
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
