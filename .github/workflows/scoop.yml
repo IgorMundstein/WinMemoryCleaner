@@ -20,9 +20,10 @@ env:
   FORK_REPO: ${{ github.repository_owner }}/Scoop
   APP_NAME: WinMemoryCleaner
   MANIFEST_NAME: winmemorycleaner
-  LICENSE_ID: GPL-3.0-only
+  LICENSE_ID: GPL-3.0-or-later
   ASSET_FILE: WinMemoryCleaner.exe
   FIXED_DESCRIPTION: Portable RAM cleaner using native Windows features to optimize memory.
+  NOTES_TEXT: WinMemoryCleaner requires administrator privileges to run and may prompt for UAC elevation.
 
 jobs:
   submit:
@@ -60,7 +61,11 @@ jobs:
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
           $url = "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/pulls?state=open&head=$encodedHead"
           try { $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json } catch { $resp = @() }
-          if ($resp -and $resp.Count -gt 0) { "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append } else { "pr_exists=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
+          if ($resp -and $resp.Count -gt 0) {
+            "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            "pr_exists=no"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
           "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Check upstream manifest
@@ -136,6 +141,7 @@ jobs:
             description = "${{ env.FIXED_DESCRIPTION }}"
             homepage    = "https://github.com/$owner/$repo"
             license     = "${{ env.LICENSE_ID }}"
+            notes       = "${{ env.NOTES_TEXT }}"
             url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
             hash        = $hash
             bin         = "${{ env.APP_NAME }}.exe"
@@ -148,7 +154,7 @@ jobs:
           if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
           New-Item -Type Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
-          ($obj | ConvertTo-Json -Depth 6) | Set-Content -LiteralPath $path -Encoding UTF8
+          ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Validate manifest
@@ -158,13 +164,14 @@ jobs:
           $p = "${{ steps.manifest.outputs.path }}"
           $j = (Get-Content $p -Raw) | ConvertFrom-Json
           $ok = $true
-          foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate') {
+          foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate','license','notes') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { $ok = $false }
           }
+          if ($j.license -ne "${{ env.LICENSE_ID }}") { $ok = $false }
           if ($j.checkver -ne 'github') { $ok = $false }
           if (-not $j.autoupdate.url.Contains('$version')) { $ok = $false }
           if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok = $false }
-            if (-not $ok) { Write-Error "Validation failed"; exit 1 }
+          if (-not $ok) { Write-Error "Validation failed"; exit 1 }
 
       - name: Find related issue
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
