@@ -174,19 +174,40 @@ jobs:
           $repo  = "${{ github.event.repository.name }}"
           if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
           $expectedRepo = "$owner/$repo"
-          $ok = $true
+
+          $reasons = @()
+
           foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate','license','notes','suggest','description','homepage') {
-            if (-not $j.PSObject.Properties.Name.Contains($f)) { $ok = $false }
+            if (-not $j.PSObject.Properties.Name.Contains($f)) { $reasons += "Missing field: $f" }
           }
-          if (-not $j.license -or $j.license.identifier -ne "${{ env.LICENSE_ID }}") { $ok = $false }
-          if (-not $j.license.url -or $j.license.url -notmatch '/LICENSE$') { $ok = $false }
-          if (-not $j.checkver.github -or $j.checkver.github -ne $expectedRepo) { $ok = $false }
-          if (-not $j.checkver.regex -or $j.checkver.regex -notmatch '\\d') { $ok = $false }
-          if (-not $j.autoupdate.url -or $j.autoupdate.url -notmatch '\$version') { $ok = $false }
-          if ($j.notes -isnot [System.Array] -or $j.notes.Count -lt 2) { $ok = $false }
-          if (-not $j.suggest.'\.NET Framework 4.x runtime' -and -not $j.suggest.'Microsoft .NET Framework 4.x') { $ok = $false }
-          if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok = $false }
-          if (-not $ok) { Write-Error "Validation failed"; exit 1 }
+
+          if (-not $j.license) { $reasons += "Missing license object" }
+          elseif ($j.license.identifier -ne "${{ env.LICENSE_ID }}") { $reasons += "license.identifier must be ${{ env.LICENSE_ID }}" }
+          if (-not $j.license.url -or $j.license.url -notmatch '/LICENSE$') { $reasons += "license.url must end with /LICENSE" }
+
+          if (-not $j.checkver.github -or $j.checkver.github -ne $expectedRepo) { $reasons += "checkver.github must be $expectedRepo" }
+          if (-not $j.checkver.regex -or $j.checkver.regex -notmatch '\\d') { $reasons += "checkver.regex must contain \\d" }
+
+          if (-not $j.autoupdate.url -or $j.autoupdate.url -notmatch '\$version') { $reasons += "autoupdate.url must contain \$version" }
+
+          if ($j.notes -isnot [System.Array] -or $j.notes.Count -lt 2) { $reasons += "notes must be an array with at least 2 entries" }
+
+          $suggestKeys = @()
+          if ($j.suggest) { $suggestKeys = $j.suggest.PSObject.Properties.Name }
+          if (-not ($suggestKeys -contains '.NET Framework 4.x runtime' -or $suggestKeys -contains 'Microsoft .NET Framework 4.x')) {
+            $reasons += "suggest must contain '.NET Framework 4.x runtime' or 'Microsoft .NET Framework 4.x'"
+          }
+
+          if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) {
+            $reasons += "shortcuts must be an array of [exe, name]"
+          }
+
+          if ($reasons.Count) {
+            $reasons | ForEach-Object { Write-Error $_ }
+            exit 1
+          } else {
+            Write-Host "Validation OK"
+          }
 
       - name: Find or create related issue
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
