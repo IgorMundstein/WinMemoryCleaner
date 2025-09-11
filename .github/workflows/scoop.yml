@@ -150,7 +150,7 @@ jobs:
             }
           }
           if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
-          New-Item -Type Directory -Force -Path manifest-out | Out-File -Encoding UTF8 -InputObject "" | Out-Null
+          New-Item -ItemType Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
           ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
