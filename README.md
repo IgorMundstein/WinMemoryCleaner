@@ -45,7 +45,7 @@ winget install IgorMundstein.WinMemoryCleaner
 
 The Compact Mode feature allows you to collapse the main window into a minimal view for at-a-glance monitoring. By clicking the arrow next to the minimize button, the UI shrinks to show only the most essential memory statistics and controls. This mode is ideal for users who want to keep an eye on their system’s memory usage without occupying much screen space. Toggle Compact Mode on or off at any time to suit your workflow.
 
-[![](./docs/assets/images/main-window-compact.png)](#compact-mode)
+[![](./docs/assets/images/main-window-compact.png)](#-compact-mode)
 
 ### 🔔 System Tray (Notification area)
 
@@ -53,11 +53,11 @@ The application provides quick access and information directly from the system t
 
 - **Menu**: A right-click menu offers quick access to trigger an optimization or exit the application.
   
-  [![](./docs/assets/images/system-tray.png)](#system-tray-notification-area)
+  [![](./docs/assets/images/system-tray.png)](#-system-tray-notification-area)
   
 - **Notification**: After an optimization, a notification appears showing the reason and the approximate amount of memory that was freed.
 
-  [![](./docs/assets/images/notification.png)](#system-tray-notification-area)
+  [![](./docs/assets/images/notification.png)](#-system-tray-notification-area)
 
 - **Tray Icon Customization**: The tray icon can be configured to display real-time physical memory usage instead of the app logo. You can customize the background and text colors, as well as set warning and danger level thresholds that change the icon's color based on current memory pressure.
 
