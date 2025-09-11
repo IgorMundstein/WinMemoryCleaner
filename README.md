@@ -4,9 +4,7 @@
 
 This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory. With its user-friendly interface and smart functionality, this portable app requires no installation, though it does need administrator privileges to run.
 
-<a href="#windows-memory-cleaner">
-  <img src="./docs/assets/images/main-window.png" style="width:50%; height:auto;">
-</a>
+[![](./docs/assets/images/main-window.png)](#windows-memory-cleaner)
 
 ## 💾 Download
 
@@ -47,7 +45,7 @@ winget install IgorMundstein.WinMemoryCleaner
 
 The Compact Mode feature allows you to collapse the main window into a minimal view for at-a-glance monitoring. By clicking the arrow next to the minimize button, the UI shrinks to show only the most essential memory statistics and controls. This mode is ideal for users who want to keep an eye on their system’s memory usage without occupying much screen space. Toggle Compact Mode on or off at any time to suit your workflow.
 
-[![](./docs/assets/images/main-window-compact.png)](#compact-Mode)
+[![](./docs/assets/images/main-window-compact.png)](#compact-mode)
 
 ### 🔔 System Tray (Notification area)
 
