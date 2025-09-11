@@ -5,12 +5,18 @@ on:
     types: [published]
   workflow_dispatch:
 
+concurrency:
+  group: submit-to-scoop-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
+  pull-requests: read
 
 env:
   FORK_REPO: ${{ github.repository_owner }}/Scoop
   UPSTREAM_REPO: ScoopInstaller/Main
+  UPSTREAM_BRANCH: master
   APP_NAME: WinMemoryCleaner
   MANIFEST_NAME: winmemorycleaner
 
@@ -29,39 +35,56 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get latest release info
-        id: get_release
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: release } = await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            const tag = release.tag_name;
-            const version = tag.startsWith('v') ? tag.substring(1) : tag;
-            core.setOutput('tag', tag);
-            core.setOutput('version', version);
+      - name: Resolve tag/version
+        id: version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ("${{ github.event_name }}" -eq "release") {
+            $tag = "${{ github.event.release.tag_name }}"
+          } else {
+            $latest = gh release list --limit 1 | Select-Object -First 1
+            if (-not $latest) { Write-Error "No releases found."; exit 1 }
+            $tag = ($latest -split "\s+")[0]
+          }
+          if ($tag.StartsWith('v')) { $version = $tag.Substring(1) } else { $version = $tag }
+          "tag=$tag"       | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Resolved tag=$tag version=$version"
 
-      - name: Check if manifest already exists
+      - name: Ensure PAT secret present
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace("${{ secrets.PAT_TOKEN }}")) {
+            Write-Error "Missing required secret PAT_TOKEN."
+            exit 1
+          }
+
+      - name: Check if manifest already exists upstream
         id: check_scoop
         shell: pwsh
         run: |
-          $manifestUrl = "https://raw.githubusercontent.com/${{ env.UPSTREAM_REPO }}/master/bucket/${{ env.MANIFEST_NAME }}.json"
+          $manifestUrl = "https://raw.githubusercontent.com/${{ env.UPSTREAM_REPO }}/${{ env.UPSTREAM_BRANCH }}/bucket/${{ env.MANIFEST_NAME }}.json"
+          $exists = $false
           try {
-            $response = Invoke-RestMethod -Uri $manifestUrl -Method Get
-            if ($response.version -eq "${{ steps.get_release.outputs.version }}") {
-              Write-Host "::notice::Version ${{ steps.get_release.outputs.version }} already exists in Scoop. Skipping."
-              echo "skip=true" >> $env:GITHUB_OUTPUT
+            $response = Invoke-RestMethod -Uri $manifestUrl -Method Get -ErrorAction Stop
+            $exists = $true
+          } catch {}
+          if ($exists) {
+            if ($response.version -eq "${{ steps.version.outputs.version }}") {
+              Write-Host "::notice::Version already exists upstream. Skipping."
+              "skip=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "is_update=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             } else {
-              echo "skip=false" >> $env:GITHUB_OUTPUT
-              echo "is_update=true" >> $env:GITHUB_OUTPUT
+              Write-Host "::notice::Manifest exists (upstream version $($response.version)); will submit update."
+              "skip=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "is_update=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             }
-          }
-          catch {
-            Write-Host "::notice::Manifest not found in Scoop. Proceeding with submission."
-            echo "skip=false" >> $env:GITHUB_OUTPUT
-            echo "is_update=false" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::notice::Manifest not found upstream; new submission."
+            "skip=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "is_update=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
 
       - name: Fetch repository metadata
@@ -74,54 +97,150 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            core.setOutput('desc', repo.description?.trim() || 'A utility to clean system memory.');
+            const fallbackDesc = 'Free RAM cleaner using native Windows features to optimize memory areas; compact and portable.';
+            core.setOutput('desc', (repo.description?.trim() || fallbackDesc));
             core.setOutput('homepage', repo.homepage || repo.html_url);
-            core.setOutput('license', repo.license.spdx_id || 'Unknown');
+            core.setOutput('license', (repo.license && repo.license.spdx_id) ? repo.license.spdx_id : 'GPL-3.0-or-later');
 
-      - name: Download release asset and calculate checksum
+      - name: Probe asset availability (HEAD with retries)
+        if: steps.check_scoop.outputs.skip == 'false'
+        id: asset_probe
+        shell: pwsh
+        run: |
+          $assetName = "${{ env.APP_NAME }}.zip"
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/$assetName"
+          $max = 8
+          for ($i=1; $i -le $max; $i++) {
+            try {
+              $r = Invoke-WebRequest -Uri $downloadUrl -Method Head -UseBasicParsing -ErrorAction Stop
+              if ($r.StatusCode -ge 200 -and $r.StatusCode -lt 400) {
+                Write-Host "Asset reachable (status $($r.StatusCode))"
+                "asset_url=$downloadUrl" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                exit 0
+              }
+            } catch {
+              Write-Host "Attempt $i/$max: asset not yet available."
+            }
+            Start-Sleep -Seconds ([math]::Min(30,[math]::Pow(2,$i)))
+          }
+          Write-Error "Asset not available after $max attempts."
+          exit 1
+
+      - name: Download asset & compute SHA256 (retries)
         if: steps.check_scoop.outputs.skip == 'false'
         id: download
         shell: pwsh
         run: |
-          $assetName = "${{ env.APP_NAME }}.zip"
-          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/$assetName"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $assetName -UseBasicParsing
-          $sha256 = (Get-FileHash -Path $assetName -Algorithm SHA256).Hash.ToLower()
-          echo "sha256=$sha256" >> $env:GITHUB_OUTPUT
+          $url = "${{ steps.asset_probe.outputs.asset_url }}"
+          $file = "${{ env.APP_NAME }}.zip"
+          $max = 5
+          for ($i=1; $i -le $max; $i++) {
+            try {
+              Invoke-WebRequest -Uri $url -OutFile $file -UseBasicParsing -ErrorAction Stop
+              if ((Get-Item $file).Length -gt 0) {
+                $sha256 = (Get-FileHash -Path $file -Algorithm SHA256).Hash.ToLower()
+                "sha256=$sha256" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+                Write-Host "SHA256: $sha256"
+                exit 0
+              }
+            } catch {
+              Write-Host "Attempt $i failed: $($_.Exception.Message)"
+            }
+            Start-Sleep -Seconds ([math]::Min(20,[math]::Pow(2,$i)))
+          }
+          Write-Error "Failed to download asset after $max attempts."
+          exit 1
 
-      - name: Create Scoop Manifest File
+      - name: Generate manifest
         if: steps.check_scoop.outputs.skip == 'false'
-        id: create_manifest
+        id: manifest
         shell: pwsh
         run: |
-          $manifestDir = "scoop-manifest"
-          New-Item -ItemType Directory -Path $manifestDir -Force
-          $manifestContent = @"
-          {
-              "version": "${{ steps.get_release.outputs.version }}",
-              "description": "${{ steps.metadata.outputs.desc }}",
-              "homepage": "${{ steps.metadata.outputs.homepage }}",
-              "license": "GPL-3.0-or-later",
-              "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.APP_NAME }}.zip",
-              "hash": "${{ steps.download.outputs.sha256 }}",
-              "bin": "${{ env.APP_NAME }}.exe",
-              "shortcuts": [
-                  [
-                      "${{ env.APP_NAME }}.exe",
-                      "${{ env.APP_NAME }}"
-                  ]
-              ],
-              "checkver": {
-                  "github": "${{ github.repository }}"
-              },
-              "autoupdate": {
-                  "url": "https://github.com/${{ github.repository }}/releases/download/`$version/${{ env.APP_NAME }}.zip"
-              }
+          $version      = "${{ steps.version.outputs.version }}"
+          $tag          = "${{ steps.version.outputs.tag }}"
+          $desc         = "${{ steps.metadata.outputs.desc }}"
+          $homepage     = "${{ steps.metadata.outputs.homepage }}"
+          $license      = "${{ steps.metadata.outputs.license }}"
+          $hash         = "${{ steps.download.outputs.sha256 }}"
+          $repoFull     = $env.GITHUB_REPOSITORY
+          $owner,$repo  = $repoFull.Split('/',2)
+          $manifestObj = [ordered]@{
+            version     = $version
+            description = $desc
+            homepage    = $homepage
+            license     = $license
+            url         = "https://github.com/$repoFull/releases/download/$tag/${{ env.APP_NAME }}.zip"
+            hash        = $hash
+            bin         = "${{ env.APP_NAME }}.exe"
+            shortcuts   = @(
+              @("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
+            )
+            checkver    = @{ github = "$owner/$repo" }
+            autoupdate  = @{
+              url = "https://github.com/$repoFull/releases/download/`$version/${{ env.APP_NAME }}.zip"
+            }
           }
-          "@
-          $manifestFile = "$manifestDir/${{ env.MANIFEST_NAME }}.json"
-          $manifestContent | Out-File -FilePath $manifestFile -Encoding UTF8
-          echo "manifest_path=$manifestFile" >> $env:GITHUB_OUTPUT
+          $outDir = "scoop-manifest"
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+          $filePath = Join-Path $outDir "${{ env.MANIFEST_NAME }}.json"
+          ($manifestObj | ConvertTo-Json -Depth 6 | Out-String).Trim() | Set-Content -LiteralPath $filePath -Encoding UTF8
+          "path=$filePath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Manifest created:"
+          Get-Content $filePath
+
+      - name: Validate manifest
+        if: steps.check_scoop.outputs.skip == 'false'
+        shell: pwsh
+        run: |
+          $p = "${{ steps.manifest.outputs.path }}"
+          if (-not (Test-Path $p)) { Write-Error "Manifest file missing."; exit 1 }
+            $json = Get-Content $p -Raw | ConvertFrom-Json
+          $required = 'version','description','homepage','license','url','hash','bin','checkver','autoupdate'
+          $missing = $required | Where-Object { -not $json.PSObject.Properties.Name.Contains($_) }
+          if ($missing) { Write-Error "Missing fields: $($missing -join ', ')"; exit 1 }
+          if (-not $json.autoupdate.url.Contains('$version')) { Write-Error "autoupdate.url missing `$version placeholder"; exit 1 }
+          if (-not $json.checkver.github) { Write-Error "checkver.github missing"; exit 1 }
+          Write-Host "::notice::Manifest validation passed."
+
+      - name: Compose PR body
+        if: steps.check_scoop.outputs.skip == 'false'
+        id: prbody
+        shell: pwsh
+        run: |
+          $isUpdate    = "${{ steps.check_scoop.outputs.is_update }}"
+          $version     = "${{ steps.version.outputs.version }}"
+          $tag         = "${{ steps.version.outputs.tag }}"
+          $homepage    = "${{ steps.metadata.outputs.homepage }}"
+          $description = "${{ steps.metadata.outputs.desc }}"
+          $actionText  = if ($isUpdate -eq 'true') { "Update to" } else { "Add version" }
+          $bodyIntro   = if ($isUpdate -eq 'true') { "Updates the manifest for" } else { "Adds the initial manifest for" }
+          $titleExpected = "${{ env.MANIFEST_NAME }}: $actionText $version"
+          $checklist = @"
+---
+###### Submission checklist
+- [x] I have read the [Contributing Guide](https://github.com/ScoopInstaller/Main/blob/${{ env.UPSTREAM_BRANCH }}/CONTRIBUTING.md).
+- [x] Title follows the convention: `$titleExpected`
+- [x] Hash matches the downloaded archive.
+- [x] \`checkver\` uses GitHub shorthand (owner/repo).
+- [x] \`autoupdate.url\` contains the \$version placeholder.
+- [x] Description is concise and neutral.
+"@
+          $body = @"
+$bodyIntro ${{ env.APP_NAME }} version $version.
+
+> $description
+
+- **Project Homepage:** $homepage
+- **Release Notes:** https://github.com/${{ github.repository }}/releases/tag/$tag
+
+$checklist
+"@
+          $body = $body.Trim()
+          $file = "pr_body.txt"
+          Set-Content -Path $file -Value $body -Encoding UTF8
+          "file=$file" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "title=$titleExpected" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "PR body composed."
 
       - name: Create Pull Request
         if: steps.check_scoop.outputs.skip == 'false'
@@ -129,61 +248,45 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         shell: pwsh
         run: |
-          git config --global user.name "github-actions[bot]"
+          git config --global user.name  "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          $version = "${{ steps.get_release.outputs.version }}"
-          $tag = "${{ steps.get_release.outputs.tag }}"
-          $homepage = "${{ steps.metadata.outputs.homepage }}"
-          $description = "${{ steps.metadata.outputs.desc }}"
-          $isUpdate = "${{ steps.check_scoop.outputs.is_update }}"
-
-          if ($isUpdate -eq 'true') {
-            $actionText = "Update to"
-            $bodyIntro = "Updates the manifest for"
-          } else {
-            $actionText = "Add version"
-            $bodyIntro = "Adds the initial manifest for"
-          }
-
-          $commitMessage = "${{ env.MANIFEST_NAME }}: $actionText $version"
-          $prTitle = $commitMessage
-
-          $prBody = @"
-          $bodyIntro ${{ env.APP_NAME }} version $version.
-
-          > $description
-
-          - **Project Homepage:** $homepage
-          - **Release Notes:** https://github.com/${{ github.repository }}/releases/tag/$tag
-          "@
-
-          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" scoop-fork
-          cd scoop-fork
+          $version   = "${{ steps.version.outputs.version }}"
+          $branch    = "update/${{ env.MANIFEST_NAME }}-$version"
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" scoop-fork --depth=1
+          Set-Location scoop-fork
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
-          git fetch upstream master --depth=1
-          $branchName = "update/${{ env.MANIFEST_NAME }}-$version"
-          git checkout -b $branchName upstream/master
-          $manifestFile = "${{ steps.create_manifest.outputs.manifest_path }}"
-          cp ../$manifestFile "bucket/${{ env.MANIFEST_NAME }}.json"
-          git add .
+          git fetch upstream "${{ env.UPSTREAM_BRANCH }}" --depth=1
+          if (git ls-remote --heads origin $branch) {
+            Write-Host "Removing stale remote branch $branch"
+            git push origin :$branch
+          }
+          git checkout -b $branch "upstream/${{ env.UPSTREAM_BRANCH }}"
+          Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
+          git add "bucket/${{ env.MANIFEST_NAME }}.json"
+          $commitMessage = "${{ env.MANIFEST_NAME }}: $( if ("${{ steps.check_scoop.outputs.is_update }}" -eq 'true') { "Update to" } else { "Add version" } ) $version"
           git commit -m $commitMessage
-          git push --force origin $branchName
+          git push origin $branch
+          $prTitle = "${{ steps.prbody.outputs.title }}"
+          $prBodyFile = "../${{ steps.prbody.outputs.file }}"
           $prOutput = gh pr create `
             --repo "${{ env.UPSTREAM_REPO }}" `
-            --head "${{ github.repository_owner }}:$branchName" `
-            --base master `
-            --title $prTitle `
-            --body $prBody 2>&1
+            --head "${{ github.repository_owner }}:$branch" `
+            --base "${{ env.UPSTREAM_BRANCH }}" `
+            --title "$prTitle" `
+            --body-file "$prBodyFile" 2>&1
           if ($LASTEXITCODE -ne 0) {
-            if ($prOutput -like "*a pull request for branch*already exists*") {
-              Write-Host "::notice::A pull request for this version already exists. Skipping."
+            if ($prOutput -match "already exists") {
+              Write-Host "::notice::PR already exists."
               exit 0
             } else {
-              Write-Host "::error::Failed to create pull request: $prOutput"
+              Write-Host "::error::Failed to create PR: $prOutput"
               exit 1
             }
           } else {
-            Write-Host "::notice::Pull request created successfully."
+            Write-Host "::notice::Pull request created."
             Write-Host $prOutput
           }
+
+      - name: Skip notice
+        if: steps.check_scoop.outputs.skip == 'true'
+        run: echo "Nothing to do; manifest version already present upstream."
