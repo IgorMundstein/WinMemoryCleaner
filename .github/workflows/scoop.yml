@@ -21,6 +21,7 @@ env:
   MANIFEST_NAME: winmemorycleaner
   LICENSE_ID: GPL-3.0-or-later
   ASSET_FILE: WinMemoryCleaner.zip
+  FIXED_DESCRIPTION: Portable RAM cleaner using native Windows features to optimize memory.
 
 jobs:
   submit:
@@ -46,10 +47,35 @@ jobs:
           }
           if ([string]::IsNullOrWhiteSpace($tag)) { Write-Error "Tag empty"; exit 1 }
           "tag=$tag"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Version: $tag"
 
+      - name: Check existing upstream PR (avoid duplicate)
+        id: existing_pr
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $branch = "update/${{ env.MANIFEST_NAME }}-${{ steps.version.outputs.version }}"
+          # Query upstream for open PRs with head = yourfork:branch
+          $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
+          $url = "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/pulls?state=open&head=$encodedHead"
+          try {
+            $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json
+          } catch {
+            $resp = @()
+          }
+          if ($resp -and $resp.Count -gt 0) {
+            "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Write-Host "An open upstream PR for branch '$branch' already exists: $($resp[0].html_url)"
+          } else {
+            "pr_exists=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Write-Host "No existing upstream PR for branch '$branch'."
+          }
+          "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Check upstream (skip if identical)
+        if: steps.existing_pr.outputs.pr_exists == 'no'
         id: upstream
         shell: pwsh
         run: |
@@ -66,36 +92,21 @@ jobs:
               Write-Host "Upstream has version $($data.version); will update."
             }
           } catch {
-            "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "update=no"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "skip=no"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "update=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             Write-Host "Manifest not present upstream; new submission."
           }
 
-      - name: Stop (already current)
-        if: steps.upstream.outputs.skip == 'yes'
-        run: echo "Nothing to do."
+      - name: Stop (duplicate PR already open)
+        if: steps.existing_pr.outputs.pr_exists == 'yes'
+        run: echo "Duplicate upstream PR already exists. Exiting early."
 
-      - name: Get repo metadata
-        if: steps.upstream.outputs.skip == 'no'
-        id: meta
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: repo } = await github.rest.repos.get({ owner: context.repo.owner, repo: context.repo.repo });
-            const fallback = 'Portable RAM cleaner that uses native Windows features to optimize memory.';
-            let desc = (repo.description || '').trim();
-            if (!desc) desc = fallback;
-            desc = desc
-              .replace(/\b(free|smart|compact|advanced|powerful|lightweight)\b/gi,'')
-              .replace(/\s{2,}/g,' ')
-              .trim();
-            if (!desc) desc = fallback;
-            core.setOutput('desc', desc);
-            core.setOutput('homepage', repo.homepage || repo.html_url);
-            core.setOutput('license', process.env.LICENSE_ID);
+      - name: Stop (already current upstream)
+        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'yes'
+        run: echo "Nothing to do (upstream already current)."
 
-      - name: Probe asset (fast)
-        if: steps.upstream.outputs.skip == 'no'
+      - name: Probe asset
+        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         id: asset
         shell: pwsh
         run: |
@@ -107,11 +118,11 @@ jobs:
             Write-Error "Asset not reachable at $url"
             exit 1
           }
-          "asset_url=$url" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "asset_url=$url" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Asset OK"
 
       - name: Download & hash
-        if: steps.upstream.outputs.skip == 'no'
+        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         id: hash
         shell: pwsh
         run: |
@@ -124,49 +135,38 @@ jobs:
           Write-Host "SHA256: $sha"
 
       - name: Generate manifest
-        if: steps.upstream.outputs.skip == 'no'
+        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         id: manifest
         shell: pwsh
         run: |
-          $version  = "${{ steps.version.outputs.version }}"
-          $tag      = "${{ steps.version.outputs.tag }}"
-          $desc     = "${{ steps.meta.outputs.desc }}"
-          $homepage = "${{ steps.meta.outputs.homepage }}"
-          $license  = "${{ steps.meta.outputs.license }}"
-          $hash     = "${{ steps.hash.outputs.sha256 }}"
-          $owner    = "${{ github.repository_owner }}"
-          $repo     = "${{ github.event.repository.name }}"
+          $version = "${{ steps.version.outputs.version }}"
+          $tag     = "${{ steps.version.outputs.tag }}"
+          $hash    = "${{ steps.hash.outputs.sha256 }}"
+          $owner   = "${{ github.repository_owner }}"
+          $repo    = "${{ github.event.repository.name }}"
           if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
-
-          $innerShortcut = @("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
-          $shortcuts = @()
-          $shortcuts += ,$innerShortcut
-
-          Write-Host "Debug: innerShortcut type: $($innerShortcut.GetType().FullName); length: $($innerShortcut.Count)"
-          Write-Host "Debug: shortcuts outer count: $($shortcuts.Count); first element type: $($shortcuts[0].GetType().FullName); first count: $($shortcuts[0].Count)"
 
           $obj = [ordered]@{
             version     = $version
-            description = $desc
-            homepage    = $homepage
-            license     = $license
+            description = "${{ env.FIXED_DESCRIPTION }}"
+            homepage    = "https://github.com/$owner/$repo"
+            license     = "${{ env.LICENSE_ID }}"
             url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
             hash        = $hash
             bin         = "${{ env.APP_NAME }}.exe"
-            shortcuts   = $shortcuts
-            checkver    = @{ github = "$owner/$repo" }
+            shortcuts   = @(@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}"))
+            checkver    = "github"
             autoupdate  = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
           }
 
           New-Item -Type Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
-          ($obj | ConvertTo-Json -Depth 6 | Out-String).Trim() | Set-Content -LiteralPath $path -Encoding UTF8
+          ($obj | ConvertTo-Json -Depth 5 | Out-String).Trim() | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          Write-Host "Generated manifest:"
           Get-Content $path
 
       - name: Critical validation
-        if: steps.upstream.outputs.skip == 'no'
+        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         shell: pwsh
         run: |
           $p = "${{ steps.manifest.outputs.path }}"
@@ -176,53 +176,39 @@ jobs:
           foreach ($f in 'version','url','hash','bin','autoupdate','checkver','shortcuts') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { Write-Host "Missing $f"; $ok=$false }
           }
-          # Inspect shortcuts
-          if ($j.shortcuts -isnot [System.Array]) {
-            Write-Host "Shortcuts not an array."
-            $ok = $false
-          } else {
-            Write-Host "Shortcuts outer count: $($j.shortcuts.Count)"
-            if ($j.shortcuts.Count -lt 1) { $ok=$false; Write-Host "No shortcut entries." }
-            else {
-              $first = $j.shortcuts[0]
-              Write-Host "First shortcut element type: $($first.GetType().FullName) Count: $($first.Count)"
-              if ($first -isnot [System.Array] -or $first.Count -ne 2) {
-                Write-Host "Bad shortcuts structure (expected nested two-element array)."
-                $ok = $false
-              }
-            }
-          }
           if (-not $j.autoupdate.url.Contains('$version')) { Write-Host "autoupdate missing \$version"; $ok=$false }
+          if ($j.shortcuts.Count -lt 1 -or $j.shortcuts[0].Count -ne 2) { Write-Host "Shortcuts malformed"; $ok=$false }
+          if ($j.checkver -ne 'github') { Write-Host "checkver not 'github' shorthand"; $ok=$false }
           if (-not $ok) {
-            Write-Host "Raw manifest:"
+            Write-Host "Manifest content:"
             Write-Host $raw
             Write-Error "Critical validation failed"
             exit 1
           }
-          Write-Host "Critical validation passed."
+          Write-Host "Validation OK."
 
       - name: Compose PR body
-        if: steps.upstream.outputs.skip == 'no'
+        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         id: prbody
         shell: pwsh
         run: |
           $isUpdate = "${{ steps.upstream.outputs.update }}"
-          $version = "${{ steps.version.outputs.version }}"
-          $tag = "${{ steps.version.outputs.tag }}"
-          $homepage = "${{ steps.meta.outputs.homepage }}"
-          $description = "${{ steps.meta.outputs.desc }}"
-          $action = if ($isUpdate -eq 'yes') { 'Update to' } else { 'Add version' }
-          $title = "${{ env.MANIFEST_NAME }}: $action $version"
+          $version  = "${{ steps.version.outputs.version }}"
+          $tag      = "${{ steps.version.outputs.tag }}"
+          $desc     = "${{ env.FIXED_DESCRIPTION }}"
+          $action   = if ($isUpdate -eq 'yes') { 'Update to' } else { 'Add version' }
+          $title    = "${{ env.MANIFEST_NAME }}: $action $version"
           $body = @(
             "$(if ($isUpdate -eq 'yes') {'Updates the manifest for'} else {'Adds the initial manifest for'}) ${{ env.APP_NAME }} version $version."
             ""
-            "> $description"
+            "> $desc"
             ""
-            "- **Project Homepage:** $homepage"
+            "- **Project Homepage:** https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}"
             "- **Release Notes:** https://github.com/${{ github.repository }}/releases/tag/$tag"
             ""
             "Checklist:"
             "- hash ok"
+            "- checkver github shorthand ok"
             "- autoupdate placeholder ok"
             "- shortcuts schema ok"
           ) -join "`n"
@@ -231,15 +217,15 @@ jobs:
           "title=$title" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Create PR
-        if: steps.upstream.outputs.skip == 'no'
+        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          $branch  = "${{ steps.existing_pr.outputs.branch }}"
+          $version = "${{ steps.version.outputs.version }}"
           git config --global user.name  "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          $version = "${{ steps.version.outputs.version }}"
-          $branch  = "update/${{ env.MANIFEST_NAME }}-$version"
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
           Set-Location fork
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
@@ -259,3 +245,7 @@ jobs:
             exit 1
           }
           Write-Host "PR done."
+
+      - name: Final note (nothing executed)
+        if: steps.existing_pr.outputs.pr_exists == 'yes' || (steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'yes')
+        run: echo "Workflow finished early (duplicate PR or already current upstream)."
