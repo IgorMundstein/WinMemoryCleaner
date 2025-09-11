@@ -37,7 +37,7 @@ jobs:
         id: version
         shell: pwsh
         env:
-          GH_TOKEN: ${{ github.token }}
+            GH_TOKEN: ${{ github.token }}
         run: |
           if ("${{ github.event_name }}" -eq "release") {
             $tag = "${{ github.event.release.tag_name }}"
@@ -62,11 +62,7 @@ jobs:
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
           $url = "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/pulls?state=open&head=$encodedHead"
 
-          try {
-            $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json
-          } catch {
-            $resp = @()
-          }
+          try { $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json } catch { $resp = @() }
 
           if ($resp -and $resp.Count -gt 0) {
             "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -85,18 +81,16 @@ jobs:
 
           try {
             $data = Invoke-RestMethod -Uri $url -Method Get -TimeoutSec 15 -ErrorAction Stop
-
             if ($data.version -eq "${{ steps.version.outputs.version }}") {
-              "skip=yes"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append   # Already current
-              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append   # We treat as update path for title logic
+              "skip=yes"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             } else {
-              "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append   # Need PR
-              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append   # Update existing manifest
+              "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             }
           } catch {
-            # Manifest not found upstream -> new addition
-            "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "update=no"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "skip=no"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "update=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
 
       - name: Stop duplicate PR
@@ -151,18 +145,18 @@ jobs:
           $shortcutInner = ,@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
           $shortcuts     = @($shortcutInner)
 
-            $obj = [ordered]@{
-              version     = $version
-              description = "${{ env.FIXED_DESCRIPTION }}"
-              homepage    = "https://github.com/$owner/$repo"
-              license     = "${{ env.LICENSE_ID }}"
-              url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
-              hash        = $hash
-              bin         = "${{ env.APP_NAME }}.exe"
-              shortcuts   = $shortcuts
-              checkver    = "github"
-              autoupdate  = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
-            }
+          $obj = [ordered]@{
+            version     = $version
+            description = "${{ env.FIXED_DESCRIPTION }}"
+            homepage    = "https://github.com/$owner/$repo"
+            license     = "${{ env.LICENSE_ID }}"
+            url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
+            hash        = $hash
+            bin         = "${{ env.APP_NAME }}.exe"
+            shortcuts   = $shortcuts
+            checkver    = "github"
+            autoupdate  = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
+          }
 
           if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
 
@@ -193,7 +187,7 @@ jobs:
 
           if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok = $false }
           if (-not $j.autoupdate.url.Contains('$version')) { $ok = $false }
-          if ($j.checkver -ne 'github') { $ok = $false }
+            if ($j.checkver -ne 'github') { $ok = $false }
           if ($j.license -ne 'GPL-3.0-only') { $ok = $false }
 
           if (-not $ok) { Write-Error "Validation failed"; exit 1 }
@@ -229,11 +223,11 @@ jobs:
             "issue_checkbox_line=- [x] Issue reference: Closes #$issueNum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
             if ($isUpdate -eq 'yes') {
-              "issue_line=Issue: No related issue (routine update)"           | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "issue_line=Issue: No related issue (routine update)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
               "issue_checkbox_line=- [x] Issue: no related issue (routine update)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             } else {
-              "issue_line=Issue: No related issue (new manifest)"             | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              "issue_checkbox_line=- [x] Issue: no related issue (new manifest)"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "issue_line=Issue: No related issue (new manifest)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "issue_checkbox_line=- [x] Issue: no related issue (new manifest)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             }
           }
 
@@ -242,48 +236,48 @@ jobs:
         id: prbody
         shell: pwsh
         run: |
-          $isUpdate       = "${{ steps.upstream.outputs.update }}"
-          $version        = "${{ steps.version.outputs.version }}"
-          $tag            = "${{ steps.version.outputs.tag }}"
-          $action         = if ($isUpdate -eq 'yes') { 'Update to' } else { 'Add version' }
-          $title          = "${{ env.MANIFEST_NAME }}: $action $version"
-          $issueLine      = "${{ steps.issue.outputs.issue_line }}"
-          $issueCheckbox  = "${{ steps.issue.outputs.issue_checkbox_line }}"
+          $isUpdate      = "${{ steps.upstream.outputs.update }}"
+          $version       = "${{ steps.version.outputs.version }}"
+          $tag           = "${{ steps.version.outputs.tag }}"
+          $action        = if ($isUpdate -eq 'yes') { 'Update to' } else { 'Add version' }
+          $title         = "${{ env.MANIFEST_NAME }}: $action $version"
+          $issueLine     = "${{ steps.issue.outputs.issue_line }}"
+          $issueCheckbox = "${{ steps.issue.outputs.issue_checkbox_line }}"
 
           $checklist = @(
-            "- [x] PR title follows naming convention"
-            "- [x] I have read the Contributing Guide"
-            "- [x] I searched for existing issues/PRs for this app/version"
-            "- [x] SHA256 hash verified"
-            "- [x] autoupdate URL contains \$version and checkver is \"github\""
-            "- [x] shortcuts array is a two-element nested array"
+            '- [x] PR title follows naming convention'
+            '- [x] I have read the Contributing Guide'
+            '- [x] I searched for existing issues/PRs for this app/version'
+            '- [x] SHA256 hash verified'
+            '- [x] autoupdate URL contains $version and checkver is "github"'
+            '- [x] shortcuts array is a two-element nested array'
             $issueCheckbox
           )
 
           $body = @(
             "$(if ($isUpdate -eq 'yes') {'Updates the manifest for'} else {'Adds the initial manifest for'}) ${{ env.APP_NAME }} version $version."
-            ""
-            "${{ env.FIXED_DESCRIPTION }}"
-            ""
+            ''
+            '${{ env.FIXED_DESCRIPTION }}'
+            ''
             "Project Homepage: https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}"
             "Release Notes: https://github.com/${{ github.repository }}/releases/tag/$tag"
-            ""
+            ''
             $issueLine
-            ""
-            "Checklist:"
+            ''
+            'Checklist:'
             $checklist
           ) -join "`n"
 
           Set-Content pr_body.txt -Value $body -Encoding UTF8
 
-          "file=pr_body.txt"            | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "title=$title"                | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "file=pr_body.txt" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "title=$title"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Create PR
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         shell: pwsh
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN != '' && secrets.PAT_TOKEN || github.token }}
         run: |
           $branch  = "${{ steps.existing_pr.outputs.branch }}"
           $version = "${{ steps.version.outputs.version }}"
@@ -313,11 +307,11 @@ jobs:
           $title    = "${{ steps.prbody.outputs.title }}"
           $bodyFile = "../${{ steps.prbody.outputs.file }}"
 
-          $out = gh pr create \
-            --repo "${{ env.UPSTREAM_REPO }}" \
-            --head "${{ github.repository_owner }}:$branch" \
-            --base "${{ env.UPSTREAM_BRANCH }}" \
-            --title "$title" \
+          $out = gh pr create `
+            --repo "${{ env.UPSTREAM_REPO }}" `
+            --head "${{ github.repository_owner }}:$branch" `
+            --base "${{ env.UPSTREAM_BRANCH }}" `
+            --title "$title" `
             --body-file "$bodyFile" 2>&1
 
           if ($LASTEXITCODE -ne 0 -and $out -notmatch 'already exists') {
