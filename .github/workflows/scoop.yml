@@ -22,7 +22,7 @@ env:
   MANIFEST_NAME: winmemorycleaner
   LICENSE_ID: GPL-3.0-or-later
   ASSET_FILE: WinMemoryCleaner.exe
-  FIXED_DESCRIPTION: Portable RAM cleaner using native Windows features to optimize memory.
+  FIXED_DESCRIPTION: Portable RAM cleaner using native Windows APIs to release memory.
   NOTES_TEXT: WinMemoryCleaner requires administrator privileges (UAC prompt) and the legacy .NET Framework 4.0.
   LICENSE_URL_PATH: blob/main/LICENSE
 
@@ -238,7 +238,7 @@ jobs:
           $body = @(
             "Adds the initial Scoop manifest for WinMemoryCleaner $version."
             ""
-            "Portable RAM cleaner using native Windows features to optimize memory."
+            "${{ env.FIXED_DESCRIPTION }}"
             ""
             $issueLine
             ""
