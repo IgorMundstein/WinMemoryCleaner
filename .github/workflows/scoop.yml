@@ -119,7 +119,7 @@ jobs:
                 exit 0
               }
             } catch {
-              Write-Host "Attempt $i/$max: asset not yet available."
+              Write-Host "Attempt $i/$($max): asset not yet available."
             }
             Start-Sleep -Seconds ([math]::Min(30,[math]::Pow(2,$i)))
           }
@@ -194,7 +194,7 @@ jobs:
         run: |
           $p = "${{ steps.manifest.outputs.path }}"
           if (-not (Test-Path $p)) { Write-Error "Manifest file missing."; exit 1 }
-            $json = Get-Content $p -Raw | ConvertFrom-Json
+          $json = Get-Content $p -Raw | ConvertFrom-Json
           $required = 'version','description','homepage','license','url','hash','bin','checkver','autoupdate'
           $missing = $required | Where-Object { -not $json.PSObject.Properties.Name.Contains($_) }
           if ($missing) { Write-Error "Missing fields: $($missing -join ', ')"; exit 1 }
