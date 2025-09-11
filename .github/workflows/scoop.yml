@@ -23,7 +23,7 @@ env:
   LICENSE_ID: GPL-3.0-or-later
   ASSET_FILE: WinMemoryCleaner.exe
   FIXED_DESCRIPTION: Portable RAM cleaner using native Windows features to optimize memory.
-  NOTES_TEXT: WinMemoryCleaner requires administrator privileges (UAC prompt) and the legacy .NET Framework 4.0
+  NOTES_TEXT: WinMemoryCleaner requires administrator privileges (UAC prompt) and the legacy .NET Framework 4.0.
   LICENSE_URL_PATH: blob/main/LICENSE
 
 jobs:
@@ -140,6 +140,7 @@ jobs:
             homepage    = "https://github.com/$owner/$repo"
             license     = @{ identifier = "${{ env.LICENSE_ID }}"; url = $licenseUrl }
             notes       = "${{ env.NOTES_TEXT }}"
+            suggest     = @{ "Microsoft .NET Framework 4.x" = "extras/dotnetfx" }
             url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
             hash        = $hash
             bin         = "${{ env.APP_NAME }}.exe"
@@ -162,12 +163,14 @@ jobs:
           $p = "${{ steps.manifest.outputs.path }}"
           $j = (Get-Content $p -Raw) | ConvertFrom-Json
           $ok = $true
-          foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate','license','notes') {
+          foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate','license','notes','suggest') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { $ok = $false }
           }
           if (-not $j.license -or -not $j.license.identifier -or $j.license.identifier -ne "${{ env.LICENSE_ID }}") { $ok = $false }
           if (-not $j.license.url -or $j.license.url -notmatch '/LICENSE$') { $ok = $false }
           if ($j.checkver -ne 'github') { $ok = $false }
+          if ($j.notes -notmatch '\.$') { $ok = $false }
+          if (-not $j.suggest.'Microsoft .NET Framework 4.x' -or $j.suggest.'Microsoft .NET Framework 4.x' -ne 'extras/dotnetfx') { $ok = $false }
           if (-not $j.autoupdate.url.Contains('$version')) { $ok = $false }
           if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok = $false }
           if (-not $ok) { Write-Error "Validation failed"; exit 1 }
