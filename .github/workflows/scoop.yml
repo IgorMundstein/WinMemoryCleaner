@@ -60,11 +60,7 @@ jobs:
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
           $url = "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/pulls?state=open&head=$encodedHead"
           try { $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json } catch { $resp = @() }
-          if ($resp -and $resp.Count -gt 0) {
-            "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-            "pr_exists=no"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
+          if ($resp -and $resp.Count -gt 0) { "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append } else { "pr_exists=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
           "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Check upstream manifest
@@ -134,7 +130,7 @@ jobs:
           $repo    = "${{ github.event.repository.name }}"
           if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
           $shortcutInner = ,@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
-          $shortcuts = @($shortcutInner)
+          $shortcuts     = @($shortcutInner)
           $obj = [ordered]@{
             version     = $version
             description = "${{ env.FIXED_DESCRIPTION }}"
@@ -144,19 +140,15 @@ jobs:
             hash        = $hash
             bin         = "${{ env.APP_NAME }}.exe"
             shortcuts   = $shortcuts
-            checkver    = @{ github = "$owner/$repo" }
+            checkver    = "github"
             autoupdate  = @{
-              url  = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}"
-              hash = @{
-                url   = "$baseurl/checksums.txt"
-                regex = "^([A-Fa-f0-9]{64})\\s+WinMemoryCleaner\\.exe$"
-              }
+              url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}"
             }
           }
           if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
           New-Item -Type Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
-          ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $path -Encoding UTF8
+          ($obj | ConvertTo-Json -Depth 6) | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Validate manifest
@@ -167,11 +159,12 @@ jobs:
           $j = (Get-Content $p -Raw) | ConvertFrom-Json
           $ok = $true
           foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate') {
-            if (-not $j.PSObject.Properties.Name.Contains($f)) { $ok=$false }
+            if (-not $j.PSObject.Properties.Name.Contains($f)) { $ok = $false }
           }
-          if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok=$false }
-          if ($j.checkver.github -ne "IgorMundstein/WinMemoryCleaner" -and $j.checkver -ne "github") { $ok=$false }
-          if (-not $ok) { Write-Error "Validation failed"; exit 1 }
+          if ($j.checkver -ne 'github') { $ok = $false }
+          if (-not $j.autoupdate.url.Contains('$version')) { $ok = $false }
+          if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok = $false }
+            if (-not $ok) { Write-Error "Validation failed"; exit 1 }
 
       - name: Find related issue
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
@@ -215,8 +208,8 @@ jobs:
             ""
             $issueLine
             ""
-            "- [x] Use conventional PR title: <manifest-name[@version]|chore>: <general summary of the pull request>"
-            "- [x] I have read the [Contributing Guide](@ScoopInstaller/.github/files/.github/CONTRIBUTING.md)"
+            '- [x] Use conventional PR title: `<manifest-name[@version]|chore>: <general summary of the pull request>`'
+            '- [x] I have read the [Contributing Guide](https://github.com/ScoopInstaller/.github/blob/main/.github/CONTRIBUTING.md)'
           ) -join "`n"
           Set-Content pr_body.txt -Value $body -Encoding UTF8
           "file=pr_body.txt" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -229,36 +222,27 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
-
           $branch   = "${{ steps.existing_pr.outputs.branch }}"
           $version  = "${{ steps.version.outputs.version }}"
           $title    = "${{ steps.prbody.outputs.title }}"
           $bodyFile = "../${{ steps.prbody.outputs.file }}"
           $commitMsg = "${{ env.MANIFEST_NAME }}: Add version $version"
-
           git config --global user.name  "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
           Set-Location fork
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream "${{ env.UPSTREAM_BRANCH }}" --depth=1
-
-          if (git ls-remote --heads origin $branch) {
-            git push origin :$branch
-          }
-
+          if (git ls-remote --heads origin $branch) { git push origin :$branch }
           git checkout -b $branch "upstream/${{ env.UPSTREAM_BRANCH }}"
           Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
           git add "bucket/${{ env.MANIFEST_NAME }}.json"
-
           if (git diff --cached --quiet) {
-            echo "No changes to commit (nothing new)."
+            echo "No changes to commit."
           } else {
             git commit -m "$commitMsg"
             git push origin $branch
           }
-
           $out = gh pr create --repo "${{ env.UPSTREAM_REPO }}" --head "${{ github.repository_owner }}:$branch" --base "${{ env.UPSTREAM_BRANCH }}" --title "$title" --body-file "$bodyFile" 2>&1
           if ($LASTEXITCODE -ne 0 -and $out -notmatch 'already exists') {
             Write-Host $out
