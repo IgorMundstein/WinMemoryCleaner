@@ -23,7 +23,8 @@ env:
   LICENSE_ID: GPL-3.0-or-later
   ASSET_FILE: WinMemoryCleaner.exe
   FIXED_DESCRIPTION: Portable RAM cleaner using native Windows features to optimize memory.
-  NOTES_TEXT: WinMemoryCleaner requires administrator privileges to run and may prompt for UAC elevation.
+  NOTES_TEXT: WinMemoryCleaner requires administrator privileges (UAC prompt) and the legacy .NET Framework 4.0
+  LICENSE_URL_PATH: blob/main/LICENSE
 
 jobs:
   submit:
@@ -61,11 +62,7 @@ jobs:
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
           $url = "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/pulls?state=open&head=$encodedHead"
           try { $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json } catch { $resp = @() }
-          if ($resp -and $resp.Count -gt 0) {
-            "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-            "pr_exists=no"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
+          if ($resp -and $resp.Count -gt 0) { "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append } else { "pr_exists=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
           "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Check upstream manifest
@@ -134,13 +131,14 @@ jobs:
           $owner   = "${{ github.repository_owner }}"
           $repo    = "${{ github.event.repository.name }}"
           if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
+          $licenseUrl = "https://github.com/$owner/$repo/${{ env.LICENSE_URL_PATH }}"
           $shortcutInner = ,@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
           $shortcuts     = @($shortcutInner)
           $obj = [ordered]@{
             version     = $version
             description = "${{ env.FIXED_DESCRIPTION }}"
             homepage    = "https://github.com/$owner/$repo"
-            license     = "${{ env.LICENSE_ID }}"
+            license     = @{ identifier = "${{ env.LICENSE_ID }}"; url = $licenseUrl }
             notes       = "${{ env.NOTES_TEXT }}"
             url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
             hash        = $hash
@@ -152,7 +150,7 @@ jobs:
             }
           }
           if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
-          New-Item -Type Directory -Force -Path manifest-out | Out-Null
+          New-Item -Type Directory -Force -Path manifest-out | Out-File -Encoding UTF8 -InputObject "" | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
           ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -167,25 +165,30 @@ jobs:
           foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate','license','notes') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { $ok = $false }
           }
-          if ($j.license -ne "${{ env.LICENSE_ID }}") { $ok = $false }
+          if (-not $j.license -or -not $j.license.identifier -or $j.license.identifier -ne "${{ env.LICENSE_ID }}") { $ok = $false }
+          if (-not $j.license.url -or $j.license.url -notmatch '/LICENSE$') { $ok = $false }
           if ($j.checkver -ne 'github') { $ok = $false }
           if (-not $j.autoupdate.url.Contains('$version')) { $ok = $false }
           if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok = $false }
           if (-not $ok) { Write-Error "Validation failed"; exit 1 }
 
-      - name: Find related issue
+      - name: Find or create related issue
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         id: issue
         shell: pwsh
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $manifest  = "${{ env.MANIFEST_NAME }}"
           $app       = "${{ env.APP_NAME }}"
-          $repo      = "${{ env.UPSTREAM_REPO }}"
+          $repoUp    = "${{ env.UPSTREAM_REPO }}"
+          $owner     = "${{ github.repository_owner }}"
+          $repoSelf  = "${{ github.event.repository.name }}"
+          if (-not $repoSelf) { $repoSelf = ("${{ github.repository }}" -split "/")[1] }
           function Pick-Issue {
             param($term)
-            $data = gh issue list --repo $repo --state open --search "$term in:title" --json number,title --limit 20 2>$null | ConvertFrom-Json
+            $data = gh issue list --repo $repoUp --state open --search "$term in:title" --json number,title --limit 20 2>$null | ConvertFrom-Json
             if ($data) {
               $exact = $data | Where-Object { $_.title -match [regex]::Escape($manifest) }
               if ($exact) { return $exact[0].number }
@@ -195,6 +198,27 @@ jobs:
           }
           $issueNum = Pick-Issue $manifest
           if (-not $issueNum) { $issueNum = Pick-Issue $app }
+          if (-not $issueNum) {
+            $homepage = "https://github.com/$owner/$repoSelf"
+            $download = "https://github.com/$owner/$repoSelf/releases/download/${{ steps.version.outputs.tag }}/${{ env.ASSET_FILE }}"
+            $body = @(
+              "Package request: $app ${{ steps.version.outputs.version }}",
+              "",
+              "Homepage: $homepage",
+              "Download: $download",
+              "License: ${{ env.LICENSE_ID }}",
+              "Notes: ${{ env.NOTES_TEXT }}"
+            ) -join "`n"
+            $created = ""
+            try { $created = gh issue create --repo $repoUp --title "Package Request: $app" --body "$body" --json number --jq .number 2>$null } catch { }
+            if (-not $created) {
+              try {
+                $fallback = gh issue create --repo $repoUp --title "Package Request: $app" --body "$body" 2>&1
+                if ($fallback -match "/issues/(\d+)") { $created = $Matches[1] }
+              } catch { }
+            }
+            $issueNum = $created
+          }
           if ($issueNum) {
             "issue_line=Closes #$issueNum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
