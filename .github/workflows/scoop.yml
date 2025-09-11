@@ -12,6 +12,7 @@ concurrency:
 permissions:
   contents: read
   pull-requests: read
+  issues: read
 
 env:
   UPSTREAM_REPO: ScoopInstaller/Main
@@ -19,7 +20,7 @@ env:
   FORK_REPO: ${{ github.repository_owner }}/Scoop
   APP_NAME: WinMemoryCleaner
   MANIFEST_NAME: winmemorycleaner
-  LICENSE_ID: GPL-3.0-or-later
+  LICENSE_ID: GPL-3.0-only
   ASSET_FILE: WinMemoryCleaner.zip
   FIXED_DESCRIPTION: Portable RAM cleaner using native Windows features to optimize memory.
 
@@ -45,12 +46,13 @@ jobs:
             if (-not $latest) { Write-Error "No releases found."; exit 1 }
             $tag = ($latest -split '\s+')[0]
           }
+
           if ([string]::IsNullOrWhiteSpace($tag)) { Write-Error "Tag empty"; exit 1 }
+
           "tag=$tag"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          Write-Host "Version: $tag"
 
-      - name: Check existing upstream PR (avoid duplicate)
+      - name: Check existing upstream PR
         id: existing_pr
         shell: pwsh
         env:
@@ -59,50 +61,51 @@ jobs:
           $branch = "update/${{ env.MANIFEST_NAME }}-${{ steps.version.outputs.version }}"
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
           $url = "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/pulls?state=open&head=$encodedHead"
+
           try {
             $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json
           } catch {
             $resp = @()
           }
+
           if ($resp -and $resp.Count -gt 0) {
             "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            Write-Host "An open upstream PR for branch '$branch' already exists: $($resp[0].html_url)"
           } else {
-            "pr_exists=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            Write-Host "No existing upstream PR for branch '$branch'."
+            "pr_exists=no"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
+
           "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Check upstream (skip if identical)
+      - name: Check upstream manifest
         if: steps.existing_pr.outputs.pr_exists == 'no'
         id: upstream
         shell: pwsh
         run: |
           $url = "https://raw.githubusercontent.com/${{ env.UPSTREAM_REPO }}/${{ env.UPSTREAM_BRANCH }}/bucket/${{ env.MANIFEST_NAME }}.json"
+
           try {
             $data = Invoke-RestMethod -Uri $url -Method Get -TimeoutSec 15 -ErrorAction Stop
+
             if ($data.version -eq "${{ steps.version.outputs.version }}") {
-              "skip=yes"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              Write-Host "Upstream already at this version."
+              "skip=yes"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append   # Already current
+              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append   # We treat as update path for title logic
             } else {
-              "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              Write-Host "Upstream has version $($data.version); will update."
+              "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append   # Need PR
+              "update=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append   # Update existing manifest
             }
           } catch {
-            "skip=no"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "update=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            Write-Host "Manifest not present upstream; new submission."
+            # Manifest not found upstream -> new addition
+            "skip=no"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "update=no"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
 
-      - name: Stop (duplicate PR already open)
+      - name: Stop duplicate PR
         if: steps.existing_pr.outputs.pr_exists == 'yes'
-        run: echo "Duplicate upstream PR already exists. Exiting early."
+        run: echo "Duplicate PR exists; stopping."
 
-      - name: Stop (already current upstream)
+      - name: Stop already current
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'yes'
-        run: echo "Nothing to do (upstream already current)."
+        run: echo "Upstream already current; nothing to do."
 
       - name: Probe asset
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
@@ -111,27 +114,27 @@ jobs:
         run: |
           $url = "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ env.ASSET_FILE }}"
           try {
-            $r = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
-            if ($r.StatusCode -lt 200 -or $r.StatusCode -ge 400) { throw "Status $($r.StatusCode)" }
+            $r = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing -TimeoutSec 20 -ErrorAction Stop
+            if ($r.StatusCode -lt 200 -or $r.StatusCode -ge 400) { throw "Bad status $($r.StatusCode)" }
           } catch {
-            Write-Error "Asset not reachable at $url"
+            Write-Error "Asset not reachable: $url"
             exit 1
           }
           "asset_url=$url" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          Write-Host "Asset OK"
 
-      - name: Download & hash
+      - name: Download and hash
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         id: hash
         shell: pwsh
         run: |
-          $url = "${{ steps.asset.outputs.asset_url }}"
+          $url  = "${{ steps.asset.outputs.asset_url }}"
           $file = "${{ env.ASSET_FILE }}"
-          Invoke-WebRequest -Uri $url -OutFile $file -UseBasicParsing -ErrorAction Stop -TimeoutSec 120
-          if ((Get-Item $file).Length -le 0) { Write-Error "Empty file"; exit 1 }
+
+          Invoke-WebRequest -Uri $url -OutFile $file -UseBasicParsing -ErrorAction Stop -TimeoutSec 180
+          if ((Get-Item $file).Length -le 0) { Write-Error "Empty asset"; exit 1 }
+
           $sha = (Get-FileHash -Path $file -Algorithm SHA256).Hash.ToLower()
           "sha256=$sha" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          Write-Host "SHA256: $sha"
 
       - name: Generate manifest
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
@@ -144,125 +147,184 @@ jobs:
           $owner   = "${{ github.repository_owner }}"
           $repo    = "${{ github.event.repository.name }}"
           if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
-          $inner = [object[]]@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
-          $outer = New-Object System.Collections.ArrayList
-          [void]$outer.Add($inner)
-          Write-Host "Debug: inner type=$($inner.GetType().FullName) length=$($inner.Count)"
-          Write-Host "Debug: outer type=$($outer.GetType().FullName) count=$($outer.Count) firstInnerType=$($outer[0].GetType().FullName)"
-          $obj = [ordered]@{
-            version     = $version
-            description = "${{ env.FIXED_DESCRIPTION }}"
-            homepage    = "https://github.com/$owner/$repo"
-            license     = "${{ env.LICENSE_ID }}"
-            url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
-            hash        = $hash
-            bin         = "${{ env.APP_NAME }}.exe"
-            shortcuts   = $outer
-            checkver    = "github"
-            autoupdate  = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
-          }
-          if ($obj.shortcuts -is [string[]]) {
-            Write-Warning "Pre-serialization shortcuts flattened unexpectedly; re-wrapping."
-            $obj.shortcuts = @(@($obj.shortcuts))
-          }
+
+          $shortcutInner = ,@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
+          $shortcuts     = @($shortcutInner)
+
+            $obj = [ordered]@{
+              version     = $version
+              description = "${{ env.FIXED_DESCRIPTION }}"
+              homepage    = "https://github.com/$owner/$repo"
+              license     = "${{ env.LICENSE_ID }}"
+              url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
+              hash        = $hash
+              bin         = "${{ env.APP_NAME }}.exe"
+              shortcuts   = $shortcuts
+              checkver    = "github"
+              autoupdate  = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
+            }
+
+          if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
+
           New-Item -Type Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
-          ($obj | ConvertTo-Json -Depth 6 | Out-String).Trim() | Set-Content -LiteralPath $path -Encoding UTF8
-          "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          Get-Content $path
+          ($obj | ConvertTo-Json -Depth 6) | Set-Content -LiteralPath $path -Encoding UTF8
 
-      - name: Critical validation
+          "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Validate manifest
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         shell: pwsh
         run: |
-          $p = "${{ steps.manifest.outputs.path }}"
+          $p   = "${{ steps.manifest.outputs.path }}"
           $raw = Get-Content $p -Raw
-          $j = $raw | ConvertFrom-Json
-          $ok = $true
+          $j   = $raw | ConvertFrom-Json
+          $ok  = $true
+
           foreach ($f in 'version','url','hash','bin','autoupdate','checkver','shortcuts') {
-            if (-not $j.PSObject.Properties.Name.Contains($f)) { Write-Host "Missing $f"; $ok=$false }
+            if (-not $j.PSObject.Properties.Name.Contains($f)) { $ok = $false }
           }
+
           if ($j.shortcuts -is [string[]]) {
-            Write-Warning "Detected flattened shortcuts (string array). Auto-repairing to nested array."
             $j.shortcuts = @(@($j.shortcuts))
-            $repaired = ($j | ConvertTo-Json -Depth 6 | Out-String).Trim()
-            Set-Content -LiteralPath $p -Value $repaired -Encoding UTF8
-            $raw = Get-Content $p -Raw
-            $j = $raw | ConvertFrom-Json
+            ($j | ConvertTo-Json -Depth 6) | Set-Content -LiteralPath $p -Encoding UTF8
+            $j = (Get-Content $p -Raw) | ConvertFrom-Json
           }
-          if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) {
-            Write-Host "Shortcuts still malformed after any repair attempt."
-            $ok=$false
+
+          if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok = $false }
+          if (-not $j.autoupdate.url.Contains('$version')) { $ok = $false }
+          if ($j.checkver -ne 'github') { $ok = $false }
+          if ($j.license -ne 'GPL-3.0-only') { $ok = $false }
+
+          if (-not $ok) { Write-Error "Validation failed"; exit 1 }
+
+      - name: Find related issue
+        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
+        id: issue
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $isUpdate  = "${{ steps.upstream.outputs.update }}"
+          $manifest  = "${{ env.MANIFEST_NAME }}"
+          $app       = "${{ env.APP_NAME }}"
+          $repo      = "${{ env.UPSTREAM_REPO }}"
+
+          function Pick-Issue {
+            param($term)
+            $data = gh issue list --repo $repo --state open --search "$term in:title" --json number,title --limit 25 2>$null | ConvertFrom-Json
+            if ($data) {
+              $exact = $data | Where-Object { $_.title -match [regex]::Escape($manifest) }
+              if ($exact) { return $exact[0].number }
+              return $data[0].number
+            }
+            return ""
           }
-          if (-not $j.autoupdate.url.Contains('$version')) { Write-Host "autoupdate missing \$version"; $ok=$false }
-          if ($j.checkver -ne 'github') { Write-Host "checkver not 'github'"; $ok=$false }
-          if (-not $ok) {
-            Write-Host "Manifest content (final state):"
-            Write-Host $raw
-            Write-Error "Critical validation failed"
-            exit 1
+
+          $issueNum = Pick-Issue $manifest
+          if (-not $issueNum) { $issueNum = Pick-Issue $app }
+
+          if ($issueNum) {
+            "issue_line=Closes #$issueNum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "issue_checkbox_line=- [x] Issue reference: Closes #$issueNum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            if ($isUpdate -eq 'yes') {
+              "issue_line=Issue: No related issue (routine update)"           | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "issue_checkbox_line=- [x] Issue: no related issue (routine update)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            } else {
+              "issue_line=Issue: No related issue (new manifest)"             | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              "issue_checkbox_line=- [x] Issue: no related issue (new manifest)"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            }
           }
-          Write-Host "Validation OK."
 
       - name: Compose PR body
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         id: prbody
         shell: pwsh
         run: |
-          $isUpdate = "${{ steps.upstream.outputs.update }}"
-          $version  = "${{ steps.version.outputs.version }}"
-          $tag      = "${{ steps.version.outputs.tag }}"
-          $desc     = "${{ env.FIXED_DESCRIPTION }}"
-          $action   = if ($isUpdate -eq 'yes') { 'Update to' } else { 'Add version' }
-          $title    = "${{ env.MANIFEST_NAME }}: $action $version"
+          $isUpdate       = "${{ steps.upstream.outputs.update }}"
+          $version        = "${{ steps.version.outputs.version }}"
+          $tag            = "${{ steps.version.outputs.tag }}"
+          $action         = if ($isUpdate -eq 'yes') { 'Update to' } else { 'Add version' }
+          $title          = "${{ env.MANIFEST_NAME }}: $action $version"
+          $issueLine      = "${{ steps.issue.outputs.issue_line }}"
+          $issueCheckbox  = "${{ steps.issue.outputs.issue_checkbox_line }}"
+
+          $checklist = @(
+            "- [x] PR title follows naming convention"
+            "- [x] I have read the Contributing Guide"
+            "- [x] I searched for existing issues/PRs for this app/version"
+            "- [x] SHA256 hash verified"
+            "- [x] autoupdate URL contains \$version and checkver is \"github\""
+            "- [x] shortcuts array is a two-element nested array"
+            $issueCheckbox
+          )
+
           $body = @(
             "$(if ($isUpdate -eq 'yes') {'Updates the manifest for'} else {'Adds the initial manifest for'}) ${{ env.APP_NAME }} version $version."
             ""
-            "> $desc"
+            "${{ env.FIXED_DESCRIPTION }}"
             ""
-            "- **Project Homepage:** https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}"
-            "- **Release Notes:** https://github.com/${{ github.repository }}/releases/tag/$tag"
+            "Project Homepage: https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}"
+            "Release Notes: https://github.com/${{ github.repository }}/releases/tag/$tag"
+            ""
+            $issueLine
             ""
             "Checklist:"
-            "- hash ok"
-            "- checkver github shorthand ok"
-            "- autoupdate placeholder ok"
-            "- shortcuts schema ok"
+            $checklist
           ) -join "`n"
+
           Set-Content pr_body.txt -Value $body -Encoding UTF8
-          "file=pr_body.txt" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "title=$title" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+          "file=pr_body.txt"            | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "title=$title"                | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Create PR
         if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
         shell: pwsh
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN || github.token }}
         run: |
           $branch  = "${{ steps.existing_pr.outputs.branch }}"
           $version = "${{ steps.version.outputs.version }}"
+
           git config --global user.name  "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
           Set-Location fork
+
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream "${{ env.UPSTREAM_BRANCH }}" --depth=1
-          if (git ls-remote --heads origin $branch) { git push origin :$branch }
+
+          if (git ls-remote --heads origin $branch) {
+            git push origin :$branch
+          }
+
           git checkout -b $branch "upstream/${{ env.UPSTREAM_BRANCH }}"
+
           Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
           git add "bucket/${{ env.MANIFEST_NAME }}.json"
+
           $commit = "${{ env.MANIFEST_NAME }}: $( if ('${{ steps.upstream.outputs.update }}' -eq 'yes') { 'Update to' } else { 'Add version' } ) $version"
           git commit -m $commit
           git push origin $branch
-          $title = "${{ steps.prbody.outputs.title }}"
+
+          $title    = "${{ steps.prbody.outputs.title }}"
           $bodyFile = "../${{ steps.prbody.outputs.file }}"
-          $out = gh pr create --repo "${{ env.UPSTREAM_REPO }}" --head "${{ github.repository_owner }}:$branch" --base "${{ env.UPSTREAM_BRANCH }}" --title "$title" --body-file "$bodyFile" 2>&1
+
+          $out = gh pr create \
+            --repo "${{ env.UPSTREAM_REPO }}" \
+            --head "${{ github.repository_owner }}:$branch" \
+            --base "${{ env.UPSTREAM_BRANCH }}" \
+            --title "$title" \
+            --body-file "$bodyFile" 2>&1
+
           if ($LASTEXITCODE -ne 0 -and $out -notmatch 'already exists') {
             Write-Host $out
             exit 1
           }
-          Write-Host "PR done."
 
-      - name: Final note (nothing executed)
+      - name: Finish early note
         if: steps.existing_pr.outputs.pr_exists == 'yes' || (steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'yes')
-        run: echo "Workflow finished early (duplicate PR or already current upstream)."
+        run: echo "Finished (duplicate PR or upstream already current)."
