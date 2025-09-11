@@ -23,8 +23,8 @@ env:
   LICENSE_ID: GPL-3.0-or-later
   ASSET_FILE: WinMemoryCleaner.exe
   FIXED_DESCRIPTION: Portable RAM cleaner using native Windows APIs to release memory.
-  NOTES_TEXT: WinMemoryCleaner requires administrator privileges (UAC prompt) and the legacy .NET Framework 4.0.
   LICENSE_URL_PATH: blob/main/LICENSE
+  NOTES_TEXT: Requires administrator privileges (UAC prompt). Requires .NET Framework 4.x runtime.
 
 jobs:
   submit:
@@ -132,6 +132,11 @@ jobs:
           $repo    = "${{ github.event.repository.name }}"
           if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
           $licenseUrl = "https://github.com/$owner/$repo/${{ env.LICENSE_URL_PATH }}"
+          $notes = @(
+            "Requires administrator privileges (UAC prompt).",
+            "Requires .NET Framework 4.x runtime.",
+            "If missing: `scoop bucket add extras` then `scoop install dotnetfx`."
+          )
           $shortcutInner = ,@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
           $shortcuts     = @($shortcutInner)
           $obj = [ordered]@{
@@ -139,13 +144,16 @@ jobs:
             description = "${{ env.FIXED_DESCRIPTION }}"
             homepage    = "https://github.com/$owner/$repo"
             license     = @{ identifier = "${{ env.LICENSE_ID }}"; url = $licenseUrl }
-            notes       = "${{ env.NOTES_TEXT }}"
-            suggest     = @{ "Microsoft .NET Framework 4.x" = "extras/dotnetfx" }
+            notes       = $notes
+            suggest     = @{ ".NET Framework 4.x runtime" = "extras/dotnetfx" }
             url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
             hash        = $hash
             bin         = "${{ env.APP_NAME }}.exe"
             shortcuts   = $shortcuts
-            checkver    = "github"
+            checkver    = @{
+              github = "$owner/$repo"
+              regex  = "([\\d.]+)"
+            }
             autoupdate  = @{
               url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}"
             }
@@ -162,16 +170,21 @@ jobs:
         run: |
           $p = "${{ steps.manifest.outputs.path }}"
           $j = (Get-Content $p -Raw) | ConvertFrom-Json
+          $owner = "${{ github.repository_owner }}"
+          $repo  = "${{ github.event.repository.name }}"
+          if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
+          $expectedRepo = "$owner/$repo"
           $ok = $true
-          foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate','license','notes','suggest') {
+          foreach ($f in 'version','url','hash','bin','shortcuts','checkver','autoupdate','license','notes','suggest','description','homepage') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { $ok = $false }
           }
-          if (-not $j.license -or -not $j.license.identifier -or $j.license.identifier -ne "${{ env.LICENSE_ID }}") { $ok = $false }
+          if (-not $j.license -or $j.license.identifier -ne "${{ env.LICENSE_ID }}") { $ok = $false }
           if (-not $j.license.url -or $j.license.url -notmatch '/LICENSE$') { $ok = $false }
-          if ($j.checkver -ne 'github') { $ok = $false }
-          if ($j.notes -notmatch '\.$') { $ok = $false }
-          if (-not $j.suggest.'Microsoft .NET Framework 4.x' -or $j.suggest.'Microsoft .NET Framework 4.x' -ne 'extras/dotnetfx') { $ok = $false }
-          if (-not $j.autoupdate.url.Contains('$version')) { $ok = $false }
+          if (-not $j.checkver.github -or $j.checkver.github -ne $expectedRepo) { $ok = $false }
+          if (-not $j.checkver.regex -or $j.checkver.regex -notmatch '\\d') { $ok = $false }
+          if (-not $j.autoupdate.url -or $j.autoupdate.url -notmatch '\$version') { $ok = $false }
+          if ($j.notes -isnot [System.Array] -or $j.notes.Count -lt 2) { $ok = $false }
+          if (-not $j.suggest.'\.NET Framework 4.x runtime' -and -not $j.suggest.'Microsoft .NET Framework 4.x') { $ok = $false }
           if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $ok = $false }
           if (-not $ok) { Write-Error "Validation failed"; exit 1 }
 
