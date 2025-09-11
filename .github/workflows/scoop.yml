@@ -46,7 +46,7 @@ jobs:
           }
           if ([string]::IsNullOrWhiteSpace($tag)) { Write-Error "Tag empty"; exit 1 }
           "tag=$tag"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Version: $tag"
 
       - name: Check upstream (skip if identical)
@@ -138,6 +138,13 @@ jobs:
           $repo     = "${{ github.event.repository.name }}"
           if (-not $repo) { $repo = ("${{ github.repository }}" -split "/")[1] }
 
+          $innerShortcut = @("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
+          $shortcuts = @()
+          $shortcuts += ,$innerShortcut
+
+          Write-Host "Debug: innerShortcut type: $($innerShortcut.GetType().FullName); length: $($innerShortcut.Count)"
+          Write-Host "Debug: shortcuts outer count: $($shortcuts.Count); first element type: $($shortcuts[0].GetType().FullName); first count: $($shortcuts[0].Count)"
+
           $obj = [ordered]@{
             version     = $version
             description = $desc
@@ -146,15 +153,16 @@ jobs:
             url         = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
             hash        = $hash
             bin         = "${{ env.APP_NAME }}.exe"
-            shortcuts   = @(@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}"))
+            shortcuts   = $shortcuts
             checkver    = @{ github = "$owner/$repo" }
             autoupdate  = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
           }
 
           New-Item -Type Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
-          ($obj | ConvertTo-Json -Depth 5 | Out-String).Trim() | Set-Content -LiteralPath $path -Encoding UTF8
+          ($obj | ConvertTo-Json -Depth 6 | Out-String).Trim() | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Generated manifest:"
           Get-Content $path
 
       - name: Critical validation
@@ -162,14 +170,35 @@ jobs:
         shell: pwsh
         run: |
           $p = "${{ steps.manifest.outputs.path }}"
-          $j = Get-Content $p -Raw | ConvertFrom-Json
+          $raw = Get-Content $p -Raw
+          $j = $raw | ConvertFrom-Json
           $ok = $true
-          foreach ($f in 'version','url','hash','bin','autoupdate','checkver') {
+          foreach ($f in 'version','url','hash','bin','autoupdate','checkver','shortcuts') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { Write-Host "Missing $f"; $ok=$false }
           }
+          # Inspect shortcuts
+          if ($j.shortcuts -isnot [System.Array]) {
+            Write-Host "Shortcuts not an array."
+            $ok = $false
+          } else {
+            Write-Host "Shortcuts outer count: $($j.shortcuts.Count)"
+            if ($j.shortcuts.Count -lt 1) { $ok=$false; Write-Host "No shortcut entries." }
+            else {
+              $first = $j.shortcuts[0]
+              Write-Host "First shortcut element type: $($first.GetType().FullName) Count: $($first.Count)"
+              if ($first -isnot [System.Array] -or $first.Count -ne 2) {
+                Write-Host "Bad shortcuts structure (expected nested two-element array)."
+                $ok = $false
+              }
+            }
+          }
           if (-not $j.autoupdate.url.Contains('$version')) { Write-Host "autoupdate missing \$version"; $ok=$false }
-          if ($j.shortcuts.Count -lt 1 -or $j.shortcuts[0].Count -ne 2) { Write-Host "Bad shortcuts"; $ok=$false }
-          if (-not $ok) { Write-Error "Critical validation failed"; exit 1 }
+          if (-not $ok) {
+            Write-Host "Raw manifest:"
+            Write-Host $raw
+            Write-Error "Critical validation failed"
+            exit 1
+          }
           Write-Host "Critical validation passed."
 
       - name: Compose PR body
