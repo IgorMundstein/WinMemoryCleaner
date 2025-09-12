@@ -36,10 +36,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Resolve version
-        env:
-          GH_TOKEN: ${{ github.token }}
         id: version
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if ("${{ github.event_name }}" -eq "release") {
             $tag = "${{ github.event.release.tag_name }}"
@@ -53,10 +53,10 @@ jobs:
           "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Check existing upstream PR
-        env:
-          GH_TOKEN: ${{ github.token }}
         id: existing_pr
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $branch = "update/${{ env.MANIFEST_NAME }}-${{ steps.version.outputs.version }}"
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
@@ -66,8 +66,8 @@ jobs:
           "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Check upstream manifest
-        id: upstream
         if: steps.existing_pr.outputs.pr_exists == 'no'
+        id: upstream
         shell: pwsh
         run: |
           $url = "https://raw.githubusercontent.com/${{ env.UPSTREAM_REPO }}/${{ env.UPSTREAM_BRANCH }}/bucket/${{ env.MANIFEST_NAME }}.json"
@@ -210,11 +210,11 @@ jobs:
           }
 
       - name: Find or create related issue
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         id: issue
         if: steps.plan.outputs.mode != 'none'
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $manifest  = "${{ env.MANIFEST_NAME }}"
@@ -290,10 +290,10 @@ jobs:
           "title=${{ env.MANIFEST_NAME }}: Add version $version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Create PR
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         if: steps.plan.outputs.mode == 'create'
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $branch   = "${{ steps.existing_pr.outputs.branch }}"
@@ -307,15 +307,15 @@ jobs:
           Set-Location fork
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream "${{ env.UPSTREAM_BRANCH }}" --depth=1
-          if (git ls-remote --heads origin $branch) { git push origin :$branch }
-          git checkout -b $branch "upstream/${{ env.UPSTREAM_BRANCH }}"
+          if (git ls-remote --heads origin $branch) { git push origin --delete "$branch" }
+          git checkout -b "$branch" "upstream/${{ env.UPSTREAM_BRANCH }}"
           Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
           git add "bucket/${{ env.MANIFEST_NAME }}.json"
           if (git diff --cached --quiet) {
             echo "No changes to commit."
           } else {
             git commit -m "$commitMsg"
-            git push origin $branch
+            git push origin "$branch"
           }
           $out = gh pr create --repo "${{ env.UPSTREAM_REPO }}" --head "${{ github.repository_owner }}:$branch" --base "${{ env.UPSTREAM_BRANCH }}" --title "$title" --body-file "$bodyFile" 2>&1
           if ($LASTEXITCODE -ne 0 -and $out -notmatch 'already exists') {
@@ -324,10 +324,10 @@ jobs:
           }
 
       - name: Update existing PR branch
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         if: steps.plan.outputs.mode == 'update'
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $branch   = "${{ steps.existing_pr.outputs.branch }}"
@@ -338,14 +338,14 @@ jobs:
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
           Set-Location fork
           git fetch origin "${branch}:${branch}" --force
-          git checkout "${branch}"
+          git checkout "$branch"
           Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
           git add "bucket/${{ env.MANIFEST_NAME }}.json"
           if (git diff --cached --quiet) {
             echo "No changes to commit."
           } else {
             git commit -m "$commitMsg"
-            git push origin "${branch}"
+            git push origin "$branch"
           }
 
       - name: Finish early note
