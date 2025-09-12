@@ -85,17 +85,26 @@ jobs:
           }
         shell: pwsh
 
+      - name: Plan
+        id: plan
+        run: |
+          $mode = "create"
+          if ("${{ steps.existing_pr.outputs.pr_exists }}" -eq "yes") { $mode = "update" }
+          elseif ("${{ steps.upstream.outputs.skip }}" -eq "yes") { $mode = "none" }
+          "mode=$mode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+        shell: pwsh
+
       - name: Stop duplicate PR
-        if: steps.existing_pr.outputs.pr_exists == 'yes'
-        run: echo "Duplicate PR exists; stopping."
+        if: steps.plan.outputs.mode == 'update'
+        run: echo "Duplicate PR exists; updating."
 
       - name: Stop already current
-        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'yes'
+        if: steps.plan.outputs.mode == 'none'
         run: echo "Upstream already current; nothing to do."
 
       - name: Probe asset
         id: asset
-        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
+        if: steps.plan.outputs.mode != 'none'
         run: |
           $url = "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ env.ASSET_FILE }}"
           try {
@@ -110,7 +119,7 @@ jobs:
 
       - name: Download and hash
         id: hash
-        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
+        if: steps.plan.outputs.mode != 'none'
         run: |
           $url  = "${{ steps.asset.outputs.asset_url }}"
           $file = "${{ env.ASSET_FILE }}"
@@ -122,7 +131,7 @@ jobs:
 
       - name: Generate manifest
         id: manifest
-        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
+        if: steps.plan.outputs.mode != 'none'
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag     = "${{ steps.version.outputs.tag }}"
@@ -171,7 +180,7 @@ jobs:
         shell: pwsh
 
       - name: Validate manifest
-        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
+        if: steps.plan.outputs.mode != 'none'
         run: |
           $p = "${{ steps.manifest.outputs.path }}"
           $j = (Get-Content $p -Raw) | ConvertFrom-Json
@@ -202,7 +211,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         id: issue
-        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
+        if: steps.plan.outputs.mode != 'none'
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $manifest  = "${{ env.MANIFEST_NAME }}"
@@ -260,7 +269,7 @@ jobs:
 
       - name: Compose PR body
         id: prbody
-        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
+        if: steps.plan.outputs.mode == 'create'
         run: |
           $version   = "${{ steps.version.outputs.version }}"
           $issueLine = "${{ steps.issue.outputs.issue_line }}"
@@ -282,7 +291,7 @@ jobs:
       - name: Create PR
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        if: steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'no'
+        if: steps.plan.outputs.mode == 'create'
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $branch   = "${{ steps.existing_pr.outputs.branch }}"
@@ -313,6 +322,31 @@ jobs:
           }
         shell: pwsh
 
+      - name: Update existing PR branch
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        if: steps.plan.outputs.mode == 'update'
+        run: |
+          if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
+          $branch   = "${{ steps.existing_pr.outputs.branch }}"
+          $version  = "${{ steps.version.outputs.version }}"
+          $commitMsg = "${{ env.MANIFEST_NAME }}: Update to version $version"
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
+          Set-Location fork
+          git fetch origin $branch --depth=1
+          git checkout $branch
+          Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
+          git add "bucket/${{ env.MANIFEST_NAME }}.json"
+          if (git diff --cached --quiet) {
+            echo "No changes to commit."
+          } else {
+            git commit -m "$commitMsg"
+            git push origin $branch
+          }
+        shell: pwsh
+
       - name: Finish early note
-        if: steps.existing_pr.outputs.pr_exists == 'yes' || (steps.existing_pr.outputs.pr_exists == 'no' && steps.upstream.outputs.skip == 'yes')
+        if: steps.plan.outputs.mode == 'none'
         run: echo "Finished (duplicate PR or upstream already current)."
