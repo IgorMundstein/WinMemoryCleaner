@@ -267,6 +267,7 @@ jobs:
             "issue_line=Closes #$issueNum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
             "issue_line=No related issue (new manifest)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
 
       - name: Compose PR body
         id: prbody
