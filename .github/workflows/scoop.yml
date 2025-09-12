@@ -146,32 +146,35 @@ jobs:
           )
           $shortcutInner = ,@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
           $shortcuts     = @($shortcutInner)
+
           $obj = [ordered]@{
-            architecture = @{
-              "32bit" = @{
-                url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
-                hash = $hash
-              }
-              "64bit" = @{
-                url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
-                hash = $hash
-              }
-            }
-            autoupdate  = @{
-              architecture = @{
-                "32bit" = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
-                "64bit" = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
-              }
-            }
-            bin         = "${{ env.APP_NAME }}.exe"
-            checkver    = "github"
+            version     = $version
             description = "${{ env.FIXED_DESCRIPTION }}"
             homepage    = "https://github.com/$owner/$repo"
             license     = @{ identifier = "${{ env.LICENSE_ID }}"; url = $licenseUrl }
             notes       = $notes
+            suggest     = @{ ".NET Framework 4.x runtime" = "extras/dotnetfx" }
+            architecture = [ordered]@{
+              "64bit" = @{
+                url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
+                hash = $hash
+              }
+              "32bit" = @{
+                url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
+                hash = $hash
+              }
+            }
+            bin         = "${{ env.APP_NAME }}.exe"
             shortcuts   = $shortcuts
-            version     = $version
+            checkver    = "github"
+            autoupdate  = @{
+              architecture = [ordered]@{
+                "64bit" = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
+                "32bit" = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
+              }
+            }
           }
+
           if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
           New-Item -ItemType Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
@@ -185,21 +188,26 @@ jobs:
           $p = "${{ steps.manifest.outputs.path }}"
           $j = (Get-Content $p -Raw) | ConvertFrom-Json
           $reasons = @()
-          foreach ($f in 'architecture','autoupdate','bin','checkver','description','homepage','license','notes','shortcuts','version') {
+          foreach ($f in 'version','description','homepage','license','notes','suggest','architecture','bin','shortcuts','checkver','autoupdate') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { $reasons += "Missing field: $f" }
           }
           if (-not $j.license) { $reasons += "Missing license object" }
           elseif ($j.license.identifier -ne "${{ env.LICENSE_ID }}") { $reasons += "license.identifier must be ${{ env.LICENSE_ID }}" }
           if (-not $j.license.url -or $j.license.url -notmatch '/LICENSE$') { $reasons += "license.url must end with /LICENSE" }
           if ($j.notes -isnot [System.Array] -or $j.notes.Count -lt 2) { $reasons += "notes must be an array with at least 2 entries" }
-          if (-not $j.architecture.'32bit' -or -not $j.architecture.'64bit') { $reasons += "architecture must include 32bit and 64bit" }
-          foreach ($a in '32bit','64bit') {
+          $suggestKeys = @()
+          if ($j.suggest) { $suggestKeys = $j.suggest.PSObject.Properties.Name }
+          if (-not ($suggestKeys -contains '.NET Framework 4.x runtime' -or $suggestKeys -contains 'Microsoft .NET Framework 4.x')) {
+            $reasons += "suggest must contain '.NET Framework 4.x runtime' or 'Microsoft .NET Framework 4.x'"
+          }
+          if (-not $j.architecture.'64bit' -or -not $j.architecture.'32bit') { $reasons += "architecture must include 64bit and 32bit" }
+          foreach ($a in '64bit','32bit') {
             if (-not $j.architecture.$a.url) { $reasons += "architecture.$a.url missing" }
             if (-not $j.architecture.$a.hash) { $reasons += "architecture.$a.hash missing" }
           }
           if ($j.checkver -ne 'github') { $reasons += "checkver must be 'github'" }
-          if (-not $j.autoupdate.architecture.'32bit'.url -or -not $j.autoupdate.architecture.'64bit'.url) { $reasons += "autoupdate.architecture must define 32bit and 64bit urls" }
-          if ($j.autoupdate.architecture.'32bit'.url -notmatch '\$version' -or $j.autoupdate.architecture.'64bit'.url -notmatch '\$version') { $reasons += "autoupdate urls must contain $version" }
+          if (-not $j.autoupdate.architecture.'64bit'.url -or -not $j.autoupdate.architecture.'32bit'.url) { $reasons += "autoupdate.architecture must define 64bit and 32bit urls" }
+          if ($j.autoupdate.architecture.'64bit'.url -notmatch '\$version' -or $j.autoupdate.architecture.'32bit'.url -notmatch '\$version') { $reasons += 'autoupdate urls must contain $version' }
           if ($j.shortcuts.Count -lt 1 -or ($j.shortcuts[0] -isnot [System.Array]) -or $j.shortcuts[0].Count -ne 2) { $reasons += "shortcuts must be an array of [exe, name]" }
           if ($reasons.Count) {
             $reasons | ForEach-Object { Write-Error $_ }
