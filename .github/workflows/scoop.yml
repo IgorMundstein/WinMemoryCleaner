@@ -39,6 +39,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         id: version
+        shell: pwsh
         run: |
           if ("${{ github.event_name }}" -eq "release") {
             $tag = "${{ github.event.release.tag_name }}"
@@ -50,12 +51,12 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($tag)) { Write-Error "Tag empty"; exit 1 }
           "tag=$tag"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-        shell: pwsh
 
       - name: Check existing upstream PR
         env:
           GH_TOKEN: ${{ github.token }}
         id: existing_pr
+        shell: pwsh
         run: |
           $branch = "update/${{ env.MANIFEST_NAME }}-${{ steps.version.outputs.version }}"
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
@@ -63,11 +64,11 @@ jobs:
           try { $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json } catch { $resp = @() }
           if ($resp -and $resp.Count -gt 0) { "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append } else { "pr_exists=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
           "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-        shell: pwsh
 
       - name: Check upstream manifest
         id: upstream
         if: steps.existing_pr.outputs.pr_exists == 'no'
+        shell: pwsh
         run: |
           $url = "https://raw.githubusercontent.com/${{ env.UPSTREAM_REPO }}/${{ env.UPSTREAM_BRANCH }}/bucket/${{ env.MANIFEST_NAME }}.json"
           try {
@@ -83,16 +84,15 @@ jobs:
             "skip=no"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             "update=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
-        shell: pwsh
 
       - name: Plan
         id: plan
+        shell: pwsh
         run: |
           $mode = "create"
           if ("${{ steps.existing_pr.outputs.pr_exists }}" -eq "yes") { $mode = "update" }
           elseif ("${{ steps.upstream.outputs.skip }}" -eq "yes") { $mode = "none" }
           "mode=$mode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-        shell: pwsh
 
       - name: Stop duplicate PR
         if: steps.plan.outputs.mode == 'update'
@@ -105,6 +105,7 @@ jobs:
       - name: Probe asset
         id: asset
         if: steps.plan.outputs.mode != 'none'
+        shell: pwsh
         run: |
           $url = "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ env.ASSET_FILE }}"
           try {
@@ -115,11 +116,11 @@ jobs:
             exit 1
           }
           "asset_url=$url" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-        shell: pwsh
 
       - name: Download and hash
         id: hash
         if: steps.plan.outputs.mode != 'none'
+        shell: pwsh
         run: |
           $url  = "${{ steps.asset.outputs.asset_url }}"
           $file = "${{ env.ASSET_FILE }}"
@@ -127,11 +128,11 @@ jobs:
           if ((Get-Item $file).Length -le 0) { Write-Error "Empty asset"; exit 1 }
           $sha = (Get-FileHash -Path $file -Algorithm SHA256).Hash.ToLower()
           "sha256=$sha" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-        shell: pwsh
 
       - name: Generate manifest
         id: manifest
         if: steps.plan.outputs.mode != 'none'
+        shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag     = "${{ steps.version.outputs.tag }}"
@@ -153,7 +154,6 @@ jobs:
             homepage    = "https://github.com/$owner/$repo"
             license     = @{ identifier = "${{ env.LICENSE_ID }}"; url = $licenseUrl }
             notes       = $notes
-            suggest     = @{ ".NET Framework 4.x runtime" = "extras/dotnetfx" }
             architecture = [ordered]@{
               "64bit" = @{
                 url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
@@ -180,26 +180,21 @@ jobs:
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
           ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-        shell: pwsh
 
       - name: Validate manifest
         if: steps.plan.outputs.mode != 'none'
+        shell: pwsh
         run: |
           $p = "${{ steps.manifest.outputs.path }}"
           $j = (Get-Content $p -Raw) | ConvertFrom-Json
           $reasons = @()
-          foreach ($f in 'version','description','homepage','license','notes','suggest','architecture','bin','shortcuts','checkver','autoupdate') {
+          foreach ($f in 'version','description','homepage','license','notes','architecture','bin','shortcuts','checkver','autoupdate') {
             if (-not $j.PSObject.Properties.Name.Contains($f)) { $reasons += "Missing field: $f" }
           }
           if (-not $j.license) { $reasons += "Missing license object" }
           elseif ($j.license.identifier -ne "${{ env.LICENSE_ID }}") { $reasons += "license.identifier must be ${{ env.LICENSE_ID }}" }
           if (-not $j.license.url -or $j.license.url -notmatch '/LICENSE$') { $reasons += "license.url must end with /LICENSE" }
           if ($j.notes -isnot [System.Array] -or $j.notes.Count -lt 2) { $reasons += "notes must be an array with at least 2 entries" }
-          $suggestKeys = @()
-          if ($j.suggest) { $suggestKeys = $j.suggest.PSObject.Properties.Name }
-          if (-not ($suggestKeys -contains '.NET Framework 4.x runtime' -or $suggestKeys -contains 'Microsoft .NET Framework 4.x')) {
-            $reasons += "suggest must contain '.NET Framework 4.x runtime' or 'Microsoft .NET Framework 4.x'"
-          }
           if (-not $j.architecture.'64bit' -or -not $j.architecture.'32bit') { $reasons += "architecture must include 64bit and 32bit" }
           foreach ($a in '64bit','32bit') {
             if (-not $j.architecture.$a.url) { $reasons += "architecture.$a.url missing" }
@@ -213,13 +208,13 @@ jobs:
             $reasons | ForEach-Object { Write-Error $_ }
             exit 1
           }
-        shell: pwsh
 
       - name: Find or create related issue
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         id: issue
         if: steps.plan.outputs.mode != 'none'
+        shell: pwsh
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $manifest  = "${{ env.MANIFEST_NAME }}"
@@ -272,12 +267,11 @@ jobs:
             "issue_line=Closes #$issueNum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
             "issue_line=No related issue (new manifest)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-        shell: pwsh
 
       - name: Compose PR body
         id: prbody
         if: steps.plan.outputs.mode == 'create'
+        shell: pwsh
         run: |
           $version   = "${{ steps.version.outputs.version }}"
           $issueLine = "${{ steps.issue.outputs.issue_line }}"
@@ -294,12 +288,12 @@ jobs:
           Set-Content pr_body.txt -Value $body -Encoding UTF8
           "file=pr_body.txt" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "title=${{ env.MANIFEST_NAME }}: Add version $version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-        shell: pwsh
 
       - name: Create PR
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         if: steps.plan.outputs.mode == 'create'
+        shell: pwsh
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $branch   = "${{ steps.existing_pr.outputs.branch }}"
@@ -328,12 +322,12 @@ jobs:
             Write-Host $out
             exit 1
           }
-        shell: pwsh
 
       - name: Update existing PR branch
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         if: steps.plan.outputs.mode == 'update'
+        shell: pwsh
         run: |
           if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
           $branch   = "${{ steps.existing_pr.outputs.branch }}"
@@ -353,7 +347,6 @@ jobs:
             git commit -m "$commitMsg"
             git push origin "${branch}"
           }
-        shell: pwsh
 
       - name: Finish early note
         if: steps.plan.outputs.mode == 'none'
