@@ -335,15 +335,15 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
           Set-Location fork
-          git fetch origin $branch --depth=1
-          git checkout $branch
+          git fetch origin "$branch:$branch" --force
+          git checkout "$branch"
           Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
           git add "bucket/${{ env.MANIFEST_NAME }}.json"
           if (git diff --cached --quiet) {
             echo "No changes to commit."
           } else {
             git commit -m "$commitMsg"
-            git push origin $branch
+            git push origin "$branch"
           }
         shell: pwsh
 
