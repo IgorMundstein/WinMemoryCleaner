@@ -48,18 +48,15 @@ body:
         - Windows 8.1
         - Windows 8
         - Windows 7
+        - Windows Vista
+        - Windows XP
         - Windows Server 2025
         - Windows Server 2022
         - Windows Server 2019
         - Windows Server 2016
-        - Windows Server 2012 R2
         - Windows Server 2012
-        - Windows Server 2008 R2
         - Windows Server 2008
         - Windows Server 2003
-        - Windows Vista
-        - Windows XP 64-bit
-        - Windows XP SP3
     validations:
       required: true
   - type: textarea
