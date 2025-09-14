@@ -173,13 +173,11 @@ jobs:
               irm get.scoop.sh | iex
             }
 
-            # Make sure the Extras bucket is present and up to date
             if (-not (scoop bucket list | Select-String -Pattern '^\s*extras(\s|$)' -Quiet)) {
               scoop bucket add $bucket
             }
             scoop bucket update $bucket
 
-            # Robust version check: read the manifest JSON from the Extras bucket
             Write-Host "===[Scoop] Checking $qualified version $version==="
             $manifestRaw = ""
             try { $manifestRaw = scoop cat $qualified 2>$null | Out-String } catch {}
@@ -191,9 +189,7 @@ jobs:
               exit 1
             }
 
-            try {
-              $manifest = $manifestRaw | ConvertFrom-Json
-            } catch {
+            try { $manifest = $manifestRaw | ConvertFrom-Json } catch {
               Write-Host "[Scoop] ❌ Failed to parse manifest JSON."
               $published = "false"
               $e2e_result = "skipped"
@@ -217,7 +213,6 @@ jobs:
             Write-Host "[Scoop] Installing package from '$bucket'..."
             scoop install $qualified
 
-            # After install, the local package name is unqualified
             $exe = "$(scoop prefix $packageName)\WinMemoryCleaner.exe"
             if (-not (Test-Path $exe)) {
               Write-Host "[Scoop] ❌ WinMemoryCleaner.exe not found after install"
@@ -310,51 +305,57 @@ jobs:
             Write-Host "[WinGet] Updating sources..."
             try { & $wingetExe source update } catch { Write-Host "[WinGet] source update failed (non-fatal)" }
 
-            Write-Host "[WinGet] Checking available versions..."
-            $versionsOut = & $wingetExe show --id $pkgName --source winget --versions --accept-source-agreements
-            Write-Host "WinGet versions output:`n$versionsOut"
+            # Install to an absolute output folder; also add exact-match and disable interactivity
+            $outDir = (Resolve-Path '.').Path
+            Write-Host "[WinGet] Installing exact version $expected to: $outDir"
+            & $wingetExe install --id $pkgName --version $expected --source winget --accept-source-agreements --accept-package-agreements --silent --disable-interactivity -e -o "$outDir"
 
-            $available = $versionsOut -split "`r?`n" |
-              ForEach-Object { $_.Trim() } |
-              Where-Object { $_ -match '^\d+(\.\d+){2,3}$' }
+            # Try multiple locations for the portable binary
+            $candidates = @()
 
-            if ($available | Where-Object { $_ -match $expectedRegex }) {
-              Write-Host "[WinGet] ✅ Version $expected is listed."
+            # 1) Output directory
+            $candidates += (Join-Path $outDir "WinMemoryCleaner.exe")
+
+            # 2) WinGet alias link location
+            $link = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links\WinMemoryCleaner.exe"
+            $candidates += $link
+
+            # 3) Search in WinGet Packages
+            $pkgRoot = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages"
+            if (Test-Path $pkgRoot) {
+              $foundPkgExe = Get-ChildItem -Path $pkgRoot -Recurse -Filter "WinMemoryCleaner.exe" -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName -First 1
+              if ($foundPkgExe) { $candidates += $foundPkgExe }
+            }
+
+            # 4) Refresh PATH from registry and try alias
+            $machinePath = [Environment]::GetEnvironmentVariable('Path','Machine')
+            $userPath    = [Environment]::GetEnvironmentVariable('Path','User')
+            if ($machinePath -or $userPath) { $env:Path = "$machinePath;$userPath" }
+            $cmd = Get-Command WinMemoryCleaner -ErrorAction SilentlyContinue
+            if ($cmd -and (Test-Path $cmd.Source)) { $candidates += $cmd.Source }
+
+            $exePath = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+            if (-not $exePath) {
+              Write-Host "[WinGet] ❌ WinMemoryCleaner.exe not found after install"
+              $e2e_result = "fail"
+              Set-Outputs -Published $published -E2E $e2e_result
+              exit 1
+            }
+
+            Write-Host "[WinGet] Found executable: $exePath"
+
+            $verInfo = (Get-Item $exePath).VersionInfo
+            $fileVersion = $verInfo.ProductVersion
+            if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
+            Write-Host "[WinGet] Installed file version: $fileVersion"
+            if ($fileVersion -match $expectedRegex) {
               $published = "true"
-
-              Write-Host "[WinGet] Installing exact version $expected..."
-              & $wingetExe install --id $pkgName --version $expected --accept-source-agreements --accept-package-agreements --silent -o .
-
-              $exePath = Join-Path (Get-Location) "WinMemoryCleaner.exe"
-              if (-not (Test-Path $exePath)) {
-                $cmd = Get-Command WinMemoryCleaner.exe -ErrorAction SilentlyContinue
-                if ($cmd -and (Test-Path $cmd.Source)) { $exePath = $cmd.Source }
-              }
-
-              if (-not (Test-Path $exePath)) {
-                Write-Host "[WinGet] ❌ WinMemoryCleaner.exe not found after install"
-                $e2e_result = "fail"
-                Set-Outputs -Published $published -E2E $e2e_result
-                exit 1
-              }
-
-              $verInfo = (Get-Item $exePath).VersionInfo
-              $fileVersion = $verInfo.ProductVersion
-              if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
-              Write-Host "[WinGet] Installed file version: $fileVersion"
-              if ($fileVersion -match $expectedRegex) {
-                $e2e_result = "success"
-                Write-Host "[WinGet] ✅ E2E Test successful (version matches)."
-              } else {
-                Write-Host "[WinGet] ❌ Version mismatch. Expected $expected, got $fileVersion"
-                $e2e_result = "fail"
-                Set-Outputs -Published $published -E2E $e2e_result
-                exit 1
-              }
+              $e2e_result = "success"
+              Write-Host "[WinGet] ✅ E2E Test successful (version matches)."
             } else {
-              Write-Host "[WinGet] ❌ Version $expected not yet in client index (likely ingestion delay)."
-              $published = "false"
-              $e2e_result = "skipped"
+              Write-Host "[WinGet] ❌ Version mismatch. Expected $expected, got $fileVersion"
+              $published = "true" # installed but mismatch
+              $e2e_result = "fail"
               Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
