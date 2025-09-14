@@ -147,7 +147,7 @@ jobs:
       published: ${{ steps.scoop.outputs.published }}
       e2e: ${{ steps.scoop.outputs.e2e_result }}
     steps:
-      - name: "🍦 Scoop Verify and Test"
+      - name: "🍦 Scoop Verify and Test (Extras bucket)"
         id: scoop
         shell: pwsh
         env:
@@ -155,7 +155,9 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $version = "$env:RELEASE_VERSION"
+          $bucket = "extras"
           $packageName = "winmemorycleaner"
+          $qualified = "$bucket/$packageName"
           $e2e_result = "fail"
           $published = "false"
 
@@ -172,21 +174,22 @@ jobs:
             }
             scoop update
 
-            if (-not (scoop bucket list | Select-String -SimpleMatch 'extras')) {
-              scoop bucket add extras
+            if (-not (scoop bucket list | Select-String -SimpleMatch $bucket)) {
+              scoop bucket add $bucket
             }
-            scoop update extras
+            scoop update $bucket
 
-            Write-Host "===[Scoop] Checking $packageName version $version==="
-            $scoop_info = scoop info $packageName 2>$null
+            Write-Host "===[Scoop] Checking $qualified version $version==="
+            $scoop_info = scoop info $qualified 2>$null
             Write-Host "Scoop info output:`n$scoop_info"
             if ($scoop_info -match "Version:\s*$([regex]::Escape($version))\s*$") {
-              Write-Host "[Scoop] ✅ Version found."
+              Write-Host "[Scoop] ✅ Version found in '$bucket'."
               $published = "true"
 
-              Write-Host "[Scoop] Installing package..."
-              scoop install $packageName
+              Write-Host "[Scoop] Installing package from '$bucket'..."
+              scoop install $qualified
 
+              # After install, the local package name is unqualified
               $exe = "$(scoop prefix $packageName)\WinMemoryCleaner.exe"
               if (-not (Test-Path $exe)) {
                 Write-Host "[Scoop] ❌ WinMemoryCleaner.exe not found after install"
@@ -210,7 +213,7 @@ jobs:
                 exit 1
               }
             } else {
-              Write-Host "[Scoop] ❌ Version not found."
+              Write-Host "[Scoop] ❌ Version not found in '$bucket'."
               $published = "false"
               $e2e_result = "skipped"
               Set-Outputs -Published $published -E2E $e2e_result
@@ -409,7 +412,7 @@ jobs:
           SC_E2E="${{ needs.scoop.outputs.e2e }}"
           if [ "$SC_PUB" == "true" ]; then SC_STATUS="✅ Published"; else SC_STATUS="❌ Not Published"; fi
           if [ "$SC_E2E" == "success" ]; then SC_E2E_STATUS="✅ Passed"; elif [ "$SC_PUB" == "true" ]; then SC_E2E_STATUS="❌ Failed"; else SC_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍦 Scoop                  | $SC_STATUS             | $SC_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🍦 Scoop (Extras)         | $SC_STATUS             | $SC_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
 
           WG_CLI_FOUND="${{ needs.winget_cli.outputs.found }}"
           WG_CLI_PUB="${{ needs.winget_cli.outputs.published }}"
