@@ -172,50 +172,71 @@ jobs:
             if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
               irm get.scoop.sh | iex
             }
-            scoop update
 
-            if (-not (scoop bucket list | Select-String -SimpleMatch $bucket)) {
+            # Make sure the Extras bucket is present and up to date
+            if (-not (scoop bucket list | Select-String -Pattern '^\s*extras(\s|$)' -Quiet)) {
               scoop bucket add $bucket
             }
-            scoop update $bucket
+            scoop bucket update $bucket
 
+            # Robust version check: read the manifest JSON from the Extras bucket
             Write-Host "===[Scoop] Checking $qualified version $version==="
-            $scoop_info = scoop info $qualified 2>$null
-            Write-Host "Scoop info output:`n$scoop_info"
-            if ($scoop_info -match "Version:\s*$([regex]::Escape($version))\s*$") {
-              Write-Host "[Scoop] ✅ Version found in '$bucket'."
-              $published = "true"
-
-              Write-Host "[Scoop] Installing package from '$bucket'..."
-              scoop install $qualified
-
-              # After install, the local package name is unqualified
-              $exe = "$(scoop prefix $packageName)\WinMemoryCleaner.exe"
-              if (-not (Test-Path $exe)) {
-                Write-Host "[Scoop] ❌ WinMemoryCleaner.exe not found after install"
-                $e2e_result = "fail"
-                Set-Outputs -Published $published -E2E $e2e_result
-                exit 1
-              }
-
-              $verInfo = (Get-Item $exe).VersionInfo
-              $fileVersion = $verInfo.ProductVersion
-              if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
-              $expectedRegex = '^' + [regex]::Escape($version) + '(\.0)?$'
-              Write-Host "[Scoop] Installed file version: $fileVersion"
-              if ($fileVersion -match $expectedRegex) {
-                $e2e_result = "success"
-                Write-Host "[Scoop] ✅ E2E Test successful (version matches)."
-              } else {
-                Write-Host "[Scoop] ❌ Version mismatch. Expected $version, got $fileVersion"
-                $e2e_result = "fail"
-                Set-Outputs -Published $published -E2E $e2e_result
-                exit 1
-              }
-            } else {
-              Write-Host "[Scoop] ❌ Version not found in '$bucket'."
+            $manifestRaw = ""
+            try { $manifestRaw = scoop cat $qualified 2>$null | Out-String } catch {}
+            if (-not $manifestRaw) {
+              Write-Host "[Scoop] ❌ Manifest $qualified not found."
               $published = "false"
               $e2e_result = "skipped"
+              Set-Outputs -Published $published -E2E $e2e_result
+              exit 1
+            }
+
+            try {
+              $manifest = $manifestRaw | ConvertFrom-Json
+            } catch {
+              Write-Host "[Scoop] ❌ Failed to parse manifest JSON."
+              $published = "false"
+              $e2e_result = "skipped"
+              Set-Outputs -Published $published -E2E $e2e_result
+              exit 1
+            }
+
+            $manifestVersion = "$($manifest.version)"
+            Write-Host "[Scoop] Manifest version: $manifestVersion"
+            if ($manifestVersion -eq $version) {
+              Write-Host "[Scoop] ✅ Version found in '$bucket'."
+              $published = "true"
+            } else {
+              Write-Host "[Scoop] ❌ Version mismatch in manifest. Expected $version, got $manifestVersion"
+              $published = "false"
+              $e2e_result = "skipped"
+              Set-Outputs -Published $published -E2E $e2e_result
+              exit 1
+            }
+
+            Write-Host "[Scoop] Installing package from '$bucket'..."
+            scoop install $qualified
+
+            # After install, the local package name is unqualified
+            $exe = "$(scoop prefix $packageName)\WinMemoryCleaner.exe"
+            if (-not (Test-Path $exe)) {
+              Write-Host "[Scoop] ❌ WinMemoryCleaner.exe not found after install"
+              $e2e_result = "fail"
+              Set-Outputs -Published $published -E2E $e2e_result
+              exit 1
+            }
+
+            $verInfo = (Get-Item $exe).VersionInfo
+            $fileVersion = $verInfo.ProductVersion
+            if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
+            $expectedRegex = '^' + [regex]::Escape($version) + '(\.0)?$'
+            Write-Host "[Scoop] Installed file version: $fileVersion"
+            if ($fileVersion -match $expectedRegex) {
+              $e2e_result = "success"
+              Write-Host "[Scoop] ✅ E2E Test successful (version matches)."
+            } else {
+              Write-Host "[Scoop] ❌ Version mismatch. Expected $version, got $fileVersion"
+              $e2e_result = "fail"
               Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
