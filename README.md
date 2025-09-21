@@ -15,7 +15,7 @@ WMC is a free RAM cleaner that effectively optimizes memory areas by utilizing t
 choco install winmemorycleaner
 ```
 
-### 🍦 [Scoop](https://scoop.sh/#/apps?q=winmemorycleaner)
+### 🍦 [Scoop](https://scoop.sh/#/apps?q=winmemorycleaner&o=true&dm=true&n=true)
 ```cmd
 scoop bucket add extras
 ```
