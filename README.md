@@ -17,7 +17,10 @@ choco install winmemorycleaner
 
 ### 🍦 [Scoop](https://scoop.sh/#/apps?q=winmemorycleaner)
 ```cmd
-scoop install winmemorycleaner
+scoop bucket add extras
+```
+```cmd
+scoop install extras/winmemorycleaner
 ```
 
 ### 📦 [WinGet](https://winstall.app/apps/IgorMundstein.WinMemoryCleaner)
