@@ -6,11 +6,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Principal;
 using System.ServiceProcess;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.Win32;
 
 namespace WinMemoryCleaner
 {
@@ -54,7 +57,7 @@ namespace WinMemoryCleaner
         /// Gets a value indicating whether this instance is in debug mode.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is in debug mode; otherwise, <c>false</c>.
+        /// <c>true</c> if this instance is in debug mode; otherwise, <c>false</c>.
         /// </value>
         public static bool IsInDebugMode
         {
@@ -113,6 +116,15 @@ namespace WinMemoryCleaner
         {
             if (disposing)
             {
+                try
+                {
+                    SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+                }
+                catch
+                {
+                    // ignored
+                }
+
                 if (_mutex != null)
                 {
                     try
@@ -211,6 +223,73 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Handles power mode changes (suspend/resume from hibernation).
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="PowerModeChangedEventArgs" /> instance containing the event data.</param>
+        private static void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            try
+            {
+                switch (e.Mode)
+                {
+                    case PowerModes.Resume:
+                        ThreadPool.QueueUserWorkItem(_ =>
+                        {
+                            try
+                            {
+                                // XP/2003 need more stabilization time before reinitialization
+                                Thread.Sleep(Environment.OSVersion.Version.Major < 6 ? 10000 : 5000);
+
+                                // Retry logic for handling transient failures during system resume
+                                const int maxRetries = 3;
+                                var retryCount = 0;
+                                Exception lastException = null;
+
+                                while (retryCount < maxRetries)
+                                {
+                                    try
+                                    {
+                                        var mainViewModel = DependencyInjection.Container.Resolve<MainViewModel>();
+
+                                        if (mainViewModel == null)
+                                            throw new InvalidOperationException("MainViewModel could not be resolved from the DI container");
+
+                                        mainViewModel.ReinitializeAfterHibernation();
+                                        return;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        lastException = ex;
+                                        retryCount++;
+
+                                        if (retryCount >= maxRetries)
+                                        {
+                                            var failureException = new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Failed to reinitialize after hibernation after {0} attempts", maxRetries), lastException);
+                                            Logger.Error(failureException.Message + ": " + failureException.GetMessage());
+                                            throw;
+                                        }
+
+                                        // Wait before retrying
+                                        Thread.Sleep(5000);
+                                    }
+                                }
+                            }
+                            catch (Exception threadEx)
+                            {
+                                Logger.Error("Critical error in power mode resume handling: " + threadEx.GetMessage());
+                            }
+                        });
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error handling power mode change: " + ex.GetMessage());
+            }
+        }
+
+        /// <summary>
         /// Called when [process exit].
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -237,47 +316,78 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnNotifyIconClick(object sender, EventArgs e)
+        private void OnNotifyIconClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             lock (_showHidelock)
             {
-                var mouseEventArgs = e as MouseEventArgs;
-
-                // Show/Hide
-                if (mouseEventArgs != null && mouseEventArgs.Button == MouseButtons.Left && MainWindow != null)
+                switch (e.Button)
                 {
-                    if (MainWindow.OwnedWindows.Cast<View>().Where(window => window != null && window.IsDialog).Any())
-                    {
-                        MainWindow.Activate();
-                        MainWindow.Focus();
+                    // Show/Hide
+                    case MouseButtons.Left:
+                        if (MainWindow == null)
+                            return;
 
-                        return;
-                    }
-
-                    switch (MainWindow.Visibility)
-                    {
-                        case Visibility.Collapsed:
-                        case Visibility.Hidden:
-                            MainWindow.Show();
-
-                            MainWindow.WindowState = WindowState.Normal;
-
+                        if (MainWindow.OwnedWindows.Cast<View>().Where(window => window != null && window.IsDialog).Any())
+                        {
                             MainWindow.Activate();
                             MainWindow.Focus();
 
-                            MainWindow.Topmost = true;
-                            MainWindow.Topmost = Settings.AlwaysOnTop;
-                            MainWindow.ShowInTaskbar = true;
-                            break;
+                            return;
+                        }
 
-                        case Visibility.Visible:
-                            MainWindow.Hide();
+                        switch (MainWindow.Visibility)
+                        {
+                            case Visibility.Collapsed:
+                            case Visibility.Hidden:
+                                MainWindow.Show();
 
-                            MainWindow.ShowInTaskbar = false;
-                            break;
-                    }
+                                MainWindow.WindowState = WindowState.Normal;
 
-                    ReleaseMemory();
+                                MainWindow.Activate();
+                                MainWindow.Focus();
+
+                                MainWindow.Topmost = true;
+                                MainWindow.Topmost = Settings.AlwaysOnTop;
+                                MainWindow.ShowInTaskbar = true;
+
+                                // Focus the Optimize button when restoring from notification area
+                                MainWindow.Dispatcher.BeginInvoke((Action)(() =>
+                                {
+                                    var mainWindow = MainWindow as MainWindow;
+                                    
+                                    if (mainWindow != null)
+                                    {
+                                        var optimizeButton = mainWindow.FindName("Optimize") as UIElement;
+                                        
+                                        if (optimizeButton != null)
+                                        {
+                                            Keyboard.Focus(optimizeButton);
+                                            FocusManager.SetFocusedElement(mainWindow, optimizeButton);
+                                        }
+                                    }
+                                }), DispatcherPriority.ApplicationIdle);
+                                break;
+
+                            case Visibility.Visible:
+                                MainWindow.Hide();
+
+                                MainWindow.ShowInTaskbar = false;
+                                break;
+                        }
+
+                        ReleaseMemory();
+                        return;
+
+                    // Optimize
+                    case MouseButtons.Middle:
+                        if (!Settings.TrayIconOptimizeOnMiddleMouseClick)
+                            return;
+
+                        var mainViewModel = DependencyInjection.Container.Resolve<MainViewModel>();
+
+                        if (mainViewModel.OptimizeCommand.CanExecute(null))
+                            mainViewModel.OptimizeCommand.Execute(null);
+                        break;
                 }
             }
         }
@@ -321,22 +431,12 @@ namespace WinMemoryCleaner
                         if (argument.Equals(Constants.App.CommandLineArgument.Install, StringComparison.OrdinalIgnoreCase))
                             startupType = Enums.StartupType.Installation;
 
-                        if (argument.Equals(Constants.App.CommandLineArgument.Package, StringComparison.OrdinalIgnoreCase))
-                            startupType = Enums.StartupType.Package;
-
                         if (argument.Equals(Constants.App.CommandLineArgument.Service, StringComparison.OrdinalIgnoreCase))
                             startupType = Enums.StartupType.Service;
 
                         if (argument.Equals(Constants.App.CommandLineArgument.Uninstall, StringComparison.OrdinalIgnoreCase))
                             startupType = Enums.StartupType.Uninstallation;
                     }
-                }
-
-                // Update the last executable path when neither installing nor updating via a package manager
-                if (startupType != Enums.StartupType.Package)
-                {
-                    Settings.Path = Path;
-                    Settings.Save();
                 }
 
                 switch (startupType)
@@ -372,7 +472,7 @@ namespace WinMemoryCleaner
 
                         // Notification Areas
                         _notifyIcon = new NotifyIcon();
-                        _notifyIcon.Click += OnNotifyIconClick;
+                        _notifyIcon.MouseUp += OnNotifyIconClick;
 
                         // DI/IOC
                         DependencyInjection.Container.Register(_notifyIcon);
@@ -381,6 +481,9 @@ namespace WinMemoryCleaner
 
                         if (!Settings.StartMinimized)
                             mainWindow.Show();
+
+                        // Subscribe to power events
+                        SystemEvents.PowerModeChanged += OnPowerModeChanged;
 
                         // Process notifications
                         foreach (var notification in _notifications)
@@ -395,116 +498,6 @@ namespace WinMemoryCleaner
 
                     case Enums.StartupType.Installation:
                         WinServiceInstaller.Install();
-
-                        Shutdown();
-                        break;
-
-                    case Enums.StartupType.Package:
-                        commandLineArguments.Remove(string.Format(Localizer.Culture, "/{0}", Constants.App.CommandLineArgument.Package));
-
-                        var exe = AppDomain.CurrentDomain.FriendlyName;
-                        var isUpdate = false;
-                        var sourcePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
-                        var targetPath = sourcePath;
-                        var wasRunning = false;
-
-                        try
-                        {
-                            if (Directory.Exists(System.IO.Path.GetDirectoryName(Settings.Path)))
-                                targetPath = Settings.Path;
-                        }
-                        catch
-                        {
-                            // Ignored
-                        }
-
-                        try
-                        {
-                            var runningProcesses = Process.GetProcessesByName(Constants.App.Name)
-                                .Where(p => p != null && p.Id != Process.GetCurrentProcess().Id)
-                                .ToList();
-
-                            wasRunning = runningProcesses.Any();
-
-                            foreach (var process in runningProcesses)
-                            {
-                                try
-                                {
-                                    var processPath = process.MainModule.FileName;
-
-                                    if (!string.IsNullOrEmpty(processPath) && File.Exists(processPath))
-                                        targetPath = processPath;
-                                }
-                                catch
-                                {
-                                    // Ignored
-                                }
-
-                                try
-                                {
-                                    process.Kill();
-                                    process.WaitForExit();
-                                }
-                                catch
-                                {
-                                    // Ignored
-                                }
-                                finally
-                                {
-                                    process.Dispose();
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            // Ignored
-                        }
-
-                        try
-                        {
-                            if (File.Exists(targetPath))
-                            {
-                                var currentVersion = FileVersionInfo.GetVersionInfo(sourcePath);
-                                var targetVersion = FileVersionInfo.GetVersionInfo(targetPath);
-
-                                isUpdate = currentVersion.FileVersion != targetVersion.FileVersion;
-                            }
-                        }
-                        catch
-                        {
-                            // Ignored
-                        }
-
-                        try
-                        {
-                            var targetDirectory = System.IO.Path.GetDirectoryName(targetPath);
-
-                            if (!string.IsNullOrEmpty(targetDirectory) && !Directory.Exists(targetDirectory))
-                                Directory.CreateDirectory(targetDirectory);
-                        }
-                        catch
-                        {
-                            // Ignored
-                        }
-
-                        var restart = !isUpdate || wasRunning;
-
-                        _processes.Add(new ProcessStartInfo
-                        {
-                            Arguments = string.Format
-                            (
-                                CultureInfo.InvariantCulture,
-                                @"/c move ""{0}"" ""{1}"" >nul 2>&1 & if {2} equ 1 if exist ""{1}"" start """" ""{1}"" {3}",
-                                sourcePath,
-                                targetPath,
-                                restart ? "1" : "0",
-                                string.Join(" ", commandLineArguments.Concat(new[] { isUpdate ? string.Format(CultureInfo.InvariantCulture, "/{0}", Version) : string.Empty }).Where(arg => !string.IsNullOrEmpty(arg)))
-                            ).Trim(),
-                            CreateNoWindow = true,
-                            FileName = "cmd",
-                            UseShellExecute = false,
-                            WindowStyle = ProcessWindowStyle.Hidden
-                        });
 
                         Shutdown();
                         break;
@@ -589,57 +582,140 @@ namespace WinMemoryCleaner
             {
                 if (enable)
                 {
-                    var runLevelArgument = Environment.OSVersion.Version.Major >= 6 ? " /RL HIGHEST" : string.Empty;
+                    var isTaskCreated = false;
 
-                    var createStartInfo = new ProcessStartInfo("schtasks")
+                    try
                     {
-                        Arguments = string.Format(Localizer.Culture, @"/CREATE /F /IT{0} /SC ONLOGON /TN ""{1}"" /TR ""{2}"" /RU ""{3}""", runLevelArgument, Constants.App.Title, Path, Environment.UserName),
-                        CreateNoWindow = true,
-                        UseShellExecute = false,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        RedirectStandardError = true
-                    };
+                        var taskXml = string.Format
+                            (
+                                CultureInfo.InvariantCulture,
+                                @"<?xml version=""1.0"" encoding=""UTF-16""?>
+                                <Task version=""1.2""
+	                                xmlns=""http://schemas.microsoft.com/windows/2004/02/mit/task"">
+	                                <RegistrationInfo>
+		                                <Author>{3}</Author>
+		                                <Description>Runs {0} at logon.</Description>
+		                                <Date>{4}</Date>
+	                                </RegistrationInfo>
+	                                <Triggers>
+		                                <LogonTrigger>
+			                                <Enabled>true</Enabled>
+		                                </LogonTrigger>
+	                                </Triggers>
+	                                <Principals>
+		                                <Principal id=""Author"">
+			                                <UserId>{2}</UserId>
+			                                <LogonType>InteractiveToken</LogonType>
+			                                <RunLevel>HighestAvailable</RunLevel>
+		                                </Principal>
+	                                </Principals>
+	                                <Settings>
+		                                <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+		                                <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+		                                <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+		                                <AllowHardTerminate>true</AllowHardTerminate>
+		                                <StartWhenAvailable>true</StartWhenAvailable>
+		                                <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+		                                <IdleSettings>
+			                                <WaitTimeout>PT10M</WaitTimeout>
+			                                <StopOnIdleEnd>false</StopOnIdleEnd>
+			                                <RestartOnIdle>false</RestartOnIdle>
+		                                </IdleSettings>
+		                                <AllowStartOnDemand>true</AllowStartOnDemand>
+		                                <Enabled>true</Enabled>
+		                                <Hidden>false</Hidden>
+		                                <RunOnlyIfIdle>false</RunOnlyIfIdle>
+		                                <WakeToRun>false</WakeToRun>
+		                                <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+		                                <Priority>7</Priority>
+	                                </Settings>
+	                                <Actions Context=""Author"">
+		                                <Exec>
+			                                <Command>""{1}""</Command>
+		                                </Exec>
+	                                </Actions>
+                                </Task>",
+                                Constants.App.Title,
+                                Path,
+                                WindowsIdentity.GetCurrent().User.Value,
+                                string.Format(CultureInfo.InvariantCulture, "WMC {0} ({1})", string.Format(Localizer.Culture, Constants.App.VersionFormat, Version.Major, Version.Minor, Version.Build), Environment.UserName),
+                                DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture)
+                            );
 
-                    using (var createProcess = Process.Start(createStartInfo))
+                        var tempXmlFile = System.IO.Path.GetTempFileName();
+
+                        File.WriteAllText(tempXmlFile, taskXml);
+
+                        var createStartInfo = new ProcessStartInfo("schtasks")
+                        {
+                            Arguments = string.Format(CultureInfo.InvariantCulture, @"/CREATE /F /TN ""{0}"" /XML ""{1}""", Constants.App.Title, tempXmlFile),
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            RedirectStandardError = true
+                        };
+
+                        using (var createProcess = Process.Start(createStartInfo))
+                        {
+                            var errorMessage = createProcess.StandardError.ReadToEnd();
+                            createProcess.WaitForExit();
+
+                            if (createProcess.ExitCode == Constants.Windows.SystemErrorCode.ErrorSuccess)
+                                isTaskCreated = true;
+                            else
+                                Logger.Error(string.Format(Localizer.Culture, "XML task creation failed (will attempt fallback). Error: {0}", errorMessage));
+                        }
+
+                        try
+                        {
+                            File.Delete(tempXmlFile);
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+                    }
+                    catch (Exception ex)
                     {
-                        var errorMessage = createProcess.StandardError.ReadToEnd();
-                        createProcess.WaitForExit();
+                        Logger.Error(string.Format(Localizer.Culture, "An exception occurred during XML task creation (will attempt fallback): {0}", ex.GetMessage()));
+                    }
 
-                        if (createProcess.ExitCode != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                            Logger.Error(string.Format(Localizer.Culture, "Failed to create startup task for '{0}'. Error: {1}", Constants.App.Title, errorMessage));
+                    if (!isTaskCreated)
+                    {
+                        Logger.Information("Attempting basic fallback method to create startup task.");
+
+                        var createStartInfo = new ProcessStartInfo("schtasks")
+                        {
+                            Arguments = string.Format(CultureInfo.InvariantCulture, @"/CREATE /F /SC ONLOGON /TN ""{0}"" /TR ""{1}"" /RU ""{2}""", Constants.App.Title, Path, Environment.UserName),
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            RedirectStandardError = true
+                        };
+
+                        using (var createProcess = Process.Start(createStartInfo))
+                        {
+                            var errorMessage = createProcess.StandardError.ReadToEnd();
+                            createProcess.WaitForExit();
+
+                            if (createProcess.ExitCode != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                                Logger.Error(string.Format(Localizer.Culture, "Fallback task creation also failed for '{0}'. Error: {1}", Constants.App.Title, errorMessage));
+                        }
                     }
                 }
                 else
                 {
-                    var queryStartInfo = new ProcessStartInfo("schtasks")
+                    var deleteStartInfo = new ProcessStartInfo("schtasks")
                     {
-                        Arguments = string.Format(Localizer.Culture, @"/QUERY /TN ""{0}""", Constants.App.Title),
+                        Arguments = string.Format(CultureInfo.InvariantCulture, @"/DELETE /F /TN ""{0}""", Constants.App.Title),
                         CreateNoWindow = true,
                         UseShellExecute = false,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        RedirectStandardError = true,
-                        RedirectStandardOutput = true
+                        WindowStyle = ProcessWindowStyle.Hidden
                     };
 
-                    using (var queryProcess = Process.Start(queryStartInfo))
+                    using (var deleteProcess = Process.Start(deleteStartInfo))
                     {
-                        queryProcess.WaitForExit();
-
-                        if (queryProcess.ExitCode == Constants.Windows.SystemErrorCode.ErrorSuccess)
-                        {
-                            var deleteStartInfo = new ProcessStartInfo("schtasks")
-                            {
-                                Arguments = string.Format(Localizer.Culture, @"/DELETE /F /TN ""{0}""", Constants.App.Title),
-                                CreateNoWindow = true,
-                                UseShellExecute = false,
-                                WindowStyle = ProcessWindowStyle.Hidden
-                            };
-
-                            using (var deleteProcess = Process.Start(deleteStartInfo))
-                            {
-                                deleteProcess.WaitForExit();
-                            }
-                        }
+                        deleteProcess.WaitForExit();
                     }
                 }
             }

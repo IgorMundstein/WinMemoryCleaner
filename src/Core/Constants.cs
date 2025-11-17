@@ -44,7 +44,6 @@ namespace WinMemoryCleaner
             public static class CommandLineArgument
             {
                 public const string Install = "Install";
-                public const string Package = "Package";
                 public const string Service = "Service";
                 public const string Uninstall = "Uninstall";
             }
@@ -145,6 +144,8 @@ namespace WinMemoryCleaner
                 public static class Name
                 {
                     public const string English = "en";
+                    public const string PortugueseBrazil = "pt-BR";
+                    public const string PortuguesePortugal = "pt-PT";
                     public const string SimplifiedChinese = "zh-Hans";
                     public const string TraditionalChinese = "zh-Hant";
                 }

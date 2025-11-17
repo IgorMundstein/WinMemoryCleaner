@@ -45,6 +45,12 @@ namespace WinMemoryCleaner
             {
                 switch (Name)
                 {
+                    case Constants.Windows.Locale.Name.PortugueseBrazil:
+                        return "Portuguese";
+
+                    case Constants.Windows.Locale.Name.PortuguesePortugal:
+                        return "Portuguese";
+
                     case Constants.Windows.Locale.Name.SimplifiedChinese:
                         return "Chinese (S)";
 
@@ -53,6 +59,30 @@ namespace WinMemoryCleaner
 
                     default:
                         return EnglishName;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the display name of the native.
+        /// </summary>
+        /// <value>
+        /// The display name of the native.
+        /// </value>
+        public string DisplayNativeName
+        {
+            get
+            {
+                switch (Name)
+                {
+                    case Constants.Windows.Locale.Name.PortugueseBrazil:
+                        return "Português (BR)";
+
+                    case Constants.Windows.Locale.Name.PortuguesePortugal:
+                        return "Português (PT)";
+
+                    default:
+                        return NativeName;
                 }
             }
         }
@@ -134,7 +164,7 @@ namespace WinMemoryCleaner
         /// </returns>
         public override string ToString()
         {
-            return EnglishName == NativeName ? EnglishName : string.Format(Localizer.Culture, "{0} ({1})", DisplayEnglishName, NativeName);
+            return EnglishName == NativeName ? EnglishName : string.Format(Localizer.Culture, "{0} ({1})", DisplayEnglishName, DisplayNativeName);
         }
     }
 }

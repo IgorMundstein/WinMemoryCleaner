@@ -7,7 +7,7 @@ using System.Security;
 namespace WinMemoryCleaner
 {
     /// <summary>
-    /// Windows Native Methods
+    /// Windows API
     /// </summary>
     internal static class NativeMethods
     {

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using System.Web.Script.Serialization;
 
 namespace WinMemoryCleaner
@@ -13,38 +14,15 @@ namespace WinMemoryCleaner
     public static class Helper
     {
         /// <summary>
-        /// Determines if the current Windows version supports updates via GitHub TLS/SNI.
-        /// Returns false for legacy Windows versions (XP/2003) that cannot reach GitHub.
+        /// Appends indentation to the StringBuilder based on the current nesting level.
         /// </summary>
-        /// <returns>True if updates are supported; otherwise, false.</returns>
-        public static bool IsAutoUpdateSupported
+        /// <param name="sb">The StringBuilder to append to.</param>
+        /// <param name="level">The current indentation level.</param>
+        /// <param name="indent">The string to use for each indentation level.</param>
+        private static void AppendIndent(StringBuilder sb, int level, string indent)
         {
-            get
-            {
-                try
-                {
-                    var os = Environment.OSVersion;
-
-                    if (os.Version != null && os.Version.Major < 6)
-                        return false; // Windows XP/2003 and earlier
-                }
-                catch
-                {
-                }
-
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Converts the specified JSON string to an object of type T
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static T Deserialize<T>(string input)
-        {
-            return new JavaScriptSerializer().Deserialize<T>(input);
+            for (var i = 0; i < level; i++)
+                sb.Append(indent);
         }
 
         /// <summary>
@@ -60,6 +38,109 @@ namespace WinMemoryCleaner
             catch
             {
             }
+        }
+
+        /// <summary>
+        /// Converts the specified JSON string to an object of type T
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj">The object.</param>
+        /// <returns></returns>
+        public static T Deserialize<T>(string obj)
+        {
+            return new JavaScriptSerializer().Deserialize<T>(obj);
+        }
+
+        /// <summary>
+        /// Formats a minified JSON string into a pretty-printed format with proper indentation and line breaks.
+        /// </summary>
+        /// <param name="json">The minified JSON string to format.</param>
+        /// <returns>A formatted JSON string with indentation and line breaks.</returns>
+        private static string FormatJson(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+                return string.Empty;
+
+            var sb = new StringBuilder(json.Length * 2);
+            var indent = "  ";
+            var level = 0;
+            var inString = false;
+            var escapeNext = false;
+
+            for (var i = 0; i < json.Length; i++)
+            {
+                var c = json[i];
+
+                if (escapeNext)
+                {
+                    sb.Append(c);
+                    escapeNext = false;
+                    continue;
+                }
+
+                if (c == '\\')
+                {
+                    sb.Append(c);
+                    escapeNext = true;
+                    continue;
+                }
+
+                if (c == '"')
+                {
+                    sb.Append(c);
+                    inString = !inString;
+                    continue;
+                }
+
+                if (inString)
+                {
+                    sb.Append(c);
+                    continue;
+                }
+
+                switch (c)
+                {
+                    case '{':
+                    case '[':
+                        sb.Append(c);
+                        sb.Append(Environment.NewLine);
+                        level++;
+                        AppendIndent(sb, level, indent);
+                        break;
+
+                    case '}':
+                    case ']':
+                        sb.Append(Environment.NewLine);
+                        level--;
+                        AppendIndent(sb, level, indent);
+                        sb.Append(c);
+                        break;
+
+                    case ',':
+                        sb.Append(c);
+                        sb.Append(Environment.NewLine);
+                        AppendIndent(sb, level, indent);
+                        break;
+
+                    case ':':
+                        sb.Append(c);
+                        sb.Append(' ');
+                        break;
+
+                    case ' ':
+                    case '\t':
+                    case '\r':
+                    case '\n':
+                        // Skip whitespace outside strings
+                        break;
+
+                    default:
+                        sb.Append(c);
+                        break;
+                }
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -104,6 +185,30 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Determines if the current Windows version supports updates via GitHub TLS/SNI.
+        /// Returns false for legacy Windows versions (XP/2003) that cannot reach GitHub.
+        /// </summary>
+        /// <returns>True if updates are supported; otherwise, false.</returns>
+        public static bool IsAutoUpdateSupported
+        {
+            get
+            {
+                try
+                {
+                    var os = Environment.OSVersion;
+
+                    if (os.Version != null && os.Version.Major < 6)
+                        return false; // Windows XP/2003 and earlier
+                }
+                catch
+                {
+                }
+
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Gets the string name of a property or field.
         /// </summary>
         /// <typeparam name="T">The type of the member.</typeparam>
@@ -134,6 +239,22 @@ namespace WinMemoryCleaner
             {
                 return Deserialize<T>(reader.ReadToEnd());
             }
+        }
+
+        /// <summary>
+        /// Converts the specified object to a JSON string
+        /// </summary>
+        /// <param name="obj">The object to serialize.</param>
+        /// <param name="minified">If true, produces compact JSON without formatting; otherwise, formats with indentation for readability. Default is false.</param>
+        /// <returns>A JSON string representation of the object.</returns>
+        public static string Serialize(IJsonSerializable obj, bool minified = false)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+
+            var json = new JavaScriptSerializer().Serialize(obj.ToJson());
+
+            return minified ? json : FormatJson(json);
         }
 
         /// <summary>
