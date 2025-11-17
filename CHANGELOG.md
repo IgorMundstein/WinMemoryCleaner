@@ -3,12 +3,12 @@
 **2025-11-17**
 
 - Added a setting to set the color of the tray icon when optimization is running
-- Added a setting to trigger optimization to the tray icon using the middle mouse click (#141)
+- Added a setting to trigger optimization to the tray icon using the middle mouse click ([#141](https://github.com/IgorMundstein/WinMemoryCleaner/issues/141))
 - Added a tray icon rotate effect when optimization is running
 - Added support for European Portuguese (PT) language
-- Enhanced the `run on startup` feature for desktop and laptop computers (#137) (#139)
-- Fixed app crash after Windows hibernation (#145)
-- Fixed auto update (#148) (#151)
+- Enhanced the `run on startup` feature for desktop and laptop computers ([#137](https://github.com/IgorMundstein/WinMemoryCleaner/issues/137)) ([#139](https://github.com/IgorMundstein/WinMemoryCleaner/issues/139))
+- Fixed app crash after Windows hibernation ([#145](https://github.com/IgorMundstein/WinMemoryCleaner/issues/145))
+- Fixed auto update ([#148](https://github.com/IgorMundstein/WinMemoryCleaner/issues/148)) ([#151](https://github.com/IgorMundstein/WinMemoryCleaner/issues/151))
 - Removed unnecessary code related to package managers (Chocolatey, Scoop, and WinGet) due to a new strategy for package publication
 - UI & Code enhancements
 - Updated Arabic and Korean translations
