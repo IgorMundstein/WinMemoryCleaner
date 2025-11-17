@@ -7,8 +7,6 @@ on:
   pull_request:
     branches: [ main, develop ]
     paths: [ 'src/**' ]
-  schedule:
-    - cron: '0 8 * * 0'  # every Sunday at 08:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -30,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
@@ -46,4 +44,4 @@ jobs:
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
