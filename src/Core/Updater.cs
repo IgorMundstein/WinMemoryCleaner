@@ -79,7 +79,7 @@ namespace WinMemoryCleaner
 
                 var newestVersion = Version.Parse(assemblyVersionMatch.Groups[1].Value);
 
-                if (App.Version > newestVersion)
+                if (App.Version >= newestVersion)
                 {
                     Reset();
                     return;
