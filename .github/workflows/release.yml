@@ -137,57 +137,6 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: ./
 
-      - name: Capture window screenshot from SIGNED exe
-        if: steps.signpath.conclusion == 'success'
-        id: capture_screenshot
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          $appPath = ".\WinMemoryCleaner.exe"
-          if (-not (Test-Path $appPath)) {
-            Write-Host "::error::Signed EXE not found at $appPath"
-            exit 1
-          }
-          $windowScreenshotPath = "$pwd\main-window-raw.png"
-          $proc = Start-Process -FilePath $appPath -PassThru
-          $maxWaitMs = 15000; $elapsed = 0
-          while ($proc.MainWindowHandle -eq 0 -and $elapsed -lt $maxWaitMs) {
-            Start-Sleep -Milliseconds 200; $proc.Refresh(); $elapsed += 200
-          }
-          if ($proc.MainWindowHandle -eq 0) {
-            Write-Host "::error::Main window not found for signed EXE."
-            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-            exit 1
-          }
-          Add-Type -AssemblyName System.Drawing
-          $sig = 'using System; using System.Runtime.InteropServices; public static class Win32 { [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left; public int Top; public int Right; public int Bottom; } [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, ref RECT rect); [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd); }'
-          Add-Type -TypeDefinition $sig -Language CSharp
-          [void][Win32]::SetForegroundWindow([IntPtr]$proc.MainWindowHandle)
-          $rect = New-Object Win32+RECT
-          if (-not [Win32]::GetWindowRect([IntPtr]$proc.MainWindowHandle, [ref]$rect)) {
-            Write-Host "::error::GetWindowRect failed."
-            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue; exit 1
-          }
-          $width = $rect.Right - $rect.Left; $height = $rect.Bottom - $rect.Top
-          if ($width -le 0 -or $height -le 0) {
-            Write-Host "::error::Invalid window size: $($width)x$($height)"
-            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue; exit 1
-          }
-          $wbmp = New-Object System.Drawing.Bitmap $width, $height
-          $wgfx = [System.Drawing.Graphics]::FromImage($wbmp)
-          $wgfx.CopyFromScreen($rect.Left, $rect.Top, 0, 0, (New-Object System.Drawing.Size($width, $height)))
-          $wbmp.Save($windowScreenshotPath, [System.Drawing.Imaging.ImageFormat]::Png)
-          $wgfx.Dispose(); $wbmp.Dispose()
-          Stop-Process -Id $proc.Id -Force
-
-      - name: Upload screenshot artifact
-        if: steps.capture_screenshot.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-window-screenshot
-          path: main-window-raw.png
-          retention-days: 7
-
       - name: Create ZIP archive from SIGNED exe
         if: steps.signpath.conclusion == 'success'
         shell: pwsh
