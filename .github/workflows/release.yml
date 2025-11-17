@@ -7,6 +7,11 @@ on:
     paths:
       - 'src/**'
   workflow_dispatch:
+    inputs:
+      ignore_version_check:
+        description: 'Set to "true" to force bypass the version mismatch check.'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -55,6 +60,7 @@ jobs:
           Write-Host "New tag generated: $newTag"
 
       - name: Check AssemblyVersion matches new tag
+        if: github.event.inputs.ignore_version_check != 'true'
         shell: pwsh
         run: |
           $expectedVersion = "${{ steps.bump.outputs.new_tag }}"
@@ -63,17 +69,17 @@ jobs:
           $assemblyInfo = Get-Content $assemblyInfoPath
           $versionLine = $assemblyInfo | Select-String -Pattern 'AssemblyVersion\("([0-9\.]+)"\)'
           if (-not $versionLine) {
-              Write-Host "::error::Could not find AssemblyVersion in $assemblyInfoPath"
-              exit 1
+               Write-Host "::error::Could not find AssemblyVersion in $assemblyInfoPath"
+               exit 1
           }
           $fullVersion = $versionLine.Matches.Groups[1].Value
           $fileVersion = ($fullVersion -split '\.')[0..2] -join '.'
           Write-Host "Found version in file: $fileVersion (full: $fullVersion)"
           if ($fileVersion -eq $expectedVersion) {
-              Write-Host "✅ AssemblyVersion matches the new tag."
+               Write-Host "✅ AssemblyVersion matches the new tag."
           } else {
-              Write-Host "::error::Version mismatch! Expected '$expectedVersion' but found '$fileVersion' in AssemblyInfo.cs. Please update the file before releasing."
-              exit 1
+               Write-Host "::error::Version mismatch! Expected '$expectedVersion' but found '$fileVersion' in AssemblyInfo.cs. Please update the file before releasing."
+               exit 1
           }
 
       - name: Restore NuGet packages
