@@ -1,3 +1,17 @@
+### 3.0.3
+
+**2025-11-17**
+
+- Added a setting to set the color of the tray icon when optimization is running
+- Added a setting to trigger optimization to the tray icon using the middle mouse click (#141)
+- Added a tray icon rotate effect when optimization is running
+- Added support for European Portuguese (PT) language
+- Enhanced the `run on startup` feature for desktop and laptop computers (#137) (#139)
+- Fixed app crash after Windows hibernation (#145)
+- Removed unnecessary code related to package managers (Chocolatey, Scoop, and WinGet) due to a new strategy for package publication
+- UI & Code enhancements
+- Updated Arabic and Korean translations
+
 ### 3.0.2
 
 **2025-09-06**
@@ -8,7 +22,7 @@
 - Improved auto-update feature
 - Improved string capitalization for non-ASCII languages
 - Revised some texts for more precise descriptions
-- Updated the Hungarian language
+- Updated the Hungarian language ([#129](https://github.com/IgorMundstein/WinMemoryCleaner/issues/129))
 
 ### 3.0.0
 
