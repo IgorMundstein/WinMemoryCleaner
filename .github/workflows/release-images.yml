@@ -135,7 +135,7 @@ jobs:
           $H_1 = $H - 1
           
           magick convert "$File" `
-            \( -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$W_1,$H_1,$R,$R" \) `
+            "(" -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$W_1,$H_1,$R,$R" ")" `
             -compose DstIn -composite `
             docs/assets/images/main-window.png
             
