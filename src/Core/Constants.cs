@@ -12,6 +12,7 @@ namespace WinMemoryCleaner
         public static class App
         {
             public const int AutoOptimizationMemoryUsageInterval = 5; // Minute
+            public const int AutoUpdateInterval = 24; // Hour
             public const string EmbeddedResourcePath = "WinMemoryCleaner.Resources.";
             public const string EmbeddedResourcePathExtension = ".json";
             public const string Id = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
@@ -80,30 +81,6 @@ namespace WinMemoryCleaner
                 public static readonly Uri DownloadUri = new Uri(GitHub + "?tab=readme-ov-file#-download");
                 public static readonly Uri LatestExeUri = new Uri(GitHub + "/releases/latest/download/WinMemoryCleaner.exe");
                 public static readonly Uri Uri = new Uri(GitHub);
-            }
-
-            public static class Update
-            {
-                public const string BackupDirName = "Backups";
-                public const int BackupRetentionDays = 3; // Day
-                public const int CheckInterval = 24; // Hour
-                public const string ChecksumsFileName = "checksums.txt";
-                public const int ChecksumsMaxRetries = 3;
-                public const int ChecksumsRetryDelay = 2; // Second
-                public const int DownloadTimeout = 60; // Second
-                public const int MaxConnectionLimit = 10;
-                public const string MutexName = @"Local\WinMemoryCleaner_AutoUpdate_Mutex";
-                public const bool RequireAuthenticode = true; // Require Authenticode trust and known thumbprint
-                public const bool RequireChecksum = true; // Require checksum to be present and matching
-                public const bool RequireKnownDownloadUri = true; // Require expected HTTPS GitHub URL shape
-                public const int ReplaceMaxTries = 120; // Count
-                public const int ReplaceRetryDelayMs = 1000; // Millisecond
-                public const string TempRootDirName = "WinMemoryCleaner";
-                public const string TokenEnvVar = "WMC_UPDATE_TOKEN";
-                public const string TokenFilePrefix = "WMC.";
-                public const string TokenFileSuffix = ".txt";
-                public const string UserAgent = "WinMemoryCleaner-Updater/1.0";
-                public const bool VerifyFileVersionInfo = true;
             }
         }
 

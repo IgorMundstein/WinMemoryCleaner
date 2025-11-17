@@ -27,7 +27,6 @@ namespace WinMemoryCleaner
         private static bool _isRunning;
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
-        private static readonly List<ProcessStartInfo> _processes = new List<ProcessStartInfo>();
         private static readonly List<string> _notifications = new List<string>();
         private static readonly object _showHidelock = new object();
 
@@ -151,9 +150,7 @@ namespace WinMemoryCleaner
                 try
                 {
                     if (_notifyIcon != null)
-                    {
                         _notifyIcon.Dispose();
-                    }
                 }
                 catch
                 {
@@ -298,16 +295,14 @@ namespace WinMemoryCleaner
         {
             Dispose();
 
-            foreach (var process in _processes)
+            try
             {
-                try
-                {
-                    Process.Start(process);
-                }
-                catch
-                {
-                    // ignored
-                }
+                if (Updater.Process != null)
+                    Process.Start(Updater.Process);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error starting update process." + ex);
             }
         }
 
@@ -354,11 +349,11 @@ namespace WinMemoryCleaner
                                 MainWindow.Dispatcher.BeginInvoke((Action)(() =>
                                 {
                                     var mainWindow = MainWindow as MainWindow;
-                                    
+
                                     if (mainWindow != null)
                                     {
                                         var optimizeButton = mainWindow.FindName("Optimize") as UIElement;
-                                        
+
                                         if (optimizeButton != null)
                                         {
                                             Keyboard.Focus(optimizeButton);
@@ -398,13 +393,14 @@ namespace WinMemoryCleaner
         /// <param name="startupEvent">The <see cref="StartupEventArgs" /> instance containing the event data.</param>
         protected override void OnStartup(StartupEventArgs startupEvent)
         {
+            var startupType = Enums.StartupType.App;
+
             try
             {
                 Initialize();
 
-                var commandLineArguments = startupEvent != null ? new List<string>(startupEvent.Args.Select(arg => arg.Replace("-", "/").Trim())) : null;
+                var commandLineArguments = startupEvent != null ? startupEvent.Args.Select(arg => arg.Replace("-", "/").Trim()).ToArray() : null;
                 var memoryAreas = Enums.Memory.Areas.None;
-                var startupType = Enums.StartupType.App;
 
                 if (commandLineArguments != null)
                 {
@@ -414,16 +410,6 @@ namespace WinMemoryCleaner
                     // Process command‑line arguments
                     foreach (var argument in commandLineArguments.Select(arg => arg.Replace("/", string.Empty)))
                     {
-                        // Memory areas to optimize
-                        Enums.Memory.Areas area;
-
-                        if (Enum.TryParse(argument, out area))
-                            memoryAreas |= area;
-
-                        // Version (Update)
-                        if (argument.Equals(Version.ToString()))
-                            _notifications.Add(string.Format(Localizer.Culture, Localizer.String.UpdatedToVersion, string.Format(Localizer.Culture, Constants.App.VersionFormat, Version.Major, Version.Minor, Version.Build)));
-
                         // Startup Type
                         if (memoryAreas != Enums.Memory.Areas.None)
                             startupType = Enums.StartupType.Silent;
@@ -436,6 +422,16 @@ namespace WinMemoryCleaner
 
                         if (argument.Equals(Constants.App.CommandLineArgument.Uninstall, StringComparison.OrdinalIgnoreCase))
                             startupType = Enums.StartupType.Uninstallation;
+
+                        // Memory areas to optimize
+                        Enums.Memory.Areas area;
+
+                        if (Enum.TryParse(argument, out area))
+                            memoryAreas |= area;
+
+                        // Notify version update
+                        if (argument.Equals(Version.ToString()))
+                            _notifications.Add(string.Format(Localizer.Culture, Localizer.String.UpdatedToVersion, string.Format(Localizer.Culture, Constants.App.VersionFormat, Version.Major, Version.Minor, Version.Build)));
                     }
                 }
 
@@ -528,7 +524,9 @@ namespace WinMemoryCleaner
             catch (Exception e)
             {
                 Logger.Error(e);
-                ShowDialog(e);
+
+                if (startupType == Enums.StartupType.App)
+                    ShowDialog(e);
 
                 Shutdown(true);
             }
