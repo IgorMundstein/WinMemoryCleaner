@@ -6,7 +6,7 @@
 - Added a setting to trigger optimization to the tray icon using the middle mouse click ([#141](https://github.com/IgorMundstein/WinMemoryCleaner/issues/141))
 - Added a tray icon rotate effect when optimization is running
 - Added support for European Portuguese (PT) language
-- Enhanced the `run on startup` feature for desktop and laptop computers ([#137](https://github.com/IgorMundstein/WinMemoryCleaner/issues/137)) ([#139](https://github.com/IgorMundstein/WinMemoryCleaner/issues/139))
+- Enhanced the run on startup feature for desktop and laptop computers ([#137](https://github.com/IgorMundstein/WinMemoryCleaner/issues/137)) ([#139](https://github.com/IgorMundstein/WinMemoryCleaner/issues/139))
 - Fixed app crash after Windows hibernation ([#145](https://github.com/IgorMundstein/WinMemoryCleaner/issues/145))
 - Fixed auto update ([#148](https://github.com/IgorMundstein/WinMemoryCleaner/issues/148)) ([#151](https://github.com/IgorMundstein/WinMemoryCleaner/issues/151))
 - Removed unnecessary code related to package managers (Chocolatey, Scoop, and WinGet) due to a new strategy for package publication
@@ -42,7 +42,7 @@
 - Added reset to default settings feature to the new help `?` menu
 - Added support to run as a Windows Service ([#96](https://github.com/IgorMundstein/WinMemoryCleaner/issues/96))
 - Added two new memory areas: modified file cache and registry cache
-- Enhanced `run on startup` feature ([#91](https://github.com/IgorMundstein/WinMemoryCleaner/issues/91)) ([#108](https://github.com/IgorMundstein/WinMemoryCleaner/issues/108))
+- Enhanced run on startup feature ([#91](https://github.com/IgorMundstein/WinMemoryCleaner/issues/91)) ([#108](https://github.com/IgorMundstein/WinMemoryCleaner/issues/108))
 - Enhanced text formats for better translations
 - Enhanced tray icon customizations for memory usage ([#111](https://github.com/IgorMundstein/WinMemoryCleaner/issues/111)) ([#112](https://github.com/IgorMundstein/WinMemoryCleaner/issues/112))
 - Improved code, documentation and user interface ([#92](https://github.com/IgorMundstein/WinMemoryCleaner/issues/92)) ([#103](https://github.com/IgorMundstein/WinMemoryCleaner/issues/103))
