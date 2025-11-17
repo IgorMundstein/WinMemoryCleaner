@@ -81,15 +81,15 @@ jobs:
 
       - name: check-screenshot-exists
         id: check-screenshot
-        shell: bash
+        shell: pwsh
         run: |
-          if [ -f "./main-window-raw.png" ]; then
-            echo "screenshot_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "::error::Screenshot was not created."
-            echo "screenshot_exists=false" >> $GITHUB_OUTPUT
+          if (Test-Path -Path ".\main-window-raw.png" -PathType Leaf) {
+            echo "screenshot_exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          } else {
+            Write-Host "::error::Screenshot was not created."
+            echo "screenshot_exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             exit 1
-          fi
+          }
 
       - name: install-imagemagick
         if: steps.check-screenshot.outputs.screenshot_exists == 'true'
@@ -98,34 +98,51 @@ jobs:
 
       - name: process-screenshot-image
         if: steps.check-screenshot.outputs.screenshot_exists == 'true'
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
-          mkdir -p docs/assets/images
-          FILE="./main-window-raw.png"
-          if ! identify -format "%w %h" "$FILE" > /dev/null; then
-            echo "::error::Failed to read image $FILE with ImageMagick."
-            exit 1
-          fi
-          read W H < <(identify -format "%w %h" "$FILE")
-          if [ -z "${W:-}" ] || [ -z "${H:-}" ]; then
-            echo "::error::Failed to get image size for $FILE"
-            exit 1
-          fi
-          if [ "$W" -lt "$H" ]; then MIN=$W; else MIN=$H; fi
-          R=$(( MIN / 50 ))
-          if [ "$R" -lt 10 ]; then R=10; fi
-          if [ "$R" -gt 24 ]; then R=24; fi
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Path "docs/assets/images" -Force
+          $File = ".\main-window-raw.png"
+          
+          try {
+              $imageInfo = magick identify -format "%w %h" $File
+              if (-not $imageInfo) {
+                  Write-Host "::error::Failed to read image $File with ImageMagick (magick identify)."
+                  exit 1
+              }
+          } catch {
+              Write-Host "::error::Failed to read image $File with ImageMagick."
+              Write-Host $_.Exception.Message
+              exit 1
+          }
+          
+          $parts = $imageInfo -split " "
+          $W = [int]$parts[0]
+          $H = [int]$parts[1]
 
-          magick convert "$FILE" \
-            \( -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$((W-1)),$((H-1)),$R,$R" \) \
-            -compose DstIn -composite \
+          if ($W -le 0 -or $H -le 0) {
+              Write-Host "::error::Failed to get image size for $File"
+              exit 1
+          }
+          
+          if ($W -lt $H) { $MIN = $W } else { $MIN = $H }
+          
+          $R = [int]($MIN / 50)
+          if ($R -lt 10) { $R = 10 }
+          if ($R -gt 24) { $R = 24 }
+          
+          $W_1 = $W - 1
+          $H_1 = $H - 1
+          
+          magick convert "$File" `
+            \( -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$W_1,$H_1,$R,$R" \) `
+            -compose DstIn -composite `
             docs/assets/images/main-window.png
-
-          if [ ! -s docs/assets/images/main-window.png ]; then
-            echo "::error::Image processing failed and output file was not created."
-            exit 1
-          fi
+            
+          if (-not (Test-Path "docs/assets/images/main-window.png" -PathType Leaf) -or (Get-Item "docs/assets/images/main-window.png").Length -eq 0) {
+              Write-Host "::error::Image processing failed and output file was not created."
+              exit 1
+          }
 
       - name: create-pull-request
         id: cpr
