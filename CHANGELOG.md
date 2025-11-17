@@ -1,4 +1,4 @@
-### 3.0.3
+### 3.0.4
 
 **2025-11-17**
 
@@ -8,6 +8,7 @@
 - Added support for European Portuguese (PT) language
 - Enhanced the `run on startup` feature for desktop and laptop computers (#137) (#139)
 - Fixed app crash after Windows hibernation (#145)
+- Fixed `auto update` feature (#148)
 - Removed unnecessary code related to package managers (Chocolatey, Scoop, and WinGet) due to a new strategy for package publication
 - UI & Code enhancements
 - Updated Arabic and Korean translations
