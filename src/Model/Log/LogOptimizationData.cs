@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace WinMemoryCleaner
 {
     /// <summary>  
     /// Log Optimization Data
     /// </summary>  
-    public class LogOptimizationData : ILogData
+    public class LogOptimizationData : ILogData, IJsonSerializable
     {
         /// <summary>  
         /// Initializes a new instance of the <see cref="LogOptimizationData" /> class.  
@@ -42,42 +40,36 @@ namespace WinMemoryCleaner
         /// </value>  
         public string Reason { get; set; }
 
-        /// <summary>  
-        /// Converts to string.  
-        /// </summary>  
-        /// <returns>  
-        /// A <see cref="string" /> that represents this instance.  
-        /// </returns>  
+        /// <summary>
+        /// Converts the log optimization data to a JSON-serializable object.
+        /// </summary>
+        /// <returns>An anonymous object ready for JSON serialization.</returns>
+        public object ToJson()
+        {
+            var memoryAreas = MemoryAreas
+                .OrderBy(m => m.Name)
+                .Select(m => string.IsNullOrEmpty(m.Error)
+                    ? new { name = m.Name, duration = m.Duration }
+                    : (object)new { name = m.Name, duration = m.Duration, error = m.Error })
+                .ToList();
+
+            return new
+            {
+                reason = Reason,
+                duration = Duration,
+                memoryAreas
+            };
+        }
+
+        /// <summary>
+        /// Converts to string.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
-            var sb = new StringBuilder();
-            var space = "  ";
-
-            sb.Append('{').Append(Environment.NewLine);
-            sb.Append(space).Append(space).Append("\"reason\": \"").Append(Reason).Append("\",").Append(Environment.NewLine);
-            sb.Append(space).Append(space).Append("\"duration\": \"").Append(Duration).Append("\",").Append(Environment.NewLine);
-            sb.Append(space).Append(space).Append("\"memoryAreas\": [").Append(Environment.NewLine);
-
-            foreach (var memoryArea in MemoryAreas.OrderBy(memoryArea => memoryArea.Name))
-            {
-                sb.Append(space).Append(space).Append(space).Append("{ ");
-                sb.Append("\"name\": \"").Append(memoryArea.Name);
-                sb.Append("\", \"duration\": \"").Append(memoryArea.Duration);
-
-                if (memoryArea.Error != null)
-                    sb.Append("\", \"error\": \"").Append(memoryArea.Error);
-
-                sb.Append("\" }").Append(',').Append(Environment.NewLine);
-            }
-
-            if (MemoryAreas.Count > 0)
-                sb.Length -= (1 + Environment.NewLine.Length);
-
-            sb.Append(Environment.NewLine);
-            sb.Append(space).Append(space).Append(']').Append(Environment.NewLine);
-            sb.Append(space).Append('}');
-
-            return sb.ToString();
+            return string.Format(Localizer.Culture, "{0} ({1}) - {2} area(s)", Reason, Duration, MemoryAreas != null ? MemoryAreas.Count : 0);
         }
     }
 }

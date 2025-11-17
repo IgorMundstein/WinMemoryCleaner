@@ -31,6 +31,7 @@ namespace WinMemoryCleaner
         /// Update Info
         /// </summary>
         /// <param name="memory">The memory.</param>
-        void Update(Memory memory);
+        /// <param name="isOptimizing">if set to <c>true</c> [is optimizing].</param>
+        void Update(Memory memory, bool isOptimizing = false);
     }
 }

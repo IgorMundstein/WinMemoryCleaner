@@ -24,13 +24,16 @@ namespace WinMemoryCleaner
         private readonly IHotkeyService _hotKeyService;
         private bool _isOptimizationKeyValid;
         private bool _isOptimizationRunning;
+        private bool _isReiniziliating;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
         private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
+        private readonly object _lockObject = new object();
         private byte _optimizationProgressPercentage;
         private string _optimizationProgressStep = Localizer.String.Optimize;
         private byte _optimizationProgressTotal = byte.MaxValue;
         private byte _optimizationProgressValue = byte.MinValue;
         private string _selectedProcess;
+        private ObservableCollection<ObservableItem<bool>> _trayIconItems;
 
         #endregion
 
@@ -63,6 +66,9 @@ namespace WinMemoryCleaner
 
             if (App.IsInDesignMode)
             {
+                _computerService = new ComputerService();
+                _hotKeyService = new HotkeyService();
+
                 Settings.AutoUpdate = true;
 
                 Computer.OperatingSystem.IsWindows81OrGreater = true;
@@ -70,8 +76,6 @@ namespace WinMemoryCleaner
                 Computer.OperatingSystem.IsWindowsVistaOrGreater = true;
                 Computer.OperatingSystem.IsWindowsXpOrGreater = true;
                 IsOptimizationKeyValid = true;
-
-                _hotKeyService = new HotkeyService();
             }
             else
             {
@@ -268,7 +272,7 @@ namespace WinMemoryCleaner
         /// </value>
         public bool CanOptimize
         {
-            get { return MemoryAreas != Enums.Memory.Areas.None; }
+            get { return MemoryAreas != Enums.Memory.Areas.None && !IsOptimizationRunning; }
         }
 
         /// <summary>
@@ -428,6 +432,9 @@ namespace WinMemoryCleaner
             get { return _isOptimizationKeyValid; }
             set
             {
+                if (_isReiniziliating)
+                    return;
+
                 _isOptimizationKeyValid = value;
                 RaisePropertyChanged();
             }
@@ -505,8 +512,10 @@ namespace WinMemoryCleaner
                         Computer.Memory = _computerService.Memory;
                         RaisePropertyChanged(() => Computer);
 
+                        _trayIconItems = null;
+
                         NotificationService.Initialize();
-                        NotificationService.Update(Computer.Memory);
+                        NotificationService.Update(Computer.Memory, IsOptimizationRunning);
                     }
 
                     RaisePropertyChanged(string.Empty);
@@ -953,7 +962,7 @@ namespace WinMemoryCleaner
                     Settings.ShowVirtualMemory = value;
                     Settings.Save();
 
-                    NotificationService.Update(Computer.Memory);
+                    NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                     RaisePropertyChanged();
                 }
@@ -1030,11 +1039,12 @@ namespace WinMemoryCleaner
         {
             get
             {
+                var beta = App.IsInDebugMode ? "\u200E‎ (BETA)\u200E" : null;
                 var version = App.IsInDesignMode ? Assembly.GetExecutingAssembly().GetName().Version : App.Version;
 
                 return CompactMode
-                    ? Constants.App.Title
-                    : string.Format(Localizer.Culture, "{0} {1}", Constants.App.Title, string.Format(Localizer.Culture, Constants.App.VersionFormat, version.Major, version.Minor, version.Build));
+                    ? string.Format(Localizer.Culture, "{0}{1}", Constants.App.Title, beta)
+                    : string.Format(Localizer.Culture, "{0} {1}{2}", Constants.App.Title, string.Format(Localizer.Culture, Constants.App.VersionFormat, version.Major, version.Minor, version.Build), beta);
             }
         }
 
@@ -1052,12 +1062,13 @@ namespace WinMemoryCleaner
                     return System.Windows.Media.Brushes.White;
 
                 var brush = Settings.TrayIconBackgroundColor as System.Drawing.SolidBrush;
-                var fallbackValue = System.Windows.Media.Brushes.White;
 
                 if (brush == null)
-                    return fallbackValue;
+                    return Brushes.FirstOrDefault(b => b.Color == Colors.White) ?? Brushes.First();
 
-                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color)) ?? fallbackValue;
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color))
+                    ?? Brushes.FirstOrDefault(b => b.Color == Colors.White)
+                    ?? Brushes.First();
             }
             set
             {
@@ -1067,7 +1078,7 @@ namespace WinMemoryCleaner
                 Settings.TrayIconBackgroundColor = value.ToBrush();
                 Settings.Save();
 
-                NotificationService.Update(Computer.Memory);
+                NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                 RaisePropertyChanged();
             }
@@ -1087,12 +1098,13 @@ namespace WinMemoryCleaner
                     return System.Windows.Media.Brushes.White;
 
                 var brush = Settings.TrayIconDangerColor as System.Drawing.SolidBrush;
-                var fallbackValue = System.Windows.Media.Brushes.DarkRed;
 
                 if (brush == null)
-                    return fallbackValue;
+                    return Brushes.FirstOrDefault(b => b.Color == Colors.DarkRed) ?? Brushes.First();
 
-                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color)) ?? fallbackValue;
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color))
+                    ?? Brushes.FirstOrDefault(b => b.Color == Colors.DarkRed)
+                    ?? Brushes.First();
             }
             set
             {
@@ -1102,7 +1114,7 @@ namespace WinMemoryCleaner
                 Settings.TrayIconDangerColor = value.ToBrush();
                 Settings.Save();
 
-                NotificationService.Update(Computer.Memory);
+                NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                 RaisePropertyChanged();
             }
@@ -1126,7 +1138,7 @@ namespace WinMemoryCleaner
                     Settings.TrayIconDangerLevel = value;
                     Settings.Save();
 
-                    NotificationService.Update(Computer.Memory);
+                    NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                     RaisePropertyChanged();
                 }
@@ -1134,6 +1146,69 @@ namespace WinMemoryCleaner
                 {
                     IsBusy = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [tray icon optimize on middle mouse click].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [tray icon optimize on middle mouse click]; otherwise, <c>false</c>.
+        /// </value>
+        public bool TrayIconOptimizeOnMiddleMouseClick
+        {
+            get { return Settings.TrayIconOptimizeOnMiddleMouseClick; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.TrayIconOptimizeOnMiddleMouseClick = value;
+                    Settings.Save();
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the color of the tray icon optimizing.
+        /// </summary>
+        /// <value>
+        /// The color of the tray icon optimizing.
+        /// </value>
+        public Brush TrayIconOptimizingColor
+        {
+            get
+            {
+                if (App.IsInDesignMode)
+                    return System.Windows.Media.Brushes.White;
+
+                var brush = Settings.TrayIconOptimizingColor as System.Drawing.SolidBrush;
+
+                if (brush == null)
+                    return Brushes.FirstOrDefault(b => b.Color == Colors.DimGray) ?? Brushes.First();
+
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color))
+                    ?? Brushes.FirstOrDefault(b => b.Color == Colors.DimGray)
+                    ?? Brushes.First();
+            }
+            set
+            {
+                if (value == null)
+                    return;
+
+                Settings.TrayIconOptimizingColor = value.ToBrush();
+                Settings.Save();
+
+                NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+
+                RaisePropertyChanged();
             }
         }
 
@@ -1147,15 +1222,19 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return new ObservableCollection<ObservableItem<bool>>
-                (
-                    new List<ObservableItem<bool>>
-                    {
-                       new ObservableItem<bool>(Localizer.String.ShowMemoryUsage, () => TrayIconShowMemoryUsage, value => TrayIconShowMemoryUsage = value),
-                       new ObservableItem<bool>(Localizer.String.UseTransparentBackground, () => TrayIconUseTransparentBackground, value => TrayIconUseTransparentBackground = value, TrayIconShowMemoryUsage)
-                    }
-                    .OrderBy(item => item.Name)
-                );
+                if (_trayIconItems == null)
+                {
+                    _trayIconItems = new ObservableCollection<ObservableItem<bool>>
+                    (
+                        new List<ObservableItem<bool>>
+                        {
+                            new ObservableItem<bool>(Localizer.String.OptimizeOnMiddleMouseClick, () => TrayIconOptimizeOnMiddleMouseClick, value => TrayIconOptimizeOnMiddleMouseClick = value),
+                            new ObservableItem<bool>(Localizer.String.ShowMemoryUsage, () => TrayIconShowMemoryUsage, value => TrayIconShowMemoryUsage = value),
+                            new ObservableItem<bool>(Localizer.String.UseTransparentBackground, () => TrayIconUseTransparentBackground, value => TrayIconUseTransparentBackground = value, TrayIconShowMemoryUsage)
+                        }
+                    );
+                }
+                return _trayIconItems;
             }
         }
 
@@ -1177,10 +1256,14 @@ namespace WinMemoryCleaner
                     Settings.TrayIconShowMemoryUsage = value;
                     Settings.Save();
 
-                    NotificationService.Update(Computer.Memory);
+                    NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                     RaisePropertyChanged();
-                    RaisePropertyChanged(() => TrayIconItems);
+
+                    var useTransparentBackgroundItem = TrayIconItems.FirstOrDefault(item => item.Name == Localizer.String.UseTransparentBackground);
+
+                    if (useTransparentBackgroundItem != null)
+                        useTransparentBackgroundItem.IsEnabled = value;
                 }
                 finally
                 {
@@ -1203,12 +1286,13 @@ namespace WinMemoryCleaner
                     return System.Windows.Media.Brushes.White;
 
                 var brush = Settings.TrayIconTextColor as System.Drawing.SolidBrush;
-                var fallbackValue = System.Windows.Media.Brushes.White;
 
                 if (brush == null)
-                    return fallbackValue;
+                    return Brushes.FirstOrDefault(b => b.Color == Colors.White) ?? Brushes.First();
 
-                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color)) ?? fallbackValue;
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color))
+                    ?? Brushes.FirstOrDefault(b => b.Color == Colors.White)
+                    ?? Brushes.First();
             }
             set
             {
@@ -1218,7 +1302,7 @@ namespace WinMemoryCleaner
                 Settings.TrayIconTextColor = value.ToBrush();
                 Settings.Save();
 
-                NotificationService.Update(Computer.Memory);
+                NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                 RaisePropertyChanged();
             }
@@ -1242,7 +1326,7 @@ namespace WinMemoryCleaner
                     Settings.TrayIconUseTransparentBackground = value;
                     Settings.Save();
 
-                    NotificationService.Update(Computer.Memory);
+                    NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                     RaisePropertyChanged();
                 }
@@ -1267,12 +1351,13 @@ namespace WinMemoryCleaner
                     return System.Windows.Media.Brushes.White;
 
                 var brush = Settings.TrayIconWarningColor as System.Drawing.SolidBrush;
-                var fallbackValue = System.Windows.Media.Brushes.DarkRed;
 
                 if (brush == null)
-                    return fallbackValue;
+                    return Brushes.FirstOrDefault(b => b.Color == Colors.DarkRed) ?? Brushes.First();
 
-                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color)) ?? fallbackValue;
+                return Brushes.FirstOrDefault(mediaBrush => mediaBrush.Color.IsEquals(brush.Color))
+                  ?? Brushes.FirstOrDefault(b => b.Color == Colors.DarkRed)
+                  ?? Brushes.First();
             }
             set
             {
@@ -1282,7 +1367,7 @@ namespace WinMemoryCleaner
                 Settings.TrayIconWarningColor = value.ToBrush();
                 Settings.Save();
 
-                NotificationService.Update(Computer.Memory);
+                NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                 RaisePropertyChanged();
             }
@@ -1306,7 +1391,7 @@ namespace WinMemoryCleaner
                     Settings.TrayIconWarningLevel = value;
                     Settings.Save();
 
-                    NotificationService.Update(Computer.Memory);
+                    NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                     RaisePropertyChanged();
                 }
@@ -1508,27 +1593,30 @@ namespace WinMemoryCleaner
                     App.SetPriority(Settings.RunOnPriority);
 
                     // Auto Optimization
-                    if (CanOptimize)
+                    lock (_lockObject)
                     {
-                        // Interval
-                        if (Settings.AutoOptimizationInterval > 0 &&
-                            DateTimeOffset.Now.Subtract(_lastAutoOptimizationByInterval).TotalHours >= Settings.AutoOptimizationInterval)
+                        if (CanOptimize)
                         {
-                            OptimizeAsync(Enums.Memory.Optimization.Reason.Schedule);
+                            // Interval
+                            if (Settings.AutoOptimizationInterval > 0 &&
+                                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByInterval).TotalHours >= Settings.AutoOptimizationInterval)
+                            {
+                                OptimizeAsync(Enums.Memory.Optimization.Reason.Schedule);
 
-                            _lastAutoOptimizationByInterval = DateTimeOffset.Now;
-                            continue;
-                        }
+                                _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+                                continue;
+                            }
 
-                        // Memory usage
-                        if (Settings.AutoOptimizationMemoryUsage > 0 &&
-                            Computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
-                            DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
-                        {
-                            OptimizeAsync(Enums.Memory.Optimization.Reason.LowMemory);
+                            // Memory usage
+                            if (Settings.AutoOptimizationMemoryUsage > 0 &&
+                                Computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
+                                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
+                            {
+                                OptimizeAsync(Enums.Memory.Optimization.Reason.LowMemory);
 
-                            _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
-                            continue;
+                                _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
+                                continue;
+                            }
                         }
                     }
                 }
@@ -1581,13 +1669,16 @@ namespace WinMemoryCleaner
                     if (IsBusy)
                         continue;
 
-                    // Update memory info
-                    Computer.Memory = _computerService.Memory;
+                    lock (_lockObject)
+                    {
+                        // Update memory info
+                        Computer.Memory = _computerService.Memory;
 
-                    RaisePropertyChanged(() => Computer);
-                    RaisePropertyChanged(() => VirtualMemoryHeader);
+                        RaisePropertyChanged(() => Computer);
+                        RaisePropertyChanged(() => VirtualMemoryHeader);
 
-                    NotificationService.Update(Computer.Memory);
+                        NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+                    }
 
                     // Delay
                     if (_cancellationTokenSource.Token.WaitHandle.WaitOne(5000))
@@ -1618,49 +1709,65 @@ namespace WinMemoryCleaner
         /// <param name="reason">Optimization reason</param>
         private void Optimize(Enums.Memory.Optimization.Reason reason)
         {
-            try
+            lock (_lockObject)
             {
-                IsBusy = true;
-                IsOptimizationRunning = true;
-
-                // App priority
-                App.SetPriority(Settings.RunOnPriority);
-
-                // Memory optimize
-                var tempPhysicalAvailable = Computer.Memory.Physical.Free.Bytes;
-                var tempVirtualAvailable = Computer.Memory.Virtual.Free.Bytes;
-
-                _computerService.Optimize(reason, Settings.MemoryAreas);
-
-                // Update memory info
-                Computer.Memory = _computerService.Memory;
-                RaisePropertyChanged(() => Computer);
-
-                // Notification
-                if (Settings.ShowOptimizationNotifications)
+                try
                 {
-                    var physicalReleased = (Computer.Memory.Physical.Free.Bytes > tempPhysicalAvailable ? Computer.Memory.Physical.Free.Bytes - tempPhysicalAvailable : tempPhysicalAvailable - Computer.Memory.Physical.Free.Bytes).ToMemoryUnit();
-                    var virtualReleased = (Computer.Memory.Virtual.Free.Bytes > tempVirtualAvailable ? Computer.Memory.Virtual.Free.Bytes - tempVirtualAvailable : tempVirtualAvailable - Computer.Memory.Virtual.Free.Bytes).ToMemoryUnit();
+                    IsBusy = true;
+                    IsOptimizationRunning = true;
 
-                    var message = Settings.ShowVirtualMemory
-                        ? string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3}{0}{4}: {5:0.#} {6}{0}{7}: {8:0.#} {9}", Environment.NewLine, Localizer.String.MemoryOptimized.ToUpper(Localizer.Culture), Localizer.String.Reason, reason.GetString(), Localizer.String.PhysicalMemory, physicalReleased.Key, physicalReleased.Value, Localizer.String.VirtualMemory, virtualReleased.Key, virtualReleased.Value)
-                        : string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3}{0}{4}: {5:0.#} {6}", Environment.NewLine, Localizer.String.MemoryOptimized.ToUpper(Localizer.Culture), Localizer.String.Reason, reason.GetString(), Localizer.String.PhysicalMemory, physicalReleased.Key, physicalReleased.Value);
+                    NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
-                    Notify(message);
-                }
+                    // App priority
+                    App.SetPriority(Settings.RunOnPriority);
 
-                if (OnOptimizeCommandCompleted != null)
-                {
-                    System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                    // Memory optimize
+                    var tempPhysicalAvailable = Computer.Memory.Physical.Free.Bytes;
+                    var tempVirtualAvailable = Computer.Memory.Virtual.Free.Bytes;
+
+                    _computerService.Optimize(reason, Settings.MemoryAreas);
+
+                    // Update memory info
+                    Computer.Memory = _computerService.Memory;
+                    RaisePropertyChanged(() => Computer);
+
+                    // Notification
+                    if (Settings.ShowOptimizationNotifications)
                     {
-                        OnOptimizeCommandCompleted();
-                    });
+                        var physicalReleased = (Computer.Memory.Physical.Free.Bytes > tempPhysicalAvailable ? Computer.Memory.Physical.Free.Bytes - tempPhysicalAvailable : tempPhysicalAvailable - Computer.Memory.Physical.Free.Bytes).ToMemoryUnit();
+                        var virtualReleased = (Computer.Memory.Virtual.Free.Bytes > tempVirtualAvailable ? Computer.Memory.Virtual.Free.Bytes - tempVirtualAvailable : tempVirtualAvailable - Computer.Memory.Virtual.Free.Bytes).ToMemoryUnit();
+
+                        var message = Settings.ShowVirtualMemory
+                            ? string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3}{0}{4}: {5:0.#} {6}{0}{7}: {8:0.#} {9}", Environment.NewLine, Localizer.String.MemoryOptimized.ToUpper(Localizer.Culture), Localizer.String.Reason, reason.GetString(), Localizer.String.PhysicalMemory, physicalReleased.Key, physicalReleased.Value, Localizer.String.VirtualMemory, virtualReleased.Key, virtualReleased.Value)
+                            : string.Format(Localizer.Culture, "{1}{0}{0}{2}: {3}{0}{4}: {5:0.#} {6}", Environment.NewLine, Localizer.String.MemoryOptimized.ToUpper(Localizer.Culture), Localizer.String.Reason, reason.GetString(), Localizer.String.PhysicalMemory, physicalReleased.Key, physicalReleased.Value);
+
+                        Notify(message);
+                    }
                 }
-            }
-            finally
-            {
-                IsOptimizationRunning = false;
-                IsBusy = false;
+                finally
+                {
+                    IsOptimizationRunning = false;
+                    IsBusy = false;
+
+                    NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+
+                    // Raise the event after IsOptimizationRunning is set to false
+                    // Use BeginInvoke to ensure it runs after all property changes propagate
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        // Force command manager to re-evaluate CanExecute on all commands
+                        CommandManager.InvalidateRequerySuggested();
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+
+                    // Raise completion event with lower priority to ensure commands are refreshed first
+                    if (OnOptimizeCommandCompleted != null)
+                    {
+                        System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                         {
+                             OnOptimizeCommandCompleted();
+                         }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                    }
+                }
             }
         }
 
@@ -1672,6 +1779,9 @@ namespace WinMemoryCleaner
         {
             try
             {
+                if (IsOptimizationRunning)
+                    return;
+
                 OptimizationProgressStep = Localizer.String.Optimize;
                 OptimizationProgressValue = 0;
                 OptimizationProgressTotal = (byte)(new BitArray(new[] { (int)Settings.MemoryAreas }).OfType<bool>().Count(x => x) + 1);
@@ -1697,9 +1807,10 @@ namespace WinMemoryCleaner
             Settings.OptimizationModifiers = modifiers;
 
             var hotKey = new Hotkey(Settings.OptimizationModifiers, Settings.OptimizationKey);
+
             IsOptimizationKeyValid = _hotKeyService.Register(hotKey, () => OptimizeAsync(Enums.Memory.Optimization.Reason.Manual));
 
-            if (!IsOptimizationKeyValid)
+            if (!_isReiniziliating && !IsOptimizationKeyValid)
             {
                 var message = string.Format(Localizer.Culture, Localizer.String.HotkeyIsInUseByOperatingSystem, hotKey);
 
@@ -1713,6 +1824,39 @@ namespace WinMemoryCleaner
 
             RaisePropertyChanged(() => OptimizationKey);
             RaisePropertyChanged(() => OptimizationModifiers);
+        }
+
+        /// <summary>
+        /// Reinitializes app after system resume from hibernation.
+        /// </summary>
+        public void ReinitializeAfterHibernation()
+        {
+            try
+            {
+                lock (_lockObject)
+                {
+                    _isReiniziliating = true;
+
+                    if (UseHotkey)
+                        RegisterOptimizationHotkey(Settings.OptimizationModifiers, Settings.OptimizationKey);
+
+                    Computer.Memory = _computerService.Memory;
+
+                    NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+
+                    RaisePropertyChanged(string.Empty);
+
+                    App.ReleaseMemory();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error after system resume from hibernation: " + e.GetMessage());
+            }
+            finally
+            {
+                _isReiniziliating = false;
+            }
         }
 
         /// <summary>
@@ -1761,8 +1905,10 @@ namespace WinMemoryCleaner
                 OptimizationKey = Settings.OptimizationKey;
                 OptimizationModifiers = Settings.OptimizationModifiers;
 
+                _trayIconItems = null;
+
                 NotificationService.Initialize();
-                NotificationService.Update(Computer.Memory);
+                NotificationService.Update(Computer.Memory, IsOptimizationRunning);
 
                 RaisePropertyChanged(string.Empty);
             }

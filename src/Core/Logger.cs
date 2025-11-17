@@ -245,7 +245,7 @@ namespace WinMemoryCleaner
                 if (log == null)
                     throw new ArgumentNullException("log");
 
-                Log(log.Level, log.ToString());
+                Log(log.Level, Helper.Serialize(log));
             }
             catch (Exception e)
             {

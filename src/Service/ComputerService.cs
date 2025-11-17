@@ -413,6 +413,22 @@ namespace WinMemoryCleaner
                 }
             }
 
+            // Garbage Collector
+            try
+            {
+                if (OnOptimizeProgressUpdate != null)
+                {
+                    value++;
+                    OnOptimizeProgressUpdate(value, Localizer.String.GarbageCollector);
+                }
+
+                App.ReleaseMemory();
+            }
+            catch
+            {
+                // ignored
+            }
+
             // Log
             try
             {
@@ -434,24 +450,6 @@ namespace WinMemoryCleaner
             catch
             {
                 // ignored
-            }
-
-            // App
-            try
-            {
-                App.ReleaseMemory();
-            }
-            catch
-            {
-                // ignored
-            }
-            finally
-            {
-                if (OnOptimizeProgressUpdate != null)
-                {
-                    value++;
-                    OnOptimizeProgressUpdate(value, Localizer.String.Optimized);
-                }
             }
         }
 

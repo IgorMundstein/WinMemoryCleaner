@@ -50,8 +50,6 @@ namespace WinMemoryCleaner
 
         public static ModifierKeys OptimizationModifiers { get; set; }
 
-        public static string Path { get; set; }
-
         public static SortedSet<string> ProcessExclusionList { get; private set; }
 
         public static Enums.Priority RunOnPriority { get; set; }
@@ -69,6 +67,10 @@ namespace WinMemoryCleaner
         public static Brush TrayIconDangerColor { get; set; }
 
         public static byte TrayIconDangerLevel { get; set; }
+
+        public static bool TrayIconOptimizeOnMiddleMouseClick { get; set; }
+
+        public static Brush TrayIconOptimizingColor { get; set; }
 
         public static bool TrayIconShowMemoryUsage { get; set; }
 
@@ -101,7 +103,6 @@ namespace WinMemoryCleaner
             MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedFileCache | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.RegistryCache | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemFileCache | Enums.Memory.Areas.WorkingSet;
             OptimizationKey = Key.M;
             OptimizationModifiers = ModifierKeys.Control | ModifierKeys.Shift;
-            Path = string.Empty;
             ProcessExclusionList = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             RunOnPriority = Enums.Priority.Low;
             RunOnStartup = false;
@@ -111,12 +112,14 @@ namespace WinMemoryCleaner
             TrayIconBackgroundColor = Brushes.DarkGreen;
             TrayIconDangerColor = Brushes.DarkRed;
             TrayIconDangerLevel = 90;
+            TrayIconOptimizeOnMiddleMouseClick = false;
+            TrayIconOptimizingColor = Brushes.DimGray;
             TrayIconShowMemoryUsage = false;
             TrayIconTextColor = Brushes.White;
             TrayIconUseTransparentBackground = false;
             TrayIconWarningColor = Brushes.DarkGoldenrod;
             TrayIconWarningLevel = 80;
-            UseHotkey = true;
+            UseHotkey = false;
 
             // User values
             try
@@ -169,8 +172,6 @@ namespace WinMemoryCleaner
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => OptimizationModifiers), OptimizationModifiers), _culture), out optimizationModifiers) && optimizationModifiers.IsValid())
                             OptimizationModifiers = optimizationModifiers;
 
-                        Path = Convert.ToString(key.GetValue(Helper.NameOf(() => Path), Path), _culture);
-
                         Enums.Priority runOnPriority;
 
                         if (Enum.TryParse(Convert.ToString(key.GetValue(Helper.NameOf(() => RunOnPriority), RunOnPriority), _culture), out runOnPriority) && runOnPriority.IsValid())
@@ -183,6 +184,8 @@ namespace WinMemoryCleaner
                         TrayIconBackgroundColor = Convert.ToString(key.GetValue(Helper.NameOf(() => TrayIconBackgroundColor), TrayIconBackgroundColor), _culture).ToBrush(TrayIconBackgroundColor);
                         TrayIconDangerColor = Convert.ToString(key.GetValue(Helper.NameOf(() => TrayIconDangerColor), TrayIconDangerColor), _culture).ToBrush(TrayIconDangerColor);
                         TrayIconDangerLevel = Convert.ToByte(key.GetValue(Helper.NameOf(() => TrayIconDangerLevel), TrayIconDangerLevel), _culture);
+                        TrayIconOptimizeOnMiddleMouseClick = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => TrayIconOptimizeOnMiddleMouseClick), TrayIconOptimizeOnMiddleMouseClick), _culture);
+                        TrayIconOptimizingColor = Convert.ToString(key.GetValue(Helper.NameOf(() => TrayIconOptimizingColor), TrayIconOptimizingColor), _culture).ToBrush(TrayIconOptimizingColor);
                         TrayIconShowMemoryUsage = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => TrayIconShowMemoryUsage), TrayIconShowMemoryUsage), _culture);
                         TrayIconTextColor = Convert.ToString(key.GetValue(Helper.NameOf(() => TrayIconTextColor), TrayIconTextColor), _culture).ToBrush(TrayIconTextColor);
                         TrayIconUseTransparentBackground = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => TrayIconUseTransparentBackground), TrayIconUseTransparentBackground), _culture);
@@ -265,7 +268,6 @@ namespace WinMemoryCleaner
                         key.SetValue(Helper.NameOf(() => MemoryAreas), (int)MemoryAreas);
                         key.SetValue(Helper.NameOf(() => OptimizationKey), (int)OptimizationKey);
                         key.SetValue(Helper.NameOf(() => OptimizationModifiers), (int)OptimizationModifiers);
-                        key.SetValue(Helper.NameOf(() => Path), Path);
                         key.SetValue(Helper.NameOf(() => RunOnPriority), (int)RunOnPriority);
                         key.SetValue(Helper.NameOf(() => RunOnStartup), RunOnStartup ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => ShowOptimizationNotifications), ShowOptimizationNotifications ? 1 : 0);
@@ -274,6 +276,8 @@ namespace WinMemoryCleaner
                         key.SetValue(Helper.NameOf(() => TrayIconBackgroundColor), TrayIconBackgroundColor.GetHex(true));
                         key.SetValue(Helper.NameOf(() => TrayIconDangerColor), TrayIconDangerColor.GetHex(true));
                         key.SetValue(Helper.NameOf(() => TrayIconDangerLevel), TrayIconDangerLevel);
+                        key.SetValue(Helper.NameOf(() => TrayIconOptimizeOnMiddleMouseClick), TrayIconOptimizeOnMiddleMouseClick ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => TrayIconOptimizingColor), TrayIconOptimizingColor.GetHex(true));
                         key.SetValue(Helper.NameOf(() => TrayIconShowMemoryUsage), TrayIconShowMemoryUsage ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => TrayIconTextColor), TrayIconTextColor.GetHex(true));
                         key.SetValue(Helper.NameOf(() => TrayIconUseTransparentBackground), TrayIconUseTransparentBackground ? 1 : 0);

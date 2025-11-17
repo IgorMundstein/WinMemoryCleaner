@@ -18,12 +18,13 @@ namespace WinMemoryCleaner
         private string _dangerLevel, _donate, _donationMessage, _donationTitle;
         private string _error, _errorAdminPrivilegeRequired, _errorCanNotSaveLog, _errorMemoryAreaOptimizationNotSupported, _everyHour, _exit, _expand;
         private string _free;
+        private string _garbageCollector;
         private string _help, _hotkeyIsInUseByOperatingSystem;
         private string _invalid;
         private string _lowMemory;
         private string _manual, _memoryAreas, _memoryOptimized, _memoryUsage, _minimize, _modifiedFileCache, _modifiedPageList;
         private string _no;
-        private string _optimizationHotkey, _optimize, _optimized;
+        private string _optimizationHotkey, _optimize, _optimizeOnMiddleMouseClick, _optimizing;
         private string _physicalMemory, _processExclusionList;
         private string _reason, _registryCache, _remove, _reset, _resetConfirmation, _runOnLowPriority, _runOnStartup;
         private string _schedule, _seconds, _securityWarning, _settings, _showMemoryUsage, _showOptimizationNotifications, _showVirtualMemory, _standbyList, _standbyListLowPriority, _startMinimized, _systemFileCache;
@@ -206,6 +207,13 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
+        public string GarbageCollector
+        {
+            get { return _garbageCollector; }
+            private set { _garbageCollector = value.Capitalize(); }
+        }
+
+        [DataMember]
         public string Help
         {
             get { return _help; }
@@ -304,10 +312,17 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
-        public string Optimized
+        public string OptimizeOnMiddleMouseClick
         {
-            get { return _optimized; }
-            private set { _optimized = value.Capitalize(); }
+            get { return _optimizeOnMiddleMouseClick; }
+            private set { _optimizeOnMiddleMouseClick = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string Optimizing
+        {
+            get { return _optimizing; }
+            private set { _optimizing = value.Capitalize(); }
         }
 
         [DataMember]

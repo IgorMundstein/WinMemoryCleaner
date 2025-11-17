@@ -129,7 +129,7 @@
                         </Grid>
                         <TextBlock Grid.Column="1"
                                    Margin="12, 0, 0, 0"
-                                   Text="Bitcoin"
+                                   Text="Bitcoin (BTC)"
                                    VerticalAlignment="Center" />
                     </Grid>
                 </Button>
@@ -209,7 +209,7 @@
                         </Grid>
                         <TextBlock Grid.Column="1"
                                    Margin="12, 0, 0, 0"
-                                   Text="Ethereum"
+                                   Text="Ethereum (ETH)"
                                    VerticalAlignment="Center" />
                     </Grid>
                 </Button>

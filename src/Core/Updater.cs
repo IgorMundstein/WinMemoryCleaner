@@ -138,7 +138,7 @@ namespace WinMemoryCleaner
                 }
                 catch (Exception e)
                 {
-                    LogCritical("UPD-APPLY-ROLLBACK", e);
+                    Log("UPD-APPLY-ROLLBACK", e);
                 }
 
                 return;
@@ -159,7 +159,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                LogCritical("UPD-RELAUNCH", e);
+                Log("UPD-RELAUNCH", e);
             }
         }
 
@@ -559,7 +559,7 @@ namespace WinMemoryCleaner
             }
         }
 
-        private static void LogCritical(string code, Exception e)
+        private static void Log(string code, Exception e)
         {
             try
             {
@@ -652,7 +652,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                LogCritical("UPD-READ-TOKEN", e);
+                Log("UPD-READ-TOKEN", e);
                 App.Shutdown(true);
 
                 return true;
@@ -838,8 +838,7 @@ namespace WinMemoryCleaner
                     {
                         var commandLineArgument = arg != null ? arg.Replace("/", string.Empty) : null;
 
-                        if (string.Equals(commandLineArgument, Constants.App.CommandLineArgument.Package, StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(commandLineArgument, Constants.App.CommandLineArgument.Install, StringComparison.OrdinalIgnoreCase) ||
+                        if (string.Equals(commandLineArgument, Constants.App.CommandLineArgument.Install, StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(commandLineArgument, Constants.App.CommandLineArgument.Uninstall, StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(commandLineArgument, Constants.App.CommandLineArgument.Service, StringComparison.OrdinalIgnoreCase))
                             return;
@@ -967,10 +966,8 @@ namespace WinMemoryCleaner
                         }
                     }
 
-                    var relaunchArgs = BuildArgumentString(relaunchArgsList);
-
                     var backupPath = BuildBackupPath(exePath);
-
+                    var relaunchArgs = BuildArgumentString(relaunchArgsList);
                     var token = Guid.NewGuid().ToString("N");
                     var tokenFilePath = BuildTokenFilePath(token);
 
@@ -986,7 +983,7 @@ namespace WinMemoryCleaner
                     }
                     catch (Exception e)
                     {
-                        LogCritical("UPD-WRITE-TOKEN", e);
+                        Log("UPD-WRITE-TOKEN", e);
                         SafeDeleteFile(stagedExePath);
                         SafeDeleteFile(tokenFilePath);
 
@@ -1010,7 +1007,7 @@ namespace WinMemoryCleaner
                     }
                     catch (Exception e)
                     {
-                        LogCritical("UPD-LAUNCH-STAGED", e);
+                        Log("UPD-LAUNCH-STAGED", e);
                         SafeDeleteFile(stagedExePath);
                         SafeDeleteFile(tokenFilePath);
 
@@ -1022,7 +1019,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                LogCritical("UPD-UNHANDLED", e);
+                Log("UPD-UNHANDLED", e);
             }
         }
         #endregion

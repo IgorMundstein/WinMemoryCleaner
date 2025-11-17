@@ -19,6 +19,11 @@ namespace WinMemoryCleaner
                 MigrateSettingsFromCurrentUserToLocalMachine();
                 RemoveStartupRegistry();
             }
+            // 3.0+
+            if (App.Version >= new Version(3, 0))
+            {
+                RemoveRegistryPath();
+            }
         }
 
         #region Classes  
@@ -145,6 +150,29 @@ namespace WinMemoryCleaner
                 Registry.CurrentUser.DeleteSubKey(Constants.App.Registry.Key.Settings, false);
 
                 Logger.Information("Migration version update: Settings migrated from Current User to Local Machine on registry.");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Removes the registry path.
+        /// </summary>
+        private static void RemoveRegistryPath()
+        {
+            try
+            {
+                using (var key = Registry.LocalMachine.OpenSubKey(Constants.App.Registry.Key.Settings, true))
+                {
+                    if (key != null && key.GetValue(V30.Registry.Path, null) != null)
+                    {
+                        key.DeleteValue(V30.Registry.Path, false);
+
+                        Logger.Information("Migration version update: Removed path registry entry.");
+                    }
+                }
             }
             catch (Exception e)
             {

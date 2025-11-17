@@ -281,7 +281,6 @@
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center">
                         <CheckBox IsChecked="{Binding UseHotkey}"
-                                  ToolTip="{Binding Path=(local:Localizer.String).UseHotkey}"
                                   VerticalAlignment="Center" />
                         <ComboBox DisplayMemberPath="Value"
                                   IsEnabled="{Binding UseHotkey}"
@@ -386,6 +385,34 @@
                                 <ComboBox ItemsSource="{Binding Brushes}"
                                           Margin="5, 0, 0, 0"
                                           SelectedItem="{Binding TrayIconTextColor, Mode=TwoWay}"
+                                          VerticalAlignment="Center">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" 
+                                                        VerticalAlignment="Center">
+                                                <Rectangle Fill="{Binding}"
+                                                           Height="16"
+                                                           RadiusX="3"
+                                                           RadiusY="3"
+                                                           VerticalAlignment="Center"
+                                                           Width="16" />
+                                                <TextBlock Text="{Binding Converter={StaticResource BrushToHexConverter}}"
+                                                           Margin="4, 0, 0, 0"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel IsEnabled="{Binding TrayIconShowMemoryUsage}"
+                                        Margin="0, 5, 0, 0" 
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Path=(local:Localizer.String).Optimizing}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding Brushes}"
+                                          Margin="5, 0, 0, 0"
+                                          SelectedItem="{Binding TrayIconOptimizingColor, Mode=TwoWay}"
                                           VerticalAlignment="Center">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
@@ -826,6 +853,7 @@
                         Margin="0, 10, 0, 0"
                         Name="Optimize"
                         Padding="10, 5, 10, 5"
+                        Style="{StaticResource ButtonWithFocusFadeStyle}"
                         TabIndex="0"
                         VerticalAlignment="Center" />
                 <Grid Grid.Column="0"
@@ -834,7 +862,7 @@
                       Margin="0, 10, 0, 0"
                       Visibility="{Binding IsOptimizationRunning, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Hidden}}"
                       VerticalAlignment="Stretch">
-                    <ProgressBar BorderBrush="{DynamicResource SecondaryBorder}"
+                    <ProgressBar BorderBrush="{DynamicResource Accent}"
                                  BorderThickness="1"
                                  FontWeight="Normal"
                                  HorizontalContentAlignment="Center"

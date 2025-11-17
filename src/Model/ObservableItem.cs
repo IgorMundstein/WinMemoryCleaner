@@ -9,6 +9,8 @@ namespace WinMemoryCleaner
     /// <seealso cref="ObservableObject" />
     public class ObservableItem<T> : ObservableObject
     {
+        private bool _isEnabled;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ObservableItem{T}" /> class.
         /// </summary>
@@ -19,7 +21,7 @@ namespace WinMemoryCleaner
         public ObservableItem(string name, Func<T> getter, Action<T> setter, bool isEnabled = true)
         {
             Getter = getter;
-            IsEnabled = isEnabled;
+            _isEnabled = isEnabled;
             Name = name;
             Setter = setter;
         }
@@ -33,12 +35,23 @@ namespace WinMemoryCleaner
         public Func<T> Getter { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is enabled.
+        /// Gets or sets a value indicating whether this instance is enabled.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
-        public bool IsEnabled { get; private set; }
+        public bool IsEnabled
+        {
+            get { return _isEnabled; }
+            set
+            {
+                if (_isEnabled != value)
+                {
+                    _isEnabled = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the name.
