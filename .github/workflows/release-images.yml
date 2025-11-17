@@ -1,0 +1,121 @@
+name: Update Release Images
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-release-images
+  cancel-in-progress: true
+
+jobs:
+  update-main-window-screenshot:
+    name: Update Main Window Screenshot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: download-screenshot-artifact
+        id: download-screenshot
+        uses: actions/download-artifact@v4
+        with:
+          name: release-window-screenshot
+          path: ./ui-window
+        continue-on-error: true
+
+      - name: check-screenshot-exists
+        id: check-screenshot
+        shell: bash
+        run: |
+          if [ -f "./ui-window/main-window-raw.png" ]; then
+            echo "screenshot_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "screenshot_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: install-imagemagick
+        if: steps.check-screenshot.outputs.screenshot_exists == 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+          if ! command -v magick; then
+            echo "::error::ImageMagick (magick) was not installed successfully."
+            exit 1
+          fi
+
+      - name: process-screenshot-image
+        if: steps.check-screenshot.outputs.screenshot_exists == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/assets/images
+          FILE="./ui-window/main-window-raw.png"
+          if ! identify -format "%w %h" "$FILE" > /dev/null; then
+            echo "::error::Failed to read image $FILE with ImageMagick."
+            exit 1
+          fi
+          read W H < <(identify -format "%w %h" "$FILE")
+          if [ -z "${W:-}" ] || [ -z "${H:-}" ]; then
+            echo "::error::Failed to get image size for $FILE"
+            exit 1
+          fi
+          if [ "$W" -lt "$H" ]; then MIN=$W; else MIN=$H; fi
+          R=$(( MIN / 50 ))
+          if [ "$R" -lt 10 ]; then R=10; fi
+          if [ "$R" -gt 24 ]; then R=24; fi
+
+          magick convert "$FILE" \
+            \( -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$((W-1)),$((H-1)),$R,$R" \) \
+            -compose DstIn -composite \
+            docs/assets/images/main-window.png
+
+          if [ ! -s docs/assets/images/main-window.png ]; then
+            echo "::error::Image processing failed and output file was not created."
+            exit 1
+          fi
+
+      - name: create-pull-request
+        id: cpr
+        if: steps.check-screenshot.outputs.screenshot_exists == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          commit-message: "chore(docs): update main-window.png"
+          title: "Docs: Update Main Window Screenshot for Release"
+          body: |
+            This is an automated PR to update the main window screenshot.
+            It will be automatically merged once all status checks pass.
+          branch: "docs/main-window-update-${{ github.run_id }}"
+          base: main
+          delete-branch: true
+          add-paths: |
+            docs/assets/images/main-window.png
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+      - name: auto-merge-pull-request
+        if: steps.check-screenshot.outputs.screenshot_exists == 'true' && steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          n=1
+          until gh pr merge $PR_NUMBER --repo $REPO --squash --auto --delete-branch || [ $n -ge 3 ]; do
+            echo "Auto-merge failed, retrying in 10s... (attempt $n of 3)"
+            sleep 10
+            n=$((n+1))
+          done
