@@ -8,8 +8,8 @@ on:
       - 'src/**'
   workflow_dispatch:
     inputs:
-      ignore_version_check:
-        description: 'Set to "true" to force bypass the version mismatch check.'
+      force_version_from_file:
+        description: 'Set to "true" to IGNORE tag bumping and use the version from AssemblyInfo.cs.'
         type: boolean
         default: false
 
@@ -22,7 +22,7 @@ jobs:
     name: Build and Sign for Release
     runs-on: windows-latest
     outputs:
-      new_tag: ${{ steps.bump.outputs.new_tag }}
+      new_tag: ${{ steps.version.outputs.new_tag }}
 
     steps:
       - name: Checkout code
@@ -43,6 +43,7 @@ jobs:
 
       - name: Bump version tag
         id: bump
+        if: github.event.inputs.force_version_from_file != 'true'
         shell: pwsh
         run: |
           git fetch --tags
@@ -57,13 +58,38 @@ jobs:
           }
           $newTag = "$($major).$($minor).$($patch)"
           "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Host "New tag generated: $newTag"
+          Write-Host "New tag generated (from bump): $newTag"
 
-      - name: Check AssemblyVersion matches new tag
-        if: github.event.inputs.ignore_version_check != 'true'
+      - name: Get Version from AssemblyInfo (Force)
+        id: get_from_asm
+        if: github.event.inputs.force_version_from_file == 'true'
         shell: pwsh
         run: |
-          $expectedVersion = "${{ steps.bump.outputs.new_tag }}"
+          $assemblyInfoPath = "src/Properties/AssemblyInfo.cs"
+          $assemblyInfo = Get-Content $assemblyInfoPath
+          $versionLine = $assemblyInfo | Select-String -Pattern 'AssemblyVersion\("([0-9\.]+)"\)'
+          if (-not $versionLine) {
+            Write-Host "::error::Could not find AssemblyVersion in $assemblyInfoPath"
+            exit 1
+          }
+          $fullVersion = $versionLine.Matches.Groups[1].Value
+          $newTag = ($fullVersion -split '\.')[0..2] -join '.'
+          Write-Host "New tag generated (from file): $newTag"
+          "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Set Release Version
+        id: version
+        shell: pwsh
+        run: |
+          $newTag = "${{ steps.bump.outputs.new_tag || steps.get_from_asm.outputs.new_tag }}"
+          Write-Host "Consolidated version for release: $newTag"
+          "new_tag=$newTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Check AssemblyVersion matches new tag
+        if: github.event.inputs.force_version_from_file != 'true'
+        shell: pwsh
+        run: |
+          $expectedVersion = "${{ steps.version.outputs.new_tag }}"
           Write-Host "Checking for expected release version: $expectedVersion"
           $assemblyInfoPath = "src/Properties/AssemblyInfo.cs"
           $assemblyInfo = Get-Content $assemblyInfoPath
@@ -94,7 +120,7 @@ jobs:
         id: upload-for-signing
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-${{ steps.bump.outputs.new_tag }}
+          name: winmemorycleaner-${{ steps.version.outputs.new_tag }}
           path: src\bin\Release\WinMemoryCleaner.exe
           if-no-files-found: error
 
@@ -172,7 +198,7 @@ jobs:
         if: steps.signpath.conclusion == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-release-${{ steps.bump.outputs.new_tag }}
+          name: winmemorycleaner-release-${{ steps.version.outputs.new_tag }}
           path: |
             WinMemoryCleaner.exe
             WinMemoryCleaner.zip
