@@ -170,10 +170,4 @@ jobs:
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
           REPO: ${{ github.repository }}
         run: |
-          set -euo pipefail
-          n=1
-          until gh pr merge $PR_NUMBER --repo $REPO --squash --auto --delete-branch || [ $n -ge 3 ]; do
-            echo "Auto-merge failed, retrying in 10s... (attempt $n of 3)"
-            sleep 10
-            n=$((n+1))
-          done
+          gh pr merge $PR_NUMBER --repo $REPO --squash --auto --delete-branch
