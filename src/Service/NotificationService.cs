@@ -551,7 +551,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="memory">The memory information</param>
         /// <param name="isOptimizing">if set to <c>true</c> the system is optimizing</param>
-        /// <exception cref="System.ArgumentNullException">memory</exception>
+        /// <exception cref="ArgumentNullException">memory</exception>
         public void Update(Memory memory, bool isOptimizing = false)
         {
             if (memory == null)
