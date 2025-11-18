@@ -1,3 +1,9 @@
+### 3.0.6
+
+**2025-11-18**
+
+- Fixed tooltip text for the system tray icon. Windows restricts tooltip length to 64 characters, and in some languages, this limit is exceeded when the virtual memory display is enabled.
+
 ### 3.0.5
 
 **2025-11-17**
