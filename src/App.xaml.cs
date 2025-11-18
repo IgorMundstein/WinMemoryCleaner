@@ -410,6 +410,12 @@ namespace WinMemoryCleaner
                     // Process command‑line arguments
                     foreach (var argument in commandLineArguments.Select(arg => arg.Replace("/", string.Empty)))
                     {
+                        // Memory areas to optimize
+                        Enums.Memory.Areas area;
+
+                        if (Enum.TryParse(argument, out area))
+                            memoryAreas |= area;
+
                         // Startup Type
                         if (memoryAreas != Enums.Memory.Areas.None)
                             startupType = Enums.StartupType.Silent;
@@ -422,12 +428,6 @@ namespace WinMemoryCleaner
 
                         if (argument.Equals(Constants.App.CommandLineArgument.Uninstall, StringComparison.OrdinalIgnoreCase))
                             startupType = Enums.StartupType.Uninstallation;
-
-                        // Memory areas to optimize
-                        Enums.Memory.Areas area;
-
-                        if (Enum.TryParse(argument, out area))
-                            memoryAreas |= area;
 
                         // Notify version update
                         if (argument.Equals(Version.ToString()))
