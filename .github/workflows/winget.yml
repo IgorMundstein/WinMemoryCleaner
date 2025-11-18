@@ -190,6 +190,7 @@ jobs:
         shell: pwsh
         run: |
           winget upgrade winget --accept-package-agreements --accept-source-agreements --disable-interactivity
+        continue-on-error: true
 
       - name: Validate manifests with winget
         if: steps.check_winget.outputs.skip == 'false'
@@ -238,7 +239,7 @@ jobs:
           branch="add/${{ env.PACKAGE_ID }}/${version}"
           pr_title="${{ env.PACKAGE_ID }} version ${version}"
           pr_body="Automated submission of ${{ env.PACKAGE_ID }} version ${version}."
-          base_branch=$(gh repo view "${{ env.UPSTREAM_REPO }}" --json defaultBranchRef -q .defaultBranchRef.name 2/dev/null || echo master)
+          base_branch=$(gh repo view "${{ env.UPSTREAM_REPO }}" --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo master)
           existing=$(gh pr list --repo "${{ env.UPSTREAM_REPO }}" --head "${{ github.repository_owner }}:$branch" --state open --json url -q '.[0].url' 2>/dev/null || true)
           if [ -n "$existing" ]; then
             echo "::notice::A pull request already exists: $existing"
@@ -338,13 +339,13 @@ jobs:
             ' "$f" > "$f.nontags"
             awk -v tags="$ws" '
               BEGIN {inserted=0}
-              /^ManifestType:/ && inserted=0 {
+              /^ManifestType:/ && inserted==0 {
                 system("cat \"" tags "\"");
                 inserted=1
               }
               {print}
               END {
-                if (inserted=0) {
+                if (inserted==0) {
                   system("cat \"" tags "\"");
                 }
               }
