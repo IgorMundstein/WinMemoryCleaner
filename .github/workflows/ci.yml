@@ -10,8 +10,6 @@ on:
     branches:
       - main
       - develop
-    paths:
-      - 'src/**'
   workflow_dispatch:
     branches: [main, develop]
 
@@ -31,12 +29,22 @@ jobs:
       app_version: ${{ steps.version.outputs.app_version }}
       unsigned_artifact_name: winmemorycleaner-${{ steps.version.outputs.app_version }}
       test_artifact_name: ${{ steps.determine_artifact.outputs.name }}
+      src_changed: ${{ github.event_name == 'push' || steps.check_files.outputs.any_changed }}
 
     steps:
+      - name: Check for src file changes
+        id: check_files
+        if: github.event_name == 'pull_request'
+        uses: tj-actions/changed-files@v44
+        with:
+          files: src/**
+
       - name: Checkout code
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Cache NuGet packages
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -45,17 +53,21 @@ jobs:
             nuget-
 
       - name: Setup MSBuild
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: microsoft/setup-msbuild@v2
 
       - name: Restore NuGet packages
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         shell: pwsh
         run: nuget restore src\WinMemoryCleaner.sln
 
       - name: Build solution
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Get App Version
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         id: version
         shell: pwsh
         run: |
@@ -84,6 +96,7 @@ jobs:
           }
 
       - name: Upload unsigned EXE as artifact
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
@@ -92,7 +105,7 @@ jobs:
           if-no-files-found: error
 
       - name: Submit to SignPath (Develop CI Signing)
-        if: github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/develop'
+        if: (github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true') && (github.repository == 'IgorMundstein/WinMemoryCleaner' && github.ref == 'refs/heads/develop')
         id: signpath
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
@@ -113,6 +126,7 @@ jobs:
           retention-days: 30
 
       - name: Determine Test Artifact
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         id: determine_artifact
         shell: pwsh
         run: |
@@ -125,6 +139,7 @@ jobs:
   test-ui:
     name: UI Test on ${{ matrix.os }}
     needs: build-and-test
+    if: needs.build-and-test.outputs.src_changed == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -171,6 +186,7 @@ jobs:
   package-screenshots:
     name: Package All Screenshots
     needs: [build-and-test, test-ui]
+    if: needs.build-and-test.outputs.src_changed == 'true'
     runs-on: ubuntu-latest
 
     steps:
