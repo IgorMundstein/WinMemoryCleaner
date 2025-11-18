@@ -6,7 +6,6 @@ on:
     paths: [ 'src/**' ]
   pull_request:
     branches: [ main, develop ]
-    paths: [ 'src/**' ]
   workflow_dispatch:
 
 permissions:
@@ -24,24 +23,39 @@ jobs:
         language: [ 'csharp' ]
 
     steps:
+      - name: Check for src file changes
+        id: check_files
+        if: github.event_name == 'pull_request'
+        uses: tj-actions/changed-files@v44
+        with:
+          files: src/**
+          files-ignore: |
+            src/Resources/**
+
       - name: Checkout repository
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
       - name: Setup MSBuild
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: microsoft/setup-msbuild@v1
 
       - name: Restore NuGet packages
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         shell: pwsh
         run: nuget restore src\WinMemoryCleaner.sln
 
       - name: Build solution
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Perform CodeQL Analysis
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: github/codeql-action/analyze@v4
