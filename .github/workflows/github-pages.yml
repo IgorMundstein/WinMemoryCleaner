@@ -6,7 +6,6 @@ on:
     paths:
       - 'docs/index.html'
       - 'docs/package.json'
-      - 'docs/package-lock.json'
       - 'docs/tailwind.config.js'
       - '.github/workflows/github-pages.yml'
   workflow_dispatch:
@@ -34,11 +33,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: docs/package-lock.json
+          cache-dependency-path: docs/package.json
 
       - name: Install dependencies
         working-directory: ./docs
-        run: npm ci
+        run: npm install
 
       - name: Build CSS with Tailwind
         working-directory: ./docs
