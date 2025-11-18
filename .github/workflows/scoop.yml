@@ -152,14 +152,17 @@ jobs:
             version     = $version
             description = "${{ env.FIXED_DESCRIPTION }}"
             homepage    = "https://github.com/$owner/$repo"
-            license     = @{ identifier = "${{ env.LICENSE_ID }}"; url = $licenseUrl }
+            license     = [ordered]@{
+              identifier = "${{ env.LICENSE_ID }}"
+              url = $licenseUrl
+            }
             notes       = $notes
             architecture = [ordered]@{
-              "64bit" = @{
+              "64bit" = [ordered]@{
                 url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
                 hash = $hash
               }
-              "32bit" = @{
+              "32bit" = [ordered]@{
                 url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
                 hash = $hash
               }
@@ -335,7 +338,7 @@ jobs:
           $version  = "${{ steps.version.outputs.version }}"
           $commitMsg = "${{ env.MANIFEST_NAME }}: Update to version $version"
           git config --global user.name  "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "4E+07+github-actions[bot]@users.noreply.github.com"
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
           Set-Location fork
           git fetch origin "${branch}:${branch}" --force
