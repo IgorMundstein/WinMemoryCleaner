@@ -185,34 +185,6 @@ jobs:
           ManifestVersion: 1.6.0
           EOF
 
-      - name: Upgrade winget
-        if: steps.check_winget.outputs.skip == 'false'
-        shell: pwsh
-        run: |
-          $wingetUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-          $appRuntimeUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.WindowsAppRuntime.1.8.msix"
-          $vcLibsUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.VCLibs.x64.14.00.Desktop.appx"
-
-          Invoke-WebRequest -Uri $vcLibsUrl -OutFile "vc.appx"
-          Invoke-WebRequest -Uri $appRuntimeUrl -OutFile "runtime.msix"
-          Invoke-WebRequest -Uri $wingetUrl -OutFile "winget.msixbundle"
-
-          Add-AppxPackage -Path ".\vc.appx"
-          Add-AppxPackage -Path ".\runtime.msix"
-          Add-AppxPackage -Path ".\winget.msixbundle"
-
-      - name: Validate manifests with winget
-        if: steps.check_winget.outputs.skip == 'false'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-            Write-Host "::notice::winget CLI not available on this runner. Skipping validation and continuing."
-            exit 0
-          }
-          winget --info
-          winget validate --manifest winget-manifest --verbose-logs
-
       - name: Prepare PR branch for manifest submission
         if: steps.check_winget.outputs.skip == 'false'
         env:
@@ -277,7 +249,7 @@ jobs:
       - name: Cleanup artifacts
         if: always()
         run: |
-          rm -rf fork-winget upstream-winget winget-manifest ${{ env.BINARY_NAME }}.exe repo_tags.yaml winget.msixbundle vc.appx runtime.msix
+          rm -rf fork-winget upstream-winget winget-manifest ${{ env.BINARY_NAME }}.exe repo_tags.yaml
 
   sync_tags:
     name: Sync Tags across existing versions
