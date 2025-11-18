@@ -186,12 +186,8 @@ jobs:
         if: steps.plan.outputs.mode != 'none'
         shell: pwsh
         run: |
-          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-          iex "& {$(irm get.scoop.sh)}"
-          scoop install git
-          scoop bucket add extras
-          scoop install app-manifest-linter
-          scoop lint manifest-out/${{ env.MANIFEST_NAME }}.json
+          Invoke-WebRequest https://raw.githubusercontent.com/ScoopInstaller/App-Manifest-Linter/main/lint.ps1 -OutFile lint.ps1
+          pwsh -File ./lint.ps1 manifest-out/${{ env.MANIFEST_NAME }}.json
 
       - name: Validate manifest
         if: steps.plan.outputs.mode != 'none'
