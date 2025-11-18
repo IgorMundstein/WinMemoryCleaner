@@ -147,7 +147,6 @@ jobs:
           )
           $shortcutInner = ,@("${{ env.APP_NAME }}.exe","${{ env.APP_NAME }}")
           $shortcuts     = @($shortcutInner)
-
           $obj = [ordered]@{
             version     = $version
             description = "${{ env.FIXED_DESCRIPTION }}"
@@ -156,7 +155,6 @@ jobs:
               identifier = "${{ env.LICENSE_ID }}"
               url = $licenseUrl
             }
-            notes       = $notes
             architecture = [ordered]@{
               "64bit" = [ordered]@{
                 url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
@@ -176,13 +174,24 @@ jobs:
                 "32bit" = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
               }
             }
+            notes       = $notes
           }
-
           if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
           New-Item -ItemType Directory -Force -Path manifest-out | Out-Null
           $path = "manifest-out/${{ env.MANIFEST_NAME }}.json"
           ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Lint manifest
+        if: steps.plan.outputs.mode != 'none'
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          iex "& {$(irm get.scoop.sh)}"
+          scoop install git
+          scoop bucket add extras
+          scoop install app-manifest-linter
+          scoop lint manifest-out/${{ env.MANIFEST_NAME }}.json
 
       - name: Validate manifest
         if: steps.plan.outputs.mode != 'none'
@@ -270,7 +279,6 @@ jobs:
             "issue_line=Closes #$issueNum" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
             "issue_line=No related issue (new manifest)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
 
       - name: Compose PR body
         id: prbody
@@ -338,7 +346,7 @@ jobs:
           $version  = "${{ steps.version.outputs.version }}"
           $commitMsg = "${{ env.MANIFEST_NAME }}: Update to version $version"
           git config --global user.name  "github-actions[bot]"
-          git config --global user.email "4E+07+github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git clone "https://x-access-token:${{ env.GH_TOKEN }}@github.com/${{ env.FORK_REPO }}.git" fork --depth=1
           Set-Location fork
           git fetch origin "${branch}:${branch}" --force
