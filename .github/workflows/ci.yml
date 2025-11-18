@@ -35,7 +35,7 @@ jobs:
       - name: Check for src file changes
         id: check_files
         if: github.event_name == 'pull_request'
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v46
         with:
           files: src/**
 
