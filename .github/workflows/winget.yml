@@ -185,6 +185,12 @@ jobs:
           ManifestVersion: 1.6.0
           EOF
 
+      - name: Setup winget (Install latest version)
+        if: steps.check_winget.outputs.skip == 'false'
+        uses: microsoft/setup-winget@v1
+        with:
+          latest: true
+
       - name: Validate manifests with winget
         if: steps.check_winget.outputs.skip == 'false'
         shell: pwsh
