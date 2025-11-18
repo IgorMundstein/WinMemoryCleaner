@@ -18,13 +18,13 @@ env:
   APP_NAME: WinMemoryCleaner
   ASSET_FILE: WinMemoryCleaner.exe
   FIXED_DESCRIPTION: Portable RAM cleaner using native Windows APIs to release memory.
-  FORK_REPO: ${{ github.repository_owner }}/Scoop
+  FORK_REPO: ${{ github.repository_owner }}/scoop-extras
   LICENSE_ID: GPL-3.0-or-later
   LICENSE_URL_PATH: blob/main/LICENSE
   MANIFEST_NAME: winmemorycleaner
   NOTES_TEXT: Requires administrator privileges (UAC prompt). Requires .NET Framework 4.x runtime.
   UPSTREAM_BRANCH: master
-  UPSTREAM_REPO: ScoopInstaller/Main
+  UPSTREAM_REPO: ScoopInstaller/Extras
 
 jobs:
   submit:
@@ -152,14 +152,16 @@ jobs:
             version     = $version
             description = "${{ env.FIXED_DESCRIPTION }}"
             homepage    = "https://github.com/$owner/$repo"
-            license     = @{ identifier = "${{ env.LICENSE_ID }}"; url = $licenseUrl }
-            notes       = $notes
+            license     = [ordered]@{
+              identifier = "${{ env.LICENSE_ID }}"
+              url = $licenseUrl
+            }
             architecture = [ordered]@{
-              "64bit" = @{
+              "64bit" = [ordered]@{
                 url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
                 hash = $hash
               }
-              "32bit" = @{
+              "32bit" = [ordered]@{
                 url  = "https://github.com/$owner/$repo/releases/download/$tag/${{ env.ASSET_FILE }}"
                 hash = $hash
               }
@@ -173,6 +175,7 @@ jobs:
                 "32bit" = @{ url = "https://github.com/$owner/$repo/releases/download/`$version/${{ env.ASSET_FILE }}" }
               }
             }
+            notes       = $notes
           }
 
           if ($obj.shortcuts -is [string[]]) { $obj.shortcuts = @(@($obj.shortcuts)) }
@@ -342,6 +345,7 @@ jobs:
           git checkout "$branch"
           Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
           git add "bucket/${{ env.MANIFEST_NAME }}.json"
+
           if (git diff --cached --quiet) {
             echo "No changes to commit."
           } else {
