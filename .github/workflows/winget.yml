@@ -187,7 +187,7 @@ jobs:
 
       - name: Setup winget (Install latest version)
         if: steps.check_winget.outputs.skip == 'false'
-        uses: microsoft/setup-winget@v1
+        uses: winget-actions/setup-winget@v1
         with:
           latest: true
 
