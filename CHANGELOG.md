@@ -1,3 +1,9 @@
+### 3.0.5
+
+**2025-11-17**
+
+- Console mode hotfix ([#156](https://github.com/IgorMundstein/WinMemoryCleaner/issues/156))
+
 ### 3.0.4
 
 **2025-11-17**
