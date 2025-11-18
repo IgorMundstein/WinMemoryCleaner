@@ -365,12 +365,22 @@ namespace WinMemoryCleaner
         {
             try
             {
-                if (isOptimizing)
-                    return Localizer.String.Optimizing.ToUpper(Localizer.Culture);
+                string text;
 
-                return Settings.ShowVirtualMemory
-                    ? string.Format(Localizer.Culture, "{1}{0}{2}: {3}%{0}{4}: {5}%", Environment.NewLine, Localizer.String.MemoryUsage.ToUpper(Localizer.Culture), Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage, Localizer.String.VirtualMemory, memory.Virtual.Used.Percentage)
-                    : string.Format(Localizer.Culture, "{1}{0}{2}: {3}%", Environment.NewLine, Localizer.String.MemoryUsage.ToUpper(Localizer.Culture), Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage);
+                if (isOptimizing)
+                    text = Localizer.String.Optimizing.ToUpper(Localizer.Culture);
+                else
+                {
+                    text = Settings.ShowVirtualMemory
+                        ? string.Format(Localizer.Culture, "{0}{1}: {2}%{0}{3}: {4}%", Environment.NewLine, Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage, Localizer.String.VirtualMemory, memory.Virtual.Used.Percentage)
+                        : string.Format(Localizer.Culture, "{0}{1}: {2}%", Environment.NewLine, Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage);
+                }
+                
+                // Truncate to 63 characters
+                if (text.Length > 63)
+                    text = text.Substring(0, 63);
+
+                return text;
             }
             catch
             {
