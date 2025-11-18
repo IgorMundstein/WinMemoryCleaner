@@ -18,13 +18,13 @@ env:
   APP_NAME: WinMemoryCleaner
   ASSET_FILE: WinMemoryCleaner.exe
   FIXED_DESCRIPTION: Portable RAM cleaner using native Windows APIs to release memory.
-  FORK_REPO: ${{ github.repository_owner }}/Scoop
+  FORK_REPO: ${{ github.repository_owner }}/scoop-extras
   LICENSE_ID: GPL-3.0-or-later
   LICENSE_URL_PATH: blob/main/LICENSE
   MANIFEST_NAME: winmemorycleaner
   NOTES_TEXT: Requires administrator privileges (UAC prompt). Requires .NET Framework 4.x runtime.
   UPSTREAM_BRANCH: master
-  UPSTREAM_REPO: ScoopInstaller/Main
+  UPSTREAM_REPO: ScoopInstaller/Extras
 
 jobs:
   submit:
@@ -345,6 +345,7 @@ jobs:
           git checkout "$branch"
           Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
           git add "bucket/${{ env.MANIFEST_NAME }}.json"
+
           if (git diff --cached --quiet) {
             echo "No changes to commit."
           } else {
