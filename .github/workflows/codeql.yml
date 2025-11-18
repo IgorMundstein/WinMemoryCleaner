@@ -26,18 +26,16 @@ jobs:
       - name: Check for src file changes
         id: check_files
         if: github.event_name == 'pull_request'
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v46
         with:
           files: src/**
           files-ignore: |
             src/Resources/**
 
       - name: Checkout repository
-        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
@@ -57,5 +55,4 @@ jobs:
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Perform CodeQL Analysis
-        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         uses: github/codeql-action/analyze@v4
