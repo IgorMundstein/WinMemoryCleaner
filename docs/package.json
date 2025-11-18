@@ -4,7 +4,7 @@
   "description": "Website for WinMemoryCleaner",
   "main": "index.js",
   "scripts": {
-    "build:css": "tailwindcss -i ./assets/css/input.css -o ./assets/css/style.css --minify"
+    "build:css": "npx tailwindcss -i ./assets/css/input.css -o ./assets/css/style.css --minify"
   },
   "keywords": [],
   "author": "",
