@@ -62,7 +62,11 @@ jobs:
           $encodedHead = [System.Uri]::EscapeDataString("${{ github.repository_owner }}:$branch")
           $url = "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/pulls?state=open&head=$encodedHead"
           try { $resp = gh api -H "Accept: application/vnd.github+json" $url 2>$null | ConvertFrom-Json } catch { $resp = @() }
-          if ($resp -and $resp.Count -gt 0) { "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append } else { "pr_exists=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
+          if ($resp -and $resp.Count -gt 0) {
+            "pr_exists=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            "pr_exists=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
           "branch=$branch" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Check upstream manifest
@@ -90,8 +94,11 @@ jobs:
         shell: pwsh
         run: |
           $mode = "create"
-          if ("${{ steps.existing_pr.outputs.pr_exists }}" -eq "yes") { $mode = "update" }
-          elseif ("${{ steps.upstream.outputs.skip }}" -eq "yes") { $mode = "none" }
+          if ("${{ steps.existing_pr.outputs.pr_exists }}" -eq "yes") {
+            $mode = "update"
+          } elseif ("${{ steps.upstream.outputs.skip }}" -eq "yes") {
+            $mode = "none"
+          }
           "mode=$mode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Stop duplicate PR
@@ -217,13 +224,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
+          if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) {
+            $env:GH_TOKEN = "${{ github.token }}"
+          }
           $manifest  = "${{ env.MANIFEST_NAME }}"
           $app       = "${{ env.APP_NAME }}"
           $repoUp    = "${{ env.UPSTREAM_REPO }}"
           $owner     = "${{ github.repository_owner }}"
           $repoSelf  = "${{ github.event.repository.name }}"
-          if (-not $repoSelf) { $repoSelf = ("${{ github.repository }}" -split "/")[1] }
+          if (-not $repoSelf) {
+            $repoSelf = ("${{ github.repository }}" -split "/")[1]
+          }
           function Pick-Issue {
             param($term)
             $data = gh issue list --repo $repoUp --state open --search "$term in:title" --json number,title --limit 20 2>$null | ConvertFrom-Json
@@ -235,7 +246,9 @@ jobs:
             return ""
           }
           $issueNum = Pick-Issue $manifest
-          if (-not $issueNum) { $issueNum = Pick-Issue $app }
+          if (-not $issueNum) {
+            $issueNum = Pick-Issue $app
+          }
           $homepage = "https://github.com/$owner/$repoSelf"
           $download = "https://github.com/$owner/$repoSelf/releases/download/${{ steps.version.outputs.tag }}/${{ env.ASSET_FILE }}"
           $body = @(
@@ -296,7 +309,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
+          if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) {
+            $env:GH_TOKEN = "${{ github.token }}"
+          }
           $branch   = "${{ steps.existing_pr.outputs.branch }}"
           $version  = "${{ steps.version.outputs.version }}"
           $title    = "${{ steps.prbody.outputs.title }}"
@@ -308,7 +323,9 @@ jobs:
           Set-Location fork
           git remote add upstream "https://github.com/${{ env.UPSTREAM_REPO }}.git"
           git fetch upstream "${{ env.UPSTREAM_BRANCH }}" --depth=1
-          if (git ls-remote --heads origin $branch) { git push origin --delete "$branch" }
+          if (git ls-remote --heads origin $branch) {
+            git push origin --delete "$branch"
+          }
           git checkout -b "$branch" "upstream/${{ env.UPSTREAM_BRANCH }}"
           Copy-Item "../${{ steps.manifest.outputs.path }}" "bucket/${{ env.MANIFEST_NAME }}.json" -Force
           git add "bucket/${{ env.MANIFEST_NAME }}.json"
@@ -330,7 +347,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) { $env:GH_TOKEN = "${{ github.token }}" }
+          if (-not $env:GH_TOKEN -or $env:GH_TOKEN.Length -eq 0) {
+            $env:GH_TOKEN = "${{ github.token }}"
+          }
           $branch   = "${{ steps.existing_pr.outputs.branch }}"
           $version  = "${{ steps.version.outputs.version }}"
           $commitMsg = "${{ env.MANIFEST_NAME }}: Update to version $version"
