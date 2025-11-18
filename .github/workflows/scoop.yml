@@ -182,13 +182,6 @@ jobs:
           ($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $path -Encoding UTF8
           "path=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Lint manifest
-        if: steps.plan.outputs.mode != 'none'
-        shell: pwsh
-        run: |
-          Invoke-WebRequest https://raw.githubusercontent.com/ScoopInstaller/App-Manifest-Linter/main/lint.ps1 -OutFile lint.ps1
-          pwsh -File ./lint.ps1 manifest-out/${{ env.MANIFEST_NAME }}.json
-
       - name: Validate manifest
         if: steps.plan.outputs.mode != 'none'
         shell: pwsh
