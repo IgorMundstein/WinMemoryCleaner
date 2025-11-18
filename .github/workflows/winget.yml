@@ -146,6 +146,7 @@ jobs:
           ManifestType: version
           ManifestVersion: 1.6.0
           EOF
+          
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.installer.yaml" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
@@ -155,11 +156,15 @@ jobs:
             - Architecture: neutral
               InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.BINARY_NAME }}.exe
               InstallerSha256: ${{ steps.download.outputs.sha256 }}
-              Commands:
-                - ${{ env.BINARY_NAME }}
+              PortableCommandAlias: ${{ env.BINARY_NAME }}
+              Shortcuts:
+                - ShortcutAlias: ${{ env.DISPLAY_NAME }}
+                  ShortcutPath: ${{ env.BINARY_NAME }}.exe
+                  Directory: StartMenu
           ManifestType: installer
           ManifestVersion: 1.6.0
           EOF
+          
           locale_file="${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.locale.en-US.yaml"
           cat > "$locale_file" <<EOF
           # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
