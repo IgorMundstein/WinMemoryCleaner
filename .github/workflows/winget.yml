@@ -189,7 +189,16 @@ jobs:
         if: steps.check_winget.outputs.skip == 'false'
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile "winget.msixbundle"
+          $wingetUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+          $appRuntimeUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.WindowsAppRuntime.1.8.msix"
+          $vcLibsUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.VCLibs.x64.14.00.Desktop.appx"
+
+          Invoke-WebRequest -Uri $vcLibsUrl -OutFile "vc.appx"
+          Invoke-WebRequest -Uri $appRuntimeUrl -OutFile "runtime.msix"
+          Invoke-WebRequest -Uri $wingetUrl -OutFile "winget.msixbundle"
+
+          Add-AppxPackage -Path ".\vc.appx"
+          Add-AppxPackage -Path ".\runtime.msix"
           Add-AppxPackage -Path ".\winget.msixbundle"
 
       - name: Validate manifests with winget
@@ -268,7 +277,7 @@ jobs:
       - name: Cleanup artifacts
         if: always()
         run: |
-          rm -rf fork-winget upstream-winget winget-manifest ${{ env.BINARY_NAME }}.exe repo_tags.yaml winget.msixbundle
+          rm -rf fork-winget upstream-winget winget-manifest ${{ env.BINARY_NAME }}.exe repo_tags.yaml winget.msixbundle vc.appx runtime.msix
 
   sync_tags:
     name: Sync Tags across existing versions
