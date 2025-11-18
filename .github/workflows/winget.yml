@@ -189,8 +189,8 @@ jobs:
         if: steps.check_winget.outputs.skip == 'false'
         shell: pwsh
         run: |
-          winget upgrade winget --accept-package-agreements --accept-source-agreements --disable-interactivity
-        continue-on-error: true
+          Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile "winget.msixbundle"
+          Add-AppxPackage -Path ".\winget.msixbundle"
 
       - name: Validate manifests with winget
         if: steps.check_winget.outputs.skip == 'false'
@@ -268,7 +268,7 @@ jobs:
       - name: Cleanup artifacts
         if: always()
         run: |
-          rm -rf fork-winget upstream-winget winget-manifest ${{ env.BINARY_NAME }}.exe repo_tags.yaml
+          rm -rf fork-winget upstream-winget winget-manifest ${{ env.BINARY_NAME }}.exe repo_tags.yaml winget.msixbundle
 
   sync_tags:
     name: Sync Tags across existing versions
