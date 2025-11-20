@@ -138,17 +138,18 @@ jobs:
           set -e
           MANIFEST_DIR="winget-manifest"
           mkdir -p "$MANIFEST_DIR"
+          
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.yaml" <<EOF
-          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.version.1.9.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.version }}
           DefaultLocale: en-US
           ManifestType: version
-          ManifestVersion: 1.6.0
+          ManifestVersion: 1.9.0
           EOF
           
           cat > "${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.installer.yaml" <<EOF
-          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.installer.1.9.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.version }}
           InstallerType: portable
@@ -157,32 +158,38 @@ jobs:
               InstallerUrl: https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag }}/${{ env.BINARY_NAME }}.exe
               InstallerSha256: ${{ steps.download.outputs.sha256 }}
               PortableCommandAlias: ${{ env.BINARY_NAME }}
-              Shortcuts:
-                - ShortcutAlias: ${{ env.DISPLAY_NAME }}
-                  ShortcutPath: ${{ env.BINARY_NAME }}.exe
-                  Directory: StartMenu
           ManifestType: installer
-          ManifestVersion: 1.6.0
+          ManifestVersion: 1.9.0
           EOF
           
           locale_file="${MANIFEST_DIR}/${{ env.PACKAGE_ID }}.locale.en-US.yaml"
+          current_year=$(date +'%Y')
+          
           cat > "$locale_file" <<EOF
-          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+          # yaml-language-server: \$schema=https://aka.ms/winget-manifest.defaultLocale.1.9.0.schema.json
           PackageIdentifier: ${{ env.PACKAGE_ID }}
           PackageVersion: ${{ steps.get_release.outputs.version }}
           PackageLocale: en-US
           Publisher: ${{ env.PUBLISHER }}
+          PublisherUrl: https://github.com/${{ github.repository_owner }}
+          PublisherSupportUrl: https://github.com/${{ github.repository }}/issues
+          Author: ${{ env.PUBLISHER }}
           PackageName: ${{ env.DISPLAY_NAME }}
-          License: ${{ steps.metadata.outputs.license }}
           PackageUrl: ${{ steps.metadata.outputs.homepage }}
+          License: ${{ steps.metadata.outputs.license }}
+          LicenseUrl: https://github.com/${{ github.repository }}/blob/main/LICENSE
+          Copyright: Copyright (c) 2019 - $current_year ${{ env.PUBLISHER }}
           ShortDescription: ${{ steps.metadata.outputs.desc }}
+          ReleaseNotesUrl: https://github.com/${{ github.repository }}/releases/tag/${{ steps.get_release.outputs.tag }}
           EOF
+          
           if [ "${{ steps.repo_topics.outputs.found }}" = "true" ]; then
             cat repo_tags.yaml >> "$locale_file"
           fi
+          
           cat >> "$locale_file" <<EOF
           ManifestType: defaultLocale
-          ManifestVersion: 1.6.0
+          ManifestVersion: 1.9.0
           EOF
 
       - name: Prepare PR branch for manifest submission
