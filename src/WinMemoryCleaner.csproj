@@ -115,7 +115,7 @@
     <Compile Include="Converters\InverseBooleanConverter.cs" />
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
-	<Compile Include="Converters\PercentageToWidthConverter.cs" />
+    <Compile Include="Converters\PercentageToWidthConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\SumNumericConverter.cs" />
     <Compile Include="Core\Constants.cs" />
@@ -127,13 +127,11 @@
     <Compile Include="Core\Localizer.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\Migrator.cs" />
-    <Compile Include="Core\NativeMethods.cs" />
     <Compile Include="Core\ObservableObject.cs" />
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Core\Structs.cs" />
     <Compile Include="Core\ThemeManager.cs" />
     <Compile Include="Core\Updater.cs" />
-    <Compile Include="Core\Validator.cs" />
     <Compile Include="Interfaces\IComputerService.cs" />
     <Compile Include="Interfaces\IJsonSerializable.cs" />
     <Compile Include="Interfaces\IHotkeyService.cs" />
@@ -142,6 +140,8 @@
     <Compile Include="Interfaces\INotificationService.cs" />
     <Compile Include="Interfaces\IOperatingSystem.cs" />
     <Compile Include="Interfaces\ITheme.cs" />
+    <Compile Include="Interop\NativeMethods.cs" />
+    <Compile Include="Interop\ShellInterop.cs" />
     <Compile Include="Model\Computer.cs" />
     <Compile Include="Model\Hotkey.cs" />
     <Compile Include="Model\Language.cs" />

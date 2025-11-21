@@ -20,6 +20,7 @@ namespace WinMemoryCleaner
             public const string License = "GPL-3.0";
             public const string LocalizationResourcePath = EmbeddedResourcePath + "Localization.";
             public const string Name = "WinMemoryCleaner";
+            public const string Shortcut = "Windows Memory Cleaner.lnk";
             public const string ThemesResourcePath = EmbeddedResourcePath + "Themes.";
             public const string Title = "Windows Memory Cleaner";
             public const string VersionFormat = "{0}.{1}.{2}";

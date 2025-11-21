@@ -252,7 +252,7 @@ namespace WinMemoryCleaner
             {
                 using (var image = new Bitmap(16, 16))
                 using (var graphics = Graphics.FromImage(image))
-                using (var font = new Font("Consolas", 15F, FontStyle.Regular, GraphicsUnit.Pixel))
+                using (var font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Pixel))
                 using (var format = new StringFormat())
                 using (var backgroundBrush = GetBackgroundBrush(memory, isOptimizing))
                 using (var textBrush = GetTextBrush(memory, isOptimizing))
@@ -264,20 +264,18 @@ namespace WinMemoryCleaner
                     // Configure graphics quality
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    graphics.SmoothingMode = SmoothingMode.HighQuality;
-                    graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
+                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
                     // Draw background
                     if (!Settings.TrayIconUseTransparentBackground)
                     {
                         using (var path = new GraphicsPath())
                         {
-                            var radius = 10;
-
-                            path.AddArc(0, 0, radius, radius, 180, 90);
-                            path.AddArc(16 - radius, 0, radius, radius, 270, 90);
-                            path.AddArc(16 - radius, 16 - radius, radius, radius, 0, 90);
-                            path.AddArc(0, 16 - radius, radius, radius, 90, 90);
+                            path.AddArc(0, 0, 10, 10, 180, 90);
+                            path.AddArc(5, 0, 10, 10, 270, 90);
+                            path.AddArc(5, 5, 10, 10, 0, 90);
+                            path.AddArc(0, 5, 10, 10, 90, 90);
                             path.CloseFigure();
 
                             graphics.FillPath(backgroundBrush, path);
@@ -372,8 +370,8 @@ namespace WinMemoryCleaner
                 else
                 {
                     text = Settings.ShowVirtualMemory
-                        ? string.Format(Localizer.Culture, "{0}{1}: {2}%{0}{3}: {4}%", Environment.NewLine, Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage, Localizer.String.VirtualMemory, memory.Virtual.Used.Percentage)
-                        : string.Format(Localizer.Culture, "{0}{1}: {2}%", Environment.NewLine, Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage);
+                        ? string.Format(Localizer.Culture, "{0}: {1}%{2}{3}: {4}%", Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage, Environment.NewLine, Localizer.String.VirtualMemory, memory.Virtual.Used.Percentage)
+                        : string.Format(Localizer.Culture, "{0}: {1}%", Localizer.String.PhysicalMemory, memory.Physical.Used.Percentage);
                 }
                 
                 // Truncate to 63 characters

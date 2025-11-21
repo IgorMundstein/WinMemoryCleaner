@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security.Principal;
 using System.ServiceProcess;
 using System.Threading;
@@ -163,19 +162,34 @@ namespace WinMemoryCleaner
 
         #region Methods
 
+        /// <summary>
+        /// Creates the start menu shortcut.
+        /// </summary>
+        private void CreateStartMenuShortcut()
+        {
+            try
+            {
+                Helper.CreateShortcut(Path, System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), Constants.App.Shortcut), Constants.App.Title);
+            }
+            catch (Exception e)
+            {
+                Logger.Debug("Failed to create Start Menu shortcut: " + e.GetMessage());
+            }
+        }
+
         private void Initialize()
         {
-            // Check if the app is secure to run
-            SecurityCheck();
-
             // DI/IOC
             DependencyInjection.Container.Register<IComputerService, ComputerService>();
             DependencyInjection.Container.Register<IHotkeyService, HotkeyService>();
             DependencyInjection.Container.Register<INotificationService, NotificationService>();
 
             // App properties
-            Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
-            Version = Assembly.GetExecutingAssembly().GetName().Version;
+            Path = Helper.GetExecutablePath();
+            Version = Helper.GetVersion();
+
+            // App startup shortcut
+            CreateStartMenuShortcut();
 
             // Check if app is already running
             bool createdNew;
@@ -720,28 +734,6 @@ namespace WinMemoryCleaner
             catch (Exception e)
             {
                 Logger.Error(string.Format(Localizer.Culture, "An error occurred while managing the scheduled task for app startup. Error: {0}", e.GetMessage()));
-            }
-        }
-
-        /// <summary>
-        /// Verify if the app is secure to run
-        /// </summary>
-        private void SecurityCheck()
-        {
-            if (IsInDebugMode)
-                return;
-
-            if (!Validator.IsCertificateValid())
-            {
-                try
-                {
-                    ShowDialog(Localizer.String.SecurityWarning, MessageBoxButton.OK, MessageBoxImage.Warning);
-                    Navigate(Constants.App.Repository.DownloadUri);
-                }
-                finally
-                {
-                    Shutdown(true);
-                }
             }
         }
 

@@ -51,7 +51,6 @@
   "RunOnStartup": "启动时运行",
   "Schedule": "计划",
   "Seconds": "秒",
-  "SecurityWarning": "此应用程序可能已被篡改。您将被重定向到官方存储库以下载安全版本。",
   "Settings": "设置",
   "ShowMemoryUsage": "显示内存使用情况",
   "ShowOptimizationNotifications": "显示优化通知",

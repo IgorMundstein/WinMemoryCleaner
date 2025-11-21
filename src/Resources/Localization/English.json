@@ -51,7 +51,6 @@
   "RunOnStartup": "run on startup",
   "Schedule": "schedule",
   "Seconds": "seconds",
-  "SecurityWarning": "this application may have been tampered with. you will be redirected to the official repository to download a secure version.",
   "Settings": "settings",
   "ShowMemoryUsage": "show memory usage",
   "ShowOptimizationNotifications": "show optimization notifications",

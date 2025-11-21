@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Web.Script.Serialization;
 
@@ -26,18 +27,22 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Creates a directory exists. Ignores failures.
+        /// Creates a shortcut (.lnk) at the specified path pointing to the target executable.
         /// </summary>
-        public static void CreateDirectory(string path)
+        /// <param name="targetExePath">The full path to the .exe file.</param>
+        /// <param name="destinationLinkPath">The full path where the .lnk file will be saved.</param>
+        /// <param name="description">The tooltip description for the shortcut.</param>
+        public static void CreateShortcut(string targetExePath, string destinationLinkPath, string description)
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(path) && !Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-            }
-            catch
-            {
-            }
+            var link = (ShellInterop.IShellLink)new ShellInterop.ShellLink();
+
+            link.SetDescription(description);
+            link.SetPath(targetExePath);
+            link.SetWorkingDirectory(Path.GetDirectoryName(targetExePath));
+
+            IPersistFile file = (IPersistFile)link;
+
+            file.Save(destinationLinkPath, false);
         }
 
         /// <summary>
@@ -144,25 +149,22 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
-        /// Gets the current application's assembly version.
-        /// </summary>
-        public static Version GetCurrentVersion()
-        {
-            try
-            {
-                return (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName().Version ?? new Version(0, 0, 0, 0);
-            }
-            catch
-            {
-                return new Version(0, 0, 0, 0);
-            }
-        }
-
-        /// <summary>
-        /// Returns the executable path of the current process.
+        /// Returns the executable application's path
         /// </summary>
         public static string GetExecutablePath()
         {
+            try
+            {
+                var path = Process.GetCurrentProcess().MainModule.FileName;
+
+                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                    return path;
+            }
+            catch 
+            {
+                // ignored
+            }
+
             try
             {
                 var entry = Assembly.GetEntryAssembly();
@@ -172,15 +174,24 @@ namespace WinMemoryCleaner
             }
             catch
             {
+                // ignored
             }
 
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+        }
+
+        /// <summary>
+        /// Gets the application's assembly version
+        /// </summary>
+        public static Version GetVersion()
+        {
             try
             {
-                return Process.GetCurrentProcess().MainModule.FileName;
+                return (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName().Version ?? new Version(0, 0, 0, 0);
             }
             catch
             {
-                return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+                return new Version(0, 0, 0, 0);
             }
         }
 

@@ -85,14 +85,13 @@ namespace WinMemoryCleaner
                     return;
                 }
 
-                var exe = AppDomain.CurrentDomain.FriendlyName;
-                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exe);
+                var exe = Path.GetFileName(App.Path);
                 var temp = Path.Combine(Path.GetTempPath(), exe);
 
                 if (File.Exists(temp))
                     File.Delete(temp);
 
-                var updateInfo = Tuple.Create(temp, path, exe, newestVersion, (string[])e.UserState);
+                var updateInfo = Tuple.Create(temp, App.Path, exe, newestVersion, (string[])e.UserState);
 
                 _client.DownloadFileAsync(Constants.App.Repository.LatestExeUri, temp, updateInfo);
             }

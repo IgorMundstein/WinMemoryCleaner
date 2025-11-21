@@ -51,7 +51,6 @@
   "RunOnStartup": "開機時自動執行",
   "Schedule": "行程",
   "Seconds": "秒",
-  "SecurityWarning": "此應用程式可能已被篡改。您將被重新導向到官方存儲庫以下載安全版本。",
   "Settings": "設定",
   "ShowMemoryUsage": "顯示記憶體使用量",
   "ShowOptimizationNotifications": "顯示最佳化通知",
