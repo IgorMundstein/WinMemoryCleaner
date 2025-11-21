@@ -1,8 +1,16 @@
+### 3.0.7
+
+**2025-11-20**
+
+- Added start menu shortcut creation when the app opens ([#160](https://github.com/IgorMundstein/WinMemoryCleaner/issues/160))
+- Removed the code that tried to validate the code signature, as it was causing errors with package managers
+- UI & Code enhancements
+
 ### 3.0.6
 
 **2025-11-18**
 
-- Fixed tooltip text for the system tray icon. Windows restricts tooltip length to 64 characters, and in some languages, this limit is exceeded when the virtual memory display is enabled.
+- Fixed tooltip text for the system tray icon. Windows restricts tooltip length to 64 characters, and in some languages, this limit is exceeded when the virtual memory display is enabled. ([#148](https://github.com/IgorMundstein/WinMemoryCleaner/issues/148)) ([#155](https://github.com/IgorMundstein/WinMemoryCleaner/issues/155)) ([#159](https://github.com/IgorMundstein/WinMemoryCleaner/issues/159))
 
 ### 3.0.5
 
