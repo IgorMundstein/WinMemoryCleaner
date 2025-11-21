@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
-  release:
-    types: [published]
 
 jobs:
   setup:
@@ -16,12 +14,11 @@ jobs:
       release_version: ${{ steps.get_version.outputs.RELEASE_VERSION }}
       cache-key: ${{ steps.cache_check.outputs.cache-primary-key }}
       cache-hit: ${{ steps.cache_restore.outputs.cache-hit }}
+      is_grace_period: ${{ steps.check_age.outputs.is_grace_period }}
     steps:
-      - name: "⏳ Add grace period after release publication"
-        if: github.event_name == 'release'
-        run: sleep 14400
       - name: "🔽 Checkout Repository"
         uses: actions/checkout@v4
+
       - name: "🏷️ Get Latest Release Version"
         id: get_version
         env:
@@ -35,10 +32,34 @@ jobs:
           version="$latest_tag"
           echo "RELEASE_VERSION=$version" >> "$GITHUB_OUTPUT"
           echo "Checking for version: $version"
+
+      - name: "🕰️ Check Release Age (Grace Period)"
+        id: check_age
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.get_version.outputs.RELEASE_VERSION }}
+        run: |
+          published_at=$(gh release view "$RELEASE_VERSION" --json publishedAt --jq .publishedAt)
+          current_ts=$(date +%s)
+          published_ts=$(date -d "$published_at" +%s)
+          diff=$((current_ts - published_ts))
+          
+          echo "Release Published: $published_at"
+          echo "Release Age: $diff seconds"
+          
+          if [ "$diff" -lt 86400 ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "⚠️ Release is less than 24 hours old. Entering grace period."
+            echo "is_grace_period=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Release is older than 24 hours (or manual trigger)."
+            echo "is_grace_period=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: "🗄️ Set cache key"
         id: cache_check
         run: |
           echo "cache-primary-key=verification-flag-v${{ steps.get_version.outputs.RELEASE_VERSION }}" >> $GITHUB_OUTPUT
+
       - name: "🗄️ Restore Publication Success Cache"
         id: cache_restore
         uses: actions/cache/restore@v4
@@ -58,15 +79,14 @@ jobs:
           echo "✅ **All package managers were already published and tested for version $VERSION. No further tests were run.**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Package Manager      | Status      |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------------------|-------------|" >> $GITHUB_STEP_SUMMARY
+          echo "|----------------------|-------------|" >> $GITHUB_STEP_SUMMARY
           echo "| 🍫 Chocolatey        | 🟢 Verified |" >> $GITHUB_STEP_SUMMARY
           echo "| 🍦 Scoop (Extras)    | 🟢 Verified |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📦 WinGet CLI        | 🟢 Verified |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🌐 WinGet Manifest   | 🟢 Verified |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 WinGet            | 🟢 Verified |" >> $GITHUB_STEP_SUMMARY
 
-  choco:
+  chocolatey:
     needs: setup
-    if: needs.setup.outputs.cache-hit != 'true'
+    if: needs.setup.outputs.cache-hit != 'true' && needs.setup.outputs.is_grace_period != 'true'
     runs-on: windows-latest
     timeout-minutes: 15
     outputs:
@@ -84,41 +104,51 @@ jobs:
           $packageName = "winmemorycleaner"
           $e2e_result = "fail"
           $published = "false"
+
           function Set-Outputs {
             param($Published, $E2E)
             echo "published=$Published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             echo "e2e_result=$E2E" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
+
           Write-Host "===[Chocolatey] Checking $packageName version $version==="
           try {
             $choco_output = choco search $packageName --exact --all-versions -r
             Write-Host "Chocolatey search output:`n$choco_output"
+
             if ($choco_output -match "\b$([regex]::Escape($version))\b") {
               Write-Host "[Chocolatey] ✅ Version found."
               $published = "true"
+
               Write-Host("[Chocolatey] Installing package...")
               choco install $packageName --version $version -y --no-progress
+              
               $chocoRoot = $env:ChocolateyInstall
               if (-not $chocoRoot) { $chocoRoot = "C:\ProgramData\chocolatey" }
               $exePath = Get-ChildItem -Path (Join-Path $chocoRoot "lib\$packageName") -Recurse -Filter "WinMemoryCleaner.exe" -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName -First 1
+              
               if (-not $exePath) {
                 $cmd = Get-Command WinMemoryCleaner.exe -ErrorAction SilentlyContinue
                 if ($cmd -and (Test-Path $cmd.Source)) {
                   $exePath = $cmd.Source
                 }
               }
+
               if (-not $exePath) {
                 Write-Host "[Chocolatey] ❌ WinMemoryCleaner.exe not found after install"
                 $e2e_result = "fail"
                 Set-Outputs -Published $published -E2E $e2e_result
                 exit 1
               }
+
               Write-Host "[Chocolatey] Found executable: $exePath"
               $verInfo = (Get-Item $exePath).VersionInfo
               $fileVersion = $verInfo.ProductVersion
               if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
+              
               $expectedRegex = '^' + [regex]::Escape($version) + '(\.0)?$'
               Write-Host "[Chocolatey] Installed file version: $fileVersion"
+
               if ($fileVersion -match $expectedRegex) {
                 $e2e_result = "success"
                 Write-Host "[Chocolatey] ✅ E2E Test successful (version matches)."
@@ -146,7 +176,7 @@ jobs:
 
   scoop:
     needs: setup
-    if: needs.setup.outputs.cache-hit != 'true'
+    if: needs.setup.outputs.cache-hit != 'true' && needs.setup.outputs.is_grace_period != 'true'
     runs-on: windows-latest
     timeout-minutes: 15
     outputs:
@@ -166,11 +196,13 @@ jobs:
           $qualified = "$bucket/$packageName"
           $e2e_result = "fail"
           $published = "false"
+
           function Set-Outputs {
             param($Published, $E2E)
             echo "published=$Published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             echo "e2e_result=$E2E" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
+
           Write-Host "===[Scoop] Ensuring Scoop is installed==="
           try {
             if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
@@ -180,9 +212,11 @@ jobs:
               scoop bucket add $bucket
             }
             scoop bucket update $bucket
+
             Write-Host "===[Scoop] Checking $qualified version $version==="
             $manifestRaw = ""
             try { $manifestRaw = scoop cat $qualified 2>$null | Out-String } catch {}
+            
             if (-not $manifestRaw) {
               Write-Host "[Scoop] ❌ Manifest $qualified not found."
               $published = "false"
@@ -190,6 +224,7 @@ jobs:
               Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
+
             try { $manifest = $manifestRaw | ConvertFrom-Json } catch {
               Write-Host "[Scoop] ❌ Failed to parse manifest JSON."
               $published = "false"
@@ -197,8 +232,10 @@ jobs:
               Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
+
             $manifestVersion = "$($manifest.version)"
             Write-Host "[Scoop] Manifest version: $manifestVersion"
+
             if ($manifestVersion -eq $version) {
               Write-Host "[Scoop] ✅ Version found in '$bucket'."
               $published = "true"
@@ -209,20 +246,25 @@ jobs:
               Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
+
             Write-Host "[Scoop] Installing package from '$bucket'..."
             scoop install $qualified
             $exe = "$(scoop prefix $packageName)\WinMemoryCleaner.exe"
+
             if (-not (Test-Path $exe)) {
               Write-Host "[Scoop] ❌ WinMemoryCleaner.exe not found after install"
               $e2e_result = "fail"
               Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
+
             $verInfo = (Get-Item $exe).VersionInfo
             $fileVersion = $verInfo.ProductVersion
             if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
+            
             $expectedRegex = '^' + [regex]::Escape($version) + '(\.0)?$'
             Write-Host "[Scoop] Installed file version: $fileVersion"
+
             if ($fileVersion -match $expectedRegex) {
               $e2e_result = "success"
               Write-Host "[Scoop] ✅ E2E Test successful (version matches)."
@@ -232,6 +274,7 @@ jobs:
               Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
+
           } catch {
             Write-Host "[Scoop] ❌ Error: $($_.Exception.Message)"
             $published = "false"
@@ -241,9 +284,9 @@ jobs:
           }
           Set-Outputs -Published $published -E2E $e2e_result
 
-  winget_cli:
+  winget:
     needs: setup
-    if: needs.setup.outputs.cache-hit != 'true'
+    if: needs.setup.outputs.cache-hit != 'true' && needs.setup.outputs.is_grace_period != 'true'
     runs-on: windows-latest
     continue-on-error: true
     timeout-minutes: 20
@@ -273,6 +316,7 @@ jobs:
           Write-Host "===[WinGet] Path: $wingetPath"
           echo "found=$found" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           echo "path=$wingetPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: "📦 WinGet CLI Verify and Test"
         id: winget
         if: steps.detect_winget.outputs.found == 'true'
@@ -283,49 +327,63 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $expected = "$env:RELEASE_VERSION"
           $expectedRegex = '^' + [regex]::Escape($expected) + '(\.0)?$'
+          
           $wingetExe = "${{ steps.detect_winget.outputs.path }}"
           if (-not (Test-Path $wingetExe)) { $wingetExe = "winget.exe" }
+          
           $pkgName = "IgorMundstein.WinMemoryCleaner"
           $published = "false"
           $e2e_result = "fail"
+
           function Set-Outputs {
             param($Published, $E2E)
             echo "published=$Published" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             echo "e2e_result=$E2E" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
+
           Write-Host "===[WinGet] Using $wingetExe"
           try {
             Write-Host "[WinGet] Updating sources..."
             try { & $wingetExe source update } catch { Write-Host "[WinGet] source update failed (non-fatal)" }
+
             $outDir = (Resolve-Path '.').Path
             Write-Host "[WinGet] Installing exact version $expected to: $outDir"
+            
             & $wingetExe install --id $pkgName --version $expected --source winget --accept-source-agreements --accept-package-agreements --silent --disable-interactivity -e -o "$outDir"
+            
             $candidates = @()
             $candidates += (Join-Path $outDir "WinMemoryCleaner.exe")
             $link = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links\WinMemoryCleaner.exe"
             $candidates += $link
+            
             $pkgRoot = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages"
             if (Test-Path $pkgRoot) {
               $foundPkgExe = Get-ChildItem -Path $pkgRoot -Recurse -Filter "WinMemoryCleaner.exe" -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName -First 1
               if ($foundPkgExe) { $candidates += $foundPkgExe }
             }
+
             $machinePath = [Environment]::GetEnvironmentVariable('Path','Machine')
             $userPath    = [Environment]::GetEnvironmentVariable('Path','User')
             if ($machinePath -or $userPath) { $env:Path = "$machinePath;$userPath" }
+            
             $cmd = Get-Command WinMemoryCleaner -ErrorAction SilentlyContinue
             if ($cmd -and (Test-Path $cmd.Source)) { $candidates += $cmd.Source }
+
             $exePath = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+            
             if (-not $exePath) {
               Write-Host "[WinGet] ❌ WinMemoryCleaner.exe not found after install"
               $e2e_result = "fail"
               Set-Outputs -Published $published -E2E $e2e_result
               exit 1
             }
+
             Write-Host "[WinGet] Found executable: $exePath"
             $verInfo = (Get-Item $exePath).VersionInfo
             $fileVersion = $verInfo.ProductVersion
             if ([string]::IsNullOrWhiteSpace($fileVersion)) { $fileVersion = $verInfo.FileVersion }
             Write-Host "[WinGet] Installed file version: $fileVersion"
+
             if ($fileVersion -match $expectedRegex) {
               $published = "true"
               $e2e_result = "success"
@@ -346,106 +404,53 @@ jobs:
           }
           Set-Outputs -Published $published -E2E $e2e_result
 
-  winget_manifest:
-    needs: setup
-    if: needs.setup.outputs.cache-hit != 'true'
-    runs-on: ubuntu-latest
-    outputs:
-      published: ${{ steps.check_manifest.outputs.published }}
-      manifest_found: ${{ steps.check_manifest_url.outputs.manifest_found }}
-    continue-on-error: true
-    steps:
-      - name: "🌐 Check WinGet Manifest in winget-pkgs repo (API)"
-        id: check_manifest
-        shell: bash
-        env:
-          RELEASE_VERSION: ${{ needs.setup.outputs.release_version }}
-        run: |
-          file_path="manifests/i/IgorMundstein/WinMemoryCleaner/${RELEASE_VERSION}/IgorMundstein.WinMemoryCleaner.installer.yaml"
-          url="https://api.github.com/repos/microsoft/winget-pkgs/contents/${file_path}"
-          echo "Checking manifest existence: $url"
-          if curl --fail -s "$url" > /dev/null; then
-            echo "published=true" >> $GITHUB_OUTPUT
-            echo "✅ Published"
-          else
-            echo "published=false" >> $GITHUB_OUTPUT
-            echo "❌ Not Published"
-          fi
-      - name: "🌐 Check WinGet Manifest in winget-pkgs repo (raw URL, non-blocking)"
-        id: check_manifest_url
-        shell: bash
-        continue-on-error: true
-        env:
-          RELEASE_VERSION: ${{ needs.setup.outputs.release_version }}
-        run: |
-          file_path="manifests/i/IgorMundstein/WinMemoryCleaner/${RELEASE_VERSION}/IgorMundstein.WinMemoryCleaner.installer.yaml"
-          manifest_url="https://raw.githubusercontent.com/microsoft/winget-pkgs/master/${file_path}"
-          if curl --fail -s "$manifest_url" > /dev/null; then
-            echo "manifest_found=true" >> $GITHUB_OUTPUT
-            echo "✅ Published"
-          else
-            echo "manifest_found=false" >> $GITHUB_OUTPUT
-            echo "❌ Not Published"
-          fi
-
   summarize:
-    needs: [setup, choco, scoop, winget_cli, winget_manifest]
-    if: needs.setup.outputs.cache-hit != 'true'
+    needs: [setup, chocolatey, scoop, winget]
+    if: always() && needs.setup.result == 'success' && needs.setup.outputs.cache-hit != 'true' && needs.setup.outputs.is_grace_period != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "📝 Publication Summary"
         run: |
           VERSION="${{ needs.setup.outputs.release_version }}"
           echo "### Publication Verification for $VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "| Package Manager           | Publication Status      | E2 Test        |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------------------------|------------------------|----------------|" >> $GITHUB_STEP_SUMMARY
-          CH_PUB="${{ needs.choco.outputs.published }}"
-          CH_E2E="${{ needs.choco.outputs.e2e }}"
+          echo "| Package Manager      | Publication Status      | E2E Test       |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------------------|-------------------------|----------------|" >> $GITHUB_STEP_SUMMARY
+
+          CH_PUB="${{ needs.chocolatey.outputs.published }}"
+          CH_E2E="${{ needs.chocolatey.outputs.e2e }}"
           if [ "$CH_PUB" == "true" ]; then CH_STATUS="✅ Published"; else CH_STATUS="❌ Not Published"; fi
           if [ "$CH_E2E" == "success" ]; then CH_E2E_STATUS="✅ Passed"; elif [ "$CH_PUB" == "true" ]; then CH_E2E_STATUS="❌ Failed"; else CH_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍫 Chocolatey             | $CH_STATUS             | $CH_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🍫 Chocolatey        | $CH_STATUS              | $CH_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
+
           SC_PUB="${{ needs.scoop.outputs.published }}"
           SC_E2E="${{ needs.scoop.outputs.e2e }}"
           if [ "$SC_PUB" == "true" ]; then SC_STATUS="✅ Published"; else SC_STATUS="❌ Not Published"; fi
           if [ "$SC_E2E" == "success" ]; then SC_E2E_STATUS="✅ Passed"; elif [ "$SC_PUB" == "true" ]; then SC_E2E_STATUS="❌ Failed"; else SC_E2E_STATUS="⚠️ Skipped"; fi
-          echo "| 🍦 Scoop (Extras)         | $SC_STATUS             | $SC_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
-          WG_CLI_FOUND="${{ needs.winget_cli.outputs.found }}"
-          WG_CLI_PUB="${{ needs.winget_cli.outputs.published }}"
-          if [ "$WG_CLI_FOUND" == "true" ]; then
-            if [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_STATUS="✅ Published"; else WG_CLI_STATUS="❌ Not Published"; fi
-            WG_CLI_E2E_RAW="${{ needs.winget_cli.outputs.e2e }}"
-            if [ "$WG_CLI_E2E_RAW" == "success" ]; then WG_CLI_E2E_STATUS="✅ Passed"
-            elif [ "$WG_CLI_PUB" == "true" ]; then WG_CLI_E2E_STATUS="❌ Failed"
-            else WG_CLI_E2E_STATUS="⚠️ Skipped"; fi
+          echo "| 🍦 Scoop (Extras)    | $SC_STATUS              | $SC_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
+
+          WG_FOUND="${{ needs.winget.outputs.found }}"
+          WG_PUB="${{ needs.winget.outputs.published }}"
+          WG_E2E_RAW="${{ needs.winget.outputs.e2e }}"
+          if [ "$WG_FOUND" == "true" ]; then
+            if [ "$WG_PUB" == "true" ]; then WG_STATUS="✅ Published"; else WG_STATUS="❌ Not Published"; fi
+            if [ "$WG_E2E_RAW" == "success" ]; then WG_E2E_STATUS="✅ Passed"
+            elif [ "$WG_PUB" == "true" ]; then WG_E2E_STATUS="❌ Failed"
+            else WG_E2E_STATUS="⚠️ Skipped"; fi
           else
-            WG_CLI_STATUS="⚠️ Not Installed"
-            WG_CLI_E2E_STATUS="N/A"
+            WG_STATUS="⚠️ Not Installed"
+            WG_E2E_STATUS="N/A"
           fi
-          echo "| 📦 WinGet CLI             | $WG_CLI_STATUS         | $WG_CLI_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
-          WG_MANIFEST_PUB="${{ needs.winget_manifest.outputs.published }}"
-          if [ "$WG_MANIFEST_PUB" == "true" ]; then
-            WG_MANIFEST_STATUS="✅ Published"
-          else
-            WG_MANIFEST_STATUS="❌ Not Published"
-          fi
-          echo "| 🌐 WinGet Manifest (API)  | $WG_MANIFEST_STATUS    | N/A           |" >> $GITHUB_STEP_SUMMARY
-          WG_MANIFEST_FOUND="${{ needs.winget_manifest.outputs.manifest_found }}"
-          if [ "$WG_MANIFEST_FOUND" == "true" ]; then
-            WG_MANIFEST_RAW_STATUS="✅ Published"
-          else
-            WG_MANIFEST_RAW_STATUS="❌ Not Published"
-          fi
-          echo "| 🌐 WinGet Manifest (RAW)  | $WG_MANIFEST_RAW_STATUS| N/A           |" >> $GITHUB_STEP_SUMMARY
-          echo ""
-          echo "_WinGet CLI test is authoritative; manifest checks are informational only._" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 WinGet            | $WG_STATUS              | $WG_E2E_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
       - name: "Set cache flag if all published"
         id: allpublished
         run: |
           ALL_PUBLISHED=true
-          if [ "${{ needs.choco.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
+          if [ "${{ needs.chocolatey.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
           if [ "${{ needs.scoop.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
-          if [ "${{ needs.winget_cli.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
-          if [ "${{ needs.winget_manifest.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
+          if [ "${{ needs.winget.outputs.published }}" != "true" ]; then ALL_PUBLISHED=false; fi
+          
           echo "ALL_PUBLISHED=$ALL_PUBLISHED" >> $GITHUB_ENV
           if [ "$ALL_PUBLISHED" = "true" ]; then
             mkdir -p .cache
@@ -454,6 +459,7 @@ jobs:
           else
             echo "Not all package managers published. Cache will NOT be saved."
           fi
+
       - name: "💾 Save Success Flag to Cache"
         if: env.ALL_PUBLISHED == 'true'
         uses: actions/cache/save@v4
