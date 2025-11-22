@@ -157,7 +157,7 @@ jobs:
         if: steps.check-screenshot.outputs.screenshot_exists == 'true'
         run: |
           $NewVersion = "${{ steps.set_vars.outputs.TAG_CLEAN }}"
-          $FilePath = "index.html"
+          $FilePath = "docs/index.html" # <-- CORRECTED PATH HERE
           
           if (-not (Test-Path $FilePath)) {
               Write-Host "::error::index.html not found at path $FilePath"
@@ -185,7 +185,7 @@ jobs:
           delete-branch: true
           add-paths: |
             docs/assets/images/main-window.png
-            index.html
+            docs/index.html # <-- CORRECTED PATH HERE
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
 
