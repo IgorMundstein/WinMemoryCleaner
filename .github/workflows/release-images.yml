@@ -18,7 +18,11 @@ jobs:
   update-main-window-screenshot:
     name: Update Main Window Screenshot
     runs-on: windows-latest
-
+    
+    defaults:
+      run:
+        shell: pwsh
+    
     steps:
       - name: checkout-repository
         uses: actions/checkout@v4
@@ -26,28 +30,34 @@ jobs:
           fetch-depth: 0
           ref: main
           token: ${{ secrets.PAT_TOKEN }}
-
+          
+      - name: Set Variables
+        id: set_vars
+        run: |
+          $TAG = "${{ github.event.release.tag_name }}"
+          $TAG_CLEAN = $TAG -replace '^v'
+          echo "TAG_CLEAN=$TAG_CLEAN" >> $env:GITHUB_OUTPUT
+          echo "TAG=$TAG" >> $env:GITHUB_OUTPUT
+          
       - name: Download signed EXE from release
         id: download-exe
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
-        shell: pwsh
         run: |
-          gh release download $env:TAG --pattern "WinMemoryCleaner.exe"
+          $TAG = "${{ steps.set_vars.outputs.TAG }}"
+          gh release download $TAG --pattern "WinMemoryCleaner.exe"
           if (-not (Test-Path ".\WinMemoryCleaner.exe")) {
-            Write-Host "::error::Failed to download WinMemoryCleaner.exe from release $env:TAG"
+            Write-Host "::error::Failed to download WinMemoryCleaner.exe from release $TAG"
             exit 1
           }
           Write-Host "Downloaded signed WinMemoryCleaner.exe"
 
       - name: Capture window screenshot from SIGNED exe
         id: capture_screenshot
-        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
           $appPath = ".\WinMemoryCleaner.exe"
-          $windowScreenshotPath = "$pwd\main-window-raw.png"
+          $windowScreenshotPath = "main-window-raw.png"
           $proc = Start-Process -FilePath $appPath -PassThru
           $maxWaitMs = 15000; $elapsed = 0
           while ($proc.MainWindowHandle -eq 0 -and $elapsed -lt $maxWaitMs) {
@@ -81,37 +91,36 @@ jobs:
 
       - name: check-screenshot-exists
         id: check-screenshot
-        shell: pwsh
         run: |
-          if (Test-Path -Path ".\main-window-raw.png" -PathType Leaf) {
-            echo "screenshot_exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          if (Test-Path -Path "main-window-raw.png" -PathType Leaf) {
+            echo "screenshot_exists=true" >> $env:GITHUB_OUTPUT
           } else {
             Write-Host "::error::Screenshot was not created."
-            echo "screenshot_exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            echo "screenshot_exists=false" >> $env:GITHUB_OUTPUT
             exit 1
           }
 
       - name: install-imagemagick
         if: steps.check-screenshot.outputs.screenshot_exists == 'true'
         run: choco install imagemagick
-        shell: pwsh
 
       - name: process-screenshot-image
         if: steps.check-screenshot.outputs.screenshot_exists == 'true'
-        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          New-Item -ItemType Directory -Path "docs/assets/images" -Force
-          $File = ".\main-window-raw.png"
+          $DOC_DIR = "docs/assets/images"
+          $RAW_FILE = "main-window-raw.png"
+          $OUT_FILE = "$DOC_DIR/main-window.png"
+          New-Item -ItemType Directory -Path $DOC_DIR -Force | Out-Null
           
           try {
-              $imageInfo = magick identify -format "%w %h" $File
+              $imageInfo = magick identify -format "%w %h" $RAW_FILE
               if (-not $imageInfo) {
-                  Write-Host "::error::Failed to read image $File with ImageMagick (magick identify)."
+                  Write-Host "::error::Failed to read image $RAW_FILE with ImageMagick (magick identify)."
                   exit 1
               }
           } catch {
-              Write-Host "::error::Failed to read image $File with ImageMagick."
+              Write-Host "::error::Failed to read image $RAW_FILE with ImageMagick."
               Write-Host $_.Exception.Message
               exit 1
           }
@@ -121,7 +130,7 @@ jobs:
           $H = [int]$parts[1]
 
           if ($W -le 0 -or $H -le 0) {
-              Write-Host "::error::Failed to get image size for $File"
+              Write-Host "::error::Failed to get image size for $RAW_FILE"
               exit 1
           }
           
@@ -134,15 +143,31 @@ jobs:
           $W_1 = $W - 1
           $H_1 = $H - 1
           
-          magick convert "$File" `
+          magick convert "$RAW_FILE" `
             "(" -size "${W}x${H}" xc:none -fill white -draw "roundrectangle 0,0,$W_1,$H_1,$R,$R" ")" `
             -compose DstIn -composite `
-            docs/assets/images/main-window.png
+            $OUT_FILE
             
-          if (-not (Test-Path "docs/assets/images/main-window.png" -PathType Leaf) -or (Get-Item "docs/assets/images/main-window.png").Length -eq 0) {
+          if (-not (Test-Path $OUT_FILE -PathType Leaf) -or (Get-Item $OUT_FILE).Length -eq 0) {
               Write-Host "::error::Image processing failed and output file was not created."
               exit 1
           }
+
+      - name: Update index.html with Cache Buster
+        if: steps.check-screenshot.outputs.screenshot_exists == 'true'
+        run: |
+          $NewVersion = "${{ steps.set_vars.outputs.TAG_CLEAN }}"
+          $FilePath = "index.html"
+          
+          if (-not (Test-Path $FilePath)) {
+              Write-Host "::error::index.html not found at path $FilePath"
+              exit 1
+          }
+          
+          (Get-Content $FilePath) |
+          ForEach-Object {
+              $_ -replace 'src="./assets/images/main-window.png(\?v=.*)?"', "src=`"./assets/images/main-window.png?v=$NewVersion`""
+          } | Set-Content $FilePath -Encoding UTF8
 
       - name: create-pull-request
         id: cpr
@@ -150,16 +175,17 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_TOKEN }}
-          commit-message: "chore(docs): update main-window.png"
-          title: "Docs: Update Main Window Screenshot for Release"
+          commit-message: "chore(docs): update main window screenshot and cache buster"
+          title: "Docs: Update Assets for Release ${{ steps.set_vars.outputs.TAG }}"
           body: |
-            This is an automated PR to update the main window screenshot.
+            This is an automated PR to update the main window screenshot and the cache-busting parameter in index.html for release **${{ steps.set_vars.outputs.TAG }}**.
             It will be automatically merged once all status checks pass.
           branch: "docs/main-window-update-${{ github.run_id }}"
           base: main
           delete-branch: true
           add-paths: |
             docs/assets/images/main-window.png
+            index.html
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
 
@@ -167,7 +193,6 @@ jobs:
         if: steps.check-screenshot.outputs.screenshot_exists == 'true' && steps.cpr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
-        shell: pwsh
         run: |
-          gh pr merge $env:PR_NUMBER --squash --auto --delete-branch
+          $PR_NUMBER = "${{ steps.cpr.outputs.pull-request-number }}"
+          gh pr merge $PR_NUMBER --squash --auto --delete-branch
