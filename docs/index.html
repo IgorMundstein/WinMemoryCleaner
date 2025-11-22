@@ -89,6 +89,12 @@
             padding-bottom: 2px;
             white-space: nowrap;
         }
+        @media (max-width: 639px) {
+            .code-block code {
+                white-space: normal;
+                word-break: break-word;
+            }
+        }
         .copy-btn {
             background: var(--color-bg-secondary);
             border-radius: 0.375rem;
@@ -312,7 +318,7 @@
                 Download
             </a>
 
-            <div class="mx-auto max-w-2xl rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+            <div class="mx-auto max-w-xl rounded-xl border border-gray-800 bg-gray-900/50 p-6">
                 <div class="grid grid-cols-[auto,1fr] items-center gap-x-8 gap-y-4 text-left">
                     <a class="justify-self-start whitespace-nowrap text-blue-400 hover:underline" href="https://community.chocolatey.org/packages/winmemorycleaner" rel="noopener" target="_blank">
                         Chocolatey
