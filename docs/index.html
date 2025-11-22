@@ -89,12 +89,19 @@
             padding-bottom: 2px;
             white-space: nowrap;
         }
+        /* START: Custom CSS for strict width alignment and mobile wrapping */
+        .code-box-fixed-width {
+            width: 520px; /* Forces exact width match to screenshot */
+            max-width: 100%; /* Ensures shrinking on small screens */
+            box-sizing: border-box; /* Ensures padding/border are included in the 520px total width */
+        }
         @media (max-width: 639px) {
             .code-block code {
                 white-space: normal;
                 word-break: break-word;
             }
         }
+        /* END: Custom CSS */
         .copy-btn {
             background: var(--color-bg-secondary);
             border-radius: 0.375rem;
@@ -318,7 +325,7 @@
                 Download
             </a>
 
-            <div class="mx-auto max-w-xl rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+            <div class="mx-auto code-box-fixed-width rounded-xl border border-gray-800 bg-gray-900/50 p-6">
                 <div class="grid grid-cols-[auto,1fr] items-center gap-x-8 gap-y-4 text-left">
                     <a class="justify-self-start whitespace-nowrap text-blue-400 hover:underline" href="https://community.chocolatey.org/packages/winmemorycleaner" rel="noopener" target="_blank">
                         Chocolatey
@@ -372,7 +379,7 @@
                      decoding="async"
                      height="762"
                      loading="lazy"
-                     src="./assets/images/main-window.png"
+                     src="./assets/images/main-window.png?v=20251121"
                      width="520">
                 <figcaption class="sr-only">Screenshot of the Windows Memory Cleaner main application window.</figcaption>
             </figure>
