@@ -59,7 +59,8 @@ jobs:
           $appPath = ".\WinMemoryCleaner.exe"
           $windowScreenshotPath = "main-window-raw.png"
           $proc = Start-Process -FilePath $appPath -PassThru
-          $maxWaitMs = 15000; $elapsed = 0
+          $maxWaitMs = 30000; $elapsed = 
+          
           while ($proc.MainWindowHandle -eq 0 -and $elapsed -lt $maxWaitMs) {
             Start-Sleep -Milliseconds 200; $proc.Refresh(); $elapsed += 200
           }
@@ -157,7 +158,7 @@ jobs:
         if: steps.check-screenshot.outputs.screenshot_exists == 'true'
         run: |
           $NewVersion = "${{ steps.set_vars.outputs.TAG_CLEAN }}"
-          $FilePath = "docs/index.html" # <-- CORRECTED PATH HERE
+          $FilePath = "docs/index.html"
           
           if (-not (Test-Path $FilePath)) {
               Write-Host "::error::index.html not found at path $FilePath"
@@ -185,7 +186,7 @@ jobs:
           delete-branch: true
           add-paths: |
             docs/assets/images/main-window.png
-            docs/index.html # <-- CORRECTED PATH HERE
+            docs/index.html
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
 
