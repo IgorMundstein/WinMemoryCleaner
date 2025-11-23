@@ -1,36 +1,35 @@
 <!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
+
 <head>
     <title>Windows Memory Cleaner</title>
-    <link rel="icon" href="./assets/images/win-memory-cleaner.ico" sizes="any">
-    <link rel="icon" href="./assets/images/win-memory-cleaner.png" type="image/png">
-
+    <link href="./assets/images/win-memory-cleaner.ico" rel="icon" sizes="any">
+    <link href="./assets/images/win-memory-cleaner.png" rel="icon" type="image/png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <link rel="preload" href="./assets/css/style.css" as="style">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <link as="style" href="./assets/css/style.css" rel="preload">
     <link href="./assets/css/style.css" rel="stylesheet">
 
     <meta content="#0d1117" name="theme-color">
     <meta content="strict-origin-when-cross-origin" name="referrer">
-    
     <meta content="Igor Mundstein" name="author">
     <meta content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer." name="description">
     <meta content="RAM cleaner, memory cleaner, Windows optimization, free software, open source, memory management, PC performance, foss, memory-management, memory-optimization, windows-optimization-tool, admin" name="keywords">
-    <link href="https://winmemorycleaner.com/" rel="canonical">
 
+    <link href="https://winmemorycleaner.com/" rel="canonical">
     <meta content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer." property="og:description">
     <meta content="https://winmemorycleaner.com/assets/images/win-memory-cleaner-ad.png" property="og:image">
     <meta content="Windows Memory Cleaner" property="og:site_name">
     <meta content="Windows Memory Cleaner" property="og:title">
     <meta content="website" property="og:type">
     <meta content="https://winmemorycleaner.com/" property="og:url">
-    
+
     <meta content="summary_large_image" name="twitter:card">
     <meta content="This free RAM cleaner uses native Windows features to efficiently clear memory areas. A compact, portable, and smart application for your computer." name="twitter:description">
     <meta content="https://winmemorycleaner.com/assets/images/win-memory-cleaner-ad.png" name="twitter:image">
     <meta content="Windows Memory Cleaner" name="twitter:title">
-    
+
     <script type="application/ld+json">
     {
       "@context":"https://schema.org",
@@ -45,36 +44,62 @@
       "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
     }
     </script>
-    
+
     <style>
         :root {
-            --color-bg: #0d1117;
-            --color-text-primary: #c9d1d9;
-            --color-text-secondary: #8b949e;
-            --color-border: #30363d;
-            --color-bg-secondary: #21262d;
-            --color-bg-tertiary: #202830;
             --color-accent-blue: #2f81f7;
             --color-accent-blue-hover: #388bfd;
+            --color-bg: #0d1117;
+            --color-bg-secondary: #21262d;
+            --color-bg-tertiary: #202830;
+            --color-border: #30363d;
+            --color-text-primary: #c9d1d9;
+            --color-text-secondary: #8b949e;
         }
+
         body {
             background-color: var(--color-bg);
             color: var(--color-text-primary);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
         }
-        a:focus-visible, button:focus-visible {
+
+        a {
+            color: var(--color-text-primary);
+            text-decoration: none;
+            transition: color 0.2s ease, text-shadow 0.2s ease;
+        }
+
+        a:not([class*="bg-"]):hover {
+            color: var(--color-accent-blue);
+            text-shadow: 0 0 12px rgba(47, 129, 247, 0.6);
+        }
+
+        header a {
+            color: inherit;
+            text-shadow: none;
+        }
+
+        a:focus-visible,
+        button:focus-visible {
+            border-radius: 0.25rem;
             outline: 2px solid var(--color-accent-blue);
             outline-offset: 2px;
-            border-radius: 0.25rem;
         }
+
+        .badge-img {
+            color: transparent;
+            min-height: 20px;
+        }
+
         .hero-bg {
             background-image:
-                radial-gradient(circle at top right, rgba(31,111,235,0.10), transparent 40%),
-                radial-gradient(circle at bottom left, rgba(139,92,246,0.10), transparent 50%);
+                radial-gradient(circle at top right, rgba(31, 111, 235, 0.10), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.10), transparent 50%);
         }
+
         .code-block {
             align-items: center;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             border: 1px solid var(--color-border);
             border-radius: 0.375rem;
             display: flex;
@@ -84,47 +109,68 @@
             overflow: hidden;
             padding: 0.5rem 1rem;
         }
+
         .code-block code {
             overflow-x: auto;
             padding-bottom: 2px;
             white-space: nowrap;
         }
-        /* START: Custom CSS for strict width alignment and mobile wrapping */
+
         .code-box-fixed-width {
-            width: 520px; /* Forces exact width match to screenshot */
-            max-width: 100%; /* Ensures shrinking on small screens */
-            box-sizing: border-box; /* Ensures padding/border are included in the 520px total width */
+            box-sizing: border-box;
+            max-width: 100%;
+            width: 520px;
         }
+
         @media (max-width: 639px) {
             .code-block code {
                 white-space: normal;
                 word-break: break-word;
             }
         }
-        /* END: Custom CSS */
+
         .copy-btn {
             background: var(--color-bg-secondary);
             border-radius: 0.375rem;
             color: var(--color-text-primary);
+            cursor: pointer;
             margin-left: 0.5rem;
             padding: 0.375rem;
             transition: background-color .2s;
         }
-        .copy-btn:hover { background: var(--color-border); }
-        section[id] { scroll-margin-top: 80px; }
+
+        .copy-btn:hover {
+            background: var(--color-border);
+        }
+
+        .feature-title {
+            color: white;
+            font-weight: 700;
+        }
+
+        .feature-desc {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        section[id] {
+            scroll-margin-top: 80px;
+        }
+
         h1 {
             font-size: 2.25rem;
             margin-bottom: 1rem;
         }
+
         h2 {
             font-size: 1.875rem;
             margin-bottom: 2rem;
         }
     </style>
-
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4fd3b447ff6241c1824904b165df9692"}'></script>
+    <script data-cf-beacon='{"token": "4fd3b447ff6241c1824904b165df9692"}' defer src='https://static.cloudflareinsights.com/beacon.min.js'></script>
 </head>
-<body id="top" class="bg-gray-900 text-gray-300">
+
+<body class="bg-gray-900 text-gray-300" id="top">
 
     <header class="sticky top-0 z-50 border-b border-gray-800 bg-gray-900">
         <div class="mx-auto flex max-w-screen-xl items-center justify-between px-4 py-4">
@@ -154,11 +200,19 @@
                 </div>
                 <div class="mt-4 flex items-center justify-center space-x-4">
                     <img alt="GitHub stars"
+                         class="badge-img"
+                         decoding="async"
+                         height="20"
+                         loading="lazy"
                          src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social"
-                         decoding="async" height="20" loading="lazy" width="91">
+                         width="91">
                     <img alt="GitHub downloads"
+                         class="badge-img"
+                         decoding="async"
+                         height="20"
+                         loading="lazy"
                          src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social"
-                         decoding="async" height="20" loading="lazy" width="111">
+                         width="111">
                 </div>
             </div>
         </div>
@@ -170,115 +224,115 @@
             <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Features</h2>
             <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Auto Optimization</h3>
-                        <p class="text-sm text-gray-400">Schedule cleaning by interval or trigger based on free RAM threshold.</p>
+                        <h3 class="feature-title">Auto Optimization</h3>
+                        <p class="feature-desc">Schedule cleaning by interval or trigger based on free RAM threshold.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                         <path d="M12 18a6 6 0 100-12 6 6 0 000 12z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Cleans 7 Memory Areas</h3>
-                        <p class="text-sm text-gray-400">Targets specific Windows caches to reclaim memory efficiently.</p>
+                        <h3 class="feature-title">Cleans 7 Memory Areas</h3>
+                        <p class="feature-desc">Targets specific Windows caches to reclaim memory efficiently.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5v4m0 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Compact Mode</h3>
-                        <p class="text-sm text-gray-400">Minimal UI for unobtrusive monitoring.</p>
+                        <h3 class="feature-title">Compact Mode</h3>
+                        <p class="feature-desc">Minimal UI for unobtrusive monitoring.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Console & Service Modes</h3>
-                        <p class="text-sm text-gray-400">Run silently for automation or as a Windows service.</p>
+                        <h3 class="feature-title">Console & Service Modes</h3>
+                        <p class="feature-desc">Run silently for automation or as a Windows service.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Display Memory Usage</h3>
-                        <p class="text-sm text-gray-400">Real-time physical & virtual memory usage in UI and tray.</p>
+                        <h3 class="feature-title">Display Memory Usage</h3>
+                        <p class="feature-desc">Real-time physical & virtual memory usage in UI and tray.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M19 7H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                         <path d="M7 15v-2m4 2v-2m4 2v-2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Global Hotkey</h3>
-                        <p class="text-sm text-gray-400">Trigger cleaning instantly from anywhere.</p>
+                        <h3 class="feature-title">Global Hotkey</h3>
+                        <p class="feature-desc">Trigger cleaning instantly from anywhere.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.724 7.724a2 2 0 012.828 0l2.122 2.121a2 2 0 002.828 0l2.121-2.121a2 2 0 012.828 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Multi-Language Support</h3>
-                        <p class="text-sm text-gray-400">30+ languages; community contributions welcome.</p>
+                        <h3 class="feature-title">Multi-Language Support</h3>
+                        <p class="feature-desc">30+ languages; community contributions welcome.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Process Exclusion List</h3>
-                        <p class="text-sm text-gray-400">Protect critical apps by excluding them from cleaning.</p>
+                        <h3 class="feature-title">Process Exclusion List</h3>
+                        <p class="feature-desc">Protect critical apps by excluding them from cleaning.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M4 4v5h5M20 20v-5h-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                         <path d="M4 12a8 8 0 018-8h8M20 12a8 8 0 01-8 8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Run on Startup</h3>
-                        <p class="text-sm text-gray-400">Optional Task Scheduler integration for auto launch.</p>
+                        <h3 class="feature-title">Run on Startup</h3>
+                        <p class="feature-desc">Optional Task Scheduler integration for auto launch.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                         <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">System Tray Customization</h3>
-                        <p class="text-sm text-gray-400">Configurable tray text, colors, and update cadence.</p>
+                        <h3 class="feature-title">System Tray Customization</h3>
+                        <p class="feature-desc">Configurable tray text, colors, and update cadence.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Trust & Integrity</h3>
-                        <p class="text-sm text-gray-400">Signed builds, reproducible workflow artifacts.</p>
+                        <h3 class="feature-title">Trust & Integrity</h3>
+                        <p class="feature-desc">Signed builds, reproducible workflow artifacts.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m-1 4h1m6-12h1m-1 4h1m-1 4h1m-1 4h1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m6-12h1m-1 4h1m-1 4h1m-1 4h1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
-                        <h3 class="font-bold text-white">Wide Windows Support</h3>
-                        <p class="text-sm text-gray-400">From Windows XP / Server 2003 to the latest Windows 11 / Server 2025.</p>
+                        <h3 class="feature-title">Wide Windows Support</h3>
+                        <p class="feature-desc">From Windows XP / Server 2003 to the latest Windows 11 / Server 2025.</p>
                     </div>
                 </div>
             </div>
@@ -321,58 +375,47 @@
             <p class="mt-2 mb-8 text-lg text-gray-400">
                 Download the portable executable directly from the official GitHub repository or use your favorite package manager.
             </p>
-            <a class="mb-8 inline-block transform rounded-lg bg-blue-600 px-10 py-4 text-xl font-bold text-white transition-transform hover:scale-105 hover:bg-blue-700" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
-                Download
-            </a>
-
             <div class="mx-auto code-box-fixed-width rounded-xl border border-gray-800 bg-gray-900/50 p-6">
                 <div class="grid grid-cols-[auto,1fr] items-start gap-x-8 gap-y-4 text-left">
-                    <a class="whitespace-nowrap text-blue-400 hover:underline" href="https://community.chocolatey.org/packages/winmemorycleaner" rel="noopener" target="_blank">
+                     
+                    <div class="col-span-2 w-full">
+                        <a class="flex w-full flex-col items-center justify-center rounded-md bg-blue-600 px-4 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-blue-700" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
+                            <span>Download</span>
+                            <span class="hidden text-sm font-medium text-blue-100" id="latest-version"></span>
+                        </a>
+                    </div>
+
+                    <a href="https://community.chocolatey.org/packages/winmemorycleaner" rel="noopener" target="_blank">
                         Chocolatey
                     </a>
                     <div class="code-block w-full">
                         <code>choco install winmemorycleaner</code>
-                        <button class="copy-btn" data-copy="choco install winmemorycleaner" title="Copy command">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                            </svg>
-                        </button>
+                        <button class="copy-btn" data-copy="choco install winmemorycleaner" title="Copy command"></button>
                     </div>
-                    <a class="whitespace-nowrap text-blue-400 hover:underline" href="https://scoop.sh/#/apps?q=winmemorycleaner&o=true&dm=true&n=true" rel="noopener" target="_blank">
+
+                    <a href="https://scoop.sh/#/apps?q=WinMemoryCleaner&o=true&dm=true&n=true" rel="noopener" target="_blank">
                         Scoop
                     </a>
                     <div class="flex w-full flex-col gap-y-2">
                         <div class="code-block">
                             <code>scoop bucket add extras</code>
-                            <button class="copy-btn" data-copy="scoop bucket add extras" title="Copy command">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                                </svg>
-                            </button>
+                            <button class="copy-btn" data-copy="scoop bucket add extras" title="Copy command"></button>
                         </div>
                         <div class="code-block">
                             <code>scoop install extras/winmemorycleaner</code>
-                            <button class="copy-btn" data-copy="scoop install extras/winmemorycleaner" title="Copy command">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                                </svg>
-                            </button>
+                            <button class="copy-btn" data-copy="scoop install extras/winmemorycleaner" title="Copy command"></button>
                         </div>
                     </div>
-                    <a class="whitespace-nowrap text-blue-400 hover:underline" href="https://winstall.app/apps/IgorMundstein.WinMemoryCleaner" rel="noopener" target="_blank">
+
+                    <a href="https://winstall.app/apps/IgorMundstein.WinMemoryCleaner" rel="noopener" target="_blank">
                         WinGet
                     </a>
                     <div class="code-block w-full">
                         <code>winget install IgorMundstein.WinMemoryCleaner</code>
-                        <button class="copy-btn" data-copy="winget install IgorMundstein.WinMemoryCleaner" title="Copy command">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                            </svg>
-                        </button>
+                        <button class="copy-btn" data-copy="winget install IgorMundstein.WinMemoryCleaner" title="Copy command"></button>
                     </div>
                 </div>
             </div>
-
             <figure class="mx-auto mt-8">
                 <img alt="App Main Window"
                      class="mx-auto block h-auto max-w-full rounded-md bg-gray-800"
@@ -391,38 +434,78 @@
         <div class="mx-auto max-w-screen-xl px-4 py-4 text-center text-sm text-gray-400">
             <p>
                 WMC is a free, open-source project licensed under
-                <a class="text-blue-400 hover:underline" href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" rel="noopener" target="_blank">GPL-3.0</a>
+                <a href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" rel="noopener" target="_blank">GPL-3.0</a>
             </p>
-            <p class="mt-2 text-sm" id="copyright-notice">© 2019 - 2025 Igor Mundstein</p>
+            <p class="mt-2 text-sm" id="copyright">© 2019 - 2025 Igor Mundstein</p>
         </div>
     </footer>
 
     <script defer>
-        document.addEventListener("DOMContentLoaded", function () {
-            const copy = document.getElementById('copyright-notice');
-            if (copy) {
-                const yr = new Date().getFullYear();
-                copy.textContent = `© 2019 - ${yr} Igor Mundstein`;
-            }
+        const copyright = document.getElementById('copyright');
 
-            document.addEventListener('click', async function (event) {
-                const button = event.target.closest('.copy-btn');
-                if (!button) return;
-                
-                const textToCopy = button.getAttribute('data-copy');
-                if (!textToCopy) return;
+        if (copyright) {
+            copyright.textContent = `© 2019 - ${new Date().getFullYear()} Igor Mundstein`;
+        }
 
-                try {
-                    await navigator.clipboard.writeText(textToCopy);
-                    const original = button.innerHTML;
-                    button.innerHTML = `<svg class="h-4 w-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>`;
-                    setTimeout(() => { button.innerHTML = original; }, 2000);
-                } catch (err) {
-                    console.error('Failed to copy text: ', err);
+        const headerLink = document.querySelector('header a');
+
+        if (headerLink) {
+            headerLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.scrollY > 0) {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.location.href = './';
                 }
             });
-        });
-    </script>
+        }
 
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.innerHTML = `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>`;
+        });
+
+        document.addEventListener('click', async (event) => {
+            const copyBtn = event.target.closest('.copy-btn');
+
+            if (!copyBtn || copyBtn.dataset.state === 'copied') 
+                return;
+
+            const commandText = copyBtn.dataset.copy;
+
+            if (!commandText) 
+                return;
+
+            try {
+                await navigator.clipboard.writeText(commandText);
+
+                if (!copyBtn.dataset.originalHtml) {
+                    copyBtn.dataset.originalHtml = copyBtn.innerHTML;
+                }
+
+                copyBtn.dataset.state = 'copied';
+                copyBtn.innerHTML = `<svg class="h-4 w-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>`;
+
+                setTimeout(() => {
+                    copyBtn.innerHTML = copyBtn.dataset.originalHtml; 
+                    copyBtn.dataset.state = 'idle';
+                }, 2000);
+
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        });
+
+        fetch('https://api.github.com/repos/IgorMundstein/WinMemoryCleaner/releases/latest')
+            .then(response => response.ok ? response.json() : Promise.reject())
+            .then(data => {
+                const element = document.getElementById('latest-version');
+                if (element) {
+                    element.textContent = data.tag_name;
+                    element.classList.remove('hidden');
+                }
+            })
+            .catch(() => {});
+    </script>
 </body>
+
 </html>
