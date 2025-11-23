@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <meta content="default-src 'self'; connect-src 'self' https://api.github.com https://cloudflareinsights.com https://static.cloudflareinsights.com; font-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;" http-equiv="Content-Security-Policy">
+    <meta content="default-src 'self'; connect-src 'self' https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.github.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;" http-equiv="Content-Security-Policy">
 
     <link as="style" href="./assets/css/style.css" rel="preload">
     <link href="./assets/css/style.css" rel="stylesheet">
@@ -114,6 +114,16 @@
         .btn-gray {
             background-color: #202830;
             color: white;
+        }
+
+        .btn-hero {
+            width: 200px;
+        }
+
+        @media (max-width: 639px) {
+            .btn-hero {
+                width: 100%;
+            }
         }
 
         .code-block {
@@ -239,10 +249,10 @@
             </p>
             <div class="flex flex-col gap-4 items-center justify-center">
                 <div class="flex flex-col gap-4 justify-center sm:flex-row sm:gap-6 w-full">
-                    <a class="btn btn-blue sm:w-64 text-lg w-full" href="#download">
+                    <a class="btn btn-blue btn-hero text-lg" href="#download">
                         Download
                     </a>
-                    <a class="btn btn-gray sm:w-64 text-lg w-full" href="https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#windows-memory-cleaner" rel="noopener" target="_blank">
+                    <a class="btn btn-gray btn-hero text-lg" href="https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#windows-memory-cleaner" rel="noopener" target="_blank">
                         Documentation
                     </a>
                 </div>
@@ -436,7 +446,7 @@
 
                     <div class="border-gray-700 border-t"></div>
                     
-                    <div class="flex flex-col gap-6">
+                    <div class="flex flex-col gap-8">
                         <div>
                             <a class="block font-bold hover:text-blue-400 mb-2 text-sm" href="https://community.chocolatey.org/packages/winmemorycleaner" rel="noopener" target="_blank">Chocolatey</a>
                             <div class="code-block w-full">
