@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.github.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;">
+    <meta content="default-src 'self'; connect-src 'self' https://api.github.com https://cloudflareinsights.com https://static.cloudflareinsights.com; font-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;" http-equiv="Content-Security-Policy">
 
     <link as="style" href="./assets/css/style.css" rel="preload">
     <link href="./assets/css/style.css" rel="stylesheet">
@@ -128,16 +128,16 @@
             justify-content: space-between;
             overflow: hidden;
             padding: 0.5rem 1rem;
-            transition: border-color 0.2s ease;
             position: relative;
+            transition: border-color 0.2s ease;
         }
 
         .code-block code {
+            overflow-wrap: anywhere;
             padding-bottom: 2px;
             pointer-events: none;
             white-space: pre-wrap;
             word-break: break-all;
-            overflow-wrap: anywhere;
         }
 
         .code-block:hover {
@@ -146,6 +146,7 @@
 
         .code-box-fixed-width {
             box-sizing: border-box;
+            margin: 0 auto;
             max-width: 100%;
             width: 520px;
         }
@@ -157,9 +158,9 @@
             cursor: pointer;
             margin-left: 0.5rem;
             padding: 0.375rem;
+            position: relative;
             transition: background-color .2s, color .2s;
             z-index: 20;
-            position: relative;
         }
 
         .code-block:hover .copy-btn {
@@ -219,33 +220,33 @@
 
 <body class="bg-gray-900 text-gray-300" id="top">
 
-    <header class="sticky top-0 z-50 border-b border-gray-800 bg-gray-900">
-        <div class="mx-auto flex max-w-screen-xl items-center justify-between px-4 py-4">
+    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+        <div class="flex items-center justify-between max-w-screen-xl mx-auto px-4 py-4">
             <a class="flex items-center space-x-3" href="#top">
                 <img alt="Windows Memory Cleaner Logo" class="h-8 w-8" height="32" src="./assets/images/win-memory-cleaner.png" width="32">
-                <span class="text-xl font-bold text-white">Windows Memory Cleaner</span>
+                <span class="font-bold text-white text-xl">Windows Memory Cleaner</span>
             </a>
         </div>
     </header>
 
-    <section class="hero-bg relative py-8 text-white md:py-8">
-        <div class="relative z-10 mx-auto max-w-screen-xl px-4 text-center">
-            <h1 class="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-4xl font-black leading-tight text-transparent md:text-6xl">
+    <section class="hero-bg md:py-8 py-8 relative text-white">
+        <div class="max-w-screen-xl mx-auto px-4 relative text-center z-10">
+            <h1 class="bg-clip-text bg-gradient-to-r font-black from-blue-400 leading-tight md:text-6xl text-4xl text-transparent to-purple-500">
                 Optimize your computer's memory
             </h1>
-            <p class="mb-8 text-lg text-gray-300 md:text-xl">
+            <p class="mb-8 md:text-xl text-gray-300 text-lg">
                 This free RAM cleaner uses native Windows features to efficiently clear memory areas, helping to resolve slow performance caused by programs that fail to release allocated memory.
             </p>
-            <div class="flex flex-col items-center justify-center gap-4">
-                <div class="flex w-full flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
-                    <a class="btn btn-blue w-full sm:w-56 text-lg" href="#download">
+            <div class="flex flex-col gap-4 items-center justify-center">
+                <div class="flex flex-col gap-4 justify-center sm:flex-row sm:gap-6 w-full">
+                    <a class="btn btn-blue sm:w-64 text-lg w-full" href="#download">
                         Download
                     </a>
-                    <a class="btn btn-gray w-full sm:w-56 text-lg" href="https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#windows-memory-cleaner" rel="noopener" target="_blank">
+                    <a class="btn btn-gray sm:w-64 text-lg w-full" href="https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#windows-memory-cleaner" rel="noopener" target="_blank">
                         Documentation
                     </a>
                 </div>
-                <div class="mt-4 flex items-center justify-center space-x-4">
+                <div class="flex items-center justify-center mt-4 space-x-4">
                     <img alt="GitHub stars"
                          class="badge-img"
                          decoding="async"
@@ -265,13 +266,13 @@
         </div>
     </section>
 
-    <main class="mx-auto max-w-screen-xl px-4">
+    <main class="max-w-screen-xl mx-auto px-4">
 
         <section class="my-8" id="features">
-            <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Features</h2>
-            <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <h2 class="font-bold mb-8 md:text-4xl text-3xl text-center text-white">Features</h2>
+            <div class="gap-8 grid lg:grid-cols-3 md:grid-cols-2">
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
@@ -280,7 +281,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                         <path d="M12 18a6 6 0 100-12 6 6 0 000 12z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
@@ -290,7 +291,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5v4m0 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
@@ -299,7 +300,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
@@ -308,7 +309,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
@@ -317,7 +318,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M19 7H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                         <path d="M7 15v-2m4 2v-2m4 2v-2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
@@ -327,7 +328,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.724 7.724a2 2 0 012.828 0l2.122 2.121a2 2 0 002.828 0l2.121-2.121a2 2 0 012.828 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
@@ -336,7 +337,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
@@ -345,7 +346,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M4 4v5h5M20 20v-5h-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                         <path d="M4 12a8 8 0 018-8h8M20 12a8 8 0 01-8 8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
@@ -355,7 +356,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                         <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
@@ -365,7 +366,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
@@ -374,7 +375,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <svg aria-hidden="true" class="mt-1 h-8 w-8 shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg aria-hidden="true" class="h-8 mt-1 shrink-0 text-blue-400 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m6-12h1m-1 4h1m-1 4h1m-1 4h1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
                     <div>
@@ -386,12 +387,12 @@
         </section>
 
         <section class="my-8 text-center" id="contribute">
-            <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Contribute to the Project</h2>
-            <p class="mt-2 mb-8 text-lg text-gray-400">
+            <h2 class="font-bold mb-8 md:text-4xl text-3xl text-center text-white">Contribute to the Project</h2>
+            <p class="mb-8 mt-2 text-gray-400 text-lg">
                 If you find this app helpful, please consider supporting its development.<br>
                 Your contribution helps keep the project alive, optimized, and free for everyone.
             </p>
-            <div class="flex flex-wrap items-center justify-center gap-4">
+            <div class="flex flex-wrap gap-4 items-center justify-center">
                 <a class="btn btn-gray" href="https://github.com/sponsors/IgorMundstein" rel="noopener" target="_blank">
                     Sponsor on GitHub
                 </a>
@@ -409,7 +410,7 @@
                 <p class="mb-8 text-lg text-gray-400">
                     You can also provide feedback by reporting bugs, requesting features, asking questions, or submitting translations.
                 </p>
-                <div class="flex flex-wrap items-center justify-center gap-4">
+                <div class="flex flex-wrap gap-4 items-center justify-center">
                     <a class="btn btn-gray" href="https://github.com/IgorMundstein/WinMemoryCleaner/issues/new/choose" rel="noopener" target="_blank">
                         Provide Feedback
                     </a>
@@ -418,26 +419,26 @@
         </section>
 
         <section class="my-8 text-center" id="download">
-            <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Get Started</h2>
-            <p class="mt-2 mb-8 text-lg text-gray-400">
+            <h2 class="font-bold mb-8 md:text-4xl text-3xl text-center text-white">Get Started</h2>
+            <p class="mb-8 mt-2 text-gray-400 text-lg">
                 Download the portable executable directly from the official GitHub repository or use your favorite package manager.
             </p>
-            <div class="mx-auto w-full max-w-[520px] rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+            <div class="bg-gray-900/50 border border-gray-800 code-box-fixed-width mx-auto p-6 rounded-xl">
                 
                 <div class="flex flex-col gap-8 text-left">
                      
                     <div class="flex justify-center">
-                        <a class="btn btn-blue w-full flex-col py-4" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
+                        <a class="btn btn-blue flex-col py-4 w-full" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
                             <span class="text-xl">Download</span>
-                            <span class="hidden mt-1 text-sm font-medium text-blue-200" id="latest-version"></span>
+                            <span class="font-medium hidden mt-1 text-blue-200 text-sm" id="latest-version"></span>
                         </a>
                     </div>
 
-                    <div class="border-t border-gray-700"></div>
+                    <div class="border-gray-700 border-t"></div>
                     
                     <div class="flex flex-col gap-6">
                         <div>
-                            <a class="block mb-2 text-sm font-semibold hover:text-blue-400" href="https://community.chocolatey.org/packages/winmemorycleaner" rel="noopener" target="_blank">Chocolatey</a>
+                            <a class="block font-bold hover:text-blue-400 mb-2 text-sm" href="https://community.chocolatey.org/packages/winmemorycleaner" rel="noopener" target="_blank">Chocolatey</a>
                             <div class="code-block w-full">
                                 <code>choco install winmemorycleaner</code>
                                 <button class="copy-btn" data-copy="choco install winmemorycleaner" title="Copy command"></button>
@@ -445,7 +446,7 @@
                         </div>
 
                         <div>
-                            <a class="block mb-2 text-sm font-semibold hover:text-blue-400" href="https://scoop.sh/#/apps?q=WinMemoryCleaner&o=true&dm=true&n=true" rel="noopener" target="_blank">Scoop</a>
+                            <a class="block font-bold hover:text-blue-400 mb-2 text-sm" href="https://scoop.sh/#/apps?q=WinMemoryCleaner&o=true&dm=true&n=true" rel="noopener" target="_blank">Scoop</a>
                             <div class="flex flex-col gap-y-2">
                                 <div class="code-block">
                                     <code>scoop bucket add extras</code>
@@ -459,7 +460,7 @@
                         </div>
 
                         <div>
-                            <a class="block mb-2 text-sm font-semibold hover:text-blue-400" href="https://winstall.app/apps/IgorMundstein.WinMemoryCleaner" rel="noopener" target="_blank">WinGet</a>
+                            <a class="block font-bold hover:text-blue-400 mb-2 text-sm" href="https://winstall.app/apps/IgorMundstein.WinMemoryCleaner" rel="noopener" target="_blank">WinGet</a>
                             <div class="code-block w-full">
                                 <code>winget install IgorMundstein.WinMemoryCleaner</code>
                                 <button class="copy-btn" data-copy="winget install IgorMundstein.WinMemoryCleaner" title="Copy command"></button>
@@ -468,9 +469,9 @@
                     </div>
                 </div>
             </div>
-            <figure class="mx-auto mt-8">
+            <figure class="mt-8 mx-auto">
                 <img alt="App Main Window"
-                     class="mx-auto block h-auto max-w-full rounded-md bg-gray-800"
+                     class="bg-gray-800 block h-auto max-w-full mx-auto rounded-md"
                      decoding="async"
                      height="762"
                      loading="lazy"
@@ -482,8 +483,8 @@
 
     </main>
 
-    <footer class="border-t border-gray-700 bg-gray-800">
-        <div class="mx-auto max-w-screen-xl px-4 py-4 text-center text-sm text-gray-400">
+    <footer class="bg-gray-800 border-gray-700 border-t">
+        <div class="max-w-screen-xl mx-auto px-4 py-4 text-center text-gray-400 text-sm">
             <p>
                 WMC is a free, open-source project licensed under
                 <a href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" rel="noopener" target="_blank">GPL-3.0</a>
