@@ -4,10 +4,10 @@ on:
   push:
     branches: ["main"]
     paths:
+      - '.github/workflows/github-pages.yml'
       - 'docs/index.html'
       - 'docs/package.json'
       - 'docs/tailwind.config.js'
-      - '.github/workflows/github-pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -50,6 +50,8 @@ jobs:
             --no-progress
             --verbose
             --exclude api.github.com
+            --exclude https://cloudflareinsights.com
+            --exclude https://fonts.googleapis.com
             --exclude https://fonts.gstatic.com
             --exclude https://static.cloudflareinsights.com
             --exclude https://www.googletagmanager.com
