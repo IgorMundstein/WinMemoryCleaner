@@ -100,6 +100,12 @@
             white-space: nowrap;
         }
 
+        .btn:hover {
+            color: white !important;
+            text-shadow: none !important;
+            transform: scale(1.05);
+        }
+
         .btn-blue {
             background-color: #2563eb;
             color: white;
@@ -108,10 +114,6 @@
         .btn-gray {
             background-color: #202830;
             color: white;
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
         }
 
         .code-block {
@@ -161,12 +163,12 @@
         }
 
         .code-block:hover .copy-btn {
-            background: var(--color-border);
+            background: #374151;
             color: white;
         }
 
         .copy-btn:hover {
-            background: var(--color-accent-blue) !important;
+            background: #374151 !important;
             color: white !important;
         }
 
@@ -383,6 +385,38 @@
             </div>
         </section>
 
+        <section class="my-8 text-center" id="contribute">
+            <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Contribute to the Project</h2>
+            <p class="mt-2 mb-8 text-lg text-gray-400">
+                If you find this app helpful, please consider supporting its development.<br>
+                Your contribution helps keep the project alive, optimized, and free for everyone.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <a class="btn btn-gray" href="https://github.com/sponsors/IgorMundstein" rel="noopener" target="_blank">
+                    Sponsor on GitHub
+                </a>
+                <a class="btn btn-gray" href="https://ko-fi.com/igormundstein" rel="noopener" target="_blank">
+                    Buy me a coffee (Ko-fi)
+                </a>
+                <a class="btn btn-gray" href="https://www.blockchain.com/explorer/addresses/btc/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap" rel="noopener" target="_blank">
+                    Bitcoin (BTC)
+                </a>
+                <a class="btn btn-gray" href="https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d" rel="noopener" target="_blank">
+                    Ethereum (ETH)
+                </a>
+            </div>
+            <div class="mt-4 pt-4">
+                <p class="mb-8 text-lg text-gray-400">
+                    You can also provide feedback by reporting bugs, requesting features, asking questions, or submitting translations.
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-4">
+                    <a class="btn btn-gray" href="https://github.com/IgorMundstein/WinMemoryCleaner/issues/new/choose" rel="noopener" target="_blank">
+                        Provide Feedback
+                    </a>
+                </div>
+            </div>
+        </section>
+
         <section class="my-8 text-center" id="download">
             <h2 class="mb-8 text-center text-3xl font-bold text-white md:text-4xl">Get Started</h2>
             <p class="mt-2 mb-8 text-lg text-gray-400">
@@ -393,7 +427,7 @@
                 <div class="flex flex-col gap-6 text-left">
                      
                     <div class="flex justify-center">
-                        <a class="btn btn-blue w-full sm:w-64 flex-col py-3" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
+                        <a class="btn btn-blue w-full sm:w-auto flex-col px-8 py-3" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
                             <span class="text-xl">Download</span>
                             <span class="hidden text-sm font-medium text-blue-200 mt-1" id="latest-version"></span>
                         </a>
