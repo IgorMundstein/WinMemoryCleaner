@@ -46,9 +46,16 @@ jobs:
       - name: Check for Broken Links
         uses: lycheeverse/lychee-action@v2.0.2
         with:
-          args: --verbose --exclude https://www.googletagmanager.com --exclude https://static.cloudflareinsights.com ./docs/index.html
+          args: >-
+            --no-progress
+            --verbose
+            --exclude api.github.com
+            --exclude https://fonts.gstatic.com
+            --exclude https://static.cloudflareinsights.com
+            --exclude https://www.googletagmanager.com
+            ./docs/index.html
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Upload artifact for deployment
         uses: actions/upload-pages-artifact@v3
         with:
