@@ -8,6 +8,8 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://static.cloudflareinsights.com https://api.github.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;">
+
     <link as="style" href="./assets/css/style.css" rel="preload">
     <link href="./assets/css/style.css" rel="stylesheet">
 
@@ -57,26 +59,10 @@
             --color-text-secondary: #8b949e;
         }
 
-        body {
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-        }
-
         a {
             color: var(--color-text-primary);
             text-decoration: none;
             transition: color 0.2s ease, text-shadow 0.2s ease;
-        }
-
-        a:not([class*="bg-"]):hover {
-            color: var(--color-accent-blue);
-            text-shadow: 0 0 12px rgba(47, 129, 247, 0.6);
-        }
-
-        header a {
-            color: inherit;
-            text-shadow: none;
         }
 
         a:focus-visible,
@@ -86,15 +72,56 @@
             outline-offset: 2px;
         }
 
+        a:not([class*="bg-"]):hover {
+            color: var(--color-accent-blue);
+            text-shadow: 0 0 12px rgba(47, 129, 247, 0.6);
+        }
+
         .badge-img {
             color: transparent;
             min-height: 20px;
         }
 
-        .hero-bg {
-            background-image:
-                radial-gradient(circle at top right, rgba(31, 111, 235, 0.10), transparent 40%),
-                radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.10), transparent 50%);
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+
+        .btn {
+            align-items: center;
+            border-radius: 0.5rem;
+            display: inline-flex;
+            font-weight: 700;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+            white-space: nowrap;
+        }
+
+        .btn-blue {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .btn-blue:hover {
+            background-color: #1d4ed8;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-gray {
+            background-color: #202830;
+            color: white;
+        }
+
+        .btn-gray:hover {
+            background-color: #374151;
+            box-shadow: 0 10px 15px -3px rgba(107, 114, 128, 0.2);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
         }
 
         .code-block {
@@ -102,31 +129,31 @@
             background: rgba(0, 0, 0, 0.7);
             border: 1px solid var(--color-border);
             border-radius: 0.375rem;
+            cursor: pointer;
             display: flex;
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
             font-size: 0.875rem;
             justify-content: space-between;
             overflow: hidden;
             padding: 0.5rem 1rem;
+            transition: border-color 0.2s ease;
         }
 
         .code-block code {
             overflow-x: auto;
             padding-bottom: 2px;
             white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .code-block:hover {
+            border-color: var(--color-text-secondary);
         }
 
         .code-box-fixed-width {
             box-sizing: border-box;
             max-width: 100%;
             width: 520px;
-        }
-
-        @media (max-width: 639px) {
-            .code-block code {
-                white-space: normal;
-                word-break: break-word;
-            }
         }
 
         .copy-btn {
@@ -139,13 +166,9 @@
             transition: background-color .2s;
         }
 
-        .copy-btn:hover {
+        .copy-btn:hover,
+        .code-block:hover .copy-btn {
             background: var(--color-border);
-        }
-
-        .feature-title {
-            color: white;
-            font-weight: 700;
         }
 
         .feature-desc {
@@ -153,8 +176,9 @@
             font-size: 0.875rem;
         }
 
-        section[id] {
-            scroll-margin-top: 80px;
+        .feature-title {
+            color: white;
+            font-weight: 700;
         }
 
         h1 {
@@ -165,6 +189,28 @@
         h2 {
             font-size: 1.875rem;
             margin-bottom: 2rem;
+        }
+
+        header a {
+            color: inherit;
+            text-shadow: none;
+        }
+
+        .hero-bg {
+            background-image:
+                radial-gradient(circle at top right, rgba(31, 111, 235, 0.10), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.10), transparent 50%);
+        }
+
+        section[id] {
+            scroll-margin-top: 80px;
+        }
+
+        @media (max-width: 639px) {
+            .code-block code {
+                white-space: normal;
+                word-break: break-word;
+            }
         }
     </style>
     <script data-cf-beacon='{"token": "4fd3b447ff6241c1824904b165df9692"}' defer src='https://static.cloudflareinsights.com/beacon.min.js'></script>
@@ -191,10 +237,10 @@
             </p>
             <div class="flex flex-col items-center justify-center gap-4">
                 <div class="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-                    <a class="w-full transform rounded-lg bg-blue-600 px-8 py-3 text-lg font-bold text-white transition-transform hover:scale-105 hover:bg-blue-700" href="#download">
+                    <a class="btn btn-blue w-full px-8 text-lg sm:w-auto" href="#download">
                         Download
                     </a>
-                    <a class="w-full whitespace-nowrap transform rounded-md bg-[#202830] px-4 py-3 text-lg font-semibold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#windows-memory-cleaner" rel="noopener" target="_blank">
+                    <a class="btn btn-gray w-full px-8 text-lg sm:w-auto" href="https://github.com/IgorMundstein/WinMemoryCleaner?tab=readme-ov-file#windows-memory-cleaner" rel="noopener" target="_blank">
                         Documentation
                     </a>
                 </div>
@@ -345,16 +391,16 @@
                 Your contribution helps keep the project alive, optimized, and free for everyone.
             </p>
             <div class="flex flex-wrap items-center justify-center gap-4">
-                <a class="transform rounded-lg bg-[#202830] px-4 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://github.com/sponsors/IgorMundstein" rel="noopener" target="_blank">
+                <a class="btn btn-gray" href="https://github.com/sponsors/IgorMundstein" rel="noopener" target="_blank">
                     Sponsor on GitHub
                 </a>
-                <a class="transform rounded-lg bg-[#202830] px-4 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://ko-fi.com/igormundstein" rel="noopener" target="_blank">
+                <a class="btn btn-gray" href="https://ko-fi.com/igormundstein" rel="noopener" target="_blank">
                     Buy me a coffee (Ko-fi)
                 </a>
-                <a class="transform rounded-lg bg-[#202830] px-4 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://www.blockchain.com/explorer/addresses/btc/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap" rel="noopener" target="_blank">
+                <a class="btn btn-gray" href="https://www.blockchain.com/explorer/addresses/btc/bc1qu884q5r2uqugvdhyk8l6waakumeve7jykqp7ap" rel="noopener" target="_blank">
                     Bitcoin (BTC)
                 </a>
-                <a class="transform rounded-lg bg-[#202830] px-4 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d" rel="noopener" target="_blank">
+                <a class="btn btn-gray" href="https://www.blockchain.com/explorer/addresses/eth/0xb71A94733B0578D155D9A765E0d2C4dA0f44156d" rel="noopener" target="_blank">
                     Ethereum (ETH)
                 </a>
             </div>
@@ -363,7 +409,7 @@
                     You can also provide feedback by reporting bugs, requesting features, asking questions, or submitting translations.
                 </p>
                 <div class="flex flex-wrap items-center justify-center gap-4">
-                    <a class="transform rounded-lg bg-[#202830] px-4 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-gray-700" href="https://github.com/IgorMundstein/WinMemoryCleaner/issues/new/choose" rel="noopener" target="_blank">
+                    <a class="btn btn-gray" href="https://github.com/IgorMundstein/WinMemoryCleaner/issues/new/choose" rel="noopener" target="_blank">
                         Provide Feedback
                     </a>
                 </div>
@@ -376,15 +422,17 @@
                 Download the portable executable directly from the official GitHub repository or use your favorite package manager.
             </p>
             <div class="mx-auto code-box-fixed-width rounded-xl border border-gray-800 bg-gray-900/50 p-6">
-                <div class="grid grid-cols-[auto,1fr] items-start gap-x-8 gap-y-4 text-left">
+                <div class="grid grid-cols-1 items-center gap-4 text-left md:grid-cols-[auto,1fr] md:gap-x-8">
                      
-                    <div class="col-span-2 w-full">
-                        <a class="flex w-full flex-col items-center justify-center rounded-md bg-blue-600 px-4 py-3 font-bold text-white transition-transform hover:scale-105 hover:bg-blue-700" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
+                    <div class="col-span-1 w-full flex flex-col items-center md:col-span-2">
+                        <a class="btn btn-blue w-full max-w-sm flex-col" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
                             <span>Download</span>
                             <span class="hidden text-sm font-medium text-blue-100" id="latest-version"></span>
                         </a>
                     </div>
 
+                    <div class="col-span-1 my-4 border-t border-gray-700 md:col-span-2"></div>
+                    
                     <a href="https://community.chocolatey.org/packages/winmemorycleaner" rel="noopener" target="_blank">
                         Chocolatey
                     </a>
@@ -465,15 +513,14 @@
         });
 
         document.addEventListener('click', async (event) => {
-            const copyBtn = event.target.closest('.copy-btn');
+            const codeBlock = event.target.closest('.code-block');
+            if (!codeBlock) return;
 
-            if (!copyBtn || copyBtn.dataset.state === 'copied') 
-                return;
+            const copyBtn = codeBlock.querySelector('.copy-btn');
+            if (!copyBtn || copyBtn.dataset.state === 'copied') return;
 
             const commandText = copyBtn.dataset.copy;
-
-            if (!commandText) 
-                return;
+            if (!commandText) return;
 
             try {
                 await navigator.clipboard.writeText(commandText);
@@ -506,6 +553,6 @@
             })
             .catch(() => {});
     </script>
+    
 </body>
-
 </html>
