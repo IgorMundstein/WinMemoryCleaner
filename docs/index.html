@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://static.cloudflareinsights.com https://api.github.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://static.cloudflareinsights.com https://api.github.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;">
 
     <link as="style" href="./assets/css/style.css" rel="preload">
     <link href="./assets/css/style.css" rel="stylesheet">
@@ -140,10 +140,10 @@
         }
 
         .code-block code {
-            overflow-x: auto;
             padding-bottom: 2px;
-            white-space: nowrap;
             pointer-events: none;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         .code-block:hover {
@@ -204,13 +204,6 @@
 
         section[id] {
             scroll-margin-top: 80px;
-        }
-
-        @media (max-width: 639px) {
-            .code-block code {
-                white-space: normal;
-                word-break: break-word;
-            }
         }
     </style>
     <script data-cf-beacon='{"token": "4fd3b447ff6241c1824904b165df9692"}' defer src='https://static.cloudflareinsights.com/beacon.min.js'></script>
