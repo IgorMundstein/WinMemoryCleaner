@@ -10,6 +10,8 @@
 
     <meta content="default-src 'self'; connect-src 'self' https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.github.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;" http-equiv="Content-Security-Policy">
 
+    <link href="https://api.github.com" rel="preconnect">
+
     <link as="style" href="./assets/css/style.css" rel="preload">
     <link href="./assets/css/style.css" rel="stylesheet">
 
@@ -439,7 +441,7 @@
                 <div class="flex justify-center">
                     <a class="btn btn-blue flex-col py-4 w-full" href="https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe">
                         <span class="text-xl">Download</span>
-                        <span class="font-medium hidden mt-1 text-blue-200 text-sm" id="latest-version"></span>
+                        <span class="font-medium hidden mt-1 text-sm text-white" id="latest-version"></span>
                     </a>
                 </div>
 
@@ -493,7 +495,7 @@
         <div class="max-w-screen-xl mx-auto px-4 py-4 text-center text-gray-400 text-sm">
             <p>
                 WMC is a free, open-source project licensed under
-                <a href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" rel="noopener" target="_blank">GPL-3.0</a>
+                <a class="hover:text-white underline" href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" rel="noopener" target="_blank">GPL-3.0</a>
             </p>
             <p class="mt-2 text-sm" id="copyright">© 2019 - 2025 Igor Mundstein</p>
         </div>
