@@ -8,9 +8,10 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <meta content="default-src 'self'; connect-src 'self' https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.github.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;" http-equiv="Content-Security-Policy">
+    <meta content="default-src 'self'; connect-src 'self' https://static.cloudflareinsights.com https://cloudflareinsights.com https://api.github.com https://img.shields.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;" http-equiv="Content-Security-Policy">
 
     <link href="https://api.github.com" rel="preconnect">
+    <link href="https://img.shields.io" rel="preconnect">
 
     <link as="style" href="./assets/css/style.css" rel="preload">
     <link href="./assets/css/style.css" rel="stylesheet">
@@ -263,15 +264,15 @@
                     <img alt="GitHub stars"
                          class="badge-img"
                          decoding="async"
+                         fetchpriority="high"
                          height="20"
-                         loading="lazy"
                          src="https://img.shields.io/github/stars/IgorMundstein/WinMemoryCleaner?style=social"
                          width="91">
                     <img alt="GitHub downloads"
                          class="badge-img"
                          decoding="async"
+                         fetchpriority="high"
                          height="20"
-                         loading="lazy"
                          src="https://img.shields.io/github/downloads/IgorMundstein/WinMemoryCleaner/total?style=social"
                          width="111">
                 </div>
@@ -495,7 +496,7 @@
         <div class="max-w-screen-xl mx-auto px-4 py-4 text-center text-gray-400 text-sm">
             <p>
                 WMC is a free, open-source project licensed under
-                <a class="font-bold hover:text-white text-blue-400" href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" rel="noopener" target="_blank">GPL-3.0</a>
+                <a class="font-medium hover:text-white text-blue-400" href="https://github.com/IgorMundstein/WinMemoryCleaner/blob/main/LICENSE" rel="noopener" target="_blank">GPL-3.0</a>
             </p>
             <p class="mt-2 text-sm" id="copyright">© 2019 - 2025 Igor Mundstein</p>
         </div>
