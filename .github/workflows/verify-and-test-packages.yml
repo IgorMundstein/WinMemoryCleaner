@@ -91,7 +91,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "Version verified. Disabling daily schedule until next release."
-          gh workflow disable "Verify and Test Packages"
+          gh workflow disable verify-and-test-packages.yml
 
   chocolatey:
     needs: setup
@@ -484,4 +484,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "All packages verified! Disabling this workflow until next release."
-          gh workflow disable "Verify and Test Packages"
+          gh workflow disable verify-and-test-packages.yml
