@@ -241,11 +241,11 @@ jobs:
           draft: true
           generate_release_notes: false
       
-      - name: Enable Verification Workflow
+      - name: 🚀 Enable Verification Workflow
         if: steps.check_release.outputs.skip == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
           Write-Host "New release created. Re-enabling the daily package verification workflow."
-          gh workflow enable "Verify and Test Packages"
+          gh workflow enable verify-and-test-packages.yml
