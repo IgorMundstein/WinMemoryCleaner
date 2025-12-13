@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -12,7 +13,6 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.Win32;
 
 namespace WinMemoryCleaner
 {
@@ -114,6 +114,8 @@ namespace WinMemoryCleaner
         {
             if (disposing)
             {
+                Logger.Dispose();
+
                 try
                 {
                     SystemEvents.PowerModeChanged -= OnPowerModeChanged;
@@ -162,21 +164,6 @@ namespace WinMemoryCleaner
 
         #region Methods
 
-        /// <summary>
-        /// Creates the start menu shortcut.
-        /// </summary>
-        private void CreateStartMenuShortcut()
-        {
-            try
-            {
-                Helper.CreateShortcut(Path, System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), Constants.App.Shortcut), Constants.App.Title);
-            }
-            catch (Exception e)
-            {
-                Logger.Debug("Failed to create Start Menu shortcut: " + e.GetMessage());
-            }
-        }
-
         private void Initialize()
         {
             // DI/IOC
@@ -187,9 +174,6 @@ namespace WinMemoryCleaner
             // App properties
             Path = Helper.GetExecutablePath();
             Version = Helper.GetVersion();
-
-            // App startup shortcut
-            CreateStartMenuShortcut();
 
             // Check if app is already running
             bool createdNew;
@@ -336,10 +320,11 @@ namespace WinMemoryCleaner
                         if (MainWindow == null)
                             return;
 
-                        if (MainWindow.OwnedWindows.Cast<View>().Where(window => window != null && window.IsDialog).Any())
+                        if (MainWindow.OwnedWindows.Cast<View>().Any(window => window != null && window.IsDialog))
                         {
                             MainWindow.Activate();
-                            MainWindow.Focus();
+                            MainWindow.Topmost = true;
+                            MainWindow.Topmost = Settings.AlwaysOnTop;
 
                             return;
                         }
@@ -427,7 +412,7 @@ namespace WinMemoryCleaner
                         // Memory areas to optimize
                         Enums.Memory.Areas area;
 
-                        if (Enum.TryParse(argument, out area))
+                        if (Enum.TryParse(argument, true, out area))
                             memoryAreas |= area;
 
                         // Startup Type
@@ -436,6 +421,9 @@ namespace WinMemoryCleaner
 
                         if (argument.Equals(Constants.App.CommandLineArgument.Install, StringComparison.OrdinalIgnoreCase))
                             startupType = Enums.StartupType.Installation;
+
+                        if (argument.Equals(Constants.App.CommandLineArgument.Reset, StringComparison.OrdinalIgnoreCase))
+                            startupType = Enums.StartupType.Reset;
 
                         if (argument.Equals(Constants.App.CommandLineArgument.Service, StringComparison.OrdinalIgnoreCase))
                             startupType = Enums.StartupType.Service;
@@ -477,6 +465,9 @@ namespace WinMemoryCleaner
 
                         NativeMethods.AllowSetForegroundWindow(Process.GetCurrentProcess().Id);
 
+                        // App startup shortcut
+                        Helper.StartMenuShortcut(Settings.CreateStartMenuShortcut);
+
                         // Theme
                         ThemeManager.Theme = Enums.Theme.Dark;
 
@@ -490,7 +481,13 @@ namespace WinMemoryCleaner
                         var mainWindow = new MainWindow();
 
                         if (!Settings.StartMinimized)
+                        {
                             mainWindow.Show();
+                            mainWindow.Activate();
+                            mainWindow.Focus();
+                            mainWindow.Topmost = true;
+                            mainWindow.Topmost = Settings.AlwaysOnTop;
+                        }
 
                         // Subscribe to power events
                         SystemEvents.PowerModeChanged += OnPowerModeChanged;
@@ -510,6 +507,46 @@ namespace WinMemoryCleaner
                         WinServiceInstaller.Install();
 
                         Shutdown();
+                        break;
+
+                    case Enums.StartupType.Reset:
+                        try
+                        {
+                            Logger.EnableConsoleOutput();
+
+                            // Kill all other running instances of the application to prevent conflicts and infinite loops
+                            var currentProcess = Process.GetCurrentProcess();
+                            var processes = Process.GetProcessesByName(currentProcess.ProcessName).Where(p => p.Id != currentProcess.Id);
+
+                            foreach (var process in processes)
+                            {
+                                try
+                                {
+                                    process.Kill();
+                                    process.WaitForExit(5000); // Wait up to 5 seconds for process to exit
+                                }
+                                catch
+                                {
+                                    // ignorded
+                                }
+                            }
+
+                            Settings.Reset(keepLanguage: true); // Reset settings to defaults while preserving language preference
+                            Settings.AutoUpdate = false;        // Disable auto-update to prevent potential update-related issues
+                            
+                            Settings.Save();
+
+                            Logger.Information(Localizer.String.ResetCommand);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(string.Format(Localizer.Culture, Localizer.String.ErrorResetCommand, ex.GetMessage()));
+                        }
+                        finally
+                        {
+                            Shutdown(true);
+                        }
+
                         break;
 
                     case Enums.StartupType.Service:
@@ -654,7 +691,7 @@ namespace WinMemoryCleaner
                                 DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture)
                             );
 
-                        var tempXmlFile = System.IO.Path.GetTempFileName();
+                                var tempXmlFile = System.IO.Path.GetTempFileName();
 
                         File.WriteAllText(tempXmlFile, taskXml);
 
@@ -678,14 +715,7 @@ namespace WinMemoryCleaner
                                 Logger.Error(string.Format(Localizer.Culture, "XML task creation failed (will attempt fallback). Error: {0}", errorMessage));
                         }
 
-                        try
-                        {
-                            File.Delete(tempXmlFile);
-                        }
-                        catch
-                        {
-                            // ignored
-                        }
+                        Helper.DeleteFile(tempXmlFile);
                     }
                     catch (Exception ex)
                     {
@@ -836,9 +866,10 @@ namespace WinMemoryCleaner
         /// Shows a dialog
         /// </summary>
         /// <param name="exception">Exception</param>
-        private void ShowDialog(Exception exception)
+        /// <param name="message">The message.</param>
+        private void ShowDialog(Exception exception, string message = null)
         {
-            ShowDialog(exception.GetMessage(), MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowDialog(message ?? exception.GetMessage(), MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         /// <summary>

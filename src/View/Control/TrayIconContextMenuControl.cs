@@ -14,19 +14,29 @@ namespace WinMemoryCleaner
         /// </summary>
         public TrayIconContextMenuControl()
         {
-            BackColor = ThemeManager.SecondaryBackgroundColor;
+            BackColor = ThemeManager.PrimaryBackgroundColor;
             ForeColor = ThemeManager.SecondaryForegroundColor;
+            Padding = new Padding(4);
             Renderer = new ToolStripRenderer();
             ShowCheckMargin = false;
-            ShowImageMargin = false;
+            ShowImageMargin = false;            
 
             // Rounded border
             var windowCornerPreference = Constants.Windows.DesktopWindowManager.Value.WindowCornerPreferenceRound;
             NativeMethods.DwmSetWindowAttribute(Handle, Constants.Windows.DesktopWindowManager.Attribute.WindowCornerPreference, ref windowCornerPreference, sizeof(int));
 
             // Border color
-            var borderColor = ColorTranslator.ToWin32(ThemeManager.SecondaryBorderColor);
+            var borderColor = ColorTranslator.ToWin32(GetBorderColor());
             NativeMethods.DwmSetWindowAttribute(Handle, Constants.Windows.DesktopWindowManager.Attribute.BorderColor, ref borderColor, sizeof(int));
+        }
+
+        /// <summary>
+        /// Gets the border color matching the main window theme.
+        /// </summary>
+        /// <returns>Border color for consistency with main window</returns>
+        private static Color GetBorderColor()
+        {
+            return ThemeManager.SecondaryBackgroundColor;
         }
 
         /// <summary>
@@ -74,9 +84,10 @@ namespace WinMemoryCleaner
                     return;
                 }
 
-                using (var pen = new Pen(ThemeManager.SecondaryBorderColor))
+                using (var pen = new Pen(GetBorderColor(), 2))
                 {
-                    e.Graphics.DrawLine(pen, 0, toolStripSeparator.Height / 2, toolStripSeparator.Width, toolStripSeparator.Height / 2);
+                    var y = toolStripSeparator.Height / 2;
+                    e.Graphics.DrawLine(pen, 0, y, toolStripSeparator.Width, y);
                 }
             }
 
@@ -91,7 +102,47 @@ namespace WinMemoryCleaner
                 /// </summary>
                 public override Color MenuBorder
                 {
-                    get { return ThemeManager.SecondaryBorderColor; }
+                    get { return GetBorderColor(); }
+                }
+
+                /// <summary>
+                /// Gets the starting color of the gradient used when a top-level ToolStripMenuItem is pressed down.
+                /// </summary>
+                public override Color MenuItemPressedGradientBegin
+                {
+                    get { return Color.Transparent; }
+                }
+
+                /// <summary>
+                /// Gets the end color of the gradient used when a top-level ToolStripMenuItem is pressed down.
+                /// </summary>
+                public override Color MenuItemPressedGradientEnd
+                {
+                    get { return Color.Transparent; }
+                }
+
+                /// <summary>
+                /// Gets the solid color to use when the menu item is selected.
+                /// </summary>
+                public override Color MenuItemSelected
+                {
+                    get { return Color.Transparent; }
+                }
+
+                /// <summary>
+                /// Gets the starting color of the gradient used when the ToolStripMenuItem is selected.
+                /// </summary>
+                public override Color MenuItemSelectedGradientBegin
+                {
+                    get { return Color.Transparent; }
+                }
+
+                /// <summary>
+                /// Gets the end color of the gradient used when the ToolStripMenuItem is selected.
+                /// </summary>
+                public override Color MenuItemSelectedGradientEnd
+                {
+                    get { return Color.Transparent; }
                 }
             }
         }

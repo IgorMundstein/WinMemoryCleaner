@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -18,14 +19,24 @@ namespace WinMemoryCleaner
         /// <returns></returns>
         public static string Capitalize(this string obj)
         {
-            return string.IsNullOrEmpty(obj)
-                ? obj
-                : Regex.Replace
+            if (string.IsNullOrEmpty(obj))
+                return obj;
+
+            try
+            {
+                var culture = Localizer.Culture ?? CultureInfo.InvariantCulture;
+
+                return Regex.Replace
                 (
-                    Localizer.Culture.TextInfo.ToLower(obj),
+                    culture.TextInfo.ToLower(obj),
                     @"(^|(?<=\.))(\s*)(\p{L})",
-                    m => m.Groups[1].Value + m.Groups[2].Value + Localizer.Culture.TextInfo.ToUpper(m.Groups[3].Value[0])
+                    m => m.Groups[1].Value + m.Groups[2].Value + culture.TextInfo.ToUpper(m.Groups[3].Value[0])
                 );
+            }
+            catch
+            {
+                return obj;
+            }
         }
 
         /// <summary>

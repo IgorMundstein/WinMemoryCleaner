@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace WinMemoryCleaner
 {
@@ -29,7 +30,7 @@ namespace WinMemoryCleaner
                 WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             // If you need custom centering, use dispatcher (no need for Visibility.Hidden)
-            Dispatcher.BeginInvoke(new Action(CenterOverOwner), System.Windows.Threading.DispatcherPriority.Loaded);
+            Dispatcher.BeginInvoke(new Action(CenterOverOwner), DispatcherPriority.Loaded);
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Input;
 using System.Windows.Media;
+using WpfApplication = System.Windows.Application;
 
 namespace WinMemoryCleaner
 {
@@ -371,6 +372,35 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [create start menu shortcut].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [create start menu shortcut]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CreateStartMenuShortcut
+        {
+            get { return Settings.CreateStartMenuShortcut; }
+            set
+            {
+                try
+                {
+                    IsBusy = true;
+
+                    Settings.CreateStartMenuShortcut = value;
+                    Settings.Save();
+
+                    Helper.StartMenuShortcut(value);
+
+                    RaisePropertyChanged();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the computer.
         /// </summary>
         /// <value>
@@ -404,11 +434,11 @@ namespace WinMemoryCleaner
                     Settings.FontSize = value;
                     Settings.Save();
 
-                    if (System.Windows.Application.Current != null)
+                if (WpfApplication.Current != null)
+                {
+                    WpfApplication.Current.Dispatcher.Invoke((Action)(() =>
                     {
-                        System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
-                        {
-                            System.Windows.Application.Current.Resources["FontSize"] = value;
+                        WpfApplication.Current.Resources["FontSize"] = value;
                         }));
                     }
 
@@ -522,7 +552,7 @@ namespace WinMemoryCleaner
 
                     if (OnLanguageChangeCompleted != null)
                     {
-                        System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                        WpfApplication.Current.Dispatcher.Invoke((Action)delegate
                         {
                             OnLanguageChangeCompleted();
                         });
@@ -906,6 +936,7 @@ namespace WinMemoryCleaner
                        new ObservableItem<bool>(Localizer.String.AutoUpdate, () => AutoUpdate, value => AutoUpdate = value, Helper.IsAutoUpdateSupported),
                        new ObservableItem<bool>(Localizer.String.CloseAfterOptimization, () => CloseAfterOptimization, value => CloseAfterOptimization = value),
                        new ObservableItem<bool>(Localizer.String.CloseToTheNotificationArea, () => CloseToTheNotificationArea, value => CloseToTheNotificationArea = value),
+                       new ObservableItem<bool>(Localizer.String.CreateStartMenuShortcut, () => CreateStartMenuShortcut, value => CreateStartMenuShortcut = value),
                        new ObservableItem<bool>(Localizer.String.RunOnLowPriority, () => RunOnLowPriority, value => RunOnLowPriority = value),
                        new ObservableItem<bool>(Localizer.String.RunOnStartup, () => RunOnStartup, value => RunOnStartup = value),
                        new ObservableItem<bool>(Localizer.String.ShowOptimizationNotifications, () => ShowOptimizationNotifications, value => ShowOptimizationNotifications = value),
@@ -1434,21 +1465,8 @@ namespace WinMemoryCleaner
         {
             if (disposing)
             {
-                if (_hotKeyService != null)
-                {
-                    try
-                    {
-                        _hotKeyService.Dispose();
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-                }
-
                 if (_cancellationTokenSource != null)
                 {
-
                     try
                     {
                         _cancellationTokenSource.Cancel();
@@ -1460,7 +1478,28 @@ namespace WinMemoryCleaner
 
                     try
                     {
+                        _cancellationTokenSource.Token.WaitHandle.WaitOne(100);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    try
+                    {
                         _cancellationTokenSource.Dispose();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                if (_hotKeyService != null)
+                {
+                    try
+                    {
+                        _hotKeyService.Dispose();
                     }
                     catch
                     {
@@ -1553,9 +1592,9 @@ namespace WinMemoryCleaner
                         RaisePropertyChanged(() => Processes);
                         RaisePropertyChanged(() => ProcessExclusionList);
 
-                        if (OnAddProcessToExclusionListCommandCompleted != null)
-                        {
-                            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                if (OnAddProcessToExclusionListCommandCompleted != null)
+                {
+                    WpfApplication.Current.Dispatcher.Invoke((Action)delegate
                             {
                                 OnAddProcessToExclusionListCommandCompleted();
                             });
@@ -1753,7 +1792,7 @@ namespace WinMemoryCleaner
 
                     // Raise the event after IsOptimizationRunning is set to false
                     // Use BeginInvoke to ensure it runs after all property changes propagate
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                    WpfApplication.Current.Dispatcher.BeginInvoke((Action)(() =>
                     {
                         // Force command manager to re-evaluate CanExecute on all commands
                         CommandManager.InvalidateRequerySuggested();
@@ -1762,7 +1801,7 @@ namespace WinMemoryCleaner
                     // Raise completion event with lower priority to ensure commands are refreshed first
                     if (OnOptimizeCommandCompleted != null)
                     {
-                        System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                        WpfApplication.Current.Dispatcher.BeginInvoke((Action)(() =>
                          {
                              OnOptimizeCommandCompleted();
                          }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
@@ -1877,7 +1916,7 @@ namespace WinMemoryCleaner
 
                 if (OnRemoveProcessFromExclusionListCommandCompleted != null)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
+                    WpfApplication.Current.Dispatcher.Invoke((Action)delegate
                     {
                         OnRemoveProcessFromExclusionListCommandCompleted();
                     });

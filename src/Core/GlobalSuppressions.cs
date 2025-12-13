@@ -2,6 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+// General suppressions
 [assembly: SuppressMessage("Design", "CA1030:Use events where appropriate", Justification = "Ignored", Scope = "type", Target = "~T:WinMemoryCleaner.ObservableObject")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Ignored")]
 [assembly: SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Ignored")]
@@ -16,3 +17,15 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Ignored", Scope = "type", Target = "~T:WinMemoryCleaner.Structs")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Ignored")]
 [assembly: SuppressMessage("Reliability", "CA9998:Migrate from FxCop analyzers to .NET analyzers", Justification = "Legacy .NET Framework version")]
+
+// Test suppressions
+[assembly: SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Test classes implement IDisposable through IClassFixture/ICollectionFixture when needed", Scope = "type", Target = "~T:WinMemoryCleaner.ServiceTests+ComputerServiceTests")]
+[assembly: SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Test classes implement IDisposable through IClassFixture/ICollectionFixture when needed", Scope = "type", Target = "~T:WinMemoryCleaner.ServiceTests+HotkeyServiceTests")]
+[assembly: SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Test classes implement IDisposable through IClassFixture/ICollectionFixture when needed", Scope = "type", Target = "~T:WinMemoryCleaner.ServiceTests+NotificationServiceTests")]
+[assembly: SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Test classes implement IDisposable through IClassFixture/ICollectionFixture when needed", Scope = "type", Target = "~T:WinMemoryCleaner.ViewModelTests+MainViewModelTests")]
+[assembly: SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Test classes implement IDisposable through IClassFixture/ICollectionFixture when needed", Scope = "type", Target = "~T:WinMemoryCleaner.ViewModelTests+MessageViewModelTests")]
+[assembly: SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Test classes implement IDisposable through IClassFixture/ICollectionFixture when needed", Scope = "type", Target = "~T:WinMemoryCleaner.ViewModelTests+DonationViewModelTests")]
+[assembly: SuppressMessage("Design", "CA1052:Static holder types should be static or NotInheritable", Justification = "Test container classes for organizing nested test classes", Scope = "type", Target = "~T:WinMemoryCleaner.ServiceTests")]
+[assembly: SuppressMessage("Design", "CA1052:Static holder types should be static or NotInheritable", Justification = "Test container classes for organizing nested test classes", Scope = "type", Target = "~T:WinMemoryCleaner.ViewModelTests")]
+[assembly: SuppressMessage("Design", "CA1812:Avoid uninstantiated internal classes", Justification = "Test helper classes", Scope = "namespaceanddescendants", Target = "~N:WinMemoryCleaner")]
+[assembly: SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Test method names use underscores for readability following best naming conventions", Scope = "namespaceanddescendants", Target = "~N:WinMemoryCleaner")]

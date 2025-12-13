@@ -7,8 +7,8 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Application = System.Windows.Application;
 using Cursors = System.Windows.Input.Cursors;
+using WpfApplication = System.Windows.Application;
 
 namespace WinMemoryCleaner
 {
@@ -20,8 +20,11 @@ namespace WinMemoryCleaner
         #region Fields
 
         private int _currentRotationAngle;
+        private Icon _currentIcon;
+        private bool _disposed;
         private readonly Icon _imageIcon;
         private readonly NotifyIcon _notifyIcon;
+        private readonly object _disposeLock = new object();
         private DispatcherTimer _rotationTimer;
 
         #endregion
@@ -95,10 +98,48 @@ namespace WinMemoryCleaner
         {
             if (disposing)
             {
+                lock (_disposeLock)
+                {
+                    if (_disposed)
+                        return;
+
+                    _disposed = true;
+                }
+
                 try
                 {
                     if (_rotationTimer != null)
+                    {
+                        _rotationTimer.Stop();
+                        _rotationTimer.Tick -= OnRotationTimerTick;
                         _rotationTimer = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
+
+                try
+                {
+                    if (_notifyIcon != null)
+                    {
+                        _notifyIcon.Visible = false;
+                        _notifyIcon.Icon = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
+
+                try
+                {
+                    if (_currentIcon != null && _currentIcon != _imageIcon)
+                    {
+                        _currentIcon.Dispose();
+                        _currentIcon = null;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -265,7 +306,7 @@ namespace WinMemoryCleaner
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
                     graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+                    graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
 
                     // Draw background
                     if (!Settings.TrayIconUseTransparentBackground)
@@ -435,11 +476,11 @@ namespace WinMemoryCleaner
         /// <param name="running">if set to <c>true</c> shows loading cursor and disables menu</param>
         public void Loading(bool running)
         {
-            if (Application.Current == null || Application.Current.Dispatcher == null)
+            if (WpfApplication.Current == null || WpfApplication.Current.Dispatcher == null)
                 return;
 
             // Multi-threading trick
-            Application.Current.Dispatcher.Invoke((Action)delegate
+            WpfApplication.Current.Dispatcher.Invoke((Action)delegate
             {
                 Mouse.OverrideCursor = running ? Cursors.Wait : null;
 
@@ -480,15 +521,41 @@ namespace WinMemoryCleaner
         /// <param name="e">The event arguments</param>
         private void OnRotationTimerTick(object sender, EventArgs e)
         {
-            try
+            lock (_disposeLock)
             {
-                _currentRotationAngle = (_currentRotationAngle + 90) % 360;
+                if (_disposed)
+                    return;
 
-                _notifyIcon.Icon = GetRotatedIcon(_imageIcon, _currentRotationAngle);
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug(ex);
+                try
+                {
+                    _currentRotationAngle = (_currentRotationAngle + 90) % 360;
+
+                    var newIcon = GetRotatedIcon(_imageIcon, _currentRotationAngle);
+                    var oldIcon = _currentIcon;
+
+                    _notifyIcon.Icon = newIcon;
+                    _currentIcon = newIcon;
+
+                    if (oldIcon != null && oldIcon != _imageIcon && oldIcon != newIcon)
+                    {
+                        try
+                        {
+                            oldIcon.Dispose();
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Already disposed, ignore
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
             }
         }
 
@@ -500,12 +567,12 @@ namespace WinMemoryCleaner
             if (_rotationTimer != null)
                 return;
 
-            if (Application.Current == null || Application.Current.Dispatcher == null)
+            if (WpfApplication.Current == null || WpfApplication.Current.Dispatcher == null)
                 return;
 
             try
             {
-                Application.Current.Dispatcher.Invoke((Action)delegate
+                WpfApplication.Current.Dispatcher.Invoke((Action)delegate
                 {
                     try
                     {
@@ -537,13 +604,13 @@ namespace WinMemoryCleaner
 
             try
             {
-                if (Application.Current == null || Application.Current.Dispatcher == null)
+                if (WpfApplication.Current == null || WpfApplication.Current.Dispatcher == null)
                 {
                     CleanupRotationTimer();
                     return;
                 }
 
-                Application.Current.Dispatcher.Invoke((Action)delegate
+                WpfApplication.Current.Dispatcher.Invoke((Action)delegate
                 {
                     CleanupRotationTimer();
                 });
@@ -565,11 +632,42 @@ namespace WinMemoryCleaner
             if (memory == null)
                 throw new ArgumentNullException("memory");
 
-            if (_notifyIcon == null)
-                return;
+            lock (_disposeLock)
+            {
+                if (_disposed || _notifyIcon == null)
+                    return;
 
-            _notifyIcon.Text = GetText(memory, isOptimizing);
-            _notifyIcon.Icon = GetIcon(memory, isOptimizing);
+                try
+                {
+                    _notifyIcon.Text = GetText(memory, isOptimizing);
+
+                    var newIcon = GetIcon(memory, isOptimizing);
+                    var oldIcon = _currentIcon;
+
+                    _notifyIcon.Icon = newIcon;
+                    _currentIcon = newIcon;
+
+                    if (oldIcon != null && oldIcon != _imageIcon && oldIcon != newIcon)
+                    {
+                        try
+                        {
+                            oldIcon.Dispose();
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Already disposed, ignore
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
+            }
         }
 
         #endregion

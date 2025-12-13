@@ -40,6 +40,8 @@ namespace WinMemoryCleaner
 
         public static bool CompactMode { get; set; }
 
+        public static bool CreateStartMenuShortcut { get; set; }
+
         public static double FontSize { get; set; }
 
         public static string Language { get; set; }
@@ -98,6 +100,7 @@ namespace WinMemoryCleaner
             CloseAfterOptimization = false;
             CloseToTheNotificationArea = false;
             CompactMode = false;
+            CreateStartMenuShortcut = true;
             FontSize = 14;
             Language = Constants.Windows.Locale.Name.English;
             MemoryAreas = Enums.Memory.Areas.CombinedPageList | Enums.Memory.Areas.ModifiedFileCache | Enums.Memory.Areas.ModifiedPageList | Enums.Memory.Areas.RegistryCache | Enums.Memory.Areas.StandbyList | Enums.Memory.Areas.SystemFileCache | Enums.Memory.Areas.WorkingSet;
@@ -149,6 +152,7 @@ namespace WinMemoryCleaner
                         CloseAfterOptimization = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CloseAfterOptimization), CloseAfterOptimization), _culture);
                         CloseToTheNotificationArea = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CloseToTheNotificationArea), CloseToTheNotificationArea), _culture);
                         CompactMode = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CompactMode), CompactMode), _culture);
+                        CreateStartMenuShortcut = Convert.ToBoolean(key.GetValue(Helper.NameOf(() => CreateStartMenuShortcut), CreateStartMenuShortcut), _culture);
                         FontSize = Convert.ToDouble(key.GetValue(Helper.NameOf(() => FontSize), FontSize), _culture);
                         Language = Convert.ToString(key.GetValue(Helper.NameOf(() => Language), Language), CultureInfo.InvariantCulture);
 
@@ -263,6 +267,7 @@ namespace WinMemoryCleaner
                         key.SetValue(Helper.NameOf(() => CloseAfterOptimization), CloseAfterOptimization ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => CloseToTheNotificationArea), CloseToTheNotificationArea ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => CompactMode), CompactMode ? 1 : 0);
+                        key.SetValue(Helper.NameOf(() => CreateStartMenuShortcut), CreateStartMenuShortcut ? 1 : 0);
                         key.SetValue(Helper.NameOf(() => FontSize), FontSize);
                         key.SetValue(Helper.NameOf(() => Language), Language);
                         key.SetValue(Helper.NameOf(() => MemoryAreas), (int)MemoryAreas);

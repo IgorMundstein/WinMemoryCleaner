@@ -88,8 +88,7 @@ namespace WinMemoryCleaner
                 var exe = Path.GetFileName(App.Path);
                 var temp = Path.Combine(Path.GetTempPath(), exe);
 
-                if (File.Exists(temp))
-                    File.Delete(temp);
+                Helper.DeleteFile(temp);
 
                 var updateInfo = Tuple.Create(temp, App.Path, exe, newestVersion, (string[])e.UserState);
 

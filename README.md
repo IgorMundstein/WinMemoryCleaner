@@ -11,22 +11,27 @@ WMC is a free RAM cleaner that effectively optimizes memory areas by utilizing t
 [![](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2FIgorMundstein%2FWinMemoryCleaner%2Freleases%2Flatest&query=%24.tag_name&label=Release&style=for-the-badge)](https://github.com/IgorMundstein/WinMemoryCleaner/releases/latest/download/WinMemoryCleaner.exe)
 
 ### 🍫 [Chocolatey](https://community.chocolatey.org/packages/winmemorycleaner)
+
 ```cmd
 choco install winmemorycleaner
 ```
 
 ### 🍦 [Scoop](https://scoop.sh/#/apps?q=winmemorycleaner&o=true&dm=true&n=true)
+
 ```cmd
 scoop bucket add extras
 ```
+
 ```cmd
 scoop install extras/winmemorycleaner
 ```
 
 ### 📦 [WinGet](https://winstall.app/apps/IgorMundstein.WinMemoryCleaner)
+
 ```cmd
 winget install IgorMundstein.WinMemoryCleaner
 ```
+
 ## 🚀 Features
 
 | Feature | Description |
@@ -34,15 +39,21 @@ winget install IgorMundstein.WinMemoryCleaner
 | **Always&nbsp;on&nbsp;Top** | Pins the main application window so it is always visible above other windows. |
 | **Auto&nbsp;Optimization** | Set the app to clean memory automatically, either by period (`Every X hours`) or when free physical RAM drops below a specified threshold (`When free physical memory is below X percent`). |
 | **Auto&nbsp;Update** | Automatically checks for new versions every 24 hours to keep the application up to date. |
-| **Close&nbsp;after&nbsp;Optimization**| The application will automatically close after a memory optimization is completed. |
-| **Close&nbsp;to&nbsp;Notification&nbsp;Area**| Minimizes the app to the system tray instead of closing when the 'X' button is clicked. |
+| **Close&nbsp;after&nbsp;Optimization** | The application will automatically close after a memory optimization is completed. |
+| **Close&nbsp;to&nbsp;Notification&nbsp;Area** | Minimizes the app to the system tray instead of closing when the 'X' button is clicked. |
+| **Compact&nbsp;Mode** | Collapse the main window into a minimal view for at-a-glance monitoring. |
+| **Font&nbsp;Size&nbsp;Adjustment** | Customize the font size for different screen sizes and resolutions. |
 | **Global&nbsp;Hotkey** | Trigger an optimization instantly from anywhere with a customizable hotkey (default `CTRL+SHIFT+M`). |
-| **Multi-Language&nbsp;Support** | Albanian, Arabic, Bulgarian, Chinese (Simplified), Chinese (Traditional), Dutch, English, French, German, Greek, Hebrew, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Macedonian, Norwegian, Persian, Polish, Portuguese, Russian, Serbian, Slovenian, Spanish, Thai, Turkish, and Ukrainian. |
+| **Hotkey&nbsp;Toggle** | Enable or disable the global optimization hotkey independently. |
+| **Multi-Language&nbsp;Support** | Albanian, Arabic, Bulgarian, Chinese (Simplified), Chinese (Traditional), Dutch, English, French, German, Greek, Hebrew, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Macedonian, Norwegian, Persian, Polish, Portuguese (Brazil), Portuguese (Portugal), Russian, Serbian, Slovenian, Spanish, Thai, Turkish, and Ukrainian. |
 | **Process&nbsp;Exclusion&nbsp;List** | Build a list of processes to ignore during memory optimization, protecting critical applications. |
-| **Run&nbsp;on&nbsp;Low&nbsp;Priority**| Limits the app's resource usage by reducing its process priority. This may increase optimization time but can prevent system freezes. |
+| **Run&nbsp;on&nbsp;Low&nbsp;Priority** | Limits the app's resource usage by reducing its process priority. This may increase optimization time but can prevent system freezes. |
 | **Run&nbsp;on&nbsp;Startup** | Automatically starts the application when Windows boots by creating a task in the Windows Task Scheduler. |
-| **Show&nbsp;Virtual&nbsp;Memory**| Displays virtual memory (page file) usage in the main window and system tray text. |
-| **Start&nbsp;Minimized**| The application will start minimized directly to the system tray. A single-click on the tray icon restores it. |
+| **Show&nbsp;Optimization&nbsp;Notifications** | Display system tray notifications after each optimization, showing the reason and amount of memory freed. |
+| **Show&nbsp;Virtual&nbsp;Memory** | Displays virtual memory (page file) usage in the main window and system tray text. |
+| **Start&nbsp;Menu&nbsp;Shortcut** | Automatically creates a Start Menu shortcut for quick access to the application. |
+| **Start&nbsp;Minimized** | The application will start minimized directly to the system tray. A single-click on the tray icon restores it. |
+| **Tray&nbsp;Icon&nbsp;Customization** | Customize tray icon colors (background, text, warning, danger, optimizing), display memory usage, set threshold levels, and enable middle-click optimization. |
 
 ### ↕️ Compact Mode
 
@@ -50,19 +61,27 @@ The Compact Mode feature allows you to collapse the main window into a minimal v
 
 [![](./docs/assets/images/main-window-compact.png)](#%EF%B8%8F-compact-mode)
 
-### 🔔 System Tray (Notification area)
+### 🔔 System Tray (Notification Area)
 
 The application provides quick access and information directly from the system tray.
 
 - **Menu**: A right-click menu offers quick access to trigger an optimization or exit the application.
-  
-  [![](./docs/assets/images/system-tray.png)](#-system-tray-notification-area)
-  
+
+  - Optimize
+  - Exit
+ 
 - **Notification**: After an optimization, a notification appears showing the reason and the approximate amount of memory that was freed.
 
   [![](./docs/assets/images/notification.png)](#-system-tray-notification-area)
 
-- **Tray Icon Customization**: The tray icon can be configured to display real-time physical memory usage instead of the app logo. You can customize the background and text colors, as well as set warning and danger level thresholds that change the icon's color based on current memory pressure.
+- **Tray Icon Customization**: The tray icon can be configured to:
+
+  - Customize background, danger, optimizing, text, and warning colors
+  - Display real-time physical memory usage instead of the app logo
+  - Enable middle mouse click to trigger optimization
+  - Set danger and warning level thresholds that automatically change icon colors
+  - Use transparent background when showing memory usage
+  - Visual rotation effect during optimization
 
 ## 🧬 Technical Deep Dive: How It Works
 
@@ -102,16 +121,6 @@ Don't take our word for it. You can verify the effects of this tool using Window
 5. Watch the Resource Monitor again. The blue "Standby" memory will instantly drop, and the light green "Free" memory will increase by the same amount.
 
 This is a direct, verifiable demonstration that the application converts cached memory into truly free memory, ready for your next task.
-
-## 📖 Logs
-
-All optimization activities and data on essential tasks are logged to the Windows Event Viewer for a transparent audit trail.
-
-1. Press **Win + R**, type **eventvwr**, and press Enter.
-2. Navigate to `Windows Logs > Application`
-3. Look for events with the source name **Windows Memory Cleaner**
-
-[![](./docs/assets/images/windows-event-log.png)](#-logs)
 
 ## 🔒 Trust & Integrity
 
@@ -181,6 +190,135 @@ For continuous, hands-off optimization, install the application as a background 
 {path}\WinMemoryCleaner.exe /Uninstall
 ```
 
+## 🔧 Troubleshooting
+
+### ⚠️ Common Issues
+
+**Application flagged as Malware/Virus:**
+
+One of the reasons for this **false alarm** is that the application adds entries to the registry and creates a scheduled task to run at startup. Windows doesn't suggest letting applications with administrator privileges run at startup. I understand that, but this is the required method for this functionality. I apologize, but the application cannot perform a deep memory clean without administrator privileges.
+
+This is a common issue that persists with every new app version. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
+
+**Solutions:**
+
+- **Recommended: Use a Package Manager** — If you frequently encounter false positive detections, auto-update issues, or SmartScreen warnings, we **strongly recommend** installing via [Chocolatey](#-chocolatey), [Scoop](#-scoop), or [WinGet](#-winget). These package managers provide:
+  
+  - Automated update mechanisms that bypass Windows security warnings
+  - Community-verified distribution channels
+  - No manual download/verification steps required
+  - Reduced exposure to false positive antivirus flags
+  - Simplified version management with single-command updates
+
+  **Example update commands:**
+
+  ```cmd
+  choco upgrade winmemorycleaner
+  ````
+  
+  ```cmd
+  scoop update winmemorycleaner
+  ```
+
+  ```cmd
+  winget upgrade IgorMundstein.WinMemoryCleaner
+  ```
+
+- If auto-update fails or you need a verified build, download the latest release from the **Download** section above or the Releases page and manually replace your existing `WinMemoryCleaner.exe`. Run the new file as administrator.
+- Long-term solution: please submit the app to Microsoft for malware analysis to reduce false positives: [submit for analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
+- Quick workaround: add an exclusion to Windows Security: [add an exclusion](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
+
+#### Verify & replace executable (safe replacement)
+
+If you suspect the binary is corrupted, tampered, or auto-update fails, follow these safe-replacement steps.
+
+- Simple (non-technical):
+
+  1. Download the latest release from the **Download** section above or the Releases page on GitHub.
+  2. Right-click the downloaded file → **Properties** → **Digital Signatures** and verify the signer and timestamp.
+  3. Rename your current `WinMemoryCleaner.exe` to `WinMemoryCleaner.exe.bak` (backup).
+  4. Move the new `WinMemoryCleaner.exe` into place and run it as administrator.
+  5. If the new version works, delete the `.bak`. To roll back, restore the `.bak` file.
+
+- Advanced (recommended best practices):
+
+  1. Export current settings (registry): `reg export "HKLM\Software\WinMemoryCleaner" WinMemoryCleaner-reg-backup.reg`
+  2. Download the official release and obtain the published SHA256 from the release notes (if provided).
+  3. Verify the file hash:
+
+     ```powershell
+     Get-FileHash .\WinMemoryCleaner.exe -Algorithm SHA256
+     ```
+
+-   4. Verify the Authenticode signature:
+  
+     ```powershell
+     Get-AuthenticodeSignature .\WinMemoryCleaner.exe
+     ```
+
+     Confirm `Status` is `Valid` and signer is expected.
+
+  5. Stop running instances (and scheduled task if present) before replacing:
+
+     ```powershell
+     Stop-Process -Name WinMemoryCleaner -ErrorAction SilentlyContinue
+     ```
+
+  6. Backup and replace safely:
+
+     ```powershell
+     Move-Item .\WinMemoryCleaner.exe WinMemoryCleaner.exe.bak
+     Copy-Item C:\path\to\downloaded\WinMemoryCleaner.exe .\
+     Start-Process .\WinMemoryCleaner.exe -Verb RunAs
+     ```
+
+  7. Check Event Viewer (`eventvwr` → Windows Logs → Application) for errors. Roll back by restoring the `.bak` and re-enabling tasks if needed.
+
+### 🔄 Reset to Factory Defaults
+
+**⚠️ Use this to restore factory defaults** - If the app keeps crashing, won't open, or is stuck in a loop, this will terminate frozen windows, disable auto-update, and restore the application to its factory default state.
+
+**What happens when you reset to factory defaults:**
+
+- All your custom settings are reverted to the application's factory defaults (your language choice is preserved)
+- Any frozen or stuck app windows will be closed
+- Auto-update is turned off and must be re-enabled manually in the application settings
+- The app returns to its original state
+
+**Command to run (one-line)**
+
+```cmd
+{path}\WinMemoryCleaner.exe /Reset
+```
+
+**Step-by-step (guided)**
+
+1. Click **Start**, type `cmd`.
+2. Right-click **Command Prompt** → **Run as administrator**.
+3. Type (or drag-and-drop) the full path to `WinMemoryCleaner.exe`, then type a space and add `/Reset`.
+
+   Example:
+
+   ```cmd
+   "C:\Downloads\WinMemoryCleaner.exe" /Reset
+   ```
+
+   > **💡 TIP:** Drag and drop `WinMemoryCleaner.exe` into the Command Prompt — it inserts the full path. If the path contains spaces, enclose it in double quotes before adding ` /Reset`.
+
+4. Press **Enter**.
+5. The app will reset and close. Open it normally to use it again.
+
+### 📋 View Application Logs
+
+All optimization activities and essential operations are logged to the Windows Event Viewer for a transparent audit trail.
+
+**Steps to view logs:**
+1. Press **Win + R**, type **eventvwr**, and press Enter
+2. Navigate to `Windows Logs > Application`
+3. Look for events with the source name **Windows Memory Cleaner**
+
+[![](./docs/assets/images/windows-event-log.png)](#-logs)
+
 ## 🛠️ Complementary Tools
 
 While **Windows Memory Cleaner** excels at efficiently managing and freeing up memory, the following tools can provide even deeper insights into your system's memory usage and help with advanced troubleshooting:
@@ -196,6 +334,7 @@ A powerful physical memory usage analysis utility from Microsoft Sysinternals. R
 ## ❓ Frequently Asked Questions (FAQ)
 
 ### 💭 Is this app still useful on modern PCs, and how is it not 'snake oil'?
+
 This is an excellent question that gets to the core of this project's philosophy.
 
 **The short answer:** Yes, it's still useful for a massive number of users, and it's the opposite of snake oil because it's built on transparency and verifiable proof.
@@ -212,7 +351,8 @@ WinMemoryCleaner is the **antivirus serum**. It's not a magical cure-all, but a 
 This project exists to serve the users who were left behind by the march of technology, and to restore faith that a utility can be both effective and honest.
 
 ### 💭 What are the project requirements?
-- Logging to Windows Event Viewer
+
+- - Logging to Windows Event Viewer
 - Minimalistic user interface using Windows Presentation Foundation (WPF) and single-page application (SPA) architecture
 - Model-View-ViewModel (MVVM) design pattern
 - No third-party dependencies
@@ -223,9 +363,11 @@ This project exists to serve the users who were left behind by the march of tech
 - Windows retro-compatibility (Windows XP, Server 2003, and later)
 
 ### 💭 Where does the app save the settings?
+
 They are saved in the Windows registry path `Computer\HKEY_LOCAL_MACHINE\Software\WinMemoryCleaner`
 
 ### 💭 Why has the app been flagged as Malware/Virus and blocked by Windows Defender, SmartScreen, or Antivirus?
+
 One of the reasons for this **false alarm** is that the application adds entries to the registry and creates a scheduled task to run at startup. Windows doesn't suggest letting applications with administrator privileges run at startup. I understand that, but this is the required method for this functionality. I apologize, but the application cannot perform a deep memory clean without administrator privileges.
 
 That's a common issue that persists with every new app version. I constantly submit the executable to Microsoft. Usually, it takes up to 72 hours for Microsoft to remove the detection.
@@ -266,7 +408,7 @@ When new versions require translation updates, we may use AI tools to provide a 
 | 🇨🇳&nbsp;Chinese&nbsp;(Simplified) | [KaiHuaDou](https://github.com/KaiHuaDou), [Kun Zhao](https://github.com/kzhdev), [Rayden](https://github.com/raydenake22) | 🇳🇴&nbsp;Norwegian | [Dan](https://github.com/danorse) |
 | 🇨🇳&nbsp;Chinese&nbsp;(Traditional) | [Rayden](https://github.com/raydenake22), [rtyrtyrtyqw](https://github.com/rtyrtyrtyqw) | 🇮🇷&nbsp;Persian | [Kavian](https://github.com/KavianK) |
 | 🇳🇱&nbsp;Dutch | [Jesse](https://github.com/dragonhuntermc), [hax4dazy](https://github.com/hax4dazy) | 🇵🇱&nbsp;Polish | [Patryk](https://github.com/Fresta56) |
-| 🇫🇷&nbsp;French | [William VINCENT](https://github.com/wixaw) | 🇵🇹&nbsp;Portuguese&nbsp;(PT) | AI |
+| 🇫🇷&nbsp;French | [William VINCENT](https://github.com/wixaw) | 🇵🇹&nbsp;Portuguese&nbsp;(Portugal) | AI |
 | 🇩🇪&nbsp;German | [Calvin](https://github.com/Slluxx), [Niklas Englmeier](https://github.com/iamniklas), [Steve](https://github.com/uDEV2019) | 🇷🇺&nbsp;Russian | [Ruslan](https://github.com/ruslooob) |
 | 🇬🇷&nbsp;Greek | [Theodoros Katsageorgis](https://github.com/tkatsageorgis) | 🇷🇸&nbsp;Serbian | [Dragoš Milošević](https://github.com/DragorMilos) |
 | 🇮🇱&nbsp;Hebrew | [Eliezer Bloy](https://github.com/eliezerbloy) | 🇸🇮&nbsp;Slovenian | [Jadran Rudec](https://github.com/JadranR) |

@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32.SafeHandles;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -18,6 +18,10 @@ namespace WinMemoryCleaner
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AttachConsole(int dwProcessId);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -47,6 +51,9 @@ namespace WinMemoryCleaner
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool FlushFileBuffers(SafeFileHandle hFile);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern IntPtr GetStdHandle(int nStdHandle);
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);

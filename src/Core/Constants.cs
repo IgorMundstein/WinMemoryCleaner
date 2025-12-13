@@ -15,7 +15,7 @@ namespace WinMemoryCleaner
             public const int AutoUpdateInterval = 24; // Hour
             public const string EmbeddedResourcePath = "WinMemoryCleaner.Resources.";
             public const string EmbeddedResourcePathExtension = ".json";
-            public const string Id = "4B3E3081-D421-4AAC-B3DE-808B1A9CCD30";
+            public const string Id = "C7F29A45-8B3E-4D2F-9A1C-5E7B2D4F8C6A";
             public const string KeyFile = "WinMemoryCleaner.snk";
             public const string License = "GPL-3.0";
             public const string LocalizationResourcePath = EmbeddedResourcePath + "Localization.";
@@ -46,6 +46,7 @@ namespace WinMemoryCleaner
             public static class CommandLineArgument
             {
                 public const string Install = "Install";
+                public const string Reset = "Reset";
                 public const string Service = "Service";
                 public const string Uninstall = "Uninstall";
             }
@@ -87,6 +88,12 @@ namespace WinMemoryCleaner
 
         public static class Windows
         {
+            public static class Console
+            {
+                public const int AttachParentProcess = -1; // ATTACH_PARENT_PROCESS
+                public const int StdOutputHandle = -11; // STD_OUTPUT_HANDLE
+            }
+
             public static class DesktopWindowManager
             {
                 public static class Attribute

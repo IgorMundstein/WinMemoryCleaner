@@ -71,6 +71,8 @@ jobs:
     needs: setup
     if: needs.setup.outputs.cache-hit == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
       - name: "✅ Already Verified Summary"
         run: |
@@ -83,6 +85,13 @@ jobs:
           echo "| 🍫 Chocolatey        | 🟢 Verified |" >> $GITHUB_STEP_SUMMARY
           echo "| 🍦 Scoop (Extras)    | 🟢 Verified |" >> $GITHUB_STEP_SUMMARY
           echo "| 📦 WinGet            | 🟢 Verified |" >> $GITHUB_STEP_SUMMARY
+      
+      - name: "🛑 Disable Workflow (Already Verified)"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Version verified. Disabling daily schedule until next release."
+          gh workflow disable "Verify and Test Packages"
 
   chocolatey:
     needs: setup
@@ -408,6 +417,8 @@ jobs:
     needs: [setup, chocolatey, scoop, winget]
     if: always() && needs.setup.result == 'success' && needs.setup.outputs.cache-hit != 'true' && needs.setup.outputs.is_grace_period != 'true'
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
       - name: "📝 Publication Summary"
         run: |
@@ -466,3 +477,11 @@ jobs:
         with:
           path: ./.cache
           key: ${{ needs.setup.outputs.cache-key }}
+      
+      - name: "🛑 Disable Workflow (Success)"
+        if: env.ALL_PUBLISHED == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "All packages verified! Disabling this workflow until next release."
+          gh workflow disable "Verify and Test Packages"

@@ -15,34 +15,30 @@ namespace WinMemoryCleaner
     public static class Helper
     {
         /// <summary>
-        /// Appends indentation to the StringBuilder based on the current nesting level.
+        /// Deletes a file at the specified path if it exists.
         /// </summary>
-        /// <param name="sb">The StringBuilder to append to.</param>
-        /// <param name="level">The current indentation level.</param>
-        /// <param name="indent">The string to use for each indentation level.</param>
-        private static void AppendIndent(StringBuilder sb, int level, string indent)
+        /// <param name="path">The full path to the file to delete.</param>
+        /// <param name="throwOnException">If true, throws exceptions; otherwise, returns false on failure.</param>
+        /// <returns>True if the file was successfully deleted; false if deletion failed or did not exist.</returns>
+        public static bool DeleteFile(string path, bool throwOnException = false)
         {
-            for (var i = 0; i < level; i++)
-                sb.Append(indent);
-        }
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                    return true;
+                }
+            }
+            catch
+            {
+                Logger.Debug("Failed to delete file: " + path);
 
-        /// <summary>
-        /// Creates a shortcut (.lnk) at the specified path pointing to the target executable.
-        /// </summary>
-        /// <param name="targetExePath">The full path to the .exe file.</param>
-        /// <param name="destinationLinkPath">The full path where the .lnk file will be saved.</param>
-        /// <param name="description">The tooltip description for the shortcut.</param>
-        public static void CreateShortcut(string targetExePath, string destinationLinkPath, string description)
-        {
-            var link = (ShellInterop.IShellLink)new ShellInterop.ShellLink();
+                if (throwOnException)
+                    throw;
+            }
 
-            link.SetDescription(description);
-            link.SetPath(targetExePath);
-            link.SetWorkingDirectory(Path.GetDirectoryName(targetExePath));
-
-            IPersistFile file = (IPersistFile)link;
-
-            file.Save(destinationLinkPath, false);
+            return false;
         }
 
         /// <summary>
@@ -61,7 +57,7 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="json">The minified JSON string to format.</param>
         /// <returns>A formatted JSON string with indentation and line breaks.</returns>
-        private static string FormatJson(string json)
+        public static string FormatJson(string json)
         {
             if (string.IsNullOrEmpty(json))
                 return string.Empty;
@@ -110,21 +106,28 @@ namespace WinMemoryCleaner
                         sb.Append(c);
                         sb.Append(Environment.NewLine);
                         level++;
-                        AppendIndent(sb, level, indent);
+
+                        for (var j = 0; j < level; j++)
+                            sb.Append(indent);
                         break;
 
                     case '}':
                     case ']':
                         sb.Append(Environment.NewLine);
                         level--;
-                        AppendIndent(sb, level, indent);
+                        
+                        for (var j = 0; j < level; j++)
+                            sb.Append(indent);
+
                         sb.Append(c);
                         break;
 
                     case ',':
                         sb.Append(c);
                         sb.Append(Environment.NewLine);
-                        AppendIndent(sb, level, indent);
+                        
+                        for (var j = 0; j < level; j++)
+                            sb.Append(indent);
                         break;
 
                     case ':':
@@ -266,6 +269,37 @@ namespace WinMemoryCleaner
             var json = new JavaScriptSerializer().Serialize(obj.ToJson());
 
             return minified ? json : FormatJson(json);
+        }
+
+        /// <summary>
+        /// Creates or deletes the Start Menu shortcut based on the specified flag.
+        /// </summary>
+        /// <param name="create">If true, creates the shortcut; if false, deletes it.</param>
+        public static void StartMenuShortcut(bool create)
+        {
+            try
+            {
+                var shortcutPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), Constants.App.Shortcut);
+
+                if (create)
+                {
+                    var link = (ShellInterop.IShellLink)new ShellInterop.ShellLink();
+
+                    link.SetDescription(Constants.App.Title);
+                    link.SetPath(App.Path);
+                    link.SetWorkingDirectory(Path.GetDirectoryName(App.Path));
+
+                    IPersistFile file = (IPersistFile)link;
+
+                    file.Save(shortcutPath, false);
+                }
+                else
+                    DeleteFile(shortcutPath);
+            }
+            catch (Exception e)
+            {
+                Logger.Debug("Failed to " + (create ? "create" : "delete") + " Start Menu shortcut: " + e.GetMessage());
+            }
         }
 
         /// <summary>

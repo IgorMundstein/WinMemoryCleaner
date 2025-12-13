@@ -14,9 +14,9 @@ namespace WinMemoryCleaner
 
         private string _about, _add, _alwaysOnTop, _autoOptimization, _autoOptimizationInterval, _autoUpdate;
         private string _background;
-        private string _close, _closeAfterOptimization, _closeToTheNotificationArea, _collapse, _combinedPageList;
+        private string _close, _closeAfterOptimization, _closeToTheNotificationArea, _collapse, _combinedPageList, _createStartMenuShortcut;
         private string _dangerLevel, _donate, _donationMessage, _donationTitle;
-        private string _error, _errorAdminPrivilegeRequired, _errorCanNotSaveLog, _errorMemoryAreaOptimizationNotSupported, _everyHour, _exit, _expand;
+        private string _error, _errorAdminPrivilegeRequired, _errorCanNotSaveLog, _errorMemoryAreaOptimizationNotSupported, _errorResetCommand, _everyHour, _exit, _expand;
         private string _free;
         private string _garbageCollector;
         private string _help, _hotkeyIsInUseByOperatingSystem;
@@ -26,7 +26,7 @@ namespace WinMemoryCleaner
         private string _no;
         private string _optimizationHotkey, _optimize, _optimizeOnMiddleMouseClick, _optimizing;
         private string _physicalMemory, _processExclusionList;
-        private string _reason, _registryCache, _remove, _reset, _resetConfirmation, _runOnLowPriority, _runOnStartup;
+        private string _reason, _registryCache, _remove, _reset, _resetCommand, _resetConfirmation, _runOnLowPriority, _runOnStartup;
         private string _schedule, _seconds, _settings, _showMemoryUsage, _showOptimizationNotifications, _showVirtualMemory, _standbyList, _standbyListLowPriority, _startMinimized, _systemFileCache;
         private string _text, _trayIcon;
         private string _updatedToVersion, _used, _useTransparentBackground;
@@ -123,6 +123,13 @@ namespace WinMemoryCleaner
         }
 
         [DataMember]
+        public string CreateStartMenuShortcut
+        {
+            get { return _createStartMenuShortcut; }
+            private set { _createStartMenuShortcut = value.Capitalize(); }
+        }
+
+        [DataMember]
         public string DangerLevel
         {
             get { return _dangerLevel; }
@@ -176,6 +183,13 @@ namespace WinMemoryCleaner
         {
             get { return _errorMemoryAreaOptimizationNotSupported; }
             private set { _errorMemoryAreaOptimizationNotSupported = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string ErrorResetCommand
+        {
+            get { return _errorResetCommand; }
+            private set { _errorResetCommand = value.Capitalize(); }
         }
 
         [DataMember]
@@ -365,6 +379,13 @@ namespace WinMemoryCleaner
         {
             get { return _reset; }
             private set { _reset = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string ResetCommand
+        {
+            get { return _resetCommand; }
+            private set { _resetCommand = value.Capitalize(); }
         }
 
         [DataMember]

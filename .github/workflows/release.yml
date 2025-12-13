@@ -16,6 +16,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write # ADDED: Required to enable the verification workflow
 
 jobs:
   build:
@@ -239,3 +240,12 @@ jobs:
             release_artifacts/checksums.txt
           draft: true
           generate_release_notes: false
+      
+      - name: Enable Verification Workflow
+        if: steps.check_release.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          Write-Host "New release created. Re-enabling the daily package verification workflow."
+          gh workflow enable "Verify and Test Packages"

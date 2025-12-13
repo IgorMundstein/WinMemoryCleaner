@@ -37,6 +37,24 @@
         "requested": "[1.0.3, 1.0.3]",
         "resolved": "1.0.3",
         "contentHash": "3ctXnCpHdoYJNH9ATfXKwckkkdHvHc1Xls12QB9kf1tjh3b+VzxtiwpkZN4GxOawakfH6CJAkqhlDKSiz6Ujbg=="
+      },
+      "NUnit": {
+        "type": "Direct",
+        "requested": "[2.6.4, 2.6.4]",
+        "resolved": "2.6.4",
+        "contentHash": "cmSPvaCMRSP0DI19FP1Liw9DyJY3E/vOY1OrVaeJBZpZFWHkmT3fB9ngGWnZX/ftvA7zJEbghEaw3Yd+u4YFAw=="
+      },
+      "NUnit.Runners": {
+        "type": "Direct",
+        "requested": "[2.6.4, 2.6.4]",
+        "resolved": "2.6.4",
+        "contentHash": "LZWCxtXCKTa1EV0vod/ovTzExhjEJ9yoLUiORzMydF7aSOHi+NfIuqaQ9QzBYE28qH0fDgqRNkvAO4u0UTFLxw=="
+      },
+      "NUnitTestAdapter": {
+        "type": "Direct",
+        "requested": "[2.0.0, 2.0.0]",
+        "resolved": "2.0.0",
+        "contentHash": "w0f2er8eVYVdJIssFrEgbQgTWdtNWGOlqd87/pdpYgxJW1ACQwL1h3vhsT4vwVAHPbZEZvaO56bbZhu+swX0jw=="
       }
     }
   }

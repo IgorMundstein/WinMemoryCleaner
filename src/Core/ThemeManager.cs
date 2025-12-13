@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows;
+using WpfApplication = System.Windows.Application;
 using WinFormsColor = System.Drawing.Color;
 using WpfBrush = System.Windows.Media.SolidColorBrush;
 using WpfColor = System.Windows.Media.Color;
@@ -183,7 +183,7 @@ namespace WinMemoryCleaner
         {
             try
             {
-                var app = Application.Current;
+                var app = WpfApplication.Current;
                 if (app == null || app.Resources == null)
                 {
                     Logger.Warning("Application.Current or Resources is null during theme initialization");
@@ -405,13 +405,21 @@ namespace WinMemoryCleaner
         }
 
         /// <summary>
+        /// Gets the primary background color for Windows Forms controls.
+        /// </summary>
+        public static WinFormsColor PrimaryBackgroundColor
+        {
+            get { return GetColorSafe(Helper.NameOf(() => PrimaryBackgroundColor).Replace("Color", string.Empty), WinFormsColor.FromArgb(32, 32, 32)); }
+        }
+
+        /// <summary>
         /// Gets the secondary background color for Windows Forms controls.
         /// </summary>
         public static WinFormsColor SecondaryBackgroundColor
         {
             get { return GetColorSafe(Helper.NameOf(() => SecondaryBackgroundColor).Replace("Color", string.Empty), WinFormsColor.DarkSlateGray); }
         }
-
+        
         /// <summary>
         /// Gets the secondary border color for Windows Forms controls.
         /// </summary>
@@ -449,7 +457,7 @@ namespace WinMemoryCleaner
 
                 EnsureInitialized();
 
-                var app = Application.Current;
+                var app = WpfApplication.Current;
                 if (app == null || app.Resources == null)
                     return fallback;
 
@@ -642,7 +650,7 @@ namespace WinMemoryCleaner
 
             try
             {
-                var app = Application.Current;
+                var app = WpfApplication.Current;
                 if (app == null || app.Resources == null)
                 {
                     Logger.Warning("Application.Current or Resources is null during theme loading");

@@ -16,6 +16,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  checks: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -65,6 +66,41 @@ jobs:
         if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
+
+      - name: Run Tests
+        if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
+        shell: pwsh
+        run: |
+          $testAssembly = "src\bin\Release\WinMemoryCleaner.exe"  
+          $testRunner = "src\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe"
+          
+          if (-Not (Test-Path $testRunner)) {
+            Write-Host "::error::Test runner not found at $testRunner"
+            exit 1
+          }
+          
+          Write-Host "Running tests..."
+          & $testRunner $testAssembly /xml:TestResults.xml
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Tests failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+
+      - name: Upload test results
+        if: always() && (github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true')
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_number }}
+          path: TestResults.xml
+          retention-days: 30
+
+      - name: Publish test results
+        if: always() && (github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true')
+        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        with:
+          files: TestResults.xml
+          check_name: Unit Test Results
 
       - name: Get App Version
         if: github.event_name == 'push' || steps.check_files.outputs.any_changed == 'true'
@@ -158,13 +194,21 @@ jobs:
           $appPath = ".\WinMemoryCleaner.exe"
           $appName = "WinMemoryCleaner"
           $screenshotPath = ".\screenshot-${{ matrix.os }}.png"
-          Start-Process -FilePath $appPath
-          Start-Sleep -Seconds 5
-          $process = Get-Process -Name $appName -ErrorAction SilentlyContinue
-          if (-not $process) {
-            Write-Host "::error::$appName process not found after starting."
+          
+          $process = Start-Process -FilePath $appPath -PassThru
+          
+          $loops = 0
+          while ($process.MainWindowHandle -eq 0 -and $loops -lt 15) {
+            Start-Sleep -Seconds 1
+            $loops++
+          }
+          
+          if ($process.HasExited) {
+            Write-Host "::error::$appName process exited prematurely."
             exit 1
           }
+          
+          Add-Type -AssemblyName System.Drawing
           Add-Type -AssemblyName System.Windows.Forms
           $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
           $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
@@ -173,6 +217,7 @@ jobs:
           $bitmap.Save($screenshotPath, [System.Drawing.Imaging.ImageFormat]::Png)
           $graphics.Dispose()
           $bitmap.Dispose()
+          
           Stop-Process -Name $appName -Force
 
       - name: Upload Screenshot Artifact

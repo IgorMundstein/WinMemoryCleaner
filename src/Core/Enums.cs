@@ -94,6 +94,7 @@ namespace WinMemoryCleaner
             App,
             Installation,
             Package,
+            Reset,
             Service,
             Silent,
             Uninstallation

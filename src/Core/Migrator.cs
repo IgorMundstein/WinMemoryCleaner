@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.IO;
 
 namespace WinMemoryCleaner
 {
@@ -23,6 +24,11 @@ namespace WinMemoryCleaner
             if (App.Version >= new Version(3, 0))
             {
                 RemoveRegistryPath();
+            }
+            // 3.0.8+
+            if (App.Version >= new Version(3, 0, 8))
+            {
+                CleanupOrphanedOldUpdateFiles();
             }
         }
 
@@ -64,6 +70,62 @@ namespace WinMemoryCleaner
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Cleans up orphaned old update files from the temp directory. 
+        /// These files were created by the old update mechanism and are no longer needed.
+        /// </summary>
+        private static void CleanupOrphanedOldUpdateFiles()
+        {
+            try
+            {
+                var tempPath = Path.GetTempPath();
+                var exeName = Path.GetFileName(App.Path);
+                
+                if (string.IsNullOrWhiteSpace(tempPath) || string.IsNullOrWhiteSpace(exeName))
+                    return;
+
+                var patterns = new[]
+                {
+                    exeName + ".*.new",
+                    exeName + ".*.download"
+                };
+                
+                var filesDeleted = 0;
+                
+                foreach (var pattern in patterns)
+                {
+                    try
+                    {
+                        var orphanedFiles = Directory.GetFiles(tempPath, pattern, SearchOption.TopDirectoryOnly);
+                        
+                        foreach (var file in orphanedFiles)
+                        {
+                            try
+                            {
+                                if (Helper.DeleteFile(file))
+                                    filesDeleted++;
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Debug(string.Format(Localizer.Culture, "Failed to delete orphaned update file '{0}': {1}", file, ex.GetMessage()));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug(string.Format(Localizer.Culture, "Failed to search for orphaned update files with pattern '{0}': {1}", pattern, ex.GetMessage()));
+                    }
+                }
+                
+                if (filesDeleted > 0)
+                    Logger.Information(string.Format(Localizer.Culture, "Migration cleanup: Removed {0} orphaned old update file(s) from the temp directory", filesDeleted));
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
+        }
 
         /// <summary>
         /// From version 2.9, settings were moved from the current user key to the local machine to support a new feature that enables the app to run in service mode.
