@@ -1,3 +1,15 @@
+### 3.0.8
+
+**2025-12-13**
+
+- Added /Reset command line option for troubleshooting purposes
+- Added logic to delete orphaned old update files created by the old update mechanism, which are no longer needed ([#168](https://github.com/IgorMundstein/WinMemoryCleaner/issues/168))
+- Added settings to turn the start menu shortcut creation on or off ([#169](https://github.com/IgorMundstein/WinMemoryCleaner/issues/169))
+- Added unit tests to enhance code testability
+- Improved memory usage display on tray icon ([#170](https://github.com/IgorMundstein/WinMemoryCleaner/issues/170))
+- Updated documentation with missing changes from previous versions
+- UI & Code enhancements
+
 ### 3.0.7
 
 **2025-11-20**
