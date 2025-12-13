@@ -352,7 +352,7 @@ This project exists to serve the users who were left behind by the march of tech
 
 ### 💭 What are the project requirements?
 
-- - Logging to Windows Event Viewer
+- Logging to Windows Event Viewer
 - Minimalistic user interface using Windows Presentation Foundation (WPF) and single-page application (SPA) architecture
 - Model-View-ViewModel (MVVM) design pattern
 - No third-party dependencies
