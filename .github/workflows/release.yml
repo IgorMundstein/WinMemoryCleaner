@@ -117,6 +117,25 @@ jobs:
         shell: pwsh
         run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
+      - name: Run Unit Tests (Release Gate)
+        shell: pwsh
+        run: |
+          $testAssembly = "src\bin\Release\WinMemoryCleaner.exe"  
+          $testRunner = "src\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe"
+          
+          if (-Not (Test-Path $testRunner)) {
+            Write-Host "::error::Test runner not found at $testRunner"
+            exit 1
+          }
+          
+          Write-Host "Running release gate tests..."
+          & $testRunner $testAssembly /xml:TestResults.xml
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Release aborted: Tests failed."
+            exit $LASTEXITCODE
+          }
+
       - name: Upload EXE for signing
         id: upload-for-signing
         uses: actions/upload-artifact@v4
