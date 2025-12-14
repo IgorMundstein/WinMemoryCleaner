@@ -247,6 +247,7 @@ jobs:
         run: ls -R ./all-screenshots
 
       - name: Upload final screenshot package
+        id: upload-screenshots
         uses: actions/upload-artifact@v4
         with:
           name: all-screenshots-${{ needs.build-and-test.outputs.app_version }}
@@ -255,6 +256,8 @@ jobs:
 
       - name: Generate Job Summary
         if: success()
+        env:
+          ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
         run: |
           echo "## 📸 UI Test Screenshots" >> $GITHUB_STEP_SUMMARY
           echo "| OS | Filename |" >> $GITHUB_STEP_SUMMARY
@@ -263,5 +266,5 @@ jobs:
             filename=$(basename "$f")
             os_name="${filename#screenshot-}" 
             os_name="${os_name%.png}"
-            echo "| $os_name | $filename |" >> $GITHUB_STEP_SUMMARY
+            echo "| $os_name | [$filename]($ARTIFACT_URL) |" >> $GITHUB_STEP_SUMMARY
           done
