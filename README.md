@@ -192,9 +192,7 @@ For continuous, hands-off optimization, install the application as a background 
 
 ## 🔧 Troubleshooting
 
-### ⚠️ Common Issues
-
-**Application flagged as Malware/Virus:**
+### ⚠️ Application flagged as Malware/Virus:
 
 One of the reasons for this **false alarm** is that the application adds entries to the registry and creates a scheduled task to run at startup. Windows doesn't suggest letting applications with administrator privileges run at startup. I understand that, but this is the required method for this functionality. I apologize, but the application cannot perform a deep memory clean without administrator privileges.
 
@@ -226,11 +224,11 @@ This is a common issue that persists with every new app version. I constantly su
 
 - If auto-update fails or you need a verified build, download the latest release from the **Download** section above or the Releases page and manually replace your existing `WinMemoryCleaner.exe`. Run the new file as administrator.
 - Long-term solution: please submit the app to Microsoft for malware analysis to reduce false positives: [submit for analysis](https://www.microsoft.com/en-us/wdsi/filesubmission)
-- Quick workaround: add an exclusion to Windows Security: [add an exclusion](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
+- Quick workaround: add an exclusion to your antivirus app allowlist or to [Windows Security](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
 
 #### Verify & replace executable (safe replacement)
 
-If you suspect the binary is corrupted, tampered, or auto-update fails, follow these safe-replacement steps.
+If you suspect the binary is corrupted, tampered, or the auto-update fails, follow these safe-replacement steps.
 
 - Simple (non-technical):
 
@@ -339,7 +337,7 @@ This is an excellent question that gets to the core of this project's philosophy
 
 **The short answer:** Yes, it's still useful for a massive number of users, and it's the opposite of snake oil because it's built on transparency and verifiable proof.
 
-**The longer answer:** We've all been burned. The PC utility market has a dark history of deceptive "boosters" that preyed on users' frustrations. They were the T-Virus of the software world, promising performance but often making things worse with shady, undocumented tricks. That history creates a lot of justified prejudice.
+**The longer answer:** We've all been burnt. The PC utility market has a dark history of deceptive "boosters" that preyed on users' frustrations. They were the T-Virus of the software world, promising performance but often making things worse with shady, undocumented tricks. That history creates a lot of justified prejudice.
 
 WinMemoryCleaner is the **antivirus serum**. It's not a magical cure-all, but a targeted, clean, and honest tool. Here's why it's different and still relevant:
 
