@@ -16,7 +16,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  actions: write # ADDED: Required to enable the verification workflow
+  actions: write
 
 jobs:
   build:
