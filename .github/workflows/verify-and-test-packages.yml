@@ -91,7 +91,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "Version verified. Disabling daily schedule until next release."
-          gh workflow disable verify-and-test-packages.yml
+          gh workflow disable verify-and-test-packages.yml --repo ${{ github.repository }}
 
   chocolatey:
     needs: setup
@@ -424,7 +424,7 @@ jobs:
         run: |
           VERSION="${{ needs.setup.outputs.release_version }}"
           echo "### Publication Verification for $VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "| Package Manager      | Publication Status      | E2E Test       |" >> $GITHUB_STEP_SUMMARY
+          echo "| Package Manager      | Publication Status      | E2E Test        |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------------|-------------------------|----------------|" >> $GITHUB_STEP_SUMMARY
 
           CH_PUB="${{ needs.chocolatey.outputs.published }}"
@@ -484,4 +484,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "All packages verified! Disabling this workflow until next release."
-          gh workflow disable verify-and-test-packages.yml
+          gh workflow disable verify-and-test-packages.yml --repo ${{ github.repository }}
