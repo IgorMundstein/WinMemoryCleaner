@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
 namespace WinMemoryCleaner
 {
@@ -30,7 +31,20 @@ namespace WinMemoryCleaner
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             if (PropertyChanged != null)
-                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            {
+                var handler = PropertyChanged;
+                var args = new PropertyChangedEventArgs(propertyName);
+
+                // Marshal to UI thread if necessary
+                if (Application.Current != null && Application.Current.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+                {
+                    Application.Current.Dispatcher.Invoke(handler, this, args);
+                }
+                else
+                {
+                    handler.Invoke(this, args);
+                }
+            }
         }
 
         /// <summary>
