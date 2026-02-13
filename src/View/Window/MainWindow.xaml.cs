@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace WinMemoryCleaner
 {
@@ -213,8 +214,14 @@ namespace WinMemoryCleaner
                 }
                 else
                 {
-                    Thread.Sleep(1000);
-                    App.Shutdown();
+                    // Use DispatcherTimer to avoid blocking the UI thread
+                    var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1000) };
+                    timer.Tick += (s, e) =>
+                    {
+                        timer.Stop();
+                        App.Shutdown();
+                    };
+                    timer.Start();
                 }
             }
             else

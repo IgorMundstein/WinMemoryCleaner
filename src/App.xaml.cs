@@ -323,50 +323,53 @@ namespace WinMemoryCleaner
                         if (MainWindow.OwnedWindows.Cast<View>().Any(window => window != null && window.IsDialog))
                         {
                             MainWindow.Activate();
-                            MainWindow.Topmost = true;
-                            MainWindow.Topmost = Settings.AlwaysOnTop;
-
                             return;
                         }
 
-                        switch (MainWindow.Visibility)
+                        // Determine current window state
+                        bool isWindowVisible = MainWindow.Visibility == Visibility.Visible;
+                        bool isWindowMinimized = MainWindow.WindowState == WindowState.Minimized;
+                        bool isWindowHidden = MainWindow.Visibility == Visibility.Hidden || MainWindow.Visibility == Visibility.Collapsed;
+
+                        if (!isWindowVisible || isWindowMinimized)
                         {
-                            case Visibility.Collapsed:
-                            case Visibility.Hidden:
-                                MainWindow.Show();
+                            // Restore window properly
+                            MainWindow.ShowInTaskbar = true;
 
+                            if (isWindowMinimized)
+                            {
                                 MainWindow.WindowState = WindowState.Normal;
+                            }
+                            else if (isWindowHidden)
+                            {
+                                MainWindow.Show();
+                            }
 
-                                MainWindow.Activate();
-                                MainWindow.Focus();
+                            MainWindow.Activate();
+                            MainWindow.Focus();
 
-                                MainWindow.Topmost = true;
-                                MainWindow.Topmost = Settings.AlwaysOnTop;
-                                MainWindow.ShowInTaskbar = true;
+                            // Focus the Optimize button when restoring from notification area
+                            MainWindow.Dispatcher.BeginInvoke((Action)(() =>
+                            {
+                                var mainWindow = MainWindow as MainWindow;
 
-                                // Focus the Optimize button when restoring from notification area
-                                MainWindow.Dispatcher.BeginInvoke((Action)(() =>
+                                if (mainWindow != null)
                                 {
-                                    var mainWindow = MainWindow as MainWindow;
+                                    var optimizeButton = mainWindow.FindName("Optimize") as UIElement;
 
-                                    if (mainWindow != null)
+                                    if (optimizeButton != null)
                                     {
-                                        var optimizeButton = mainWindow.FindName("Optimize") as UIElement;
-
-                                        if (optimizeButton != null)
-                                        {
-                                            Keyboard.Focus(optimizeButton);
-                                            FocusManager.SetFocusedElement(mainWindow, optimizeButton);
-                                        }
+                                        Keyboard.Focus(optimizeButton);
+                                        FocusManager.SetFocusedElement(mainWindow, optimizeButton);
                                     }
-                                }), DispatcherPriority.ApplicationIdle);
-                                break;
-
-                            case Visibility.Visible:
-                                MainWindow.Hide();
-
-                                MainWindow.ShowInTaskbar = false;
-                                break;
+                                }
+                            }), DispatcherPriority.ApplicationIdle);
+                        }
+                        else
+                        {
+                            // Hide window
+                            MainWindow.Hide();
+                            MainWindow.ShowInTaskbar = false;
                         }
 
                         ReleaseMemory();
@@ -485,8 +488,6 @@ namespace WinMemoryCleaner
                             mainWindow.Show();
                             mainWindow.Activate();
                             mainWindow.Focus();
-                            mainWindow.Topmost = true;
-                            mainWindow.Topmost = Settings.AlwaysOnTop;
                         }
 
                         // Subscribe to power events
