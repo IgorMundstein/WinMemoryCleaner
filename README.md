@@ -45,7 +45,7 @@ winget install IgorMundstein.WinMemoryCleaner
 | **Font&nbsp;Size&nbsp;Adjustment** | Customize the font size for different screen sizes and resolutions. |
 | **Global&nbsp;Hotkey** | Trigger an optimization instantly from anywhere with a customizable hotkey (default `CTRL+SHIFT+M`). |
 | **Hotkey&nbsp;Toggle** | Enable or disable the global optimization hotkey independently. |
-| **Multi-Language&nbsp;Support** | Albanian, Arabic, Bulgarian, Chinese (Simplified), Chinese (Traditional), Dutch, English, French, German, Greek, Hebrew, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Macedonian, Norwegian, Persian, Polish, Portuguese (Brazil), Portuguese (Portugal), Russian, Serbian, Slovenian, Spanish, Thai, Turkish, and Ukrainian. |
+| **Multi-Language&nbsp;Support** | Albanian, Arabic, Bulgarian, Chinese (Simplified), Chinese (Traditional), Dutch, English, French, German, Greek, Hebrew, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Macedonian, Norwegian, Persian, Polish, Portuguese (Brazil), Portuguese (Portugal), Russian, Serbian (Cyrillic), Serbian (Latin), Slovenian, Spanish, Thai, Turkish, and Ukrainian. |
 | **Process&nbsp;Exclusion&nbsp;List** | Build a list of processes to ignore during memory optimization, protecting critical applications. |
 | **Run&nbsp;on&nbsp;Low&nbsp;Priority** | Limits the app's resource usage by reducing its process priority. This may increase optimization time but can prevent system freezes. |
 | **Run&nbsp;on&nbsp;Startup** | Automatically starts the application when Windows boots by creating a task in the Windows Task Scheduler. |
@@ -408,7 +408,7 @@ When new versions require translation updates, we may use AI tools to provide a 
 | 🇳🇱&nbsp;Dutch | [Jesse](https://github.com/dragonhuntermc), [hax4dazy](https://github.com/hax4dazy) | 🇵🇱&nbsp;Polish | [Patryk](https://github.com/Fresta56) |
 | 🇫🇷&nbsp;French | [William VINCENT](https://github.com/wixaw) | 🇵🇹&nbsp;Portuguese&nbsp;(Portugal) | AI |
 | 🇩🇪&nbsp;German | [Calvin](https://github.com/Slluxx), [Niklas Englmeier](https://github.com/iamniklas), [Steve](https://github.com/uDEV2019) | 🇷🇺&nbsp;Russian | [Ruslan](https://github.com/ruslooob) |
-| 🇬🇷&nbsp;Greek | [Theodoros Katsageorgis](https://github.com/tkatsageorgis) | 🇷🇸&nbsp;Serbian | [Dragoš Milošević](https://github.com/DragorMilos) |
+| 🇬🇷&nbsp;Greek | [Theodoros Katsageorgis](https://github.com/tkatsageorgis) | 🇷🇸&nbsp;Serbian (Cyrillic & Latin) | [Dragoš Milošević](https://github.com/DragorMilos), [Radoš Milićev](https://github.com/rammba) |
 | 🇮🇱&nbsp;Hebrew | [Eliezer Bloy](https://github.com/eliezerbloy) | 🇸🇮&nbsp;Slovenian | [Jadran Rudec](https://github.com/JadranR) |
 | 🇭🇺&nbsp;Hungarian | [gycsisz](https://github.com/gycsisz) | 🇪🇸&nbsp;Spanish | [Ajneb Al Revés](https://github.com/AjnebAlReves), [Fran](https://github.com/FrannDzs) |
 | 🇮🇩&nbsp;Indonesian | [Mochammad Misbahus Surur](https://github.com/Eskeyz), [Minids](https://github.com/tdnphantom) | 🇹🇭&nbsp;Thai | [nongice](https://github.com/21icepril) |
