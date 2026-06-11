@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.ServiceProcess;
+using System.Threading;
 using System.Timers;
 
 namespace WinMemoryCleaner
@@ -14,7 +15,8 @@ namespace WinMemoryCleaner
         private readonly IComputerService _computerService;
         private DateTimeOffset _lastAutoOptimizationByInterval = DateTimeOffset.Now;
         private DateTimeOffset _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
-        private readonly Timer _timer = new Timer(60000);
+        private int _optimizing;
+        private readonly System.Timers.Timer _timer = new System.Timers.Timer(60000);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WinService" /> class.
@@ -44,7 +46,19 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return ServiceController.GetServices().Any(sc => string.Equals(sc.ServiceName, Constants.App.Name, StringComparison.OrdinalIgnoreCase));
+                try
+                {
+                    using (var service = new ServiceController(Constants.App.Name))
+                    {
+                        var status = service.Status;
+
+                        return true;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
 
@@ -60,13 +74,13 @@ namespace WinMemoryCleaner
             {
                 try
                 {
-                    using (var service = ServiceController.GetServices().First(sc => string.Equals(sc.ServiceName, Constants.App.Name, StringComparison.OrdinalIgnoreCase)))
+                    using (var service = new ServiceController(Constants.App.Name))
                     {
                         service.Refresh();
 
                         return (Enums.ServiceStatus)service.Status;
                     }
-                } 
+                }
                 catch
                 {
                     return Enums.ServiceStatus.NotInstalled;
@@ -110,31 +124,41 @@ namespace WinMemoryCleaner
         /// <param name="e"></param>
         private void OnTimer(object sender, ElapsedEventArgs e)
         {
-            // App priority
-            App.SetPriority(Settings.RunOnPriority);
-
-            // Update memory info
-            _computer.Memory = _computerService.Memory;
-
-            // Interval
-            if (Settings.AutoOptimizationInterval > 0 &&
-                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByInterval).TotalHours >= Settings.AutoOptimizationInterval)
-            {
-                DependencyInjection.Container.Resolve<IComputerService>().Optimize(Enums.Memory.Optimization.Reason.Schedule, Settings.MemoryAreas);
-
-                _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+            if (Interlocked.CompareExchange(ref _optimizing, 1, 0) != 0)
                 return;
+
+            try
+            {
+                // App priority
+                App.SetPriority(Settings.RunOnPriority);
+
+                // Update memory info
+                _computer.Memory = _computerService.Memory;
+
+                // Interval
+                if (Settings.AutoOptimizationInterval > 0 &&
+                    DateTimeOffset.Now.Subtract(_lastAutoOptimizationByInterval).TotalHours >= Settings.AutoOptimizationInterval)
+                {
+                    DependencyInjection.Container.Resolve<IComputerService>().Optimize(Enums.Memory.Optimization.Reason.Schedule, Settings.MemoryAreas);
+
+                    _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+                    return;
+                }
+
+                // Memory usage
+                if (Settings.AutoOptimizationMemoryUsage > 0 &&
+                    _computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
+                    DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
+                {
+                    DependencyInjection.Container.Resolve<IComputerService>().Optimize(Enums.Memory.Optimization.Reason.LowMemory, Settings.MemoryAreas);
+
+                    _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
+                    return;
+                }
             }
-
-            // Memory usage
-            if (Settings.AutoOptimizationMemoryUsage > 0 &&
-                _computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
-                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
+            finally
             {
-                DependencyInjection.Container.Resolve<IComputerService>().Optimize(Enums.Memory.Optimization.Reason.LowMemory, Settings.MemoryAreas);
-
-                _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
-                return;
+                Interlocked.Exchange(ref _optimizing, 0);
             }
         }
     }

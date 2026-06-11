@@ -27,6 +27,7 @@ namespace WinMemoryCleaner
 
         private static CultureInfo _culture;
         private static Language _language;
+        private static List<Language> _languages;
 
         #endregion
 
@@ -118,6 +119,9 @@ namespace WinMemoryCleaner
         {
             get
             {
+                if (_languages != null)
+                    return _languages;
+
                 try
                 {
                     var resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -140,7 +144,7 @@ namespace WinMemoryCleaner
                         // ignored
                     }
 
-                    return CultureInfo.GetCultures(CultureTypes.AllCultures)
+                    _languages = CultureInfo.GetCultures(CultureTypes.AllCultures)
                         .Where(culture => resourceNames.Contains(culture.EnglishName, StringComparer.OrdinalIgnoreCase))
                         .OrderBy(culture => culture.EnglishName, StringComparer.InvariantCultureIgnoreCase)
                         .Select(culture => new Language(culture))
@@ -150,8 +154,10 @@ namespace WinMemoryCleaner
                 {
                     Logger.Error(e);
 
-                    return new List<Language> { new Language(new CultureInfo(Constants.Windows.Locale.Name.English)) };
+                    _languages = new List<Language> { new Language(new CultureInfo(Constants.Windows.Locale.Name.English)) };
                 }
+
+                return _languages;
             }
         }
 

@@ -22,10 +22,12 @@ namespace WinMemoryCleaner
         private int _currentRotationAngle;
         private Icon _currentIcon;
         private bool _disposed;
+        private readonly Font _cachedFont;
         private readonly Icon _imageIcon;
         private readonly NotifyIcon _notifyIcon;
         private readonly object _disposeLock = new object();
         private DispatcherTimer _rotationTimer;
+        private readonly StringFormat _cachedStringFormat;
 
         #endregion
 
@@ -38,6 +40,8 @@ namespace WinMemoryCleaner
         public NotificationService(NotifyIcon notifyIcon)
         {
             _currentRotationAngle = 0;
+            _cachedFont = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Pixel);
+            _cachedStringFormat = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
             _imageIcon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             _notifyIcon = notifyIcon;
 
@@ -150,6 +154,26 @@ namespace WinMemoryCleaner
                 {
                     if (_imageIcon != null)
                         _imageIcon.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
+
+                try
+                {
+                    if (_cachedFont != null)
+                        _cachedFont.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
+
+                try
+                {
+                    if (_cachedStringFormat != null)
+                        _cachedStringFormat.Dispose();
                 }
                 catch (Exception ex)
                 {
@@ -293,15 +317,9 @@ namespace WinMemoryCleaner
             {
                 using (var image = new Bitmap(16, 16))
                 using (var graphics = Graphics.FromImage(image))
-                using (var font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Pixel))
-                using (var format = new StringFormat())
                 using (var backgroundBrush = GetBackgroundBrush(memory, isOptimizing))
                 using (var textBrush = GetTextBrush(memory, isOptimizing))
                 {
-                    // Configure format
-                    format.Alignment = StringAlignment.Center;
-                    format.LineAlignment = StringAlignment.Center;
-
                     // Configure graphics quality
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
@@ -324,7 +342,7 @@ namespace WinMemoryCleaner
                     }
 
                     // Draw text
-                    graphics.DrawString(string.Format(CultureInfo.InvariantCulture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 99 : memory.Physical.Used.Percentage), font, textBrush, 8F, 9F, format);
+                    graphics.DrawString(string.Format(CultureInfo.InvariantCulture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 99 : memory.Physical.Used.Percentage), _cachedFont, textBrush, 8F, 9F, _cachedStringFormat);
 
                     var handle = image.GetHicon();
 

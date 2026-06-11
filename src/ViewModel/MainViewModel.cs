@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -20,6 +19,7 @@ namespace WinMemoryCleaner
         #region Fields
 
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private ObservableCollection<SolidColorBrush> _cachedBrushes;
         private Computer _computer;
         private readonly IComputerService _computerService;
         private readonly IHotkeyService _hotKeyService;
@@ -250,7 +250,10 @@ namespace WinMemoryCleaner
         {
             get
             {
-                return new ObservableCollection<SolidColorBrush>(App.IsInDesignMode ? new List<SolidColorBrush> { System.Windows.Media.Brushes.White } : ThemeManager.Brushes);
+                if (_cachedBrushes == null)
+                    _cachedBrushes = new ObservableCollection<SolidColorBrush>(App.IsInDesignMode ? new List<SolidColorBrush> { System.Windows.Media.Brushes.White } : ThemeManager.Brushes);
+
+                return _cachedBrushes;
             }
         }
 
@@ -543,6 +546,7 @@ namespace WinMemoryCleaner
                         RaisePropertyChanged(() => Computer);
 
                         _trayIconItems = null;
+                        _cachedBrushes = null;
 
                         NotificationService.Initialize();
                         NotificationService.Update(Computer.Memory, IsOptimizationRunning);
@@ -818,16 +822,32 @@ namespace WinMemoryCleaner
         {
             get
             {
-                var processes = new ObservableCollection<string>(Process.GetProcesses()
-                    .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase))
-                    .Select(process => process.ProcessName.ToLower(Localizer.Culture).Replace(".exe", string.Empty))
-                    .Distinct()
-                    .OrderBy(name => name));
+                var allProcesses = Process.GetProcesses();
 
-                if (!processes.Contains(SelectedProcess, StringComparer.OrdinalIgnoreCase))
-                    SelectedProcess = processes.FirstOrDefault();
+                try
+                {
+                    var names = allProcesses
+                        .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName))
+                        .Select(process => process.ProcessName.ToLower(Localizer.Culture).Replace(".exe", string.Empty))
+                        .Distinct()
+                        .OrderBy(name => name)
+                        .ToList();
 
-                return processes;
+                    var processes = new ObservableCollection<string>(names);
+
+                    if (!processes.Contains(SelectedProcess, StringComparer.OrdinalIgnoreCase))
+                        SelectedProcess = processes.FirstOrDefault();
+
+                    return processes;
+                }
+                finally
+                {
+                    foreach (var process in allProcesses)
+                    {
+                        if (process != null)
+                            process.Dispose();
+                    }
+                }
             }
         }
 
@@ -1619,7 +1639,12 @@ namespace WinMemoryCleaner
                 {
                     // Check if it's busy
                     if (IsBusy)
+                    {
+                        if (_cancellationTokenSource.Token.WaitHandle.WaitOne(1000))
+                            break;
+
                         continue;
+                    }
 
                     // Delay
                     if (_cancellationTokenSource.Token.WaitHandle.WaitOne(60000))
@@ -1706,7 +1731,12 @@ namespace WinMemoryCleaner
                 {
                     // Check if it's busy
                     if (IsBusy)
+                    {
+                        if (_cancellationTokenSource.Token.WaitHandle.WaitOne(1000))
+                            break;
+
                         continue;
+                    }
 
                     lock (_lockObject)
                     {
@@ -1748,9 +1778,12 @@ namespace WinMemoryCleaner
         /// <param name="reason">Optimization reason</param>
         private void Optimize(Enums.Memory.Optimization.Reason reason)
         {
-            lock (_lockObject)
+            try
             {
-                try
+                long tempPhysicalAvailable;
+                long tempVirtualAvailable;
+
+                lock (_lockObject)
                 {
                     IsBusy = true;
                     IsOptimizationRunning = true;
@@ -1761,11 +1794,14 @@ namespace WinMemoryCleaner
                     App.SetPriority(Settings.RunOnPriority);
 
                     // Memory optimize
-                    var tempPhysicalAvailable = Computer.Memory.Physical.Free.Bytes;
-                    var tempVirtualAvailable = Computer.Memory.Virtual.Free.Bytes;
+                    tempPhysicalAvailable = Computer.Memory.Physical.Free.Bytes;
+                    tempVirtualAvailable = Computer.Memory.Virtual.Free.Bytes;
+                }
 
-                    _computerService.Optimize(reason, Settings.MemoryAreas);
+                _computerService.Optimize(reason, Settings.MemoryAreas);
 
+                lock (_lockObject)
+                {
                     // Update memory info
                     Computer.Memory = _computerService.Memory;
                     RaisePropertyChanged(() => Computer);
@@ -1783,29 +1819,32 @@ namespace WinMemoryCleaner
                         Notify(message);
                     }
                 }
-                finally
+            }
+            finally
+            {
+                lock (_lockObject)
                 {
                     IsOptimizationRunning = false;
                     IsBusy = false;
 
                     NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+                }
 
-                    // Raise the event after IsOptimizationRunning is set to false
-                    // Use BeginInvoke to ensure it runs after all property changes propagate
+                // Raise the event after IsOptimizationRunning is set to false
+                // Use BeginInvoke to ensure it runs after all property changes propagate
+                WpfApplication.Current.Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    // Force command manager to re-evaluate CanExecute on all commands
+                    CommandManager.InvalidateRequerySuggested();
+                }), System.Windows.Threading.DispatcherPriority.Normal);
+
+                // Raise completion event with lower priority to ensure commands are refreshed first
+                if (OnOptimizeCommandCompleted != null)
+                {
                     WpfApplication.Current.Dispatcher.BeginInvoke((Action)(() =>
-                    {
-                        // Force command manager to re-evaluate CanExecute on all commands
-                        CommandManager.InvalidateRequerySuggested();
-                    }), System.Windows.Threading.DispatcherPriority.Normal);
-
-                    // Raise completion event with lower priority to ensure commands are refreshed first
-                    if (OnOptimizeCommandCompleted != null)
-                    {
-                        WpfApplication.Current.Dispatcher.BeginInvoke((Action)(() =>
-                         {
-                             OnOptimizeCommandCompleted();
-                         }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
-                    }
+                     {
+                         OnOptimizeCommandCompleted();
+                     }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 }
             }
         }
@@ -1818,12 +1857,12 @@ namespace WinMemoryCleaner
         {
             try
             {
-                if (IsOptimizationRunning)
+                if (_isOptimizationRunning)
                     return;
 
                 OptimizationProgressStep = Localizer.String.Optimize;
                 OptimizationProgressValue = 0;
-                OptimizationProgressTotal = (byte)(new BitArray(new[] { (int)Settings.MemoryAreas }).OfType<bool>().Count(x => x) + 1);
+                OptimizationProgressTotal = (byte)(CountSetBits((int)Settings.MemoryAreas) + 1);
 
                 ThreadPool.QueueUserWorkItem(_ => Optimize(reason));
             }
@@ -1831,6 +1870,24 @@ namespace WinMemoryCleaner
             {
                 Logger.Error(e);
             }
+        }
+
+        /// <summary>
+        /// Counts the number of set bits (1s) in the binary representation of the value.
+        /// </summary>
+        /// <param name="value">The value to count bits in.</param>
+        /// <returns>The number of set bits.</returns>
+        private static int CountSetBits(int value)
+        {
+            int count = 0;
+
+            while (value != 0)
+            {
+                count++;
+                value &= value - 1;
+            }
+
+            return count;
         }
 
         /// <summary>
