@@ -466,7 +466,7 @@ namespace WinMemoryCleaner
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
-            var handle = GCHandle.Alloc(0);
+            var handle = default(GCHandle);
 
             try
             {
@@ -634,25 +634,19 @@ namespace WinMemoryCleaner
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
-            object memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
-            var handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
+            var memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
+            var buffer = Marshal.AllocHGlobal(sizeof(int));
 
             try
             {
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryPurgeStandbyList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                Marshal.WriteInt32(buffer, (int)memoryPurgeStandbyList);
+
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, buffer, (uint)sizeof(int)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
             {
-                try
-                {
-                    if (handle.IsAllocated)
-                        handle.Free();
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored
-                }
+                Marshal.FreeHGlobal(buffer);
             }
         }
 
@@ -669,7 +663,7 @@ namespace WinMemoryCleaner
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
 
-            var handle = GCHandle.Alloc(0);
+            var handle = default(GCHandle);
 
             try
             {
