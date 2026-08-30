@@ -1,60 +1,35 @@
 {
   "version": 1,
   "dependencies": {
-    ".NETFramework,Version=v4.0": {
-      "Microsoft.CodeAnalysis.FxCopAnalyzers": {
+    "net8.0-windows7.0": {
+      "System.Diagnostics.EventLog": {
         "type": "Direct",
-        "requested": "[3.3.2, 3.3.2]",
-        "resolved": "3.3.2",
-        "contentHash": "QlaP2SgpkiV5fnDgC1WwG3blfXIvz5WSPkA/R/AjKRwOLTGU1YLE3PArkvTz1ZtLCuXs29Qp3iY2fja7wF0iEg=="
+        "requested": "[8.0.1, )",
+        "resolved": "8.0.1",
+        "contentHash": "n1ZP7NM2Gkn/MgD8+eOT5MulMj6wfeQMNS2Pizvq5GHCZfjlFMXV2irQlQmJhwA2VABC57M0auudO89Iu2uRLg=="
       },
-      "Microsoft.CodeAnalysis.VersionCheckAnalyzer": {
+      "System.Drawing.Common": {
         "type": "Direct",
-        "requested": "[3.3.2, 3.3.2]",
-        "resolved": "3.3.2",
-        "contentHash": "KTqeVJjGfwDX7/AGDgBXErYX/8Etjwu8Zg2TgmmjVPZReVZk4KLv5fpEiTtoBXis3AO+OM/Qu4cQfz828RSmDQ=="
+        "requested": "[8.0.7, )",
+        "resolved": "8.0.7",
+        "contentHash": "DoeBae0gZvxs3mtfoub6F1k28fSkFPzmhFuvblplKMnLYKmTMVy0j4Yxahh96KM532JzHGDxhJn1VpMKSB1pyg==",
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "8.0.0"
+        }
       },
-      "Microsoft.CodeQuality.Analyzers": {
+      "System.ServiceProcess.ServiceController": {
         "type": "Direct",
-        "requested": "[3.3.2, 3.3.2]",
-        "resolved": "3.3.2",
-        "contentHash": "WwR96abpowLKCJ/+hREuBu58zbTBCiFLQx5FjAUAYrgtuIQsg+jRtv4n9gKw6zxydnO+jd5aFJB6H+eqGqQufw=="
+        "requested": "[8.0.1, )",
+        "resolved": "8.0.1",
+        "contentHash": "02I0BXo1kmMBgw03E8Hu4K6nTqur4wpQdcDZrndczPzY2fEoGvlinE35AWbyzLZ2h2IksEZ6an4tVt3hi9j1oA==",
+        "dependencies": {
+          "System.Diagnostics.EventLog": "8.0.1"
+        }
       },
-      "Microsoft.NetCore.Analyzers": {
-        "type": "Direct",
-        "requested": "[3.3.2, 3.3.2]",
-        "resolved": "3.3.2",
-        "contentHash": "L9lU2E9SaK8znn8ZkstOx8jjpYmsBTvt3xIW6btPM/Fi8m7zSK80itHV0p6f23q84uvyXS8ibECjP0Vra99zsQ=="
-      },
-      "Microsoft.NetFramework.Analyzers": {
-        "type": "Direct",
-        "requested": "[3.3.2, 3.3.2]",
-        "resolved": "3.3.2",
-        "contentHash": "NfmC8NoxrRtw2PSmqSu+kVTcsJuMhspxWKbVzrtPxw+O8hjpCPzD0IttCUJclDf36qkmScvvd1BgRHYE17zF9g=="
-      },
-      "Microsoft.NETFramework.ReferenceAssemblies.net40": {
-        "type": "Direct",
-        "requested": "[1.0.3, 1.0.3]",
-        "resolved": "1.0.3",
-        "contentHash": "3ctXnCpHdoYJNH9ATfXKwckkkdHvHc1Xls12QB9kf1tjh3b+VzxtiwpkZN4GxOawakfH6CJAkqhlDKSiz6Ujbg=="
-      },
-      "NUnit": {
-        "type": "Direct",
-        "requested": "[2.6.4, 2.6.4]",
-        "resolved": "2.6.4",
-        "contentHash": "cmSPvaCMRSP0DI19FP1Liw9DyJY3E/vOY1OrVaeJBZpZFWHkmT3fB9ngGWnZX/ftvA7zJEbghEaw3Yd+u4YFAw=="
-      },
-      "NUnit.Runners": {
-        "type": "Direct",
-        "requested": "[2.6.4, 2.6.4]",
-        "resolved": "2.6.4",
-        "contentHash": "LZWCxtXCKTa1EV0vod/ovTzExhjEJ9yoLUiORzMydF7aSOHi+NfIuqaQ9QzBYE28qH0fDgqRNkvAO4u0UTFLxw=="
-      },
-      "NUnitTestAdapter": {
-        "type": "Direct",
-        "requested": "[2.0.0, 2.0.0]",
-        "resolved": "2.0.0",
-        "contentHash": "w0f2er8eVYVdJIssFrEgbQgTWdtNWGOlqd87/pdpYgxJW1ACQwL1h3vhsT4vwVAHPbZEZvaO56bbZhu+swX0jw=="
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "9opKRyOKMCi2xJ7Bj7kxtZ1r9vbzosMvRrdEhVhDz8j8MoBGgB+WmC94yH839NPH+BclAjtQ/pyagvi/8gDLkw=="
       }
     }
   }

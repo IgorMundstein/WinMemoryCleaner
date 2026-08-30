@@ -12,9 +12,6 @@ using WpfColor = System.Windows.Media.Color;
 
 namespace WinMemoryCleaner
 {
-    /// <summary>
-    /// Centralized theme manager that provides all theme resources with enhanced security
-    /// </summary>
     public static class ThemeManager
     {
         private const int MAX_BRUSHES_COUNT = 500;
@@ -22,11 +19,11 @@ namespace WinMemoryCleaner
         private const int MAX_HEX_COLOR_LENGTH = 9;
         private const int INITIALIZATION_TIMEOUT_MS = 30000;
 
-        private static readonly Regex _hexColorPattern = new Regex(@"^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$", RegexOptions.Compiled);
-        private static readonly Regex _resourceKeyPattern = new Regex(@"^[a-zA-Z0-9_.]+$", RegexOptions.Compiled);
+        private static readonly Regex _hexColorPattern = new(@"^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$", RegexOptions.Compiled);
+        private static readonly Regex _resourceKeyPattern = new(@"^[a-zA-Z0-9_.]+$", RegexOptions.Compiled);
 
-        private static readonly object _lockObject = new object();
-        private static readonly object _initializationLock = new object();
+        private static readonly object _lockObject = new();
+        private static readonly object _initializationLock = new();
         private static volatile bool _isInitialized;
         private static volatile bool _isInitializing;
         private static readonly Timer _initializationTimer = InitializeTimer();
@@ -34,7 +31,7 @@ namespace WinMemoryCleaner
         private static Enums.Theme _theme = Enums.Theme.Dark;
         private static List<WpfBrush> _brushes;
         private static List<Enums.Theme> _themes;
-        private static readonly Dictionary<string, WinFormsColor> _colorCache = new Dictionary<string, WinFormsColor>(StringComparer.Ordinal);
+        private static readonly Dictionary<string, WinFormsColor> _colorCache = new(StringComparer.Ordinal);
         private static DateTime _lastInitializationAttempt = DateTime.MinValue;
 
         private static Timer InitializeTimer()
@@ -45,13 +42,7 @@ namespace WinMemoryCleaner
             }
             catch (Exception e)
             {
-                try
-                {
-                    Logger.Error("Failed to initialize timer: " + e.Message);
-                }
-                catch
-                {
-                }
+                try { Logger.Error("Failed to initialize timer: " + e.Message); } catch { }
                 return null;
             }
         }
@@ -243,15 +234,11 @@ namespace WinMemoryCleaner
                 foreach (Enums.Theme theme in enumValues)
                 {
                     if (IsValidTheme(theme))
-                    {
                         _themes.Add(theme);
-                    }
                 }
 
                 if (_themes.Count == 0)
-                {
                     _themes.Add(Enums.Theme.Dark);
-                }
             }
             catch (Exception e)
             {
@@ -305,7 +292,7 @@ namespace WinMemoryCleaner
                     }
                     catch (Exception e)
                     {
-                        var propertyName = (property != null) ? property.Name : "unknown";
+                        var propertyName = property?.Name ?? "unknown";
                         Logger.Error("Failed to process color property " + propertyName + ": " + e.Message);
                     }
                 }
@@ -396,44 +383,29 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Gets the accent color for Windows Forms controls.
-        /// </summary>
         public static WinFormsColor AccentColor
         {
-            get { return GetColorSafe(Helper.NameOf(() => AccentColor).Replace("Color", string.Empty), WinFormsColor.DeepSkyBlue); }
+            get => GetColorSafe(Helper.NameOf(() => AccentColor).Replace("Color", string.Empty), WinFormsColor.DeepSkyBlue);
         }
 
-        /// <summary>
-        /// Gets the primary background color for Windows Forms controls.
-        /// </summary>
         public static WinFormsColor PrimaryBackgroundColor
         {
-            get { return GetColorSafe(Helper.NameOf(() => PrimaryBackgroundColor).Replace("Color", string.Empty), WinFormsColor.FromArgb(32, 32, 32)); }
+            get => GetColorSafe(Helper.NameOf(() => PrimaryBackgroundColor).Replace("Color", string.Empty), WinFormsColor.FromArgb(32, 32, 32));
         }
 
-        /// <summary>
-        /// Gets the secondary background color for Windows Forms controls.
-        /// </summary>
         public static WinFormsColor SecondaryBackgroundColor
         {
-            get { return GetColorSafe(Helper.NameOf(() => SecondaryBackgroundColor).Replace("Color", string.Empty), WinFormsColor.DarkSlateGray); }
-        }
-        
-        /// <summary>
-        /// Gets the secondary border color for Windows Forms controls.
-        /// </summary>
-        public static WinFormsColor SecondaryBorderColor
-        {
-            get { return GetColorSafe(Helper.NameOf(() => SecondaryBorderColor).Replace("Color", string.Empty), WinFormsColor.DimGray); }
+            get => GetColorSafe(Helper.NameOf(() => SecondaryBackgroundColor).Replace("Color", string.Empty), WinFormsColor.DarkSlateGray);
         }
 
-        /// <summary>
-        /// Gets the secondary foreground color for Windows Forms controls.
-        /// </summary>
+        public static WinFormsColor SecondaryBorderColor
+        {
+            get => GetColorSafe(Helper.NameOf(() => SecondaryBorderColor).Replace("Color", string.Empty), WinFormsColor.DimGray);
+        }
+
         public static WinFormsColor SecondaryForegroundColor
         {
-            get { return GetColorSafe(Helper.NameOf(() => SecondaryForegroundColor).Replace("Color", string.Empty), WinFormsColor.White); }
+            get => GetColorSafe(Helper.NameOf(() => SecondaryForegroundColor).Replace("Color", string.Empty), WinFormsColor.White);
         }
 
         private static WinFormsColor GetColorSafe(string resourceKey, WinFormsColor fallback)
@@ -448,11 +420,8 @@ namespace WinMemoryCleaner
             {
                 lock (_colorCache)
                 {
-                    WinFormsColor cachedColor;
-                    if (_colorCache.TryGetValue(resourceKey, out cachedColor))
-                    {
+                    if (_colorCache.TryGetValue(resourceKey, out var cachedColor))
                         return cachedColor;
-                    }
                 }
 
                 EnsureInitialized();
@@ -471,9 +440,7 @@ namespace WinMemoryCleaner
                 lock (_colorCache)
                 {
                     if (!_colorCache.ContainsKey(resourceKey))
-                    {
                         _colorCache[resourceKey] = result;
-                    }
                 }
 
                 return result;
@@ -485,9 +452,6 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Gets the brushes with defensive copying.
-        /// </summary>
         public static List<WpfBrush> Brushes
         {
             get
@@ -504,25 +468,20 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Gets or sets the theme with enhanced validation and error handling.
-        /// </summary>
         public static Enums.Theme Theme
         {
             get
             {
                 EnsureInitialized();
                 lock (_lockObject)
-                {
                     return _theme;
-                }
             }
             set
             {
                 if (!IsValidTheme(value))
                 {
                     Logger.Warning("Invalid theme value: " + value);
-                    throw new ArgumentException("Invalid theme value: " + value, "value");
+                    throw new ArgumentException("Invalid theme value: " + value, nameof(value));
                 }
 
                 EnsureInitialized();
@@ -563,9 +522,6 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Gets the themes with defensive copying.
-        /// </summary>
         public static List<Enums.Theme> Themes
         {
             get
@@ -575,9 +531,7 @@ namespace WinMemoryCleaner
                 {
                     var themes = _themes;
                     if (themes == null || themes.Count == 0)
-                    {
                         return new List<Enums.Theme> { Enums.Theme.Dark };
-                    }
 
                     return new List<Enums.Theme>(themes);
                 }
@@ -716,10 +670,10 @@ namespace WinMemoryCleaner
         private static WpfColor ParseHexColor(string hexColor)
         {
             if (string.IsNullOrEmpty(hexColor))
-                throw new ArgumentException("Hex color cannot be null or empty", "hexColor");
+                throw new ArgumentException("Hex color cannot be null or empty", nameof(hexColor));
 
             if (!IsValidHexColor(hexColor))
-                throw new ArgumentException("Invalid hex color format: " + hexColor, "hexColor");
+                throw new ArgumentException("Invalid hex color format: " + hexColor, nameof(hexColor));
 
             try
             {
@@ -729,21 +683,17 @@ namespace WinMemoryCleaner
             catch (Exception e)
             {
                 Logger.Error("Failed to parse hex color '" + hexColor + "': " + e.Message);
-                throw new ArgumentException("Invalid hex color format: " + hexColor, "hexColor", e);
+                throw new ArgumentException("Invalid hex color format: " + hexColor, nameof(hexColor), e);
             }
         }
 
-        /// <summary>
-        /// Cleanup method for proper resource disposal
-        /// </summary>
         public static void Cleanup()
         {
             try
             {
                 lock (_initializationLock)
                 {
-                    if (_initializationTimer != null)
-                        _initializationTimer.Dispose();
+                    _initializationTimer?.Dispose();
                 }
 
                 lock (_colorCache)

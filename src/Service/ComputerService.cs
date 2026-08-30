@@ -64,10 +64,10 @@ namespace WinMemoryCleaner
                     {
                         Is64Bit = Environment.Is64BitOperatingSystem,
                         IsWindows7OrGreater = (operatingSystem.Version.Major > 6) || (operatingSystem.Version.Major == 6 && operatingSystem.Version.Minor >= 1),
-                        IsWindows8OrGreater = operatingSystem.Version.Major >= 6.2,
-                        IsWindows81OrGreater = operatingSystem.Version.Major >= 6.3,
+                        IsWindows8OrGreater = (operatingSystem.Version.Major > 6) || (operatingSystem.Version.Major == 6 && operatingSystem.Version.Minor >= 2),
+                        IsWindows81OrGreater = (operatingSystem.Version.Major > 6) || (operatingSystem.Version.Major == 6 && operatingSystem.Version.Minor >= 3),
                         IsWindowsVistaOrGreater = operatingSystem.Version.Major >= 6,
-                        IsWindowsXpOrGreater = operatingSystem.Version.Major >= 5.1
+                        IsWindowsXpOrGreater = (operatingSystem.Version.Major > 5) || (operatingSystem.Version.Major == 5 && operatingSystem.Version.Minor >= 1)
                     };
                 }
 
@@ -133,6 +133,22 @@ namespace WinMemoryCleaner
             }
 
             return result;
+        }
+
+        private static IntPtr AllocStruct(object obj)
+        {
+            var size = Marshal.SizeOf(obj);
+            var ptr = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.StructureToPtr(obj, ptr, false);
+            }
+            catch
+            {
+                Marshal.FreeHGlobal(ptr);
+                throw;
+            }
+            return ptr;
         }
 
         #endregion
@@ -466,28 +482,17 @@ namespace WinMemoryCleaner
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
-            var handle = GCHandle.Alloc(0);
+            var memoryCombineInformationEx = new Structs.Windows.MemoryCombineInformationEx();
+            var ptr = AllocStruct(memoryCombineInformationEx);
 
             try
             {
-                var memoryCombineInformationEx = new Structs.Windows.MemoryCombineInformationEx();
-
-                handle = GCHandle.Alloc(memoryCombineInformationEx, GCHandleType.Pinned);
-
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryCombineInformationEx)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemCombinePhysicalMemoryInformation, ptr, (uint)Marshal.SizeOf(memoryCombineInformationEx)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
             {
-                try
-                {
-                    if (handle.IsAllocated)
-                        handle.Free();
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored
-                }
+                Marshal.FreeHGlobal(ptr);
             }
         }
 
@@ -586,24 +591,17 @@ namespace WinMemoryCleaner
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
-            var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList, GCHandleType.Pinned);
+            var command = Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList;
+            var ptr = AllocStruct(command);
 
             try
             {
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, ptr, (uint)Marshal.SizeOf(command)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
             {
-                try
-                {
-                    if (handle.IsAllocated)
-                        handle.Free();
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored
-                }
+                Marshal.FreeHGlobal(ptr);
             }
         }
 
@@ -635,24 +633,16 @@ namespace WinMemoryCleaner
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
             object memoryPurgeStandbyList = lowPriority ? Constants.Windows.SystemMemoryListCommand.MemoryPurgeLowPriorityStandbyList : Constants.Windows.SystemMemoryListCommand.MemoryPurgeStandbyList;
-            var handle = GCHandle.Alloc(memoryPurgeStandbyList, GCHandleType.Pinned);
+            var ptr = AllocStruct(memoryPurgeStandbyList);
 
             try
             {
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryPurgeStandbyList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, ptr, (uint)Marshal.SizeOf(memoryPurgeStandbyList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
             {
-                try
-                {
-                    if (handle.IsAllocated)
-                        handle.Free();
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored
-                }
+                Marshal.FreeHGlobal(ptr);
             }
         }
 
@@ -669,33 +659,23 @@ namespace WinMemoryCleaner
             if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeIncreaseQuotaName))
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeIncreaseQuotaName));
 
-            var handle = GCHandle.Alloc(0);
+            object systemFileCacheInformation;
+
+            if (OperatingSystem.Is64Bit)
+                systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation64 { MinimumWorkingSet = -1L, MaximumWorkingSet = -1L };
+            else
+                systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation32 { MinimumWorkingSet = int.MaxValue, MaximumWorkingSet = int.MaxValue };
+
+            var ptr = AllocStruct(systemFileCacheInformation);
 
             try
             {
-                object systemFileCacheInformation;
-
-                if (OperatingSystem.Is64Bit)
-                    systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation64 { MinimumWorkingSet = -1L, MaximumWorkingSet = -1L };
-                else
-                    systemFileCacheInformation = new Structs.Windows.SystemFileCacheInformation32 { MinimumWorkingSet = int.MaxValue, MaximumWorkingSet = int.MaxValue };
-
-                handle = GCHandle.Alloc(systemFileCacheInformation, GCHandleType.Pinned);
-
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemFileCacheInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(systemFileCacheInformation)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemFileCacheInformation, ptr, (uint)Marshal.SizeOf(systemFileCacheInformation)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
             {
-                try
-                {
-                    if (handle.IsAllocated)
-                        handle.Free();
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored
-                }
+                Marshal.FreeHGlobal(ptr);
             }
 
             var fileCacheSize = IntPtr.Subtract(IntPtr.Zero, 1); // Flush
@@ -721,7 +701,7 @@ namespace WinMemoryCleaner
                 if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeDebugName))
                     throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
 
-                var processes = Process.GetProcesses().Where(process => process != null && !Settings.ProcessExclusionList.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase));
+                var processes = Process.GetProcesses().Where(process => process != null && !Settings.IsProcessExcluded(process.ProcessName));
 
                 foreach (var process in processes)
                 {
@@ -753,11 +733,12 @@ namespace WinMemoryCleaner
                 if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
                     throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
 
-                var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets, GCHandleType.Pinned);
+                var command = Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets;
+                var ptr = AllocStruct(command);
 
                 try
                 {
-                    if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, ptr, (uint)Marshal.SizeOf(command)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     {
                         var e = new Win32Exception(Marshal.GetLastWin32Error());
 
@@ -772,15 +753,7 @@ namespace WinMemoryCleaner
                 }
                 finally
                 {
-                    try
-                    {
-                        if (handle.IsAllocated)
-                            handle.Free();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // ignored
-                    }
+                    Marshal.FreeHGlobal(ptr);
                 }
             }
 

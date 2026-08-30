@@ -3,23 +3,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using System.Web.Script.Serialization;
+using System.Text.Json;
 
 namespace WinMemoryCleaner
 {
-    /// <summary>
-    /// Helper
-    /// </summary>
     public static class Helper
     {
-        /// <summary>
-        /// Deletes a file at the specified path if it exists.
-        /// </summary>
-        /// <param name="path">The full path to the file to delete.</param>
-        /// <param name="throwOnException">If true, throws exceptions; otherwise, returns false on failure.</param>
-        /// <returns>True if the file was successfully deleted; false if deletion failed or did not exist.</returns>
         public static bool DeleteFile(string path, bool throwOnException = false)
         {
             try
@@ -41,129 +31,52 @@ namespace WinMemoryCleaner
             return false;
         }
 
-        /// <summary>
-        /// Converts the specified JSON string to an object of type T
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj">The object.</param>
-        /// <returns></returns>
         public static T Deserialize<T>(string obj)
         {
-            return new JavaScriptSerializer().Deserialize<T>(obj);
+            if (string.IsNullOrEmpty(obj))
+                return default;
+
+            try
+            {
+                return JsonSerializer.Deserialize<T>(obj, JsonOptions);
+            }
+            catch
+            {
+                return default;
+            }
         }
 
-        /// <summary>
-        /// Formats a minified JSON string into a pretty-printed format with proper indentation and line breaks.
-        /// </summary>
-        /// <param name="json">The minified JSON string to format.</param>
-        /// <returns>A formatted JSON string with indentation and line breaks.</returns>
         public static string FormatJson(string json)
         {
             if (string.IsNullOrEmpty(json))
                 return string.Empty;
 
-            var sb = new StringBuilder(json.Length * 2);
-            var indent = "  ";
-            var level = 0;
-            var inString = false;
-            var escapeNext = false;
-
-            for (var i = 0; i < json.Length; i++)
+            try
             {
-                var c = json[i];
-
-                if (escapeNext)
+                using var document = JsonDocument.Parse(json);
+                var options = new JsonSerializerOptions
                 {
-                    sb.Append(c);
-                    escapeNext = false;
-                    continue;
-                }
-
-                if (c == '\\')
-                {
-                    sb.Append(c);
-                    escapeNext = true;
-                    continue;
-                }
-
-                if (c == '"')
-                {
-                    sb.Append(c);
-                    inString = !inString;
-                    continue;
-                }
-
-                if (inString)
-                {
-                    sb.Append(c);
-                    continue;
-                }
-
-                switch (c)
-                {
-                    case '{':
-                    case '[':
-                        sb.Append(c);
-                        sb.Append(Environment.NewLine);
-                        level++;
-
-                        for (var j = 0; j < level; j++)
-                            sb.Append(indent);
-                        break;
-
-                    case '}':
-                    case ']':
-                        sb.Append(Environment.NewLine);
-                        level--;
-                        
-                        for (var j = 0; j < level; j++)
-                            sb.Append(indent);
-
-                        sb.Append(c);
-                        break;
-
-                    case ',':
-                        sb.Append(c);
-                        sb.Append(Environment.NewLine);
-                        
-                        for (var j = 0; j < level; j++)
-                            sb.Append(indent);
-                        break;
-
-                    case ':':
-                        sb.Append(c);
-                        sb.Append(' ');
-                        break;
-
-                    case ' ':
-                    case '\t':
-                    case '\r':
-                    case '\n':
-                        // Skip whitespace outside strings
-                        break;
-
-                    default:
-                        sb.Append(c);
-                        break;
-                }
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                };
+                return JsonSerializer.Serialize(document, options);
             }
-
-            return sb.ToString();
+            catch
+            {
+                return json;
+            }
         }
 
-        /// <summary>
-        /// Returns the executable application's path
-        /// </summary>
         public static string GetExecutablePath()
         {
             try
             {
-                var path = Process.GetCurrentProcess().MainModule.FileName;
+                var path = Process.GetCurrentProcess().MainModule?.FileName;
 
                 if (!string.IsNullOrEmpty(path) && File.Exists(path))
                     return path;
             }
-            catch 
+            catch
             {
                 // ignored
             }
@@ -183,9 +96,6 @@ namespace WinMemoryCleaner
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
         }
 
-        /// <summary>
-        /// Gets the application's assembly version
-        /// </summary>
         public static Version GetVersion()
         {
             try
@@ -198,11 +108,6 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Determines if the current Windows version supports updates via GitHub TLS/SNI.
-        /// Returns false for legacy Windows versions (XP/2003) that cannot reach GitHub.
-        /// </summary>
-        /// <returns>True if updates are supported; otherwise, false.</returns>
         public static bool IsAutoUpdateSupported
         {
             get
@@ -222,59 +127,37 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Gets the string name of a property or field.
-        /// </summary>
-        /// <typeparam name="T">The type of the member.</typeparam>
-        /// <param name="expression">A lambda expression that accesses the member.</param>
-        /// <returns>The string name of the member.</returns>
         public static string NameOf<T>(Expression<Func<T>> expression)
         {
             if (expression == null)
-                throw new ArgumentNullException("expression");
+                throw new ArgumentNullException(nameof(expression));
 
-            var memberExpression = expression.Body as MemberExpression;
+            if (expression.Body is MemberExpression memberExpression)
+                return memberExpression.Member.Name;
 
-            if (memberExpression == null)
-                throw new ArgumentException("Expression must be a simple member access (e.g., () => myObject.MyProperty).");
-
-            return memberExpression.Member.Name;
+            throw new ArgumentException("Expression must be a simple member access (e.g., () => myObject.MyProperty).");
         }
 
-        /// <summary>
-        /// Reads the embedded resource.
-        /// </summary>
-        /// <param name="name">Name of the resource.</param>
-        /// <returns></returns>
         public static T ReadEmbeddedResource<T>(string name)
         {
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
-            using (var reader = new StreamReader(stream))
-            {
-                return Deserialize<T>(reader.ReadToEnd());
-            }
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
+            if (stream == null)
+                return default;
+
+            using var reader = new StreamReader(stream);
+            var json = reader.ReadToEnd();
+            return Deserialize<T>(json);
         }
 
-        /// <summary>
-        /// Converts the specified object to a JSON string
-        /// </summary>
-        /// <param name="obj">The object to serialize.</param>
-        /// <param name="minified">If true, produces compact JSON without formatting; otherwise, formats with indentation for readability. Default is false.</param>
-        /// <returns>A JSON string representation of the object.</returns>
-        public static string Serialize(IJsonSerializable obj, bool minified = false)
+        public static string Serialize<T>(T obj, bool minified = false) where T : IJsonSerializable
         {
             if (obj == null)
-                throw new ArgumentNullException("obj");
+                throw new ArgumentNullException(nameof(obj));
 
-            var json = new JavaScriptSerializer().Serialize(obj.ToJson());
-
-            return minified ? json : FormatJson(json);
+            var json = JsonSerializer.Serialize(obj.ToJson(), minified ? JsonOptionsMinified : JsonOptions);
+            return json;
         }
 
-        /// <summary>
-        /// Creates or deletes the Start Menu shortcut based on the specified flag.
-        /// </summary>
-        /// <param name="create">If true, creates the shortcut; if false, deletes it.</param>
         public static void StartMenuShortcut(bool create)
         {
             try
@@ -289,12 +172,13 @@ namespace WinMemoryCleaner
                     link.SetPath(App.Path);
                     link.SetWorkingDirectory(Path.GetDirectoryName(App.Path));
 
-                    IPersistFile file = (IPersistFile)link;
-
+                    var file = (ShellInterop.IPersistFile)link;
                     file.Save(shortcutPath, false);
                 }
                 else
+                {
                     DeleteFile(shortcutPath);
+                }
             }
             catch (Exception e)
             {
@@ -302,14 +186,6 @@ namespace WinMemoryCleaner
             }
         }
 
-        /// <summary>
-        /// Converts to hexcode.
-        /// </summary>
-        /// <param name="red">The red.</param>
-        /// <param name="green">The green.</param>
-        /// <param name="blue">The blue.</param>
-        /// <param name="alpha">The alpha.</param>
-        /// <returns></returns>
         public static string ToHexCode(byte red, byte green, byte blue, byte? alpha = null)
         {
             if (alpha != null)
@@ -317,5 +193,21 @@ namespace WinMemoryCleaner
 
             return string.Format(Localizer.Culture, "#{0:X2}{1:X2}{2:X2}", red, green, blue);
         }
+
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        };
+
+        private static readonly JsonSerializerOptions JsonOptionsMinified = new()
+        {
+            WriteIndented = false,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        };
     }
 }

@@ -819,7 +819,7 @@ namespace WinMemoryCleaner
             get
             {
                 var processes = new ObservableCollection<string>(Process.GetProcesses()
-                    .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.ProcessExclusionList.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase))
+                    .Where(process => process != null && !process.ProcessName.Equals(Constants.App.Name) && !Settings.IsProcessExcluded(process.ProcessName))
                     .Select(process => process.ProcessName.ToLower(Localizer.Culture).Replace(".exe", string.Empty))
                     .Distinct()
                     .OrderBy(name => name));
@@ -839,7 +839,7 @@ namespace WinMemoryCleaner
         /// </value>
         public ObservableCollection<string> ProcessExclusionList
         {
-            get { return new ObservableCollection<string>(Settings.ProcessExclusionList); }
+            get { return new ObservableCollection<string>(Settings.ProcessExclusionList.Keys); }
         }
 
         /// <summary>
@@ -1583,22 +1583,19 @@ namespace WinMemoryCleaner
             {
                 IsBusy = true;
 
-                if (!Settings.ProcessExclusionList.Contains(process, StringComparer.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(process))
+                if (Settings.TryAddProcessExclusion(process))
                 {
-                    if (Settings.ProcessExclusionList.Add(process))
+                    Settings.Save();
+
+                    RaisePropertyChanged(() => Processes);
+                    RaisePropertyChanged(() => ProcessExclusionList);
+
+                    if (OnAddProcessToExclusionListCommandCompleted != null)
                     {
-                        Settings.Save();
-
-                        RaisePropertyChanged(() => Processes);
-                        RaisePropertyChanged(() => ProcessExclusionList);
-
-                if (OnAddProcessToExclusionListCommandCompleted != null)
-                {
-                    WpfApplication.Current.Dispatcher.Invoke((Action)delegate
-                            {
-                                OnAddProcessToExclusionListCommandCompleted();
-                            });
-                        }
+                        WpfApplication.Current.Dispatcher.Invoke((Action)delegate
+                        {
+                            OnAddProcessToExclusionListCommandCompleted();
+                        });
                     }
                 }
             }
@@ -1908,7 +1905,7 @@ namespace WinMemoryCleaner
             {
                 IsBusy = true;
 
-                if (Settings.ProcessExclusionList.Remove(process))
+                if (Settings.TryRemoveProcessExclusion(process))
                     Settings.Save();
 
                 RaisePropertyChanged(() => Processes);

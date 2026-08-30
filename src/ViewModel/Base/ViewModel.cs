@@ -36,38 +36,22 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Gets or sets a value indicating whether this instance is busy.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is busy; otherwise, <c>false</c>.
-        /// </value>
         public bool IsBusy
         {
-            get
-            {
-                return _isBusy;
-            }
+            get { return _isBusy; }
             set
             {
-                try
-                {
-                    NotificationService.Loading(value);
-                }
-                catch
-                {
-                    // ignored
-                }
+                try { NotificationService.Loading(value); }
+                catch (Exception ex) { Logger.Debug("Failed to set loading state: " + ex.Message); }
 
                 _isBusy = value;
-
-                RaisePropertyChanged();
+                OnPropertyChanged();
             }
         }
 
         /// <summary>
         /// Gets the notification service.
         /// </summary>
-        /// <value>
-        /// The notification service.
-        /// </value>
         protected INotificationService NotificationService { get; private set; }
 
         #endregion
@@ -77,9 +61,6 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Gets the navigate URI command.
         /// </summary>
-        /// <value>
-        /// The navigate URI command.
-        /// </value>
         public ICommand NavigateUriCommand { get; private set; }
 
         #endregion
@@ -95,21 +76,18 @@ namespace WinMemoryCleaner
 
         #region Methods
 
-        /// <summary>  
-        /// Navigates the specified URI.  
-        /// </summary>  
-        /// <param name="uri">The URI.</param>  
+        /// <summary>
+        /// Navigates the specified URI.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
         protected void Navigate(Uri uri)
         {
+            if (uri == null)
+                return;
+
             App.Navigate(uri);
 
-            if (OnNavigateUriCommandCompleted != null)
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
-                {
-                    OnNavigateUriCommandCompleted();
-                });
-            }
+            OnNavigateUriCommandCompleted?.Invoke();
         }
 
         /// <summary>

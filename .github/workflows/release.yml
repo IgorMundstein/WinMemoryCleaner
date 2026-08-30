@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/**'
   workflow_dispatch:
+  workflow_dispatch:
     inputs:
       force_version_from_file:
         description: 'Set to "true" to IGNORE tag bumping and use the version from AssemblyInfo.cs.'

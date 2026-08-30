@@ -24,13 +24,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  build:
+    name: Build
     runs-on: windows-latest
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
       unsigned_artifact_name: winmemorycleaner-${{ steps.version.outputs.app_version }}
-      test_artifact_name: ${{ steps.determine_artifact.outputs.name }}
       src_changed: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true' }}
 
     steps:
@@ -45,63 +44,22 @@ jobs:
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
         uses: actions/checkout@v4
 
-      - name: Cache NuGet packages
+      - name: Setup .NET
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
-        uses: actions/cache@v4
+        uses: actions/setup-dotnet@v4
         with:
-          path: ~/.nuget/packages
-          key: nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            nuget-
+          dotnet-version: '8.0.x'
+          cache: false
 
-      - name: Setup MSBuild
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Restore NuGet packages
+      - name: Restore dependencies
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
         shell: pwsh
-        run: nuget restore src\WinMemoryCleaner.sln
+        run: dotnet restore src/WinMemoryCleaner.csproj
 
       - name: Build solution
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
         shell: pwsh
-        run: msbuild src\WinMemoryCleaner.sln /m /p:Configuration=Release /p:Platform="Any CPU"
-
-      - name: Run Tests
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
-        shell: pwsh
-        run: |
-          $testAssembly = "src\bin\Release\WinMemoryCleaner.exe"  
-          $testRunner = "src\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe"
-          
-          if (-Not (Test-Path $testRunner)) {
-            Write-Host "::error::Test runner not found at $testRunner"
-            exit 1
-          }
-          
-          Write-Host "Running tests..."
-          & $testRunner $testAssembly /xml:TestResults.xml
-          
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "::error::Tests failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
-          }
-
-      - name: Upload test results
-        if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true')
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ github.run_number }}
-          path: TestResults.xml
-          retention-days: 30
-
-      - name: Publish test results
-        if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true')
-        uses: EnricoMi/publish-unit-test-result-action/windows@v2
-        with:
-          files: TestResults.xml
-          check_name: Unit Test Results
+        run: dotnet build src/WinMemoryCleaner.csproj --configuration Release --no-restore
 
       - name: Get App Version
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
@@ -132,13 +90,30 @@ jobs:
             exit 1
           }
 
-      - name: Upload unsigned EXE as artifact
+      - name: Publish self-contained single-file
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
+        shell: pwsh
+        run: |
+          dotnet publish src/WinMemoryCleaner.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:IncludeAllContentForSelfExtract=true `
+            --output publish/self-contained
+
+      - name: Publish framework-dependent output
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
+        shell: pwsh
+        run: dotnet publish src/WinMemoryCleaner.csproj --configuration Release --runtime win-x64 --self-contained false --output src/bin/Release/net8.0-windows/win-x64/publish/
+
+      - name: Upload self-contained EXE as artifact
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.check_files.outputs.any_changed == 'true'
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: winmemorycleaner-${{ steps.version.outputs.app_version }}
-          path: src\bin\Release\WinMemoryCleaner.exe
+          name: winmemorycleaner-${{ steps.version.outputs.app_version }}-selfcontained
+          path: publish/self-contained/WinMemoryCleaner.exe
           if-no-files-found: error
 
       - name: Submit to SignPath (Develop CI Signing)
@@ -170,13 +145,13 @@ jobs:
           if ('${{ steps.signpath.conclusion }}' -eq 'success') {
             echo "name=winmemorycleaner-${{ steps.version.outputs.app_version }}-signed" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           } else {
-            echo "name=winmemorycleaner-${{ steps.version.outputs.app_version }}" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            echo "name=winmemorycleaner-${{ steps.version.outputs.app_version }}-selfcontained" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           }
 
   test-ui:
     name: UI Test on ${{ matrix.os }}
-    needs: build-and-test
-    if: needs.build-and-test.outputs.src_changed == 'true'
+    needs: build
+    if: needs.build.outputs.src_changed == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -184,10 +159,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Download build artifact for testing
+      - name: Download self-contained build artifact for testing
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build-and-test.outputs.test_artifact_name }}
+          name: winmemorycleaner-${{ needs.build.outputs.app_version }}-selfcontained
 
       - name: Run UI Test
         shell: pwsh
@@ -231,8 +206,8 @@ jobs:
 
   package-screenshots:
     name: Package All Screenshots
-    needs: [build-and-test, test-ui]
-    if: needs.build-and-test.outputs.src_changed == 'true'
+    needs: [build, test-ui]
+    if: needs.build.outputs.src_changed == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -250,7 +225,7 @@ jobs:
         id: upload-screenshots
         uses: actions/upload-artifact@v4
         with:
-          name: all-screenshots-${{ needs.build-and-test.outputs.app_version }}
+          name: all-screenshots-${{ needs.build.outputs.app_version }}
           path: ./all-screenshots/
           retention-days: 30
 

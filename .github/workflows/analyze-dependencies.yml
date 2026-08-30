@@ -29,6 +29,7 @@ permissions:
 
 jobs:
   analyze-and-submit:
+    if: github.repository == 'IgorMundstein/WinMemoryCleaner'
     runs-on: windows-latest
     timeout-minutes: 10
 
@@ -55,6 +56,7 @@ jobs:
 
       - name: Create Pull Request
         id: cpr
+        if: ${{ secrets.PAT_TOKEN != '' }}
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_TOKEN }}
@@ -67,7 +69,7 @@ jobs:
           delete-branch: true
 
       - name: Enable auto-merge on the PR
-        if: ${{ steps.cpr.outputs.pull-request-number }}
+        if: ${{ steps.cpr.outputs.pull-request-number && secrets.PAT_TOKEN != '' }}
         env:
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -75,4 +77,3 @@ jobs:
           Remove-Item Env:GITHUB_TOKEN -ErrorAction SilentlyContinue
           gh pr merge "$env:PR_NUMBER" --squash --auto --repo "$env:GITHUB_REPOSITORY"
         shell: pwsh
-

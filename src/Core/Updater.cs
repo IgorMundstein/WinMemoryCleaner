@@ -1,160 +1,112 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace WinMemoryCleaner
 {
-    /// <summary>
-    /// Updater
-    /// </summary>
     public static class Updater
     {
-        private static WebClient _client;
+        private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
         private static DateTimeOffset _lastCheck = DateTimeOffset.MinValue;
+        private static ProcessStartInfo _process;
 
-        internal static ProcessStartInfo Process;
+        public static ProcessStartInfo Process => _process;
 
-        private static void OnFileDownloadCompleted(object sender, AsyncCompletedEventArgs e)
+        public static async void Update(params string[] args)
         {
             try
             {
-                if (e.Error != null)
-                    throw new Exception("File download failed.", e.Error);
-
-                if (e.Cancelled)
-                    return;
-
-                var updateInfo = (Tuple<string, string, string, Version, string[]>)e.UserState;
-                var temp = updateInfo.Item1;
-                var path = updateInfo.Item2;
-                var exe = updateInfo.Item3;
-                var newestVersion = updateInfo.Item4;
-                var args = updateInfo.Item5;
-
-                if (File.Exists(temp) && AssemblyName.GetAssemblyName(temp).Version.Equals(newestVersion))
-                {
-                    Process = new ProcessStartInfo
-                    {
-                        Arguments = string.Format(CultureInfo.InvariantCulture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, temp, path, newestVersion, string.Join(" ", args)),
-                        CreateNoWindow = true,
-                        FileName = "cmd",
-                        RedirectStandardError = false,
-                        RedirectStandardInput = false,
-                        RedirectStandardOutput = false,
-                        UseShellExecute = false,
-                        WindowStyle = ProcessWindowStyle.Hidden
-                    };
-
-                    App.Shutdown();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-
-                Reset();
-            }
-        }
-
-        private static void OnVersionCheckCompleted(object sender, DownloadStringCompletedEventArgs e)
-        {
-            try
-            {
-                if (e.Error != null)
-                    throw new Exception("Version check failed.", e.Error);
-
-                if (e.Cancelled)
-                    return;
-
-                var assemblyInfo = e.Result;
-                var assemblyVersionMatch = Regex.Match(assemblyInfo, @"AssemblyVersion\(""(.*)""\)\]");
-
-                if (!assemblyVersionMatch.Success)
-                    return;
-
-                var newestVersion = Version.Parse(assemblyVersionMatch.Groups[1].Value);
-
-                if (App.Version >= newestVersion)
-                {
-                    Reset();
-                    return;
-                }
-
-                var exe = Path.GetFileName(App.Path);
-                var temp = Path.Combine(Path.GetTempPath(), exe);
-
-                Helper.DeleteFile(temp);
-
-                var updateInfo = Tuple.Create(temp, App.Path, exe, newestVersion, (string[])e.UserState);
-
-                _client.DownloadFileAsync(Constants.App.Repository.LatestExeUri, temp, updateInfo);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-
-                Reset();
-            }
-        }
-
-        private static void Reset()
-        {
-            try
-            {
-                if (_client != null)
-                    _client.Dispose();
-            }
-            finally
-            {
-                _client = null;
-            }
-
-            try
-            {
-                if (Process != null)
-                    Process = null;
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
-        /// <summary>
-        /// Check for new version and update if available
-        /// </summary>
-        public static void Update(params string[] args)
-        {
-            try
-            {
-                if (Settings.AutoUpdate && DateTimeOffset.Now.Subtract(_lastCheck).TotalHours < Constants.App.AutoUpdateInterval)
+                if (!Settings.AutoUpdate || DateTimeOffset.Now.Subtract(_lastCheck).TotalHours < Constants.App.AutoUpdateInterval)
                     return;
 
                 _lastCheck = DateTimeOffset.Now;
+                _process = null;
 
-                Reset();
+                var currentVersion = App.Version;
 
-                _client = new WebClient();
-                _client.DownloadFileCompleted += new AsyncCompletedEventHandler(OnFileDownloadCompleted);
-                _client.DownloadStringCompleted += new DownloadStringCompletedEventHandler(OnVersionCheckCompleted);
+                // Check for updates via GitHub API
+                var response = await _httpClient.GetStringAsync(Constants.App.Repository.ApiLatestReleaseUri);
+                using var doc = JsonDocument.Parse(response);
+                var tagName = doc.RootElement.GetProperty("tag_name").GetString()?.TrimStart('v');
 
-                ServicePointManager.DefaultConnectionLimit = 10;
-                ServicePointManager.Expect100Continue = true;
-                ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072 | (SecurityProtocolType)12288; // TLS 1.2 | TLS 1.3
+                if (string.IsNullOrEmpty(tagName) || !Version.TryParse(tagName, out var newestVersion))
+                    return;
 
-                _client.DownloadStringAsync(Constants.App.Repository.AssemblyInfoUri, args);
+                if (currentVersion >= newestVersion)
+                    return;
+
+                // Download the new version
+                var exe = Path.GetFileName(App.Path);
+                var temp = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.exe");
+
+                Helper.DeleteFile(temp);
+
+                var fileBytes = await _httpClient.GetByteArrayAsync(Constants.App.Repository.LatestExeUri);
+                await File.WriteAllBytesAsync(temp, fileBytes);
+
+                // Verify the downloaded file
+                if (File.Exists(temp))
+                {
+                    try
+                    {
+                        var downloadedVersion = AssemblyName.GetAssemblyName(temp).Version;
+                        if (downloadedVersion != null && downloadedVersion.Equals(newestVersion))
+                        {
+                            _process = new ProcessStartInfo
+                            {
+                                Arguments = string.Format(CultureInfo.InvariantCulture, @"/c taskkill /f /im ""{0}"" & move /y ""{1}"" ""{2}"" & start """" ""{2}"" /{3} {4}", exe, temp, App.Path, newestVersion, string.Join(" ", args)),
+                                CreateNoWindow = true,
+                                FileName = "cmd",
+                                RedirectStandardError = false,
+                                RedirectStandardInput = false,
+                                RedirectStandardOutput = false,
+                                UseShellExecute = false,
+                                WindowStyle = ProcessWindowStyle.Hidden
+                            };
+
+                            App.Shutdown();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("Failed to verify downloaded update: " + ex.GetMessage());
+                    }
+                }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-
-                Reset();
             }
+        }
+
+        public static async Task<Version> CheckForUpdatesAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetStringAsync(Constants.App.Repository.ApiLatestReleaseUri);
+                using var doc = JsonDocument.Parse(response);
+                var tagName = doc.RootElement.GetProperty("tag_name").GetString()?.TrimStart('v');
+
+                if (!string.IsNullOrEmpty(tagName) && Version.TryParse(tagName, out var version))
+                    return version;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+
+            return null;
+        }
+
+        public static void Dispose()
+        {
+            _httpClient?.Dispose();
         }
     }
 }

@@ -14,6 +14,7 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
+        private static readonly object _syncLock = new object();
         private static SafeFileHandle _consoleHandle;
         private static FileStream _consoleStream;
         private static StreamWriter _consoleWriter;
@@ -23,9 +24,6 @@ namespace WinMemoryCleaner
 
         #region Constructor
 
-        /// <summary>
-        /// Initializes the <see cref="Logger" /> class.
-        /// </summary>
         static Logger()
         {
             try
@@ -51,6 +49,8 @@ namespace WinMemoryCleaner
                     Event(e.GetMessage(), EventLogEntryType.Error);
                 }
             }
+
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => Dispose();
         }
 
         /// <summary>
@@ -59,54 +59,16 @@ namespace WinMemoryCleaner
         /// </summary>
         internal static void Dispose()
         {
-            if (_consoleWriter != null)
+            lock (_syncLock)
             {
-                try
-                {
-                    _consoleWriter.Flush();
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                try
-                {
-                    _consoleWriter.Close();
-                }
-                catch
-                {
-                    // ignored
-                }
-
+                try { _consoleWriter?.Flush(); } catch { /* ignored */ }
+                try { _consoleWriter?.Dispose(); } catch { /* ignored */ }
                 _consoleWriter = null;
-            }
 
-            if (_consoleStream != null)
-            {
-                try
-                {
-                    _consoleStream.Close();
-                }
-                catch
-                {
-                    // ignored
-                }
-
+                try { _consoleStream?.Dispose(); } catch { /* ignored */ }
                 _consoleStream = null;
-            }
 
-            if (_consoleHandle != null)
-            {
-                try
-                {
-                    _consoleHandle.Close();
-                }
-                catch
-                {
-                    // ignored
-                }
-
+                try { _consoleHandle?.Dispose(); } catch { /* ignored */ }
                 _consoleHandle = null;
             }
         }
@@ -115,12 +77,6 @@ namespace WinMemoryCleaner
 
         #region Properties
 
-        /// <summary>
-        /// Gets a value indicating whether console output is enabled.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if console output is enabled; otherwise, <c>false</c>.
-        /// </value>
         private static bool IsConsoleEnabled { get { return _consoleWriter != null; } }
 
         private static bool IsDebugEnabled { get { return (_level & Enums.Log.Levels.Debug) != 0; } }
@@ -134,9 +90,6 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Sets the log level.
         /// </summary>
-        /// <value>
-        /// The log level.
-        /// </value>
         public static Enums.Log.Levels Level
         {
             get { return _level; }
@@ -170,9 +123,6 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Debug
         /// </summary>
-        /// <param name="exception">Exception</param>
-        /// <param name="message">Custom message about the Exception</param>
-        /// <param name="method">Method</param>
         public static void Debug(Exception exception, string message = null, [CallerMemberName] string method = null)
         {
             Exception(Enums.Log.Levels.Debug, exception, message, method);
@@ -181,8 +131,6 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Debug
         /// </summary>
-        /// <param name="message">Message</param>
-        /// <param name="method">Method</param>
         public static void Debug(string message, [CallerMemberName] string method = null)
         {
             Log(new Log(Enums.Log.Levels.Debug, message, null, method));
@@ -191,44 +139,43 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Enables console output by attaching to the parent console process and redirecting standard output.
         /// This allows Console.WriteLine output to appear in the calling terminal (PowerShell/cmd).
-        /// Typically called when the application is invoked with command-line arguments.
         /// This method is idempotent - calling it multiple times has no additional effect.
         /// </summary>
         public static void EnableConsoleOutput()
         {
-            try
+            lock (_syncLock)
             {
-                if (IsConsoleEnabled)
-                    return;
-
-                if (NativeMethods.AttachConsole(Constants.Windows.Console.AttachParentProcess))
+                try
                 {
-                    var stdHandle = NativeMethods.GetStdHandle(Constants.Windows.Console.StdOutputHandle);
+                    if (IsConsoleEnabled)
+                        return;
 
-                    if (stdHandle != IntPtr.Zero && stdHandle != new IntPtr(-1))
+                    if (NativeMethods.AttachConsole(Constants.Windows.Console.AttachParentProcess))
                     {
-                        _consoleHandle = new SafeFileHandle(stdHandle, false);
-                        _consoleStream = new FileStream(_consoleHandle, FileAccess.Write);
-                        _consoleWriter = new StreamWriter(_consoleStream, Encoding.Default) { AutoFlush = true };
+                        var stdHandle = NativeMethods.GetStdHandle(Constants.Windows.Console.StdOutputHandle);
 
-                        Console.SetOut(_consoleWriter);
+                        if (stdHandle != IntPtr.Zero && stdHandle != new IntPtr(-1))
+                        {
+                            _consoleHandle = new SafeFileHandle(stdHandle, false);
+                            _consoleStream = new FileStream(_consoleHandle, FileAccess.Write);
+                            _consoleWriter = new StreamWriter(_consoleStream, Encoding.Default) { AutoFlush = true };
 
-                        Trace.Listeners.Clear();
+                            Console.SetOut(_consoleWriter);
+
+                            Trace.Listeners.Clear();
+                        }
                     }
                 }
-            }
-            catch
-            {
-                // ignored
+                catch
+                {
+                    // ignored
+                }
             }
         }
 
         /// <summary>
         /// Error
         /// </summary>
-        /// <param name="exception">Exception</param>
-        /// <param name="message">Custom message about the Exception</param>
-        /// <param name="method">Method</param>
         public static void Error(Exception exception, string message = null, [CallerMemberName] string method = null)
         {
             Exception(Enums.Log.Levels.Error, exception, message, method);
@@ -237,37 +184,26 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Error
         /// </summary>
-        /// <param name="message">Message</param>
-        /// <param name="method">Method</param>
         public static void Error(string message, [CallerMemberName] string method = null)
         {
             Log(new Log(Enums.Log.Levels.Error, message, null, method));
         }
 
-        /// <summary>
+/// <summary>
         /// Windows Event
         /// </summary>
-        /// <param name="message">Message</param>
-        /// <param name="type">Type</param>
         private static void Event(string message, EventLogEntryType type = EventLogEntryType.Information)
         {
             try
             {
                 EventLog.WriteEntry(Constants.App.Title, message, type);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Logger.Debug("EventLog.WriteEntry failed: " + ex.Message);
             }
         }
 
-        /// <summary>
-        /// Exception
-        /// </summary>
-        /// <param name="level">The level.</param>
-        /// <param name="exception">The exception.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="method">The method.</param>
         private static void Exception(Enums.Log.Levels level, Exception exception, string message = null, [CallerMemberName] string method = null)
         {
             if (IsDebugEnabled)
@@ -278,19 +214,15 @@ namespace WinMemoryCleaner
                     if (stackTrace != null && stackTrace.FrameCount > 0)
                     {
                         var frame = stackTrace.GetFrame(stackTrace.FrameCount - 1);
+                        var methodBase = frame?.GetMethod();
 
-                        if (frame != null)
-                        {
-                            var methodBase = frame.GetMethod();
-
-                            if (methodBase != null && methodBase.DeclaringType != null)
-                                method = string.Format(Localizer.Culture, "{0}.{1}", methodBase.DeclaringType.Name, methodBase.Name);
-                        }
+                        if (methodBase?.DeclaringType != null)
+                            method = string.Format(Localizer.Culture, "{0}.{1}", methodBase.DeclaringType.Name, methodBase.Name);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignored
+                    Logger.Debug("Stack trace extraction failed: " + ex.Message);
                 }
             }
 
@@ -303,8 +235,6 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Information
         /// </summary>
-        /// <param name="message">Message</param>
-        /// <param name="method">Method</param>
         public static void Information(string message, [CallerMemberName] string method = null)
         {
             Log(new Log(Enums.Log.Levels.Information, message, null, method));
@@ -313,13 +243,12 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Log
         /// </summary>
-        /// <param name="log">The log.</param>
         public static void Log(Log log)
         {
             try
             {
                 if (log == null)
-                    throw new ArgumentNullException("log");
+                    throw new ArgumentNullException(nameof(log));
 
                 var message = log.Message;
 
@@ -330,9 +259,9 @@ namespace WinMemoryCleaner
                     {
                         Console.WriteLine(message);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        Logger.Debug("Console.WriteLine failed: " + ex.Message);
                     }
                 }
 
@@ -371,13 +300,11 @@ namespace WinMemoryCleaner
         /// <summary>
         /// Warning
         /// </summary>
-        /// <param name="message">Message</param>
-        /// <param name="method">Method</param>
         public static void Warning(string message, [CallerMemberName] string method = null)
         {
             Log(new Log(Enums.Log.Levels.Warning, message, null, method));
         }
-    }
 
-    #endregion Methods
+        #endregion Methods
+    }
 }

@@ -46,10 +46,21 @@ namespace WinMemoryCleaner
         /// <returns>
         /// A converted value. If the method returns null, the valid null value is used.
         /// </returns>
-        /// <exception cref="NotImplementedException"></exception>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            if (value is string hex && !string.IsNullOrEmpty(hex))
+            {
+                try
+                {
+                    var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex);
+                    return new SolidColorBrush(color);
+                }
+                catch
+                {
+                    return Binding.DoNothing;
+                }
+            }
+            return Binding.DoNothing;
         }
     }
 }

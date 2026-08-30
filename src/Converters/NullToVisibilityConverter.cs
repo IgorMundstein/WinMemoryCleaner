@@ -36,10 +36,9 @@ namespace WinMemoryCleaner
         /// <returns>
         /// A converted value. If the method returns null, the valid null value is used.
         /// </returns>
-        /// <exception cref="NotImplementedException"></exception>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return value is Visibility visibility && visibility == Visibility.Visible;
         }
     }
 }

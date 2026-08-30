@@ -24,42 +24,36 @@ namespace WinMemoryCleaner
         #region Methods
 
         /// <summary>
-        /// Called when [property changed].
+        /// Raises the PropertyChanged event.
         /// </summary>
-        /// <param name="propertyName">Name of the property.</param>
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        /// <param name="propertyName">Name of the property. Resolved automatically via CallerMemberName.</param>
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            if (PropertyChanged != null)
-                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         /// <summary>
-        /// Raises the PropertyChanged event if needed.
+        /// Raises the PropertyChanged event. Alias for <see cref="OnPropertyChanged(string)"/> kept for backwards compatibility.
         /// </summary>
-        /// <typeparam name="T">The type of the property that
-        /// changed.</typeparam>
-        /// <param name="expression">An expression identifying the property
-        /// that changed.</param>
+        /// <param name="propertyName">Name of the property. Resolved automatically via CallerMemberName.</param>
+        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+        }
+
+        /// <summary>
+        /// Raises the PropertyChanged event for the given property expression.
+        /// </summary>
+        /// <typeparam name="T">The type of the property that changed.</typeparam>
+        /// <param name="expression">An expression identifying the property that changed.</param>
         public void RaisePropertyChanged<T>(Expression<Func<T>> expression)
         {
-            var handler = PropertyChanged;
-
-            if (handler != null && expression != null)
+            if (expression?.Body is MemberExpression body && body.Member is PropertyInfo property)
             {
-                var body = expression.Body as MemberExpression;
+                var propertyName = property.Name;
 
-                if (body != null)
-                {
-                    var property = body.Member as PropertyInfo;
-
-                    if (property != null)
-                    {
-                        var propertyName = property.Name;
-
-                        if (!string.IsNullOrEmpty(propertyName))
-                            RaisePropertyChanged(propertyName);
-                    }
-                }
+                if (!string.IsNullOrEmpty(propertyName))
+                    OnPropertyChanged(propertyName);
             }
         }
 

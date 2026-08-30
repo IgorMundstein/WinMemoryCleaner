@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -16,7 +17,7 @@ namespace WinMemoryCleaner
         #region Fields
 
         private readonly bool _isSupported = Environment.OSVersion.Version.Major >= 6; // Minimum supported Windows Vista / Server 2003
-        private readonly Dictionary<Hotkey, Action> _registered = new Dictionary<Hotkey, Action>();
+        private readonly ConcurrentDictionary<Hotkey, Action> _registered = new ConcurrentDictionary<Hotkey, Action>();
 
         #endregion
 
@@ -174,8 +175,8 @@ namespace WinMemoryCleaner
 
                 result = NativeMethods.RegisterHotKey(IntPtr.Zero, hotkey.GetHashCode(), (uint)hotkey.Modifiers, (uint)KeyInterop.VirtualKeyFromKey(hotkey.Key));
 
-                if (!_registered.ContainsKey(hotkey))
-                    _registered.Add(hotkey, action);
+                if (result)
+                    _registered.TryAdd(hotkey, action);
             }
             catch
             {
@@ -201,7 +202,7 @@ namespace WinMemoryCleaner
 
                 result = NativeMethods.UnregisterHotKey(IntPtr.Zero, hotkey.GetHashCode());
 
-                _registered.Remove(hotkey);
+                _registered.TryRemove(hotkey, out _);
             }
             catch
             {

@@ -24,7 +24,7 @@ namespace WinMemoryCleaner
 
             try
             {
-                var culture = Localizer.Culture ?? CultureInfo.InvariantCulture;
+                var culture = CultureInfo.InvariantCulture;
 
                 return Regex.Replace
                 (
@@ -93,7 +93,6 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public static KeyValuePair<string, bool?> GetKeyValue(this Enums.Dialog.Button obj)
         {
             switch (obj)
@@ -108,7 +107,7 @@ namespace WinMemoryCleaner
                     return new KeyValuePair<string, bool?>(Localizer.String.No, false);
 
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException(nameof(obj), obj, null);
             }
         }
 
@@ -151,7 +150,6 @@ namespace WinMemoryCleaner
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public static string GetString(this Enums.Memory.Optimization.Reason obj)
         {
             switch (obj)
@@ -166,7 +164,7 @@ namespace WinMemoryCleaner
                     return Localizer.String.Schedule;
 
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException(nameof(obj), obj, null);
             }
         }
 

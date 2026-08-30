@@ -1,60 +1,196 @@
-# Contributing to Windows Memory Cleaner
+# Contributing to WinMemoryCleaner
 
-Thank you for your interest in contributing! Contributions are what make the open-source community such a great place to learn, inspire, and create. Here’s how you can help.
+Thank you for your interest in contributing! This document outlines the process and standards for contributing to this project.
 
----
+## Getting Started
 
-## How Can I Contribute?
+1. **Fork** the repository on GitHub
+2. **Clone** your fork locally
+3. **Add upstream remote**: `git remote add upstream https://github.com/IgorMundstein/WinMemoryCleaner.git`
+4. **Create a branch**: `git checkout -b feature/your-feature-name` or `fix/issue-number-description`
 
-We use GitHub Issues to track all bugs, feature requests, and questions. Please use the appropriate template for your submission.
+## Development Setup
 
-### 🐞 Reporting Bugs
+### Prerequisites
+- Windows 7 SP1 / Server 2012+
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- Administrator privileges (required to run optimizations)
 
-If you've found a bug, please use the **[Bug Report](../../issues/new?template=bug_report.yml)** template. Be sure to include:
--   Your application and Windows version.
--   Steps to reproduce the issue.
--   A clear description of the expected and actual behavior.
+### Build & Run
+```bash
+# Restore dependencies
+dotnet restore src/WinMemoryCleaner.csproj
 
-### 🚀 Suggesting Enhancements
+# Build (Release)
+dotnet build src/WinMemoryCleaner.csproj -c Release
 
-Have an idea for a new feature or an improvement? Use the **[Feature Request](../../issues/new?template=feature_request.yml)** template and describe:
--   The problem you are trying to solve.
--   Your proposed solution.
+# Run (framework-dependent)
+dotnet run --project src/WinMemoryCleaner.csproj -c Release
 
-### 🌐 Submitting Translations
+# Or publish single-file
+dotnet publish src/WinMemoryCleaner.csproj -c Release -o publish
+```
 
-To add a new translation or update an existing one, please use the **[Translation Request](../../issues/new?template=translation_request.yml)** template.
+## Code Style & Conventions
 
-### ❓ Asking Questions
+### C# Style
+- **Language Version**: Latest (`LangVersion latest` in csproj)
+- **Project Format**: SDK-style with `PackageReference`
+- **Nullable**: Disabled (`<Nullable>disable</Nullable>`)
+- **Implicit Usings**: Disabled
+- **Formatting**: Follow existing code style (4-space indent, braces on new lines)
 
-If you have a question about the project, please use the **[Question](../../issues/new?template=question.yml)** template. This helps us keep all support-related communication in one place.
+### Naming Conventions
+- **Classes/Interfaces**: PascalCase (`ComputerService`, `IComputerService`)
+- **Methods/Properties**: PascalCase (`Optimize`, `MemoryAreas`)
+- **Fields**: `_camelCase` (`_memory`, `_cancellationTokenSource`)
+- **Parameters/Locals**: camelCase (`processName`, `isOptimizing`)
+- **Constants**: PascalCase (`AutoUpdateInterval`)
 
----
+### Architecture Patterns
+- **MVVM**: ViewModels in `ViewModel/`, Views in `View/`
+- **Dependency Injection**: `DependencyInjection.Container.Register<TInterface, TImplementation>()`
+- **Interfaces**: Prefix with `I` (`INotificationService`)
+- **Async**: Prefer `async`/`await` over `.Result`/`.Wait()`
 
-## Pull Requests
+### Resource Management
+- Implement `IDisposable` for classes holding unmanaged resources
+- Use `Marshal.AllocHGlobal`/`FreeHGlobal` instead of `GCHandle.Alloc` for native interop
+- Always dispose `IDisposable` in `finally` blocks or `using` statements
 
-1.  **Fork** the repo and create your branch from `develop`.
-2.  If you’ve added code that should be tested, please add tests.
-3.  Ensure your code builds and passes all checks.
-4.  Fill out the PR template and link any related issues.
+### Exception Handling
+- **Never** use empty `catch { }` blocks
+- Log exceptions with context: `Logger.Debug("Operation failed: " + ex.Message)`
+- Use `ArgumentOutOfRangeException` for invalid enum values (not `NotImplementedException`)
+- Implement `ConvertBack` for all `IValueConverter` implementations
 
-### Coding Standards
+## Pull Request Process
 
--   Follow [Microsoft C# coding conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
--   Write clear and concise commit messages.
+### Before Submitting
+- [ ] Code builds clean: `dotnet build -c Release` (0 errors, 0 new warnings)
+- [ ] Tested manually (both admin and non-admin scenarios)
+- [ ] No breaking changes without discussion
+- [ ] Updated `CHANGELOG.md` if user-facing changes
+- [ ] Translations: **lowercase only** (app handles capitalization)
 
-### Code of Conduct
+### PR Title Format
+- `feat: Add new feature description` (new functionality)
+- `fix: Resolve issue #XXX - brief description` (bug fixes)
+- `refactor: Improve X without behavior change` (code improvements)
+- `perf: Optimize X for better performance` (performance)
+- `docs: Update documentation for X` (documentation)
 
-Please review our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold these standards.
+### PR Description Template
+```markdown
+## Summary
+Brief description of changes
 
-### Security
+## Related Issues
+Fixes #XXX
+Relates to #YYY
 
-If you discover a potential security vulnerability, please see our [Security Policy](SECURITY.md) for guidance on how to report it.
+## Changes
+- List of specific changes
+- Another change
 
-### License
+## Testing
+- [ ] Build passes
+- [ ] Tested as admin (optimizations work)
+- [ ] Tested non-admin (graceful errors)
+- [ ] Single-file publish works
+- [ ] Localization loads correctly
 
-By contributing, you agree that your contributions will be licensed under the [GPL-3.0 License](LICENSE).
+## Screenshots (if UI changes)
+```
 
----
+## Translation Contributions
 
-Thank you for helping make it better!
+### Adding a New Language
+1. Copy `src/Resources/Localization/English.json`
+2. Rename to `{Locale-Description}.json` (e.g., `Slovenian.json`)
+3. Translate **all values to lowercase** (app auto-capitalizes)
+4. Save as UTF-8
+5. Test: Place file next to `WinMemoryCleaner.exe` and launch
+6. Submit PR or use [Translation Request template](https://github.com/IgorMundstein/WinMemoryCleaner/issues/new?template=translation_request.yml)
+
+### Updating Existing Translations
+- Only modify values, never keys
+- Keep lowercase format
+- Maintain placeholder formatting: `{0}`, `{1}`, etc.
+
+## Issue Reporting
+
+### Bug Reports
+Use the [Bug Report template](https://github.com/IgorMundstein/WinMemoryCleaner/issues/new?template=bug_report.yml) with:
+- OS version (`winver`)
+- .NET version (`dotnet --version`)
+- Steps to reproduce
+- Expected vs actual behavior
+- Event Viewer logs (source: "Windows Memory Cleaner")
+
+### Feature Requests
+Use the [Feature Request template](https://github.com/IgorMundstein/WinMemoryCleaner/issues/new?template=feature_request.yml) with:
+- Use case description
+- Proposed solution
+- Alternatives considered
+
+## Testing Guidelines
+
+### Manual Testing Checklist
+- [ ] App launches without errors (admin + non-admin)
+- [ ] All 32+ languages load correctly
+- [ ] Tray icon appears and updates
+- [ ] Optimizations run and log to Event Viewer
+- [ ] Settings persist to registry (HKLM)
+- [ ] Service install/uninstall works
+- [ ] Auto-update check doesn't crash
+- [ ] Single-file publish runs (`PublishSingleFile=true`)
+- [ ] Compact mode toggles
+- [ ] Hotkey registration works
+
+### Automated Tests
+- Run: `dotnet test src/WinMemoryCleaner.csproj -c Release`
+- Add tests for new functionality in `src/Test/`
+
+## Architecture Overview
+
+```
+src/
+├── App.xaml.cs                 # Application entry, lifecycle, single-instance
+├── Core/
+│   ├── Localizer.cs           # Localization (lazy init, cached, fallback)
+│   ├── Settings.cs            # Registry persistence (thread-safe, ConcurrentDictionary)
+│   ├── Logger.cs              # Structured logging (EventLog, console, trace)
+│   ├── Updater.cs             # GitHub API, HttpClient, atomic update
+│   ├── ThemeManager.cs        # Theme loading, brush caching
+│   └── ComputerService.cs     # Native memory optimization (Marshal.AllocHGlobal)
+├── Service/
+│   ├── NotificationService.cs # Tray icon, memory usage rendering
+│   ├── HotKeyService.cs       # Global hotkeys (ConcurrentDictionary)
+│   └── ComputerService.cs     # IComputerService implementation
+├── WindowsService/
+│   ├── WinService.cs          # Background service (Interlocked guard)
+│   └── WinServiceInstaller.cs # sc.exe-based installer
+├── ViewModel/
+│   ├── MainViewModel.cs       # Main UI logic, commands
+│   └── Base/ViewModel.cs      # Base VM with IsBusy, Navigation
+├── Model/
+│   ├── Localization.cs        # 74 localized strings (public setters)
+│   ├── Memory/*.cs            # Memory stats structures
+│   └── OperatingSystem.cs     # OS version detection (fixed)
+├── Interop/
+│   ├── NativeMethods.cs       # P/Invoke signatures (SupportedOSPlatform)
+│   └── ShellInterop.cs        # Shell links (IPersistFile)
+└── Test/                      # Unit/Integration tests
+```
+
+## Release Process (Maintainers Only)
+
+1. Update version in `src/WinMemoryCleaner.csproj` and `src/Properties/AssemblyInfo.cs`
+2. Update `CHANGELOG.md`
+3. Create GitHub Release with `dotnet publish` artifacts
+4. SignPath.io handles code signing automatically via CI/CD
+
+## Questions?
+
+Open a [Discussion](https://github.com/IgorMundstein/WinMemoryCleaner/discussions) or check existing [Issues](https://github.com/IgorMundstein/WinMemoryCleaner/issues).

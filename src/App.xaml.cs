@@ -120,9 +120,9 @@ namespace WinMemoryCleaner
                 {
                     SystemEvents.PowerModeChanged -= OnPowerModeChanged;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignored
+                    Logger.Debug("Failed to unsubscribe PowerModeChanged: " + ex.Message);
                 }
 
                 if (_mutex != null)
@@ -131,18 +131,18 @@ namespace WinMemoryCleaner
                     {
                         _mutex.ReleaseMutex();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        Logger.Debug("Failed to release mutex: " + ex.Message);
                     }
 
                     try
                     {
                         _mutex.Dispose();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        Logger.Debug("Failed to dispose mutex: " + ex.Message);
                     }
 
                     _mutex = null;
@@ -153,9 +153,9 @@ namespace WinMemoryCleaner
                     if (_notifyIcon != null)
                         _notifyIcon.Dispose();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignored
+                    Logger.Debug("Failed to dispose notifyIcon: " + ex.Message);
                 }
             }
         }
@@ -605,9 +605,9 @@ namespace WinMemoryCleaner
                 GC.WaitForPendingFinalizers();
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Logger.Debug("GC.Collect failed: " + ex.Message);
             }
 
             // Optimize App Working Set
@@ -615,9 +615,9 @@ namespace WinMemoryCleaner
             {
                 NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // ignored
+                Logger.Debug("EmptyWorkingSet failed: " + ex.Message);
             }
         }
 
@@ -801,16 +801,16 @@ namespace WinMemoryCleaner
                     break;
 
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException(nameof(priority), priority, null);
             }
 
             try
             {
                 Thread.CurrentThread.Priority = threadPriority;
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Logger.Debug("Failed to set thread priority: " + ex.Message);
             }
 
             try
@@ -821,18 +821,18 @@ namespace WinMemoryCleaner
                 {
                     process.PriorityBoostEnabled = priorityBoostEnabled;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignored
+                    Logger.Debug("Failed to set priority boost: " + ex.Message);
                 }
 
                 try
                 {
                     process.PriorityClass = processPriorityClass;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignored
+                    Logger.Debug("Failed to set process priority class: " + ex.Message);
                 }
 
                 foreach (ProcessThread thread in process.Threads)
@@ -841,24 +841,24 @@ namespace WinMemoryCleaner
                     {
                         thread.PriorityBoostEnabled = priorityBoostEnabled;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        Logger.Debug("Failed to set thread priority boost: " + ex.Message);
                     }
 
                     try
                     {
                         thread.PriorityLevel = threadPriorityLevel;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        Logger.Debug("Failed to set thread priority level: " + ex.Message);
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Logger.Debug("Failed to set process priority: " + ex.Message);
             }
         }
 
@@ -886,9 +886,9 @@ namespace WinMemoryCleaner
             {
                 System.Windows.MessageBox.Show(message, Constants.App.Title, button, icon, defaultResult, options);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Logger.Debug("Failed to show dialog: " + ex.Message);
             }
         }
 

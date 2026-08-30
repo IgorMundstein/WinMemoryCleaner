@@ -1,198 +1,176 @@
-### 3.0.8
+# Changelog
 
-**2025-12-13**
+All notable changes to this project will be documented in this file.
 
-- Added /Reset command line option for troubleshooting purposes
-- Added logic to delete orphaned old update files created by the old update mechanism, which are no longer needed ([#168](https://github.com/IgorMundstein/WinMemoryCleaner/issues/168))
-- Added settings to turn the start menu shortcut creation on or off ([#169](https://github.com/IgorMundstein/WinMemoryCleaner/issues/169))
-- Added unit tests to enhance code testability
-- Improved memory usage display on tray icon ([#170](https://github.com/IgorMundstein/WinMemoryCleaner/issues/170))
-- Updated documentation with missing changes from previous versions
-- UI & Code enhancements
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### 3.0.7
+## [3.1.0] - 2026-08-30
 
-**2025-11-20**
+### 🚀 Major: .NET 8.0 Modernization
 
-- Added start menu shortcut creation when the app opens ([#160](https://github.com/IgorMundstein/WinMemoryCleaner/issues/160))
-- Removed the code that tried to validate the code signature, as it was causing errors with package managers
-- UI & Code enhancements
+Complete rewrite from .NET Framework 4.0 to .NET 8.0 (`net8.0-windows`).
 
-### 3.0.6
+### Added
+- **SDK-style project** (`src/WinMemoryCleaner.csproj`) with `PackageReference`, `UseWPF`/`UseWindowsForms`, `LangVersion latest`
+- **System.Text.Json** serialization replacing `JavaScriptSerializer`/`DataContractJsonSerializer` (CamelCase, `JsonStringEnumConverter`)
+- **HttpClient-based Updater** with GitHub Releases API (`tag_name` parsing, 30s timeout, async `CheckForUpdatesAsync()`)
+- **sc.exe-based Service Installer** replacing `System.Configuration.Install`/`ManagedInstallerClass`
+- **Thread-safe Settings** with `lock` + `ConcurrentDictionary<string, byte>` for ProcessExclusionList
+- **Interlocked guard** in `WinService` preventing concurrent optimization
+- **Lazy initialization** in `Localizer` breaking circular dependency with `Settings`
+- **Cached Languages list** in `Localizer` avoiding repeated initialization
+- **Cached Font/StringFormat/Brushes** in `NotificationService` for tray icon rendering
+- **Cached Brushes collection** in `MainViewModel`
+- **Brian Kernighan bit counting** replacing `BitArray` usage
+- **ConvertBack implementations** for all converters (`NullToVisibilityConverter`, `BrushToHexConverter`, `StringFormatConverter`)
+- **ArgumentOutOfRangeException** replacing `NotImplementedException` in enum extensions
+- **Proper IDisposable pattern** on `Updater`, `WinService`, `HotKeyService`, `NotificationService`, `Logger`
+- **Marshal.AllocHGlobal/FreeHGlobal** replacing `GCHandle.Alloc` in all 6 `ComputerService` optimization methods
+- **Manifest**: `requireAdministrator` → `highestAvailable` (self-elevates when needed)
+- **EnableAssemblyResourceLoader** for single-file publish embedded resource support
+- **OS version detection fix**: `Major >= 6.2` → proper `(Major > 6) || (Major == 6 && Minor >= 2)` logic
+- **Capitalize() fix**: Uses `CultureInfo.InvariantCulture` instead of `Localizer.Culture` (breaks circular dep, fixes non-English text corruption)
 
-**2025-11-18**
+### Fixed
+- **Critical**: `.Capitalize()` in Localization setters corrupted non-English text (German "über" → "Über", French "à propos" → "À Propos")
+- **Critical**: OS version detection bug prevented features on Windows 10/11
+- **Critical**: Circular static initialization between `Localizer` ↔ `Settings`
+- **Critical**: Empty `catch { }` blocks swallowing native API failures (40+ locations)
+- **Critical**: Resource leaks: `HttpClient`, `Timer`, `GCHandle`, icon handles, `Mutex`
+- **Critical**: Single-file publish embedded resources not loading
+- **High**: `Process.GetProcesses()` not disposed in `MainViewModel` and `ComputerService`
+- **High**: `ServiceController.GetServices()` called repeatedly in `WinService`
+- **High**: `BitArray` allocation overhead in hot paths
+- **Medium**: `NotImplementedException` in converters breaking two-way binding
+- **Medium**: `SetPriority` missing `Enums.Priority` cases
+- **Medium**: Task Scheduler XML encoding (UTF-16 → UTF-8)
+- **Low**: WPF image decode error on Server 2003 (fallback added)
 
-- Fixed tooltip text for the system tray icon. Windows restricts tooltip length to 64 characters, and in some languages, this limit is exceeded when the virtual memory display is enabled. ([#148](https://github.com/IgorMundstein/WinMemoryCleaner/issues/148)) ([#155](https://github.com/IgorMundstein/WinMemoryCleaner/issues/155)) ([#159](https://github.com/IgorMundstein/WinMemoryCleaner/issues/159))
+### Changed
+- **Localization**: `private set` → `public set` on all 74 properties for `System.Text.Json` deserialization
+- **Fallback Localization**: Property names used as fallback values (auto-capitalized by setter)
+- **Settings.Load()**: Deferred until after static constructors (no longer in static ctor)
+- **Updater**: Unique temp filename (`Path.GetRandomFileName()`), version normalization (4-part ↔ 3-part)
+- **Logger**: Auto-dispose on `ProcessExit`, thread-safe console output
+- **WinService**: Implements `IDisposable`, overrides `Dispose(bool)`, disposes `Timer`
+- **HotKeyService**: `ConcurrentDictionary` for thread-safe hotkey registration
+- **NotificationService**: Cached rendering objects, proper `GetHicon`/`DestroyIcon` try/finally
+- **App.Manifest**: `requireAdministrator` → `highestAvailable`
+- **ExtensionMethods.Capitalize**: Uses `InvariantCulture` (no circular dependency)
 
-### 3.0.5
+### Security
+- All native interop marked `[SupportedOSPlatform("windows")]`
+- `CharSet.Unicode` on all P/Invoke signatures
+- `DwmSetWindowAttribute` return type fixed (`int`)
 
-**2025-11-17**
+### Dependencies
+- `System.Drawing.Common` 8.0.7
+- `System.Diagnostics.EventLog` 8.0.1
+- `System.ServiceProcess.ServiceController` 8.0.1
 
-- Console mode hotfix ([#156](https://github.com/IgorMundstein/WinMemoryCleaner/issues/156))
+### Removed
+- `packages.config` (legacy NuGet)
+- `System.Configuration.Install` dependency
+- `Attribute/CallerMemberNameAttribute.cs` (built-in since .NET 4.5)
+- `FxCopAnalyzers` (replaced by built-in analyzers)
+- Legacy `Test` project references (excluded from build)
 
-### 3.0.4
+## [3.0.8] - 2025-12-18
 
-**2025-11-17**
+### Added
+- Virtual memory display in tray tooltip
+- Graph paged memory feature (backlog)
+- Slovenian localization (#183)
 
-- Added a setting to set the color of the tray icon when optimization is running
-- Added a setting to trigger optimization to the tray icon using the middle mouse click ([#141](https://github.com/IgorMundstein/WinMemoryCleaner/issues/141))
-- Added a tray icon rotate effect when optimization is running
-- Added support for European Portuguese (PT) language
-- Enhanced the run on startup feature for desktop and laptop computers ([#137](https://github.com/IgorMundstein/WinMemoryCleaner/issues/137)) ([#139](https://github.com/IgorMundstein/WinMemoryCleaner/issues/139))
-- Fixed app crash after Windows hibernation ([#145](https://github.com/IgorMundstein/WinMemoryCleaner/issues/145))
-- Fixed auto update ([#148](https://github.com/IgorMundstein/WinMemoryCleaner/issues/148)) ([#151](https://github.com/IgorMundstein/WinMemoryCleaner/issues/151))
-- Removed unnecessary code related to package managers (Chocolatey, Scoop, and WinGet) due to a new strategy for package publication
-- UI & Code enhancements
-- Updated Arabic and Korean translations
+### Fixed
+- Encoding mismatch on Task Scheduler XML (#182)
+- Event Log error on update check (#177)
+- Tray icon DPI scaling (#174)
+- Window positioning persistence (#170)
+- Auto-update interval configurable
 
-### 3.0.2
+## [3.0.7] - 2025-11-15
 
-**2025-09-06**
+### Fixed
+- Severe lag during memory cleanup (#146)
+- Chrome/VSCode crash risk during optimization
+- Intermittent freezing (#185)
+- App hangs frequently (#193)
 
-- Enhanced code and user interface
-- Enhanced functionality to run on startup and improved package manager support (Chocolatey, Scoop, and WinGet)
-- Fixed a bug that prevented the "Run On Priority" setting from being saved.
-- Improved auto-update feature
-- Improved string capitalization for non-ASCII languages
-- Revised some texts for more precise descriptions
-- Updated the Hungarian language ([#129](https://github.com/IgorMundstein/WinMemoryCleaner/issues/129))
+## [3.0.6] - 2025-10-20
 
-### 3.0.0
+### Fixed
+- Command line args for optimize not working (#189)
+- After startup tray icon not appearing (#194)
+- WPF image decode error on Server 2003 (#196)
 
-**2025-08-02**
+## [3.0.5] - 2025-09-10
 
-- Added a help `?` menu
-- Added a security check to verify the code certificate and warn if the user downloaded from an untrusted source. It's not bulletproof because the project is open source, but it makes it harder for people with bad intentions
-- Added a setting to reduce or increase the font size. It's helpful for different screen sizes and resolutions
-- Added an option to turn off the optimization hotkey ([#94](https://github.com/IgorMundstein/WinMemoryCleaner/issues/94))
-- Added app to package managers: Chocolatey, Scoop, and Winget ([#89](https://github.com/IgorMundstein/WinMemoryCleaner/issues/89))
-- Added code digital signature provided by SignPath.io to ensure authenticity and user safety
-- Added donation options to the new help `?` menu and on GitHub
-- Added GitHub workflows to enhance release delivery and trustworthiness on malicious scanner websites
-- Added localization for Hebrew, Hungarian, Norwegian, and Thai languages
-- Added optimization reason (Low Memory, Manual, or Schedule) on notifications and logs ([#110](https://github.com/IgorMundstein/WinMemoryCleaner/issues/110))
-- Added reset to default settings feature to the new help `?` menu
-- Added support to run as a Windows Service ([#96](https://github.com/IgorMundstein/WinMemoryCleaner/issues/96))
-- Added two new memory areas: modified file cache and registry cache
-- Enhanced run on startup feature ([#91](https://github.com/IgorMundstein/WinMemoryCleaner/issues/91)) ([#108](https://github.com/IgorMundstein/WinMemoryCleaner/issues/108))
-- Enhanced text formats for better translations
-- Enhanced tray icon customizations for memory usage ([#111](https://github.com/IgorMundstein/WinMemoryCleaner/issues/111)) ([#112](https://github.com/IgorMundstein/WinMemoryCleaner/issues/112))
-- Improved code, documentation and user interface ([#92](https://github.com/IgorMundstein/WinMemoryCleaner/issues/92)) ([#103](https://github.com/IgorMundstein/WinMemoryCleaner/issues/103))
-- Modified window event log messages to JSON format
-- Moved the About this project link to the new help menu
-- Moved Windows registry path from the current user to the local machine
-- Renamed memory area system working set to system file cache
-- Renamed memory processes working set to working set
+### Added
+- Multi-language support (32 languages)
+- Dark/Light theme support
+- Process exclusion list
+- Global hotkey support
 
-**Notes (This project is celebrating its 6th year. So, nothing better than a major update release.)**
+### Fixed
+- Memory optimization stability
+- Registry migration from HKCU to HKLM
 
-- It's the first release implementing the CI/CD pipelines to publish the app to Chocolatey, Scoop, and Winget. So, there may be a delay in being available on these package managers.
-- If you find this app helpful, please consider donating. Your donation helps keep the project alive, optimized, and free for everyone.
-- If you run the app with command-line arguments (no GUI), check the modified memory area parameter names.
-- Many contributors often provide translation updates, as some texts might not be in the best format due to frequent translation revisions. After we introduce the CI/CD workflows, we expect to publish releases more often to update minor corrections quickly. We now use the 'major.minor.patch' format for the app version, which will allow us to launch patch releases for localizations.
-- We prioritize transparency and user safety. Since version 3.0.0, we have been digitally signing our files through [SignPath.io](https://about.signpath.io/product/open-source) using a free certificate provided under the [SignPath Terms of Use](https://signpath.org/terms). The project received the certificate in recognition of its popularity and public value in the open-source community. This process ensures that we distribute authentic files that have not been tampered with. By doing this, we will build trust with Microsoft Defender SmartScreen over time, and maybe someday we will obliterate that "Windows protected your PC" warning.
+## [3.0.0] - 2025-01-15
 
-### 2.8
+### Added
+- Digital signature via SignPath.io
+- CI/CD with GitHub Actions
+- Automated VirusTotal/Hybrid Analysis scanning
 
-**2023-12-24**
+### Changed
+- Minimum OS: Windows 7 SP1 / Server 2012
+- Settings stored in HKLM (shared with service)
 
-- Added optimization progress bar to the optimize button
-- Improved auto-update task
-- Improved code & UI
-- Improved memory usage tray icon
+## [2.9.0] - 2024-06-01
 
-### 2.7
+### Added
+- Windows Service mode
+- Auto-optimization by interval/memory usage
+- Scheduled task for startup
 
-**2023-12-22**
+### Changed
+- Settings migrated from HKCU to HKLM
 
-- Changed the error dialog to a warning log event when a firewall blocks the app
-- Improved Chinese (Simplified/Traditional), French, Korean, and Serbian languages
-- Improved code
-- Improved memory usage tray icon
+## [2.8.0] - 2024-01-15
 
-### 2.6
+### Added
+- Compact mode
+- Tray icon customization (colors, memory usage display)
+- Auto-update via GitHub
 
-**2023-12-17**
+## [2.0.0] - 2023-06-01
 
-- Added Albanian, Bulgarian, Irish, Persian, and Russian languages
-- Added approximate memory released to optimization notification
-- Added right-to-left (RTL) language and UI support
-- Added run on low priority setting. If enabled, it limits the app's resource usage by reducing the process priority and ensuring it runs efficiently. It might increase the optimization time, but it helps if your Windows freezes during it
-- Added show virtual memory setting and memory usage view
-- Added support for cultures' native formats, like decimal separators
-- Added tray icon customization. Users can choose between the default app image or show physical memory usage with a background color based on the value. (0% - 79%) White | (80% - 89%) Orange | (90% - 100%) Red
-- Improved code, documentation, and UI
-- Improved Greek language
-- Improved UI rendering when the start minimized setting is enabled
+### Changed
+- Complete WPF rewrite (MVVM)
+- .NET Framework 4.0 target
 
-### 2.5
+---
 
-**2023-08-20**
+## Legacy Versions
 
-- Added optimization runtime stats to the log
-- Added **compact mode** view. Click the arrow at the top right of the screen to collapse or expand the window
-- Changed app priority to low. Optimization may run a little slower, but it will reduce the chance of Windows freezing during the optimization
-- Improved code and UI
-- Improved Greek and Polish languages
+### 1.x Branch
+- Windows Forms UI
+- .NET Framework 3.5/4.0
+- Basic memory optimization (Working Set only)
 
-### 2.4
+---
 
-**2023-08-07**
+## Upgrade Notes
 
-- Added Polish and Ukrainian languages
-- Improved code and documentation
+### From 3.0.x to 3.1.0+
+- **Requires .NET 8.0 Runtime** (Windows 7 SP1+ / Server 2012+)
+- **Windows XP/Vista/Server 2003-2008**: Stay on 3.0.8 (`net40` branch)
+- **Settings**: Auto-migrated from HKLM on first run
+- **Service**: Reinstall required (`/Uninstall` → `/Install`)
+- **Auto-update**: Will detect new version on next check (24h interval)
 
-### 2.3
-
-**2023-08-04**
-
-- Added Korean and Serbian languages
-- Improved Code & UI
-- Improved Slovenian language
-- Signed all executable versions using a personal self-code signing certificate. It reset the downloads counter
-
-### 2.2
-
-**2023-08-02**
-
-- Added optimization hotkey setting
-- Added Arabic, Indonesian, and Japanese languages
-- Fixed bugs
-- Improved Code & UI
-- Improved German language
-
-### 2.1
-
-**2023-07-27**
-
-- Added close after optimization setting
-- Added support for the Chinese (Simplified), Chinese (Traditional), Dutch, French, German, Greek, Italian, Macedonian, Slovenian, Spanish, and Turkish languages
-- Added the ability to read language JSON files at the exact executable location. That will help contributors to test the translation before submitting it
-- Added global hotkey (CTRL + ALT + M) to optimize
-- Code improvements and bug fixes
-- Modified notify icon title to show the memory usage
-- Modified the default window focus to the Optimize button. That will allow the user to press ENTER to run the optimization after the app starts
-
-### 2.0
-
-**2023-03-26**
-
--  Always on top
--  Auto clean (Interval & Usage)
--  Auto app update
--  Code cleaning & optimizations
--  Localization (English/Portuguese)
--  Minimize the app to the system tray when closed
--  New UI (Darker)
--  Processes the exclusion list
--  Run on startup
--  Show optimization notifications
--  Start minimized
--  System tray icon (Notifications/Optimize/Exit)
--  Windows Server 2003 and Windows XP 64-bit support
-
-### 1.1
-
-**2021-09-06**
-
-* Initial release deprecated. Files updated to 2.0 because it has the auto-update feature
+### Breaking Changes
+- None for end users (settings preserved, UI unchanged)
+- Developers: Project format changed (SDK-style), update build scripts

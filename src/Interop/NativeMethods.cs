@@ -2,16 +2,15 @@ using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security;
 
 namespace WinMemoryCleaner
 {
-    /// <summary>
-    /// Windows API
-    /// </summary>
+    [SupportedOSPlatform("windows")]
     internal static class NativeMethods
     {
-        [DllImport("advapi32.dll", SetLastError = true)]
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AdjustTokenPrivileges(IntPtr tokenHandle, [MarshalAs(UnmanagedType.Bool)] bool disableAllPrivileges, ref Structs.Windows.TokenPrivileges newState, int bufferLength, IntPtr previousState, IntPtr returnLength);
 
@@ -25,7 +24,7 @@ namespace WinMemoryCleaner
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern SafeFileHandle CreateFile([MarshalAs(UnmanagedType.LPWStr)] string lpFileName, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, int dwFlagsAndAttributes, IntPtr hTemplateFile);
+        internal static extern SafeFileHandle CreateFile(string lpFileName, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, int dwFlagsAndAttributes, IntPtr hTemplateFile);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -37,14 +36,14 @@ namespace WinMemoryCleaner
         internal static extern bool DeviceIoControl(SafeFileHandle hDevice, int dwIoControlCode, IntPtr lpInBuffer, int nInBufferSize, IntPtr lpOutBuffer, int nOutBufferSize, out int lpBytesReturned, IntPtr lpOverlapped);
 
         [DllImport("dwmapi.dll", SetLastError = true)]
-        internal static extern void DwmSetWindowAttribute(IntPtr hWnd, int attribute, ref int value, int size);
+        internal static extern int DwmSetWindowAttribute(IntPtr hWnd, int attribute, ref int value, int size);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport("psapi.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool EmptyWorkingSet(IntPtr hProcess);
 
-        [DllImport("user32", SetLastError = true, CharSet = CharSet.Unicode)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         [SuppressUnmanagedCodeSecurity]
