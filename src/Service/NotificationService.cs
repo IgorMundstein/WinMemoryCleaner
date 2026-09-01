@@ -27,10 +27,19 @@ namespace WinMemoryCleaner
         private readonly object _disposeLock = new object();
 
         /// <summary>
-        /// Serializes GDI reads of the shared <see cref="_imageIcon" />, which the UI thread
-        /// (rotation tick) and the background monitor thread can both reach at once.
-        /// System.Drawing.Icon is not thread safe. Never held across a dispatcher call.
+        /// Serializes icon rendering. Held by both <see cref="GetRotatedIcon" /> and
+        /// <see cref="GetMemoryUsageIcon" />, which the UI thread (rotation tick) and the
+        /// background monitor threads can reach at the same time.
         /// </summary>
+        /// <remarks>
+        /// Rendering used to be serialized incidentally, because <see cref="Update" /> held
+        /// <see cref="_disposeLock" /> for its whole duration. That lock had to go to break the
+        /// deadlock described on <see cref="InvokeOnUi" />, so this one restores the guarantee
+        /// explicitly. It covers both render paths on purpose: GDI+ types are not thread safe,
+        /// and a partially covered invariant invites a future change to cache a Font, Brush or
+        /// StringFormat in a field and reintroduce a data race. Never held across a dispatcher
+        /// call.
+        /// </remarks>
         private readonly object _iconRenderLock = new object();
 
         /// <summary>
@@ -341,50 +350,53 @@ namespace WinMemoryCleaner
         {
             try
             {
-                using (var image = new Bitmap(16, 16))
-                using (var graphics = Graphics.FromImage(image))
-                using (var font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Pixel))
-                using (var format = new StringFormat())
-                using (var backgroundBrush = GetBackgroundBrush(memory, isOptimizing))
-                using (var textBrush = GetTextBrush(memory, isOptimizing))
+                lock (_iconRenderLock)
                 {
-                    // Configure format
-                    format.Alignment = StringAlignment.Center;
-                    format.LineAlignment = StringAlignment.Center;
-
-                    // Configure graphics quality
-                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
-
-                    // Draw background
-                    if (!Settings.TrayIconUseTransparentBackground)
+                    using (var image = new Bitmap(16, 16))
+                    using (var graphics = Graphics.FromImage(image))
+                    using (var font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Pixel))
+                    using (var format = new StringFormat())
+                    using (var backgroundBrush = GetBackgroundBrush(memory, isOptimizing))
+                    using (var textBrush = GetTextBrush(memory, isOptimizing))
                     {
-                        using (var path = new GraphicsPath())
+                        // Configure format
+                        format.Alignment = StringAlignment.Center;
+                        format.LineAlignment = StringAlignment.Center;
+
+                        // Configure graphics quality
+                        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                        graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
+
+                        // Draw background
+                        if (!Settings.TrayIconUseTransparentBackground)
                         {
-                            path.AddArc(0, 0, 10, 10, 180, 90);
-                            path.AddArc(5, 0, 10, 10, 270, 90);
-                            path.AddArc(5, 5, 10, 10, 0, 90);
-                            path.AddArc(0, 5, 10, 10, 90, 90);
-                            path.CloseFigure();
+                            using (var path = new GraphicsPath())
+                            {
+                                path.AddArc(0, 0, 10, 10, 180, 90);
+                                path.AddArc(5, 0, 10, 10, 270, 90);
+                                path.AddArc(5, 5, 10, 10, 0, 90);
+                                path.AddArc(0, 5, 10, 10, 90, 90);
+                                path.CloseFigure();
 
-                            graphics.FillPath(backgroundBrush, path);
+                                graphics.FillPath(backgroundBrush, path);
+                            }
                         }
-                    }
 
-                    // Draw text
-                    graphics.DrawString(string.Format(CultureInfo.InvariantCulture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 99 : memory.Physical.Used.Percentage), font, textBrush, 8F, 9F, format);
+                        // Draw text
+                        graphics.DrawString(string.Format(CultureInfo.InvariantCulture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 99 : memory.Physical.Used.Percentage), font, textBrush, 8F, 9F, format);
 
-                    var handle = image.GetHicon();
+                        var handle = image.GetHicon();
 
-                    using (var icon = Icon.FromHandle(handle))
-                    {
-                        var clonedIcon = (Icon)icon.Clone();
+                        using (var icon = Icon.FromHandle(handle))
+                        {
+                            var clonedIcon = (Icon)icon.Clone();
 
-                        NativeMethods.DestroyIcon(handle);
+                            NativeMethods.DestroyIcon(handle);
 
-                        return clonedIcon;
+                            return clonedIcon;
+                        }
                     }
                 }
             }
