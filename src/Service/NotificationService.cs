@@ -19,12 +19,42 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
-        private int _currentRotationAngle;
+        private volatile int _currentRotationAngle;
         private Icon _currentIcon;
-        private bool _disposed;
+        private volatile bool _disposed;
         private readonly Icon _imageIcon;
         private readonly NotifyIcon _notifyIcon;
         private readonly object _disposeLock = new object();
+
+        /// <summary>
+        /// Serializes icon rendering. Held by both <see cref="GetRotatedIcon" /> and
+        /// <see cref="GetMemoryUsageIcon" />, which the UI thread (rotation tick) and the
+        /// background monitor threads can reach at the same time.
+        /// </summary>
+        /// <remarks>
+        /// Rendering used to be serialized incidentally, because <see cref="Update" /> held
+        /// <see cref="_disposeLock" /> for its whole duration. That lock had to go to break the
+        /// deadlock described on <see cref="InvokeOnUi" />, so this one restores the guarantee
+        /// explicitly. It covers both render paths on purpose: GDI+ types are not thread safe,
+        /// and a partially covered invariant invites a future change to cache a Font, Brush or
+        /// StringFormat in a field and reintroduce a data race. Never held across a dispatcher
+        /// call.
+        /// </remarks>
+        private readonly object _iconRenderLock = new object();
+
+        /// <summary>
+        /// Guards the <see cref="_currentIcon" /> swap. Normally that swap is serialized by
+        /// running on the UI thread, but when no dispatcher exists the work runs inline on the
+        /// calling thread, so concurrent callers could otherwise both dispose the same icon.
+        /// Only ever held for a field assignment; never across a dispatcher call.
+        /// </summary>
+        private readonly object _currentIconLock = new object();
+
+        /// <summary>
+        /// Owned by the UI thread. Only ever read or written inside a dispatcher callback,
+        /// which makes the UI thread the single point of truth and removes the need to hold
+        /// <see cref="_disposeLock" /> across a dispatcher call to keep it consistent.
+        /// </summary>
         private DispatcherTimer _rotationTimer;
 
         #endregion
@@ -106,19 +136,9 @@ namespace WinMemoryCleaner
                     _disposed = true;
                 }
 
-                try
-                {
-                    if (_rotationTimer != null)
-                    {
-                        _rotationTimer.Stop();
-                        _rotationTimer.Tick -= OnRotationTimerTick;
-                        _rotationTimer = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Debug(ex);
-                }
+                // DispatcherTimer has thread affinity: Stop() from another thread throws, which
+                // previously left the timer running and kept firing ticks during shutdown.
+                InvokeOnUi(CleanupRotationTimer);
 
                 try
                 {
@@ -135,10 +155,13 @@ namespace WinMemoryCleaner
 
                 try
                 {
-                    if (_currentIcon != null && _currentIcon != _imageIcon)
+                    lock (_currentIconLock)
                     {
-                        _currentIcon.Dispose();
-                        _currentIcon = null;
+                        if (_currentIcon != null && _currentIcon != _imageIcon)
+                        {
+                            _currentIcon.Dispose();
+                            _currentIcon = null;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -171,6 +194,42 @@ namespace WinMemoryCleaner
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Runs an action on the UI thread without ever blocking the calling thread.
+        /// </summary>
+        /// <remarks>
+        /// Must stay non-blocking. This used to be a blocking <c>Dispatcher.Invoke</c> reached
+        /// from <see cref="Update" /> on a background thread that held <see cref="_disposeLock" />,
+        /// while the UI thread took that same lock in <see cref="OnRotationTimerTick" />. Each
+        /// side then waited on the other (AB-BA), which froze the window and left a process that
+        /// only Task Manager could end. Both halves of that cycle are now gone, and using
+        /// <c>BeginInvoke</c> here is what keeps it from being reintroduced by a caller that
+        /// holds a lock.
+        /// </remarks>
+        /// <param name="action">The action to run on the UI thread.</param>
+        private static void InvokeOnUi(Action action)
+        {
+            if (action == null)
+                return;
+
+            try
+            {
+                var application = WpfApplication.Current;
+                var dispatcher = application == null ? null : application.Dispatcher;
+
+                // No dispatcher means there is no UI thread to marshal to, so running inline is
+                // both correct and necessary: returning here would silently drop the update.
+                if (dispatcher == null || dispatcher.CheckAccess())
+                    action();
+                else
+                    dispatcher.BeginInvoke(action);
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug(ex);
+            }
+        }
 
         /// <summary>
         /// Cleans up the rotation timer resources and resets the rotation angle
@@ -291,50 +350,53 @@ namespace WinMemoryCleaner
         {
             try
             {
-                using (var image = new Bitmap(16, 16))
-                using (var graphics = Graphics.FromImage(image))
-                using (var font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Pixel))
-                using (var format = new StringFormat())
-                using (var backgroundBrush = GetBackgroundBrush(memory, isOptimizing))
-                using (var textBrush = GetTextBrush(memory, isOptimizing))
+                lock (_iconRenderLock)
                 {
-                    // Configure format
-                    format.Alignment = StringAlignment.Center;
-                    format.LineAlignment = StringAlignment.Center;
-
-                    // Configure graphics quality
-                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
-
-                    // Draw background
-                    if (!Settings.TrayIconUseTransparentBackground)
+                    using (var image = new Bitmap(16, 16))
+                    using (var graphics = Graphics.FromImage(image))
+                    using (var font = new Font("Consolas", 14F, FontStyle.Regular, GraphicsUnit.Pixel))
+                    using (var format = new StringFormat())
+                    using (var backgroundBrush = GetBackgroundBrush(memory, isOptimizing))
+                    using (var textBrush = GetTextBrush(memory, isOptimizing))
                     {
-                        using (var path = new GraphicsPath())
+                        // Configure format
+                        format.Alignment = StringAlignment.Center;
+                        format.LineAlignment = StringAlignment.Center;
+
+                        // Configure graphics quality
+                        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                        graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
+
+                        // Draw background
+                        if (!Settings.TrayIconUseTransparentBackground)
                         {
-                            path.AddArc(0, 0, 10, 10, 180, 90);
-                            path.AddArc(5, 0, 10, 10, 270, 90);
-                            path.AddArc(5, 5, 10, 10, 0, 90);
-                            path.AddArc(0, 5, 10, 10, 90, 90);
-                            path.CloseFigure();
+                            using (var path = new GraphicsPath())
+                            {
+                                path.AddArc(0, 0, 10, 10, 180, 90);
+                                path.AddArc(5, 0, 10, 10, 270, 90);
+                                path.AddArc(5, 5, 10, 10, 0, 90);
+                                path.AddArc(0, 5, 10, 10, 90, 90);
+                                path.CloseFigure();
 
-                            graphics.FillPath(backgroundBrush, path);
+                                graphics.FillPath(backgroundBrush, path);
+                            }
                         }
-                    }
 
-                    // Draw text
-                    graphics.DrawString(string.Format(CultureInfo.InvariantCulture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 99 : memory.Physical.Used.Percentage), font, textBrush, 8F, 9F, format);
+                        // Draw text
+                        graphics.DrawString(string.Format(CultureInfo.InvariantCulture, "{0:00}", memory.Physical.Used.Percentage == 100 ? 99 : memory.Physical.Used.Percentage), font, textBrush, 8F, 9F, format);
 
-                    var handle = image.GetHicon();
+                        var handle = image.GetHicon();
 
-                    using (var icon = Icon.FromHandle(handle))
-                    {
-                        var clonedIcon = (Icon)icon.Clone();
+                        using (var icon = Icon.FromHandle(handle))
+                        {
+                            var clonedIcon = (Icon)icon.Clone();
 
-                        NativeMethods.DestroyIcon(handle);
+                            NativeMethods.DestroyIcon(handle);
 
-                        return clonedIcon;
+                            return clonedIcon;
+                        }
                     }
                 }
             }
@@ -357,34 +419,39 @@ namespace WinMemoryCleaner
 
             try
             {
-                using (var image = icon.ToBitmap())
-                using (var rotatedImage = new Bitmap(image.Width, image.Height))
-                using (var graphics = Graphics.FromImage(rotatedImage))
+                // icon is the shared _imageIcon; ToBitmap is a GDI read that must not run
+                // concurrently from the UI thread and the monitor thread.
+                lock (_iconRenderLock)
                 {
-                    // Configure graphics quality
-                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    graphics.SmoothingMode = SmoothingMode.HighQuality;
-
-                    // Rotate around center point
-                    var centerX = image.Width / 2f;
-                    var centerY = image.Height / 2f;
-
-                    graphics.TranslateTransform(centerX, centerY);
-                    graphics.RotateTransform(angle);
-                    graphics.TranslateTransform(-centerX, -centerY);
-
-                    graphics.DrawImage(image, new Point(0, 0));
-
-                    var handle = rotatedImage.GetHicon();
-
-                    using (var tempIcon = Icon.FromHandle(handle))
+                    using (var image = icon.ToBitmap())
+                    using (var rotatedImage = new Bitmap(image.Width, image.Height))
+                    using (var graphics = Graphics.FromImage(rotatedImage))
                     {
-                        var clonedIcon = (Icon)tempIcon.Clone();
+                        // Configure graphics quality
+                        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        graphics.SmoothingMode = SmoothingMode.HighQuality;
 
-                        NativeMethods.DestroyIcon(handle);
+                        // Rotate around center point
+                        var centerX = image.Width / 2f;
+                        var centerY = image.Height / 2f;
 
-                        return clonedIcon;
+                        graphics.TranslateTransform(centerX, centerY);
+                        graphics.RotateTransform(angle);
+                        graphics.TranslateTransform(-centerX, -centerY);
+
+                        graphics.DrawImage(image, new Point(0, 0));
+
+                        var handle = rotatedImage.GetHicon();
+
+                        using (var tempIcon = Icon.FromHandle(handle))
+                        {
+                            var clonedIcon = (Icon)tempIcon.Clone();
+
+                            NativeMethods.DestroyIcon(handle);
+
+                            return clonedIcon;
+                        }
                     }
                 }
             }
@@ -476,16 +543,24 @@ namespace WinMemoryCleaner
         /// <param name="running">if set to <c>true</c> shows loading cursor and disables menu</param>
         public void Loading(bool running)
         {
-            if (WpfApplication.Current == null || WpfApplication.Current.Dispatcher == null)
-                return;
-
-            // Multi-threading trick
-            WpfApplication.Current.Dispatcher.Invoke((Action)delegate
+            // Non-blocking: this is called from background threads that hold locks (the
+            // optimization path sets IsBusy while holding the view model lock).
+            InvokeOnUi(() =>
             {
-                Mouse.OverrideCursor = running ? Cursors.Wait : null;
+                try
+                {
+                    if (_disposed)
+                        return;
 
-                if (_notifyIcon.ContextMenuStrip != null)
-                    _notifyIcon.ContextMenuStrip.Enabled = !running;
+                    Mouse.OverrideCursor = running ? Cursors.Wait : null;
+
+                    if (_notifyIcon != null && _notifyIcon.ContextMenuStrip != null)
+                        _notifyIcon.ContextMenuStrip.Enabled = !running;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
             });
         }
 
@@ -501,17 +576,25 @@ namespace WinMemoryCleaner
             if (_notifyIcon == null)
                 return;
 
-            try
+            // Marshalled: the optimization path calls this from a background thread, and
+            // NotifyIcon.Visible / ShowBalloonTip must run on the thread that owns the icon.
+            InvokeOnUi(() =>
             {
-                _notifyIcon.Visible = false;
-                _notifyIcon.Visible = true;
+                try
+                {
+                    if (_disposed || _notifyIcon == null)
+                        return;
 
-                _notifyIcon.ShowBalloonTip(timeout * 1000, title, message, (ToolTipIcon)icon);
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug(ex);
-            }
+                    _notifyIcon.Visible = false;
+                    _notifyIcon.Visible = true;
+
+                    _notifyIcon.ShowBalloonTip(timeout * 1000, title, message, (ToolTipIcon)icon);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
+            });
         }
 
         /// <summary>
@@ -521,41 +604,24 @@ namespace WinMemoryCleaner
         /// <param name="e">The event arguments</param>
         private void OnRotationTimerTick(object sender, EventArgs e)
         {
-            lock (_disposeLock)
+            // Already on the UI thread. Taking _disposeLock here is what let a background
+            // thread inside Update block the UI thread, so the lock is deliberately absent.
+            if (_disposed)
+                return;
+
+            try
             {
-                if (_disposed)
-                    return;
+                _currentRotationAngle = (_currentRotationAngle + 90) % 360;
 
-                try
-                {
-                    _currentRotationAngle = (_currentRotationAngle + 90) % 360;
-
-                    var newIcon = GetRotatedIcon(_imageIcon, _currentRotationAngle);
-                    var oldIcon = _currentIcon;
-
-                    _notifyIcon.Icon = newIcon;
-                    _currentIcon = newIcon;
-
-                    if (oldIcon != null && oldIcon != _imageIcon && oldIcon != newIcon)
-                    {
-                        try
-                        {
-                            oldIcon.Dispose();
-                        }
-                        catch
-                        {
-                            // ignored
-                        }
-                    }
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Already disposed, ignore
-                }
-                catch (Exception ex)
-                {
-                    Logger.Debug(ex);
-                }
+                ApplyIcon(_notifyIcon.Text, GetRotatedIcon(_imageIcon, _currentRotationAngle));
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed, ignore
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug(ex);
             }
         }
 
@@ -564,34 +630,25 @@ namespace WinMemoryCleaner
         /// </summary>
         private void StartRotationAnimation()
         {
-            if (_rotationTimer != null)
-                return;
-
-            if (WpfApplication.Current == null || WpfApplication.Current.Dispatcher == null)
-                return;
-
-            try
+            InvokeOnUi(() =>
             {
-                WpfApplication.Current.Dispatcher.Invoke((Action)delegate
+                try
                 {
-                    try
-                    {
-                        _currentRotationAngle = 0;
+                    // Checked on the UI thread so two concurrent starts cannot both create a timer
+                    if (_rotationTimer != null || _disposed)
+                        return;
 
-                        _rotationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
-                        _rotationTimer.Tick += OnRotationTimerTick;
-                        _rotationTimer.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Debug(ex);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug(ex);
-            }
+                    _currentRotationAngle = 0;
+
+                    _rotationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+                    _rotationTimer.Tick += OnRotationTimerTick;
+                    _rotationTimer.Start();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug(ex);
+                }
+            });
         }
 
         /// <summary>
@@ -599,26 +656,11 @@ namespace WinMemoryCleaner
         /// </summary>
         private void StopRotationAnimation()
         {
-            if (_rotationTimer == null)
-                return;
-
-            try
-            {
-                if (WpfApplication.Current == null || WpfApplication.Current.Dispatcher == null)
-                {
-                    CleanupRotationTimer();
-                    return;
-                }
-
-                WpfApplication.Current.Dispatcher.Invoke((Action)delegate
-                {
-                    CleanupRotationTimer();
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug(ex);
-            }
+            // No _rotationTimer check here on purpose. The field is owned by the UI thread and
+            // is not volatile, so a caller on another thread can read a stale null and skip the
+            // cleanup, leaving the animation running. CleanupRotationTimer does the null check
+            // on the UI thread, where the read is valid.
+            InvokeOnUi(CleanupRotationTimer);
         }
 
         /// <summary>
@@ -632,41 +674,82 @@ namespace WinMemoryCleaner
             if (memory == null)
                 throw new ArgumentNullException("memory");
 
-            lock (_disposeLock)
+            if (_disposed || _notifyIcon == null)
+                return;
+
+            string text;
+            Icon newIcon;
+
+            // Rendering happens on the calling thread, outside any lock, so a slow GDI draw
+            // never stalls the UI thread and never blocks a lock the UI thread needs.
+            try
+            {
+                text = GetText(memory, isOptimizing);
+                newIcon = GetIcon(memory, isOptimizing);
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug(ex);
+                return;
+            }
+
+            // NotifyIcon has thread affinity: its window was created on the UI thread, so
+            // assigning Text/Icon from a pool thread can hang on the shell notification call.
+            InvokeOnUi(() => ApplyIcon(text, newIcon));
+        }
+
+        /// <summary>
+        /// Assigns the tray icon text and image, then releases the icon it replaced.
+        /// </summary>
+        /// <remarks>
+        /// Normally invoked on the UI thread. When no dispatcher exists it runs inline on the
+        /// calling thread instead, so the icon swap is guarded by <see cref="_currentIconLock" />
+        /// rather than relying on UI-thread serialization.
+        /// </remarks>
+        /// <param name="text">The tooltip text.</param>
+        /// <param name="newIcon">The icon to display.</param>
+        private void ApplyIcon(string text, Icon newIcon)
+        {
+            try
             {
                 if (_disposed || _notifyIcon == null)
-                    return;
-
-                try
                 {
-                    _notifyIcon.Text = GetText(memory, isOptimizing);
+                    if (newIcon != null && newIcon != _imageIcon)
+                        newIcon.Dispose();
 
-                    var newIcon = GetIcon(memory, isOptimizing);
-                    var oldIcon = _currentIcon;
+                    return;
+                }
 
+                Icon oldIcon;
+
+                lock (_currentIconLock)
+                {
+                    oldIcon = _currentIcon;
+
+                    _notifyIcon.Text = text;
                     _notifyIcon.Icon = newIcon;
                     _currentIcon = newIcon;
+                }
 
-                    if (oldIcon != null && oldIcon != _imageIcon && oldIcon != newIcon)
+                if (oldIcon != null && oldIcon != _imageIcon && oldIcon != newIcon)
+                {
+                    try
                     {
-                        try
-                        {
-                            oldIcon.Dispose();
-                        }
-                        catch
-                        {
-                            // ignored
-                        }
+                        oldIcon.Dispose();
+                    }
+                    catch
+                    {
+                        // ignored
                     }
                 }
-                catch (ObjectDisposedException)
-                {
-                    // Already disposed, ignore
-                }
-                catch (Exception ex)
-                {
-                    Logger.Debug(ex);
-                }
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed, ignore
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug(ex);
             }
         }
 

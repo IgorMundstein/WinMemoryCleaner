@@ -1476,6 +1476,13 @@ namespace WinMemoryCleaner
                         // ignored
                     }
 
+                    // RC1 captured the token once into a local at loop entry, which makes
+                    // IsCancellationRequested safe to read after the source is disposed
+                    // (the token is a struct, doesn't throw). Before RC1, the loop read
+                    // _cancellationTokenSource.Token fresh in the while condition, which
+                    // could throw ObjectDisposedException on a pool thread after disposal.
+                    // With the local capture, disposing is safe. Wait briefly for loops
+                    // to observe cancellation, then dispose.
                     try
                     {
                         _cancellationTokenSource.Token.WaitHandle.WaitOne(100);
@@ -1613,17 +1620,23 @@ namespace WinMemoryCleaner
         /// </summary>
         private void MonitorApp()
         {
-            while (!_cancellationTokenSource.Token.IsCancellationRequested)
+            // Captured once: the token is read after Dispose may have disposed its source,
+            // and CancellationToken stays usable while CancellationTokenSource does not.
+            var token = _cancellationTokenSource.Token;
+
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
+                    // Delay first, unconditionally. Skipping this wait when IsBusy was set
+                    // turned the loop into a busy-spin that pinned a CPU core for as long as
+                    // the app stayed busy, which is most of an optimization run.
+                    if (token.WaitHandle.WaitOne(60000))
+                        break;
+
                     // Check if it's busy
                     if (IsBusy)
                         continue;
-
-                    // Delay
-                    if (_cancellationTokenSource.Token.WaitHandle.WaitOne(60000))
-                        break;
 
                     // Update app
                     Updater.Update();
@@ -1700,27 +1713,31 @@ namespace WinMemoryCleaner
             // App priority
             App.SetPriority(Settings.RunOnPriority);
 
-            while (!_cancellationTokenSource.Token.IsCancellationRequested)
+            // Captured once, for the same reason as in MonitorApp
+            var token = _cancellationTokenSource.Token;
+
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    // Check if it's busy
-                    if (IsBusy)
-                        continue;
-
-                    lock (_lockObject)
+                    // Check if it's busy. The delay below always runs, so a busy app makes this
+                    // loop idle rather than spin.
+                    if (!IsBusy)
                     {
-                        // Update memory info
-                        Computer.Memory = _computerService.Memory;
+                        lock (_lockObject)
+                        {
+                            // Update memory info
+                            Computer.Memory = _computerService.Memory;
 
-                        RaisePropertyChanged(() => Computer);
-                        RaisePropertyChanged(() => VirtualMemoryHeader);
+                            RaisePropertyChanged(() => Computer);
+                            RaisePropertyChanged(() => VirtualMemoryHeader);
 
-                        NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+                            NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+                        }
                     }
 
                     // Delay
-                    if (_cancellationTokenSource.Token.WaitHandle.WaitOne(5000))
+                    if (token.WaitHandle.WaitOne(5000))
                         break;
                 }
                 catch (Exception e)
