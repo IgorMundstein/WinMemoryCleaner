@@ -1476,12 +1476,30 @@ namespace WinMemoryCleaner
                         // ignored
                     }
 
-                    // The source is deliberately not disposed. The monitor loops hold its token
-                    // and wait on its handle; disposing it out from under a loop that has not
-                    // observed the cancellation yet throws ObjectDisposedException from the
-                    // loop condition, which is outside the try block and would take down the
-                    // pool thread. Cancel() is enough to end the loops, and the handle is
-                    // reclaimed when the process exits moments later.
+                    // RC1 captured the token once into a local at loop entry, which makes
+                    // IsCancellationRequested safe to read after the source is disposed
+                    // (the token is a struct, doesn't throw). Before RC1, the loop read
+                    // _cancellationTokenSource.Token fresh in the while condition, which
+                    // could throw ObjectDisposedException on a pool thread after disposal.
+                    // With the local capture, disposing is safe. Wait briefly for loops
+                    // to observe cancellation, then dispose.
+                    try
+                    {
+                        _cancellationTokenSource.Token.WaitHandle.WaitOne(100);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+
+                    try
+                    {
+                        _cancellationTokenSource.Dispose();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 }
 
                 if (_hotKeyService != null)
