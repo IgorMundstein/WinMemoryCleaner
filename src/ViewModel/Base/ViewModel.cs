@@ -10,7 +10,11 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
-        private bool _isBusy;
+        /// <summary>
+        /// Written on the UI thread, polled by the background monitor loops, so the write has
+        /// to be visible to them without a lock.
+        /// </summary>
+        private volatile bool _isBusy;
 
         #endregion
 

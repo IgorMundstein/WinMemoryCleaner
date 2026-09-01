@@ -338,7 +338,114 @@ namespace WinMemoryCleaner.Test
 
                 Assert.DoesNotThrow(() => _notificationService.Dispose());
             }
-            
+
+            // Regression tests for the tray-icon freeze. Update used to hold a lock across a
+            // blocking dispatcher call while the UI thread took the same lock, which deadlocked
+            // the window and left a process only Task Manager could end.
+
+            [Test]
+            public void Update_FromManyThreadsConcurrently_DoesNotDeadlockOrThrow()
+            {
+                var memory = new Memory(Mocker.CreateMemoryStatusEx());
+                var showMemoryUsage = Settings.TrayIconShowMemoryUsage;
+
+                try
+                {
+                    // false routes through the rotation-animation path, which is the default
+                    // and the one that used to block on the dispatcher
+                    Settings.TrayIconShowMemoryUsage = false;
+
+                    var errors = new System.Collections.Concurrent.ConcurrentQueue<Exception>();
+                    var threads = new System.Collections.Generic.List<System.Threading.Thread>();
+
+                    for (var i = 0; i < 8; i++)
+                    {
+                        var optimizing = i % 2 == 0;
+                        var thread = new System.Threading.Thread(() =>
+                        {
+                            try
+                            {
+                                for (var j = 0; j < 25; j++)
+                                    _notificationService.Update(memory, optimizing);
+                            }
+                            catch (Exception e)
+                            {
+                                errors.Enqueue(e);
+                            }
+                        });
+
+                        thread.IsBackground = true;
+                        threads.Add(thread);
+                    }
+
+                    foreach (var thread in threads)
+                        thread.Start();
+
+                    foreach (var thread in threads)
+                        Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(30)), "Update blocked; a caller is waiting on a lock or the dispatcher.");
+
+                    Assert.IsEmpty(errors.ToArray());
+
+                    // An unsynchronized icon swap can leave the icon that is still assigned to
+                    // the tray disposed. Touching Handle on a disposed Icon throws.
+                    var assigned = _notifyIcon.Icon;
+
+                    if (assigned != null)
+                        Assert.DoesNotThrow(() => { var unused = assigned.Handle; }, "The icon assigned to the tray was disposed by a concurrent update.");
+                }
+                finally
+                {
+                    Settings.TrayIconShowMemoryUsage = showMemoryUsage;
+                }
+            }
+
+            [Test]
+            public void Update_WhileDisposing_DoesNotThrow()
+            {
+                var memory = new Memory(Mocker.CreateMemoryStatusEx());
+                var errors = new System.Collections.Concurrent.ConcurrentQueue<Exception>();
+
+                var updater = new System.Threading.Thread(() =>
+                {
+                    try
+                    {
+                        for (var i = 0; i < 200; i++)
+                            _notificationService.Update(memory, i % 2 == 0);
+                    }
+                    catch (Exception e)
+                    {
+                        errors.Enqueue(e);
+                    }
+                });
+
+                updater.IsBackground = true;
+                updater.Start();
+
+                Assert.DoesNotThrow(() => _notificationService.Dispose());
+                Assert.IsTrue(updater.Join(TimeSpan.FromSeconds(30)), "Update did not finish while the service was disposed.");
+                Assert.IsEmpty(errors.ToArray());
+            }
+
+            [Test]
+            public void Loading_FromBackgroundThread_DoesNotBlock()
+            {
+                var completed = false;
+
+                var worker = new System.Threading.Thread(() =>
+                {
+                    _notificationService.Loading(true);
+                    _notificationService.Loading(false);
+                    completed = true;
+                });
+
+                worker.IsBackground = true;
+                worker.Start();
+
+                Assert.IsTrue(worker.Join(TimeSpan.FromSeconds(10)), "Loading blocked the calling thread.");
+                Assert.IsTrue(completed);
+            }
+
+
             public void Dispose()
             {
                 // Ensure teardown logic runs when used as IDisposable

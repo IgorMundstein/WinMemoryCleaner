@@ -1476,23 +1476,12 @@ namespace WinMemoryCleaner
                         // ignored
                     }
 
-                    try
-                    {
-                        _cancellationTokenSource.Token.WaitHandle.WaitOne(100);
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-
-                    try
-                    {
-                        _cancellationTokenSource.Dispose();
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
+                    // The source is deliberately not disposed. The monitor loops hold its token
+                    // and wait on its handle; disposing it out from under a loop that has not
+                    // observed the cancellation yet throws ObjectDisposedException from the
+                    // loop condition, which is outside the try block and would take down the
+                    // pool thread. Cancel() is enough to end the loops, and the handle is
+                    // reclaimed when the process exits moments later.
                 }
 
                 if (_hotKeyService != null)
@@ -1613,17 +1602,23 @@ namespace WinMemoryCleaner
         /// </summary>
         private void MonitorApp()
         {
-            while (!_cancellationTokenSource.Token.IsCancellationRequested)
+            // Captured once: the token is read after Dispose may have disposed its source,
+            // and CancellationToken stays usable while CancellationTokenSource does not.
+            var token = _cancellationTokenSource.Token;
+
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
+                    // Delay first, unconditionally. Skipping this wait when IsBusy was set
+                    // turned the loop into a busy-spin that pinned a CPU core for as long as
+                    // the app stayed busy, which is most of an optimization run.
+                    if (token.WaitHandle.WaitOne(60000))
+                        break;
+
                     // Check if it's busy
                     if (IsBusy)
                         continue;
-
-                    // Delay
-                    if (_cancellationTokenSource.Token.WaitHandle.WaitOne(60000))
-                        break;
 
                     // Update app
                     Updater.Update();
@@ -1700,27 +1695,31 @@ namespace WinMemoryCleaner
             // App priority
             App.SetPriority(Settings.RunOnPriority);
 
-            while (!_cancellationTokenSource.Token.IsCancellationRequested)
+            // Captured once, for the same reason as in MonitorApp
+            var token = _cancellationTokenSource.Token;
+
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    // Check if it's busy
-                    if (IsBusy)
-                        continue;
-
-                    lock (_lockObject)
+                    // Check if it's busy. The delay below always runs, so a busy app makes this
+                    // loop idle rather than spin.
+                    if (!IsBusy)
                     {
-                        // Update memory info
-                        Computer.Memory = _computerService.Memory;
+                        lock (_lockObject)
+                        {
+                            // Update memory info
+                            Computer.Memory = _computerService.Memory;
 
-                        RaisePropertyChanged(() => Computer);
-                        RaisePropertyChanged(() => VirtualMemoryHeader);
+                            RaisePropertyChanged(() => Computer);
+                            RaisePropertyChanged(() => VirtualMemoryHeader);
 
-                        NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+                            NotificationService.Update(Computer.Memory, IsOptimizationRunning);
+                        }
                     }
 
                     // Delay
-                    if (_cancellationTokenSource.Token.WaitHandle.WaitOne(5000))
+                    if (token.WaitHandle.WaitOne(5000))
                         break;
                 }
                 catch (Exception e)

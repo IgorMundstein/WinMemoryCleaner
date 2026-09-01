@@ -23,11 +23,14 @@ namespace WinMemoryCleaner
     {
         #region Fields
 
+        private const int ShutdownWatchdogTimeoutMs = 8000;
         private static bool _isRunning;
         private static Mutex _mutex;
         private static NotifyIcon _notifyIcon;
         private static readonly List<string> _notifications = new List<string>();
         private static readonly object _showHidelock = new object();
+        private static System.Threading.Timer _shutdownWatchdog;
+        private static readonly object _shutdownWatchdogLock = new object();
 
         #endregion
 
@@ -901,13 +904,68 @@ namespace WinMemoryCleaner
             try
             {
                 if (force)
+                {
                     Environment.Exit(Constants.Windows.SystemErrorCode.ErrorSuccess);
+                    return;
+                }
+
+                ArmShutdownWatchdog();
+
+                var current = Current;
+
+                if (current == null || current.Dispatcher == null)
+                {
+                    Environment.Exit(Constants.Windows.SystemErrorCode.ErrorSuccess);
+                    return;
+                }
+
+                // Application.Shutdown has to run on the UI thread
+                if (current.Dispatcher.CheckAccess())
+                    current.Shutdown();
                 else
-                    Current.Shutdown();
+                    current.Dispatcher.BeginInvoke((Action)(() => current.Shutdown()));
             }
             catch
             {
                 Environment.Exit(Constants.Windows.SystemErrorCode.ErrorSuccess);
+            }
+        }
+
+        /// <summary>
+        /// Starts a timer that force-exits if a requested graceful shutdown does not complete.
+        /// </summary>
+        /// <remarks>
+        /// Runs on a pool thread so it stays alive even when the UI thread is stuck. Without
+        /// it, a shutdown that stalls leaves a process only Task Manager can end.
+        /// </remarks>
+        private static void ArmShutdownWatchdog()
+        {
+            try
+            {
+                lock (_shutdownWatchdogLock)
+                {
+                    if (_shutdownWatchdog != null)
+                        return;
+
+                    _shutdownWatchdog = new System.Threading.Timer(_ =>
+                    {
+                        try
+                        {
+                            Logger.Warning("Graceful shutdown did not complete in time. Forcing exit.");
+                            Logger.Dispose();
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+
+                        Environment.Exit(Constants.Windows.SystemErrorCode.ErrorSuccess);
+                    }, null, ShutdownWatchdogTimeoutMs, Timeout.Infinite);
+                }
+            }
+            catch
+            {
+                // ignored
             }
         }
 
