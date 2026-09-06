@@ -25,7 +25,7 @@ namespace WinMemoryCleaner
         private string _manual, _memoryAreas, _memoryOptimized, _memoryUsage, _minimize, _modifiedFileCache, _modifiedPageList;
         private string _no;
         private string _optimizationHotkey, _optimize, _optimizeOnMiddleMouseClick, _optimizing;
-        private string _physicalMemory, _processExclusionList;
+        private string _physicalMemory, _processExclusionList, _processExclusionListDescription;
         private string _reason, _registryCache, _remove, _reset, _resetCommand, _resetConfirmation, _runOnLowPriority, _runOnStartup;
         private string _schedule, _seconds, _settings, _showMemoryUsage, _showOptimizationNotifications, _showVirtualMemory, _standbyList, _standbyListLowPriority, _startMinimized, _systemFileCache;
         private string _text, _trayIcon;
@@ -351,6 +351,13 @@ namespace WinMemoryCleaner
         {
             get { return _processExclusionList; }
             private set { _processExclusionList = value.Capitalize(); }
+        }
+
+        [DataMember]
+        public string ProcessExclusionListDescription
+        {
+            get { return _processExclusionListDescription; }
+            private set { _processExclusionListDescription = value.Capitalize(); }
         }
 
         [DataMember]

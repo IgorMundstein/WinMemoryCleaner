@@ -46,7 +46,7 @@ winget install IgorMundstein.WinMemoryCleaner
 | **Global&nbsp;Hotkey** | Trigger an optimization instantly from anywhere with a customizable hotkey (default `CTRL+SHIFT+M`). |
 | **Hotkey&nbsp;Toggle** | Enable or disable the global optimization hotkey independently. |
 | **Multi-Language&nbsp;Support** | Albanian, Arabic, Bulgarian, Chinese (Simplified), Chinese (Traditional), Dutch, English, French, German, Greek, Hebrew, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Macedonian, Norwegian, Persian, Polish, Portuguese (Brazil), Portuguese (Portugal), Russian, Serbian, Slovenian, Spanish, Thai, Turkish, and Ukrainian. |
-| **Process&nbsp;Exclusion&nbsp;List** | Build a list of processes to ignore during memory optimization, protecting critical applications. |
+| **Working&nbsp;Set&nbsp;Exclusions** | Exclusions skip only per-process working-set trimming; other selected global memory cleanups and automatic optimization remain unaffected. |
 | **Run&nbsp;on&nbsp;Low&nbsp;Priority** | Limits the app's resource usage by reducing its process priority. This may increase optimization time but can prevent system freezes. |
 | **Run&nbsp;on&nbsp;Startup** | Automatically starts the application when Windows boots by creating a task in the Windows Task Scheduler. |
 | **Show&nbsp;Optimization&nbsp;Notifications** | Display system tray notifications after each optimization, showing the reason and amount of memory freed. |
