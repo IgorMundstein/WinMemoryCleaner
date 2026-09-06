@@ -598,26 +598,43 @@ namespace WinMemoryCleaner
         /// </summary>
         public static void ReleaseMemory()
         {
-            // Garbage Collector
-            try
+            ReleaseMemory
+            (
+                ReleaseMemoryMode.Combined,
+                () =>
+                {
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+                },
+                () => NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle)
+            );
+        }
+
+        internal static void ReleaseMemory(ReleaseMemoryMode mode, Action collectGarbage, Action trimWorkingSet)
+        {
+            if (mode == ReleaseMemoryMode.GCOnly || mode == ReleaseMemoryMode.Combined)
             {
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-                GC.WaitForPendingFinalizers();
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-            }
-            catch
-            {
-                // ignored
+                try
+                {
+                    collectGarbage();
+                }
+                catch
+                {
+                    // ignored
+                }
             }
 
-            // Optimize App Working Set
-            try
+            if (mode == ReleaseMemoryMode.TrimOnly || mode == ReleaseMemoryMode.Combined)
             {
-                NativeMethods.EmptyWorkingSet(Process.GetCurrentProcess().Handle);
-            }
-            catch (Exception)
-            {
-                // ignored
+                try
+                {
+                    trimWorkingSet();
+                }
+                catch
+                {
+                    // ignored
+                }
             }
         }
 

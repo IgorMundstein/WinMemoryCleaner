@@ -149,10 +149,10 @@ namespace WinMemoryCleaner
             if (areas == Enums.Memory.Areas.None)
                 return;
 
-            var errorRuntime = new TimeSpan();
-            var infoRuntime = new TimeSpan();
             var optimizationReason = reason.GetString();
             var stopwatch = new Stopwatch();
+            var totalStopwatch = Stopwatch.StartNew();
+            var optimizationTiming = new OptimizationTiming(() => totalStopwatch.Elapsed);
             var value = (byte)0;
 
             var error = new LogOptimizationData { Reason = optimizationReason };
@@ -178,8 +178,6 @@ namespace WinMemoryCleaner
                         Name = Localizer.String.WorkingSet,
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture))
                     });
-
-                    infoRuntime = infoRuntime.Add(stopwatch.Elapsed);
                 }
                 catch (Exception e)
                 {
@@ -189,8 +187,6 @@ namespace WinMemoryCleaner
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)),
                         Error = e.GetMessage()
                     });
-
-                    errorRuntime = errorRuntime.Add(stopwatch.Elapsed);
                 }
             }
 
@@ -214,8 +210,6 @@ namespace WinMemoryCleaner
                         Name = Localizer.String.SystemFileCache,
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture))
                     });
-
-                    infoRuntime = infoRuntime.Add(stopwatch.Elapsed);
                 }
                 catch (Exception e)
                 {
@@ -225,8 +219,6 @@ namespace WinMemoryCleaner
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)),
                         Error = e.GetMessage()
                     });
-
-                    errorRuntime = errorRuntime.Add(stopwatch.Elapsed);
                 }
             }
 
@@ -250,8 +242,6 @@ namespace WinMemoryCleaner
                         Name = Localizer.String.ModifiedPageList,
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture))
                     });
-
-                    infoRuntime = infoRuntime.Add(stopwatch.Elapsed);
                 }
                 catch (Exception e)
                 {
@@ -261,8 +251,6 @@ namespace WinMemoryCleaner
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)),
                         Error = e.GetMessage()
                     });
-
-                    errorRuntime = errorRuntime.Add(stopwatch.Elapsed);
                 }
             }
 
@@ -289,8 +277,6 @@ namespace WinMemoryCleaner
                         Name = standbyList,
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture))
                     });
-
-                    infoRuntime = infoRuntime.Add(stopwatch.Elapsed);
                 }
                 catch (Exception e)
                 {
@@ -300,8 +286,6 @@ namespace WinMemoryCleaner
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)),
                         Error = e.GetMessage()
                     });
-
-                    errorRuntime = errorRuntime.Add(stopwatch.Elapsed);
                 }
             }
 
@@ -325,8 +309,6 @@ namespace WinMemoryCleaner
                         Name = Localizer.String.CombinedPageList,
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture))
                     });
-
-                    infoRuntime = infoRuntime.Add(stopwatch.Elapsed);
                 }
                 catch (Exception e)
                 {
@@ -336,8 +318,6 @@ namespace WinMemoryCleaner
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)),
                         Error = e.GetMessage()
                     });
-
-                    errorRuntime = errorRuntime.Add(stopwatch.Elapsed);
                 }
             }
 
@@ -361,8 +341,6 @@ namespace WinMemoryCleaner
                         Name = Localizer.String.RegistryCache,
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture))
                     });
-
-                    infoRuntime = infoRuntime.Add(stopwatch.Elapsed);
                 }
                 catch (Exception e)
                 {
@@ -372,8 +350,6 @@ namespace WinMemoryCleaner
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)),
                         Error = e.GetMessage()
                     });
-
-                    errorRuntime = errorRuntime.Add(stopwatch.Elapsed);
                 }
             }
 
@@ -397,8 +373,6 @@ namespace WinMemoryCleaner
                         Name = Localizer.String.ModifiedFileCache,
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture))
                     });
-
-                    infoRuntime = infoRuntime.Add(stopwatch.Elapsed);
                 }
                 catch (Exception e)
                 {
@@ -408,8 +382,6 @@ namespace WinMemoryCleaner
                         Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", stopwatch.Elapsed.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture)),
                         Error = e.GetMessage()
                     });
-
-                    errorRuntime = errorRuntime.Add(stopwatch.Elapsed);
                 }
             }
 
@@ -422,12 +394,27 @@ namespace WinMemoryCleaner
                     OnOptimizeProgressUpdate(value, Localizer.String.GarbageCollector);
                 }
 
-                App.ReleaseMemory();
+                optimizationTiming.Complete(App.ReleaseMemory);
+
+                var appReleaseTiming = new LogOptimizationDataMemoryArea
+                {
+                    Name = Localizer.String.GarbageCollector,
+                    Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", optimizationTiming.FinalAppReleaseDuration.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture))
+                };
+
+                // Include final-stage timing without turning failed native work into a success notification.
+                if (info.MemoryAreas.Any())
+                    info.MemoryAreas.Add(appReleaseTiming);
+
+                if (error.MemoryAreas.Any())
+                    error.MemoryAreas.Add(appReleaseTiming);
             }
             catch
             {
                 // ignored
             }
+
+            var totalRuntime = optimizationTiming.Elapsed;
 
             // Log
             try
@@ -435,14 +422,14 @@ namespace WinMemoryCleaner
                 // Info
                 if (info.MemoryAreas.Any())
                 {
-                    info.Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", infoRuntime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture));
+                    info.Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", totalRuntime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture));
 
                     Logger.Log(new Log(Enums.Log.Levels.Information, Localizer.String.MemoryOptimized, info));
                 }
                 // Error
                 if (error.MemoryAreas.Any())
                 {
-                    error.Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", errorRuntime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture));
+                    error.Duration = string.Format(Localizer.Culture, "{0:0.0} {1}", totalRuntime.TotalSeconds, Localizer.String.Seconds.ToLower(Localizer.Culture));
 
                     Logger.Log(new Log(Enums.Log.Levels.Error, Localizer.String.Invalid, error));
                 }
