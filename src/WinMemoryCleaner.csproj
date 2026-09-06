@@ -118,6 +118,7 @@
     <Compile Include="Converters\PercentageToWidthConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\SumNumericConverter.cs" />
+    <Compile Include="Core\AutoOptimizationPolicy.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\DependencyInjection.cs" />
     <Compile Include="Core\Enums.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Service\ComputerService.cs" />
     <Compile Include="Service\HotkeyService.cs" />
     <Compile Include="Service\NotificationService.cs" />
+    <Compile Include="Test\AutoOptimizationPolicyTests.cs" />
     <Compile Include="Test\CommandTests.cs" />
     <Compile Include="Test\ConverterTests.cs" />
     <Compile Include="Test\CoreTests.cs" />

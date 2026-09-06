@@ -116,24 +116,23 @@ namespace WinMemoryCleaner
             // Update memory info
             _computer.Memory = _computerService.Memory;
 
-            // Interval
-            if (Settings.AutoOptimizationInterval > 0 &&
-                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByInterval).TotalHours >= Settings.AutoOptimizationInterval)
+            var reason = AutoOptimizationPolicy.GetReason(
+                DateTimeOffset.Now,
+                _lastAutoOptimizationByInterval,
+                _lastAutoOptimizationByMemoryUsage,
+                Settings.AutoOptimizationInterval,
+                Settings.AutoOptimizationMemoryUsage,
+                _computer.Memory.Physical.Free.Percentage);
+
+            if (reason.HasValue)
             {
-                DependencyInjection.Container.Resolve<IComputerService>().Optimize(Enums.Memory.Optimization.Reason.Schedule, Settings.MemoryAreas);
+                DependencyInjection.Container.Resolve<IComputerService>().Optimize(reason.Value, Settings.MemoryAreas);
 
-                _lastAutoOptimizationByInterval = DateTimeOffset.Now;
-                return;
-            }
+                if (reason.Value == Enums.Memory.Optimization.Reason.Schedule)
+                    _lastAutoOptimizationByInterval = DateTimeOffset.Now;
+                else
+                    _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
 
-            // Memory usage
-            if (Settings.AutoOptimizationMemoryUsage > 0 &&
-                _computer.Memory.Physical.Free.Percentage < Settings.AutoOptimizationMemoryUsage &&
-                DateTimeOffset.Now.Subtract(_lastAutoOptimizationByMemoryUsage).TotalMinutes >= Constants.App.AutoOptimizationMemoryUsageInterval)
-            {
-                DependencyInjection.Container.Resolve<IComputerService>().Optimize(Enums.Memory.Optimization.Reason.LowMemory, Settings.MemoryAreas);
-
-                _lastAutoOptimizationByMemoryUsage = DateTimeOffset.Now;
                 return;
             }
         }
