@@ -113,6 +113,7 @@ namespace WinMemoryCleaner
         private bool SetIncreasePrivilege(string privilegeName)
         {
             var result = false;
+            var lastWin32Error = Constants.Windows.SystemErrorCode.ErrorSuccess;
 
             using (var current = WindowsIdentity.GetCurrent(TokenAccessLevels.Query | TokenAccessLevels.AdjustPrivileges))
             {
@@ -125,14 +126,30 @@ namespace WinMemoryCleaner
                 if (NativeMethods.LookupPrivilegeValue(null, privilegeName, ref newState.Luid))
                 {
                     // Enables or disables privileges in a specified access token
-                    result = NativeMethods.AdjustTokenPrivileges(current.Token, false, ref newState, 0, IntPtr.Zero, IntPtr.Zero);
+                    var privilegesAdjusted = NativeMethods.AdjustTokenPrivileges(current.Token, false, ref newState, 0, IntPtr.Zero, IntPtr.Zero);
+                    lastWin32Error = Marshal.GetLastWin32Error();
+                    result = IsAdjustTokenPrivilegesSuccessful(privilegesAdjusted, lastWin32Error);
+                }
+                else
+                {
+                    lastWin32Error = Marshal.GetLastWin32Error();
                 }
 
                 if (!result)
-                    Logger.Error(new Win32Exception(Marshal.GetLastWin32Error()));
+                    Logger.Error(new Win32Exception(lastWin32Error));
             }
 
             return result;
+        }
+
+        internal static Win32Exception CreateNtStatusException(int ntStatus)
+        {
+            return new Win32Exception((int)NativeMethods.RtlNtStatusToDosError(ntStatus));
+        }
+
+        internal static bool IsAdjustTokenPrivilegesSuccessful(bool privilegesAdjusted, int lastWin32Error)
+        {
+            return privilegesAdjusted && lastWin32Error == Constants.Windows.SystemErrorCode.ErrorSuccess;
         }
 
         #endregion
@@ -474,8 +491,9 @@ namespace WinMemoryCleaner
 
                 handle = GCHandle.Alloc(memoryCombineInformationEx, GCHandleType.Pinned);
 
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryCombineInformationEx)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                var status = NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemCombinePhysicalMemoryInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryCombineInformationEx));
+                if (status != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    throw CreateNtStatusException(status);
             }
             finally
             {
@@ -590,8 +608,9 @@ namespace WinMemoryCleaner
 
             try
             {
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                var status = NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryFlushModifiedList));
+                if (status != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    throw CreateNtStatusException(status);
             }
             finally
             {
@@ -616,8 +635,9 @@ namespace WinMemoryCleaner
             if (!OperatingSystem.HasRegistryHive)
                 throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorMemoryAreaOptimizationNotSupported, Localizer.String.RegistryCache));
 
-            if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemRegistryReconciliationInformation, IntPtr.Zero, 0) != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                throw new Win32Exception(Marshal.GetLastWin32Error());
+            var status = NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemRegistryReconciliationInformation, IntPtr.Zero, 0);
+            if (status != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                throw CreateNtStatusException(status);
         }
 
         /// <summary>
@@ -639,8 +659,9 @@ namespace WinMemoryCleaner
 
             try
             {
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryPurgeStandbyList)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                var status = NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(memoryPurgeStandbyList));
+                if (status != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    throw CreateNtStatusException(status);
             }
             finally
             {
@@ -682,8 +703,9 @@ namespace WinMemoryCleaner
 
                 handle = GCHandle.Alloc(systemFileCacheInformation, GCHandleType.Pinned);
 
-                if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemFileCacheInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(systemFileCacheInformation)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                var status = NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemFileCacheInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(systemFileCacheInformation));
+                if (status != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    throw CreateNtStatusException(status);
             }
             finally
             {
@@ -751,15 +773,16 @@ namespace WinMemoryCleaner
             {
                 // Check privilege
                 if (!SetIncreasePrivilege(Constants.Windows.Privilege.SeProfSingleProcessName))
-                    throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeDebugName));
+                    throw new Exception(string.Format(Localizer.Culture, Localizer.String.ErrorAdminPrivilegeRequired, Constants.Windows.Privilege.SeProfSingleProcessName));
 
                 var handle = GCHandle.Alloc(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets, GCHandleType.Pinned);
 
                 try
                 {
-                    if (NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets)) != Constants.Windows.SystemErrorCode.ErrorSuccess)
+                    var status = NativeMethods.NtSetSystemInformation(Constants.Windows.SystemInformationClass.SystemMemoryListInformation, handle.AddrOfPinnedObject(), (uint)Marshal.SizeOf(Constants.Windows.SystemMemoryListCommand.MemoryEmptyWorkingSets));
+                    if (status != Constants.Windows.SystemErrorCode.ErrorSuccess)
                     {
-                        var e = new Win32Exception(Marshal.GetLastWin32Error());
+                        var e = CreateNtStatusException(status);
 
                         if (e != null)
                         {

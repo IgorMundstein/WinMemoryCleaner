@@ -156,7 +156,15 @@ namespace WinMemoryCleaner
             public static class SystemErrorCode
             {
                 public const int ErrorAccessDenied = 5; // (ERROR_ACCESS_DENIED) Access is denied
+                public const int ErrorInvalidParameter = 87; // (ERROR_INVALID_PARAMETER) The parameter is incorrect
+                public const int ErrorNotAllAssigned = 1300; // (ERROR_NOT_ALL_ASSIGNED) Not all privileges or groups referenced are assigned to the caller
                 public const int ErrorSuccess = 0; // (ERROR_SUCCESS) The operation completed successfully
+            }
+
+            public static class NtStatus
+            {
+                public const int StatusAccessDenied = unchecked((int)0xC0000022);
+                public const int StatusInvalidParameter = unchecked((int)0xC000000D);
             }
 
             public static class SystemInformationClass

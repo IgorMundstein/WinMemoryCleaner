@@ -163,6 +163,7 @@
     <Compile Include="Test\CoreTests.cs" />
     <Compile Include="Test\IntegrationTests.cs" />
     <Compile Include="Test\Mocker.cs" />
+    <Compile Include="Test\NativeMemoryInteropTests.cs" />
     <Compile Include="Test\ModelTests.cs" />
     <Compile Include="Test\ServiceTests.cs" />
     <Compile Include="Test\TestCleanup.cs" />

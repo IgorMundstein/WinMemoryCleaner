@@ -74,6 +74,9 @@ namespace WinMemoryCleaner
         [DllImport("ntdll.dll", SetLastError = true)]
         internal static extern int NtSetSystemInformation(int SystemInformationClass, IntPtr SystemInformation, uint SystemInformationLength);
 
+        [DllImport("ntdll.dll")]
+        internal static extern uint RtlNtStatusToDosError(int status);
+
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
