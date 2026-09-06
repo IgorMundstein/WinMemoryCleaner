@@ -13,8 +13,12 @@
             Foreground="{DynamicResource SecondaryForeground}"
             Icon="/WinMemoryCleaner;component/Resources/Images/win-memory-cleaner.ico"
             MouseDown="OnWindowMouseDown"
-            ResizeMode="NoResize"
-            SizeToContent="WidthAndHeight"
+            Height="700"
+            MinHeight="440"
+            MinWidth="680"
+            ResizeMode="CanResizeWithGrip"
+            SizeToContent="Manual"
+            Width="960"
             SnapsToDevicePixels="True"
             Title="{x:Static local:Constants+App.Title}"
             Topmost="{Binding AlwaysOnTop}"
@@ -27,9 +31,15 @@
             BorderThickness="1" 
             CornerRadius="8"
             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}">
-        <StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <!-- Header -->
-            <Grid Margin="10, 10, 0, 0">
+            <Grid Grid.Row="0"
+                  Margin="10, 10, 0, 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -193,23 +203,31 @@
                 </StackPanel>
             </Grid>
             <!-- Content -->
-            <Grid Margin="10, 0, 10, 0"
-                  Visibility="{Binding CompactMode, Converter={StaticResource InverseBooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Visible}}"
-                  x:Name="ContentGrid">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <ScrollViewer x:Name="BodyScrollViewer"
+                          Grid.Row="1"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Margin="10, 0, 10, 0"
+                          VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding CompactMode, Converter={StaticResource InverseBooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Visible}}">
+                <!-- A finite viewport keeps the process list bounded while the body can scroll. -->
+                <Grid x:Name="ContentGrid"
+                      Height="{Binding ViewportHeight, ElementName=BodyScrollViewer}"
+                      MinHeight="320">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
                 <!-- Settings -->
-                <GroupBox Grid.Column="0"
-                          Grid.Row="0"
-                          Header="{Binding Path=(local:Localizer.String).Settings}"
-                          Margin="0, 5, 5, 0">
+                <ScrollViewer Grid.Column="0"
+                              Grid.Row="0"
+                              Margin="0, 5, 5, 0"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <GroupBox Header="{Binding Path=(local:Localizer.String).Settings}"
+                                  Margin="0">
                     <StackPanel VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal"
                                     Margin="0, 0, 0, 6"
@@ -255,10 +273,8 @@
                     </StackPanel>
                 </GroupBox>
                 <!-- Memory Areas -->
-                <GroupBox Grid.Column="0" 
-                          Grid.Row="1"
-                          Header="{Binding Path=(local:Localizer.String).MemoryAreas}"
-                          Margin="0, 5, 5, 0">
+                        <GroupBox Header="{Binding Path=(local:Localizer.String).MemoryAreas}"
+                                  Margin="0, 5, 0, 0">
                     <ItemsControl ItemsSource="{Binding MemoryAreaItems}"
                                   VerticalAlignment="Center">
                         <ItemsControl.ItemTemplate>
@@ -273,10 +289,8 @@
                     </ItemsControl>
                 </GroupBox>
                 <!-- Optimization Hotkey -->
-                <GroupBox Grid.Column="0"
-                              Grid.Row="2"
-                              Header="{Binding Path=(local:Localizer.String).OptimizationHotkey}"
-                              Margin="0, 5, 5, 0"
+                        <GroupBox Header="{Binding Path=(local:Localizer.String).OptimizationHotkey}"
+                                  Margin="0, 5, 0, 0"
                               Visibility="{Binding Computer.OperatingSystem.HasHotkeyManager, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}">
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center">
@@ -309,19 +323,15 @@
                                    VerticalAlignment="Center"
                                    Visibility="{Binding IsOptimizationKeyValid, Converter={StaticResource InverseBooleanToVisibilityConverter}, FallbackValue={x:Static Visibility.Collapsed}}" />
                     </StackPanel>
-                </GroupBox>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
                 <!-- Tray Icon | Process Exclusion List | Auto Optimization -->
                 <Grid Grid.Column="1"
                       Grid.Row="0"
-                      Grid.RowSpan="3"
                       VerticalAlignment="Stretch">
-                    <Grid.MaxHeight>
-                        <MultiBinding Converter="{StaticResource SumNumericConverter}">
-                            <Binding ElementName="ContentGrid" Path="ActualHeight" />
-                        </MultiBinding>
-                    </Grid.MaxHeight>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -615,17 +625,29 @@
                     </GroupBox>
                 </Grid>
             </Grid>
+            </ScrollViewer>
             <!-- Footer -->
-            <Grid Margin="10, 0, 10, 10">
+            <Grid Grid.Row="2"
+                  Margin="10, 0, 10, 10"
+                      FlowDirection="LeftToRight">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <!-- Memory Stats -->
+                <Grid Grid.Column="0"
+                          Grid.RowSpan="3"
+                          FlowDirection="{Binding Path=(local:Localizer.Language).Direction}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <!-- Memory Stats -->
                 <GroupBox Grid.Column="0"
                           Grid.Row="0"
                           Header="{Binding PhysicalMemoryHeader}"
@@ -927,7 +949,16 @@
                                    VerticalAlignment="Center" />
                     </StackPanel>
                 </Grid>
+                </Grid>
+                    <ResizeGrip x:Name="WindowResizeGrip"
+                            FlowDirection="LeftToRight"
+                            Grid.Column="1"
+                            Grid.Row="2"
+                            Height="16"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Width="16" />
             </Grid>
-        </StackPanel>
+        </Grid>
     </Border>
 </local:View>
