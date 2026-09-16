@@ -1,0 +1,11 @@
+# Node / Electron
+node_modules/
+dist/
+out/
+
+# .NET engine build output
+engine/bin/
+engine/obj/
+
+# Screenshots / scratch
+build/screenshot-*.png

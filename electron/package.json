@@ -1,0 +1,39 @@
+{
+  "name": "win-memory-cleaner-desktop",
+  "productName": "Windows Memory Cleaner",
+  "version": "3.0.8",
+  "description": "A modern Electron desktop front-end for Windows Memory Cleaner, driving the native C# optimization engine.",
+  "author": "Igor Mundstein (original) — Electron edition",
+  "license": "GPL-3.0",
+  "main": "main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:engine": "dotnet build engine/WinMemoryCleaner.Engine.csproj -c Release",
+    "dev": "npm run build:engine && electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.winmemorycleaner.desktop",
+    "productName": "Windows Memory Cleaner",
+    "files": [
+      "main/**/*",
+      "preload/**/*",
+      "renderer/**/*",
+      "build/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "engine/bin/Release/net10.0-windows",
+        "to": "engine"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "requestedExecutionLevel": "requireAdministrator"
+    }
+  }
+}

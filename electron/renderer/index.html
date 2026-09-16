@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self'; connect-src 'self'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Windows Memory Cleaner</title>
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body>
+  <!-- Animated aurora background -->
+  <div class="aurora" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+    <span class="grid"></span>
+  </div>
+
+  <!-- Custom title bar -->
+  <header class="titlebar">
+    <div class="titlebar-drag">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <span class="brand-name">Windows Memory Cleaner</span>
+        <span class="brand-ver" id="appVersion">3.0.8</span>
+      </div>
+    </div>
+    <div class="titlebar-status">
+      <span class="chip elev" id="elevChip" hidden>
+        <svg class="ic"><use href="#i-shield"></use></svg> Administrator
+      </span>
+      <span class="chip engine" id="engineChip">
+        <span class="dot"></span> Engine
+      </span>
+    </div>
+    <div class="titlebar-controls">
+      <button class="win-btn" id="btnMin" title="Minimize"><svg class="ic"><use href="#i-min"></use></svg></button>
+      <button class="win-btn" id="btnMax" title="Maximize"><svg class="ic"><use href="#i-max"></use></svg></button>
+      <button class="win-btn danger" id="btnClose" title="Close"><svg class="ic"><use href="#i-close"></use></svg></button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <button class="nav-item active" data-view="dashboard">
+        <svg class="ic"><use href="#i-gauge"></use></svg><span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-view="automation">
+        <svg class="ic"><use href="#i-bolt"></use></svg><span>Automation</span>
+      </button>
+      <button class="nav-item" data-view="processes">
+        <svg class="ic"><use href="#i-list"></use></svg><span>Processes</span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <svg class="ic"><use href="#i-sliders"></use></svg><span>Settings</span>
+      </button>
+      <div class="nav-spacer"></div>
+      <button class="nav-item" data-view="about">
+        <svg class="ic"><use href="#i-info"></use></svg><span>About</span>
+      </button>
+    </nav>
+
+    <!-- Main content -->
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <div class="view-head">
+          <div>
+            <h1>Overview</h1>
+            <p class="muted" id="dashSubtitle">Live memory status</p>
+          </div>
+          <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+            <svg class="ic"><use href="#i-moon"></use></svg>
+          </button>
+        </div>
+
+        <div class="gauges">
+          <article class="glass gauge-card" id="physCard">
+            <div class="ring" id="physRing">
+              <svg viewBox="0 0 200 200" class="ring-svg">
+                <defs>
+                  <linearGradient id="gradPhys" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="var(--accent-a)" />
+                    <stop offset="100%" stop-color="var(--accent-b)" />
+                  </linearGradient>
+                </defs>
+                <circle class="ring-track" cx="100" cy="100" r="86" />
+                <circle class="ring-fill" id="physArc" cx="100" cy="100" r="86"
+                        stroke="url(#gradPhys)" transform="rotate(-90 100 100)" />
+              </svg>
+              <div class="ring-center">
+                <span class="ring-pct" id="physPct">–</span>
+                <span class="ring-label">RAM used</span>
+              </div>
+            </div>
+            <div class="gauge-meta">
+              <h3>Physical Memory</h3>
+              <div class="meta-rows">
+                <div><span class="k">Used</span><span class="v" id="physUsed">–</span></div>
+                <div><span class="k">Free</span><span class="v" id="physFree">–</span></div>
+                <div><span class="k">Total</span><span class="v" id="physTotal">–</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="glass gauge-card" id="virtCard">
+            <div class="ring" id="virtRing">
+              <svg viewBox="0 0 200 200" class="ring-svg">
+                <defs>
+                  <linearGradient id="gradVirt" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#4f7cff" />
+                    <stop offset="100%" stop-color="#22d3ee" />
+                  </linearGradient>
+                </defs>
+                <circle class="ring-track" cx="100" cy="100" r="86" />
+                <circle class="ring-fill" id="virtArc" cx="100" cy="100" r="86"
+                        stroke="url(#gradVirt)" transform="rotate(-90 100 100)" />
+              </svg>
+              <div class="ring-center">
+                <span class="ring-pct" id="virtPct">–</span>
+                <span class="ring-label">Committed</span>
+              </div>
+            </div>
+            <div class="gauge-meta">
+              <h3>Virtual Memory</h3>
+              <div class="meta-rows">
+                <div><span class="k">Used</span><span class="v" id="virtUsed">–</span></div>
+                <div><span class="k">Free</span><span class="v" id="virtFree">–</span></div>
+                <div><span class="k">Total</span><span class="v" id="virtTotal">–</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="glass spark-card">
+            <div class="spark-head">
+              <h3>RAM usage</h3>
+              <span class="spark-now" id="sparkNow">–</span>
+            </div>
+            <svg class="spark" id="sparkline" viewBox="0 0 300 90" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--accent-a)" stop-opacity="0.45" />
+                  <stop offset="100%" stop-color="var(--accent-a)" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <path class="spark-area" id="sparkArea" d="" fill="url(#sparkFill)" />
+              <path class="spark-line" id="sparkLine" d="" />
+            </svg>
+          </article>
+        </div>
+
+        <article class="glass areas-card">
+          <div class="areas-head">
+            <div>
+              <h3>Memory areas</h3>
+              <p class="muted">Choose what gets cleaned. Unsupported areas are disabled for your Windows version.</p>
+            </div>
+            <div class="areas-actions">
+              <button class="ghost-btn" id="selectAll">Select all</button>
+              <button class="ghost-btn" id="selectNone">Clear</button>
+            </div>
+          </div>
+          <div class="areas-grid" id="areasGrid"><!-- injected --></div>
+        </article>
+
+        <div class="cta-row">
+          <button class="optimize-btn" id="optimizeBtn">
+            <span class="opt-glow"></span>
+            <span class="opt-fill" id="optFill"></span>
+            <span class="opt-label">
+              <svg class="ic"><use href="#i-spark"></use></svg>
+              <span id="optText">Optimize</span>
+            </span>
+          </button>
+          <div class="cta-hint" id="ctaHint">Ctrl + Shift + M</div>
+        </div>
+      </section>
+
+      <!-- AUTOMATION -->
+      <section class="view" id="view-automation">
+        <div class="view-head"><div><h1>Automation</h1><p class="muted">Let the cleaner run itself</p></div></div>
+
+        <article class="glass setting-block">
+          <div class="sb-row">
+            <div><h3>Optimize on a schedule</h3><p class="muted" id="autoIntervalDesc">Disabled</p></div>
+            <div class="range-wrap">
+              <input type="range" id="autoInterval" min="0" max="24" step="1" value="0" />
+              <output id="autoIntervalOut">Off</output>
+            </div>
+          </div>
+        </article>
+
+        <article class="glass setting-block">
+          <div class="sb-row">
+            <div><h3>Optimize when free RAM drops below</h3><p class="muted" id="autoMemDesc">Disabled</p></div>
+            <div class="range-wrap">
+              <input type="range" id="autoMem" min="0" max="99" step="1" value="0" />
+              <output id="autoMemOut">Off</output>
+            </div>
+          </div>
+          <p class="hint-note"><svg class="ic"><use href="#i-info"></use></svg> Throttled to at most once every 5 minutes.</p>
+        </article>
+      </section>
+
+      <!-- PROCESSES -->
+      <section class="view" id="view-processes">
+        <div class="view-head"><div><h1>Process exclusions</h1><p class="muted">Skip these when trimming working sets</p></div></div>
+        <article class="glass">
+          <div class="proc-add">
+            <select id="procSelect" class="input"></select>
+            <button class="ghost-btn" id="procRefresh"><svg class="ic"><use href="#i-refresh"></use></svg></button>
+            <button class="primary-btn" id="procAdd">Add</button>
+          </div>
+          <div class="proc-list" id="procList"><!-- injected --></div>
+        </article>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <div class="view-head">
+          <div><h1>Settings</h1><p class="muted">Behavior, appearance & shortcuts</p></div>
+          <button class="ghost-btn" id="resetBtn">Reset to defaults</button>
+        </div>
+
+        <article class="glass setting-block">
+          <h3 class="block-title">Behavior</h3>
+          <div class="toggle-grid" id="toggleGrid"><!-- injected --></div>
+        </article>
+
+        <article class="glass setting-block">
+          <h3 class="block-title">Optimize hotkey</h3>
+          <div class="hotkey-row">
+            <label class="chk"><input type="checkbox" id="useHotkey" /> <span>Enable global hotkey</span></label>
+            <div class="hotkey-fields">
+              <label class="mini"><input type="checkbox" id="hkCtrl" /> Ctrl</label>
+              <label class="mini"><input type="checkbox" id="hkShift" /> Shift</label>
+              <label class="mini"><input type="checkbox" id="hkAlt" /> Alt</label>
+              <select id="hkKey" class="input small"></select>
+            </div>
+          </div>
+          <p class="hint-note" id="hotkeyWarn" hidden></p>
+        </article>
+
+        <article class="glass setting-block">
+          <h3 class="block-title">Appearance</h3>
+          <div class="appearance-row">
+            <div class="seg" id="themeSeg">
+              <button data-theme-val="dark" class="active">Dark</button>
+              <button data-theme-val="light">Light</button>
+            </div>
+            <label class="field">
+              <span>Language</span>
+              <select id="langSelect" class="input"></select>
+            </label>
+          </div>
+        </article>
+      </section>
+
+      <!-- ABOUT -->
+      <section class="view" id="view-about">
+        <div class="view-head"><div><h1>About</h1><p class="muted">Windows Memory Cleaner — Electron edition</p></div></div>
+        <article class="glass about-card">
+          <div class="about-logo"><span class="brand-mark big"></span></div>
+          <p>A modern desktop shell over the original native optimization engine. Your kernel-level
+             memory operations run in a hardened C# helper; this window is only the interface.</p>
+          <ul class="about-facts" id="aboutFacts"></ul>
+          <div class="about-links">
+            <button class="primary-btn" data-ext="https://github.com/IgorMundstein/WinMemoryCleaner">GitHub</button>
+            <button class="ghost-btn" data-ext="https://github.com/sponsors/IgorMundstein">Sponsor</button>
+          </div>
+        </article>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast host -->
+  <div class="toast-host" id="toastHost"></div>
+
+  <!-- Icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <g id="i-gauge"><path d="M12 3a9 9 0 1 0 9 9M12 3v0M12 12l5-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+      <g id="i-bolt"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></g>
+      <g id="i-list"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+      <g id="i-sliders"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+      <g id="i-info"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+      <g id="i-spark"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></g>
+      <g id="i-shield"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></g>
+      <g id="i-min"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+      <g id="i-max"><rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/></g>
+      <g id="i-close"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+      <g id="i-moon"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></g>
+      <g id="i-sun"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+      <g id="i-refresh"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <g id="i-check"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <g id="i-trash"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+    </defs>
+  </svg>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
