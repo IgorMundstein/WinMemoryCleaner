@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -1706,7 +1706,12 @@ namespace WinMemoryCleaner
                 {
                     // Check if it's busy
                     if (IsBusy)
+                    {
+                        if (_cancellationTokenSource.Token.WaitHandle.WaitOne(1000))
+                            break;
+
                         continue;
+                    }
 
                     lock (_lockObject)
                     {

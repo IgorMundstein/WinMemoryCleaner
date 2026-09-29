@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
@@ -479,8 +479,8 @@ namespace WinMemoryCleaner
             if (WpfApplication.Current == null || WpfApplication.Current.Dispatcher == null)
                 return;
 
-            // Multi-threading trick
-            WpfApplication.Current.Dispatcher.Invoke((Action)delegate
+            // Multi-threading safe dispatch
+            WpfApplication.Current.Dispatcher.BeginInvoke((Action)delegate
             {
                 Mouse.OverrideCursor = running ? Cursors.Wait : null;
 
@@ -572,7 +572,7 @@ namespace WinMemoryCleaner
 
             try
             {
-                WpfApplication.Current.Dispatcher.Invoke((Action)delegate
+                WpfApplication.Current.Dispatcher.BeginInvoke((Action)delegate
                 {
                     try
                     {
@@ -610,7 +610,7 @@ namespace WinMemoryCleaner
                     return;
                 }
 
-                WpfApplication.Current.Dispatcher.Invoke((Action)delegate
+                WpfApplication.Current.Dispatcher.BeginInvoke((Action)delegate
                 {
                     CleanupRotationTimer();
                 });

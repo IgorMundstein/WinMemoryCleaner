@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -213,21 +213,25 @@ namespace WinMemoryCleaner
                 }
                 else
                 {
-                    Thread.Sleep(1000);
-                    App.Shutdown();
+                    var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+                    timer.Tick += (sender, args) =>
+                    {
+                        timer.Stop();
+                        App.Shutdown();
+                    };
+                    timer.Start();
                 }
             }
             else
             {
                 _viewModel.IsBusy = false;
                 
-             // Wait for the button to be enabled before trying to refocus it
-           // The button is disabled while IsOptimizationRunning = true
+                // Wait for the button to be enabled before trying to refocus it
                 Dispatcher.BeginInvoke(new Action(() =>
-             {
-              SetFocusTo(Optimize, force: true);
-           }), System.Windows.Threading.DispatcherPriority.Loaded);
- }
+                {
+                    SetFocusTo(Optimize, force: true);
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+            }
         }
 
         /// <summary>
@@ -348,7 +352,6 @@ namespace WinMemoryCleaner
             else
             {
                 // Normal focus - immediate
-                Keyboard.ClearFocus();
                 Keyboard.Focus(uiElement);
                 FocusManager.SetFocusedElement(this, inputElement);
             }
