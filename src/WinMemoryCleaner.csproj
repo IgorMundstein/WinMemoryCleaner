@@ -233,6 +233,7 @@
     <None Include="nuget.config" />
     <None Include="packages.config" />
     <None Include="packages.lock.json" />
+    <EmbeddedResource Include="Resources\Localization\Tamil.json" />
     <None Include="WinMemoryCleaner.snk" />
   </ItemGroup>
   <ItemGroup>
