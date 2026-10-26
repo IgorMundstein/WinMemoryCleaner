@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -561,6 +561,13 @@ namespace WinMemoryCleaner.Test
             public void Generic_CanBeInstantiated()
             {
                 Assert.DoesNotThrow(() => new ObservableItem<string>("TestItem", () => "value", null));
+            }
+
+            [Test]
+            public void ObservableItem_ToolTip_CanBeSet()
+            {
+                var item = new ObservableItem<bool>("TestItem", () => true, null, true, "Tooltip content");
+                Assert.AreEqual("Tooltip content", item.ToolTip);
             }
         }
 

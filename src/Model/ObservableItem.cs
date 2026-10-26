@@ -18,12 +18,14 @@ namespace WinMemoryCleaner
         /// <param name="getter">The getter.</param>
         /// <param name="setter">The setter.</param>
         /// <param name="isEnabled">if set to <c>true</c> [is enabled].</param>
-        public ObservableItem(string name, Func<T> getter, Action<T> setter, bool isEnabled = true)
+        /// <param name="toolTip">The tooltip.</param>
+        public ObservableItem(string name, Func<T> getter, Action<T> setter, bool isEnabled = true, string toolTip = null)
         {
             Getter = getter;
             _isEnabled = isEnabled;
             Name = name;
             Setter = setter;
+            ToolTip = toolTip;
         }
 
         /// <summary>
@@ -68,6 +70,14 @@ namespace WinMemoryCleaner
         /// The setter.
         /// </value>
         public Action<T> Setter { get; private set; }
+
+        /// <summary>
+        /// Gets the tooltip.
+        /// </summary>
+        /// <value>
+        /// The tooltip.
+        /// </value>
+        public string ToolTip { get; private set; }
 
         /// <summary>
         /// Gets or sets the value.

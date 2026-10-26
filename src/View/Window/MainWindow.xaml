@@ -267,7 +267,15 @@
                                           IsChecked="{Binding Value, Mode=TwoWay}"
                                           IsEnabled="{Binding IsEnabled}"
                                           Margin="0, 0, 0, 3"
-                                          VerticalAlignment="Center" />
+                                          ToolTipService.ShowOnDisabled="True"
+                                          VerticalAlignment="Center">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip MaxWidth="320">
+                                            <TextBlock Text="{Binding ToolTip}"
+                                                       TextWrapping="Wrap" />
+                                        </ToolTip>
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

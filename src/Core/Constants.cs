@@ -64,6 +64,52 @@ namespace WinMemoryCleaner
                 public static readonly Uri KofiUri = new Uri("https://ko-fi.com/igormundstein");
             }
 
+            /// <summary>
+            /// Memory Area Descriptions
+            /// </summary>
+            public static class MemoryAreaDescription
+            {
+                /// <summary>
+                /// The combined page list description.
+                /// </summary>
+                public const string CombinedPageList = "Flushes memory blocks from the page-combining list, a memory-saving feature in modern Windows that merges identical pages of memory.\n\nWindows: 8+ | Server: 2012+";
+
+                /// <summary>
+                /// The modified file cache description.
+                /// </summary>
+                public const string ModifiedFileCache = "Flushes the volume file cache to disk for all fixed drives, ensuring all pending writes are committed.\n\nWindows: XP+ | Server: 2003+";
+
+                /// <summary>
+                /// The modified page list description.
+                /// </summary>
+                public const string ModifiedPageList = "Writes unsaved pages from RAM to disk and moves the now-saved pages to the standby list.\n\nWindows: Vista+ | Server: 2008+";
+
+                /// <summary>
+                /// The registry cache description.
+                /// </summary>
+                public const string RegistryCache = "Flushes registry hives from memory. Hives are logical groups of keys and values that are loaded into memory when the OS starts or a user logs in.\n\nWindows: 8.1+ | Server: 2012+";
+
+                /// <summary>
+                /// The standby list description.
+                /// </summary>
+                public const string StandbyList = "Clears the entire Standby List, which contains cached data from closed applications. This aggressive method frees the maximum amount of cached RAM for demanding tasks.\n\nWindows: Vista+ | Server: 2008+";
+
+                /// <summary>
+                /// The standby list (low priority) description.
+                /// </summary>
+                public const string StandbyListLowPriority = "Clears only the lowest-priority pages from the Standby List. This gentle method frees some cached RAM without removing data that Windows considers more important.\n\nWindows: Vista+ | Server: 2008+";
+
+                /// <summary>
+                /// The system file cache description.
+                /// </summary>
+                public const string SystemFileCache = "Flushes the cache Windows uses for its system files, trimming it to release memory. Useful for refreshing the system's state before launching a memory-intensive application.\n\nWindows: XP+ | Server: 2003+";
+
+                /// <summary>
+                /// The working set description.
+                /// </summary>
+                public const string WorkingSet = "Removes memory from all user-mode and system working sets, forcing processes (like games or browsers that hoard memory) to release non-essential RAM. This can reduce stutter and improve responsiveness.\n\nWindows: XP+ | Server: 2003+";
+            }
+
             public static class Registry
             {
                 public static class Key

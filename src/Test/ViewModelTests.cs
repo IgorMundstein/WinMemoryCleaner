@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Windows.Forms;
@@ -382,6 +382,19 @@ namespace WinMemoryCleaner.Test
 
                 Assert.IsNotNull(items);
                 Assert.IsTrue(items.Count > 0);
+            }
+
+            [Test]
+            public void MemoryAreaItems_AllItemsHaveToolTip()
+            {
+                var items = _viewModel.MemoryAreaItems;
+
+                Assert.IsNotNull(items);
+                Assert.AreEqual(8, items.Count);
+                foreach (var item in items)
+                {
+                    Assert.IsFalse(string.IsNullOrEmpty(item.ToolTip));
+                }
             }
 
             [Test]
