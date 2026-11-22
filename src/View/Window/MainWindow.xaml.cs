@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -213,8 +212,21 @@ namespace WinMemoryCleaner
                 }
                 else
                 {
-                    Thread.Sleep(1000);
-                    App.Shutdown();
+                    // This runs on the UI thread, so sleeping here froze the window for a full
+                    // second after every optimization. A timer gives the same grace period
+                    // (letting the tray notification appear) while the UI keeps pumping.
+                    var shutdownDelay = new System.Windows.Threading.DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(1000)
+                    };
+
+                    shutdownDelay.Tick += (sender, args) =>
+                    {
+                        shutdownDelay.Stop();
+                        App.Shutdown();
+                    };
+
+                    shutdownDelay.Start();
                 }
             }
             else

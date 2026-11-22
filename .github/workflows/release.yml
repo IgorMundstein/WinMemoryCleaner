@@ -157,14 +157,20 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: ./
 
-      - name: Create ZIP archive from SIGNED exe
-        if: steps.signpath.conclusion == 'success'
+      - name: Prepare release binaries
         shell: pwsh
         run: |
-          Compress-Archive -Path "WinMemoryCleaner.exe", "README.md", "CHANGELOG.md" -DestinationPath WinMemoryCleaner.zip
+          $sourceExe = if ('${{ steps.signpath.conclusion }}' -eq 'success' -and (Test-Path "WinMemoryCleaner.exe")) { "WinMemoryCleaner.exe" } else { "src\bin\Release\WinMemoryCleaner.exe" }
+          if (-not (Test-Path $sourceExe)) {
+            Write-Host "::error::Release executable not found at $sourceExe"
+            exit 1
+          }
+          if ($sourceExe -ne "WinMemoryCleaner.exe") {
+            Copy-Item -Path $sourceExe -Destination "WinMemoryCleaner.exe" -Force
+          }
+          Compress-Archive -Path "WinMemoryCleaner.exe", "README.md", "CHANGELOG.md" -DestinationPath WinMemoryCleaner.zip -Force
 
       - name: Upload release artifacts
-        if: steps.signpath.conclusion == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: winmemorycleaner-release-${{ steps.version.outputs.new_tag }}
